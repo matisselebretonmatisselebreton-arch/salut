@@ -2,7 +2,7 @@
 
 Système multi-agents TypeScript pour automatiser le workflow dropshipping de bout en bout : recherche produit → branding → boutique Shopify → créas vidéo (Remotion) → pub TikTok/Meta → analytics.
 
-> ⚠️ **État actuel : étape 5/8 (services API + scraper).** Monorepo, base de données, 8 sous-agents, templates Remotion, services API (Anthropic / Supabase / Shopify / Meta / TikTok / ElevenLabs / Pexels) et scraper AliExpress sont en place. Les étapes 6 à 8 ajouteront : workflows d'orchestration, dashboard Next.js et documentation finale.
+> ⚠️ **État actuel : étape 6/8 (workflows + setup interactif).** Monorepo, base de données, 8 sous-agents, templates Remotion, services API et scraper AliExpress sont en place. Les 8 agents sont implémentés en TS (`@dropship/core/agents`) et exposés via les scripts `pnpm run workflow:*` + un setup interactif (`pnpm run setup`). Les étapes 7 et 8 ajouteront : dashboard Next.js complet et documentation finale.
 
 ## Prérequis (Windows)
 
@@ -123,7 +123,7 @@ Pour l'instant, pointeurs rapides :
 - [x] **Étape 3** — Les 8 sous-agents Claude Code (`.claude/agents/*.md`)
 - [x] **Étape 4** — Templates Remotion (Punchy / Minimal / UGC) + composants réutilisables
 - [x] **Étape 5** — Services API (Anthropic, Supabase, Shopify, Meta, TikTok, ElevenLabs, Pexels) + scraper AliExpress + utilitaires HTTP/retry
-- [ ] **Étape 6** — Scripts d'orchestration + setup guidé
+- [x] **Étape 6** — Scripts d'orchestration (research / build-store / generate-creatives / launch-ads / analyze / full) + setup interactif + validate-env avec pings
 - [ ] **Étape 7** — Dashboard Next.js complet
 - [ ] **Étape 8** — Documentation finale + TROUBLESHOOTING.md
 

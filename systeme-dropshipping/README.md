@@ -1,4 +1,4 @@
-# Dropship System
+# Système Dropshipping
 
 Système multi-agents TypeScript pour automatiser le workflow dropshipping de bout en bout : recherche produit → branding → boutique Shopify → créas vidéo (Remotion) → pub TikTok/Meta → analytics.
 
@@ -16,30 +16,40 @@ Système multi-agents TypeScript pour automatiser le workflow dropshipping de bo
 
 ```powershell
 # À la racine du repo
-cd dropship-system
+cd systeme-dropshipping
 pnpm install
 copy .env.example .env        # sous Linux/macOS : cp .env.example .env
 notepad .env                  # remplir les clés API
 pnpm run validate-env         # vérifie la config
 ```
 
-## Arborescence
+## Arborescence (en français)
 
 ```
-dropship-system/
-├── .claude/agents/          # Sous-agents Claude Code (étape 3)
-├── apps/
-│   ├── dashboard/           # Next.js 14 + Tailwind + shadcn/ui (étape 7)
-│   └── remotion/            # Templates vidéo Remotion (étape 4)
-├── packages/
-│   ├── core/                # Agents TS + clients API (étape 5)
-│   └── db/                  # Schéma Supabase + types (étape 2)
-├── scripts/
-│   ├── setup.ts             # Assistant de configuration (étape 6)
-│   ├── validate-env.ts      # Vérification des clés API
-│   └── workflow/            # Scripts d'orchestration
-└── data/                    # Exports locaux (git-ignoré)
+systeme-dropshipping/
+├── .claude/agents/                       # Sous-agents Claude Code (étape 3) — nom imposé par Claude Code
+├── applications/
+│   ├── tableau-de-bord/                  # Next.js 14 + Tailwind + shadcn/ui (étape 7)
+│   └── generateur-videos/                # Templates vidéo Remotion (étape 4)
+├── modules/
+│   ├── commun/                           # Logique partagée : agents TS, services API (étape 5)
+│   │   └── src/
+│   │       ├── agents/                   # Implémentations TypeScript des 8 agents
+│   │       ├── services/                 # Clients Shopify, Meta, TikTok, Supabase…
+│   │       ├── extracteurs/              # Scrapers (AliExpress…)
+│   │       ├── types/                    # Types partagés
+│   │       └── utilitaires/              # Logger, env, helpers
+│   └── base-de-donnees/                  # Schéma Supabase + types (étape 2)
+├── commandes/
+│   ├── setup.ts                          # Assistant de configuration (étape 6)
+│   ├── validate-env.ts                   # Vérification des clés API
+│   ├── db-setup.ts                       # Guide création base Supabase
+│   ├── scrape-aliexpress.ts              # Scraper standalone
+│   └── processus/                        # Scripts d'orchestration (workflow:*)
+└── donnees/                              # Exports locaux (git-ignoré)
 ```
+
+> 💡 Les noms `package.json`, `tsconfig.json`, `next.config.mjs`, `remotion.config.ts`, `node_modules/` et `.claude/agents/` sont **conservés tels quels** car imposés par les outils correspondants (npm, TypeScript, Next.js, Remotion, Claude Code).
 
 ## Commandes principales
 

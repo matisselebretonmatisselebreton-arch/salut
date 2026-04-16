@@ -1,4 +1,4 @@
-# data/
+# donnees/
 
 Dossier de travail local pour exports temporaires (CSV analytics, screenshots de brandings, backups Supabase…).
 

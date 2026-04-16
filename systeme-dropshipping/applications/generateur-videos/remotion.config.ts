@@ -16,7 +16,7 @@ Config.setCrf(20);
 // Dossier de sortie par défaut
 Config.setOutputLocation("out/");
 
-// Autoriser les imports depuis le monorepo (packages/core)
+// Autoriser les imports depuis le monorepo (modules/commun)
 Config.overrideWebpackConfig((currentConfiguration) => {
   return {
     ...currentConfiguration,

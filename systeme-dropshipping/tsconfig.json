@@ -19,10 +19,10 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@dropship/core": ["packages/core/src/index.ts"],
-      "@dropship/core/*": ["packages/core/src/*"],
-      "@dropship/db": ["packages/db/src/index.ts"],
-      "@dropship/db/*": ["packages/db/src/*"]
+      "@dropship/core": ["modules/commun/src/index.ts"],
+      "@dropship/core/*": ["modules/commun/src/*"],
+      "@dropship/db": ["modules/base-de-donnees/src/index.ts"],
+      "@dropship/db/*": ["modules/base-de-donnees/src/*"]
     }
   },
   "exclude": ["node_modules", "**/dist", "**/.next", "**/out", "**/build"]

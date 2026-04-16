@@ -27,44 +27,7 @@ importers:
         specifier: ^2.1.5
         version: 2.1.9(@types/node@22.19.17)(terser@5.46.1)
 
-  apps/dashboard:
-    dependencies:
-      next:
-        specifier: 14.2.35
-        version: 14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: ^18
-        version: 18.3.1
-      react-dom:
-        specifier: ^18
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@types/node':
-        specifier: ^20
-        version: 20.19.39
-      '@types/react':
-        specifier: ^18
-        version: 18.3.28
-      '@types/react-dom':
-        specifier: ^18
-        version: 18.3.7(@types/react@18.3.28)
-      eslint:
-        specifier: ^8
-        version: 8.57.1
-      eslint-config-next:
-        specifier: 14.2.35
-        version: 14.2.35(eslint@8.57.1)(typescript@5.9.3)
-      postcss:
-        specifier: ^8
-        version: 8.5.10
-      tailwindcss:
-        specifier: ^3.4.1
-        version: 3.4.19(tsx@4.21.0)
-      typescript:
-        specifier: ^5
-        version: 5.9.3
-
-  apps/remotion:
+  applications/generateur-videos:
     dependencies:
       '@remotion/bundler':
         specifier: 4.0.315
@@ -104,7 +67,54 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
-  packages/core:
+  applications/tableau-de-bord:
+    dependencies:
+      next:
+        specifier: 14.2.35
+        version: 14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18
+        version: 18.3.1
+      react-dom:
+        specifier: ^18
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.39
+      '@types/react':
+        specifier: ^18
+        version: 18.3.12
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.3.7(@types/react@18.3.12)
+      eslint:
+        specifier: ^8
+        version: 8.57.1
+      eslint-config-next:
+        specifier: 14.2.35
+        version: 14.2.35(eslint@8.57.1)(typescript@5.9.3)
+      postcss:
+        specifier: ^8
+        version: 8.5.10
+      tailwindcss:
+        specifier: ^3.4.1
+        version: 3.4.19(tsx@4.21.0)
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  modules/base-de-donnees:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.47.10
+        version: 2.103.2
+    devDependencies:
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
+  modules/commun:
     dependencies:
       '@anthropic-ai/sdk':
         specifier: ^0.32.1
@@ -134,16 +144,6 @@ importers:
       vitest:
         specifier: ^2.1.5
         version: 2.1.9(@types/node@22.19.17)(terser@5.46.1)
-
-  packages/db:
-    dependencies:
-      '@supabase/supabase-js':
-        specifier: ^2.47.10
-        version: 2.103.2
-    devDependencies:
-      typescript:
-        specifier: ^5.6.3
-        version: 5.9.3
 
 packages:
 
@@ -1086,9 +1086,6 @@ packages:
 
   '@types/react@18.3.12':
     resolution: {integrity: sha512-D2wOSq/d6Agt28q7rSI3jhU7G6aiuzljDGZ2hTZHIkrTLUI+AF3WMeKkEZ9nN2fkBAlcktT6vcZjDFiIhMYEQw==}
-
-  '@types/react@18.3.28':
-    resolution: {integrity: sha512-z9VXpC7MWrhfWipitjNdgCauoMLRdIILQsAEV+ZesIzBq/oUlxk0m3ApZuMFCXdnS4U7KrI+l3WRUEGQ8K1QKw==}
 
   '@types/web@0.0.176':
     resolution: {integrity: sha512-ZPiEUDiXACru+FlfZ7SdzD20aexUUymircht8paRLP2YvhGeQxlP+hYniQ9AMROKxTP33eyjdALogaghf/VptQ==}
@@ -4232,16 +4229,11 @@ snapshots:
 
   '@types/prop-types@15.7.15': {}
 
-  '@types/react-dom@18.3.7(@types/react@18.3.28)':
+  '@types/react-dom@18.3.7(@types/react@18.3.12)':
     dependencies:
-      '@types/react': 18.3.28
+      '@types/react': 18.3.12
 
   '@types/react@18.3.12':
-    dependencies:
-      '@types/prop-types': 15.7.15
-      csstype: 3.2.3
-
-  '@types/react@18.3.28':
     dependencies:
       '@types/prop-types': 15.7.15
       csstype: 3.2.3
@@ -4254,7 +4246,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.19.39
+      '@types/node': 22.19.17
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.58.2(@typescript-eslint/parser@8.58.2(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)':
@@ -5800,7 +5792,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.19.39
+      '@types/node': 22.19.17
       merge-stream: 2.0.0
       supports-color: 8.1.1
 

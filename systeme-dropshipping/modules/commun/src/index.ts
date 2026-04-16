@@ -3,6 +3,7 @@
  * Réexporte les sous-modules pour un import simplifié :
  *   import { anthropic, shopify, log } from "@dropship/core";
  */
-export * from "./utils/index.js";
+export * from "./utilitaires/index.js";
+export * from "./extracteurs/index.js";
 export * from "./services/index.js";
 export * from "./types/index.js";

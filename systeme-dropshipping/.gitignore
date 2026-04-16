@@ -7,10 +7,10 @@ dist/
 build/
 .next/
 out/
-apps/remotion/out/
+applications/generateur-videos/out/
 
 # Remotion
-apps/remotion/.remotion/
+applications/generateur-videos/.remotion/
 
 # Environment variables (JAMAIS committer)
 .env
@@ -50,9 +50,9 @@ desktop.ini
 *.swo
 
 # Données exportées (temporaires, générées, sensibles)
-data/*
-!data/.gitkeep
-!data/README.md
+donnees/*
+!donnees/.gitkeep
+!donnees/README.md
 
 # Exports Supabase/backups
 *.sql.backup

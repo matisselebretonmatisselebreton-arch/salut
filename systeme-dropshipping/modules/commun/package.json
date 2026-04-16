@@ -10,9 +10,9 @@
     ".": "./src/index.ts",
     "./agents": "./src/agents/index.ts",
     "./services": "./src/services/index.ts",
-    "./scrapers": "./src/scrapers/index.ts",
+    "./extracteurs": "./src/extracteurs/index.ts",
     "./types": "./src/types/index.ts",
-    "./utils": "./src/utils/index.ts"
+    "./utilitaires": "./src/utilitaires/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -2,7 +2,7 @@
  * Valide la présence des variables d'environnement requises.
  * À l'étape 6, teste aussi la connexion réelle à chaque API (ping).
  */
-import { loadEnv } from "../packages/core/src/utils/env.js";
+import { loadEnv } from "../modules/commun/src/utilitaires/env.js";
 
 loadEnv(process.cwd());
 

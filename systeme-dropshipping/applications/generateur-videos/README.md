@@ -9,7 +9,7 @@ Projet Remotion qui rend les créas publicitaires pour TikTok, Reels et Meta Fee
 pnpm run studio
 
 # Render d'une composition depuis la CLI
-pnpm run render MasterAd-Vertical out/test.mp4 --props=./data/example-props.json
+pnpm run render MasterAd-Vertical out/test.mp4 --props=./donnees/example-props.json
 ```
 
 Depuis la racine du monorepo :

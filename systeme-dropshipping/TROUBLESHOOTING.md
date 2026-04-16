@@ -11,7 +11,7 @@ Installer pnpm globalement : `npm install -g pnpm`. Redémarrer le terminal.
 Node < 20. Installer Node 20 LTS ou supérieur depuis https://nodejs.org.
 
 ### Long install sous Windows avec antivirus
-Windows Defender ralentit `node_modules`. Exclure le dossier `dropship-system\node_modules` des analyses en temps réel.
+Windows Defender ralentit `node_modules`. Exclure le dossier `systeme-dropshipping\node_modules` des analyses en temps réel.
 
 ## Remotion
 

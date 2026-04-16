@@ -2,7 +2,7 @@
 
 Système multi-agents TypeScript pour automatiser le workflow dropshipping de bout en bout : recherche produit → branding → boutique Shopify → créas vidéo (Remotion) → pub TikTok/Meta → analytics.
 
-> ⚠️ **État actuel : étape 1/8 (init).** Le squelette du monorepo est en place, les étapes 2 à 8 ajouteront progressivement : schéma Supabase, sous-agents Claude Code, templates Remotion, services API, workflows, dashboard Next.js et documentation finale.
+> ⚠️ **État actuel : étape 2/8 (schéma Supabase).** Le squelette du monorepo et la base de données sont en place. Les étapes 3 à 8 ajouteront progressivement : sous-agents Claude Code, templates Remotion, services API, workflows, dashboard Next.js et documentation finale.
 
 ## Prérequis (Windows)
 
@@ -70,6 +70,32 @@ systeme-dropshipping/
 | `pnpm run scrape -- --url="..."`   | Scrape un produit AliExpress                       |
 | `pnpm run test`                    | Tests (Vitest)                                     |
 
+## Base de données Supabase (étape 2)
+
+Le schéma complet (11 tables + 12 ENUMs + vue d'agrégat + seed) est dans
+`modules/base-de-donnees/`. Voir le [README du module](./modules/base-de-donnees/README.md)
+pour le détail.
+
+### Deux modes d'application
+
+**Manuel (1ère fois — recommandé)** :
+1. Créer le projet sur [supabase.com/dashboard](https://supabase.com/dashboard).
+2. Copier `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` dans `.env`.
+3. **SQL Editor** → coller `modules/base-de-donnees/schema.sql` → **Run**.
+4. **Storage** → créer bucket public `creatives`.
+
+**Automatique (CI / itérations)** :
+Renseigner `DATABASE_URL` ou `SUPABASE_DB_PASSWORD` dans `.env`, puis :
+
+```bash
+pnpm run db:setup            # applique si connexion détectée, sinon affiche l'aide
+pnpm run db:setup -- --apply # force l'application
+pnpm run db:setup -- --print # imprime le SQL sans l'exécuter
+```
+
+La migration est **idempotente** (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`,
+`DO $$ EXCEPTION WHEN duplicate_object`) : vous pouvez la rejouer sans risque.
+
 ## Récupération des clés API
 
 Documentation pas-à-pas par API (étape 8 : captures annotées pour chaque registrar).
@@ -93,7 +119,7 @@ Pour l'instant, pointeurs rapides :
 ## Roadmap
 
 - [x] **Étape 1** — Init monorepo (pnpm + Next.js + Remotion)
-- [ ] **Étape 2** — Schéma Supabase + migrations
+- [x] **Étape 2** — Schéma Supabase + migrations + types TS + client factory
 - [ ] **Étape 3** — Les 8 sous-agents Claude Code
 - [ ] **Étape 4** — Templates Remotion (Punchy / Minimal / UGC) + composants réutilisables
 - [ ] **Étape 5** — Services API + scraper AliExpress

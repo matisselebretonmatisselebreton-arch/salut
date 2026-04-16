@@ -2,7 +2,7 @@
 
 Système multi-agents TypeScript pour automatiser le workflow dropshipping de bout en bout : recherche produit → branding → boutique Shopify → créas vidéo (Remotion) → pub TikTok/Meta → analytics.
 
-> ⚠️ **État actuel : étape 6/8 (workflows + setup interactif).** Monorepo, base de données, 8 sous-agents, templates Remotion, services API et scraper AliExpress sont en place. Les 8 agents sont implémentés en TS (`@dropship/core/agents`) et exposés via les scripts `pnpm run workflow:*` + un setup interactif (`pnpm run setup`). Les étapes 7 et 8 ajouteront : dashboard Next.js complet et documentation finale.
+> ⚠️ **État actuel : étape 7/8 (dashboard Next.js).** Monorepo, base de données, 8 sous-agents, templates Remotion, services API + scraper, agents TS et workflows CLI sont en place. Le dashboard Next.js 14 est désormais complet : 8 pages (tableau de bord, thèmes, candidats, boutiques, produits, créatives, campagnes, analytics) connectées à Supabase via service_role, avec server actions pour approuver/rejeter les candidats et pause/kill les campagnes. L'étape 8 ajoutera la documentation finale et le TROUBLESHOOTING détaillé.
 
 ## Prérequis (Windows)
 
@@ -124,7 +124,7 @@ Pour l'instant, pointeurs rapides :
 - [x] **Étape 4** — Templates Remotion (Punchy / Minimal / UGC) + composants réutilisables
 - [x] **Étape 5** — Services API (Anthropic, Supabase, Shopify, Meta, TikTok, ElevenLabs, Pexels) + scraper AliExpress + utilitaires HTTP/retry
 - [x] **Étape 6** — Scripts d'orchestration (research / build-store / generate-creatives / launch-ads / analyze / full) + setup interactif + validate-env avec pings
-- [ ] **Étape 7** — Dashboard Next.js complet
+- [x] **Étape 7** — Dashboard Next.js complet (8 pages + server actions Supabase)
 - [ ] **Étape 8** — Documentation finale + TROUBLESHOOTING.md
 
 **Post-MVP** : SaaS multi-tenants, cache Redis, queues BullMQ, Sentry, CI GitHub Actions, auto-deploy Vercel.

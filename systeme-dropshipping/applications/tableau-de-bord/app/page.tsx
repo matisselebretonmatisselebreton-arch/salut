@@ -1,101 +1,193 @@
-import Image from "next/image";
+/**
+ * Tableau de bord — vue d'ensemble : KPIs globaux + dernières actions agents.
+ */
+import { Badge } from "@/components/Badge";
+import { EmptyState } from "@/components/EmptyState";
+import { KpiCard } from "@/components/KpiCard";
+import { PageHeader } from "@/components/PageHeader";
+import { formatCurrency, formatDateTime, formatNumber, truncate } from "@/lib/formatters";
+import { getServerSupabase, hasSupabaseConfig } from "@/lib/supabase-server";
+import type {
+  AdCampaignRow,
+  AdMetricRow,
+  AgentLogRow,
+  ProductRow,
+  StoreRow,
+  ThemeRow,
+} from "@/lib/types";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+interface DashboardData {
+  themes: number;
+  themesActive: number;
+  stores: number;
+  storesLive: number;
+  products: number;
+  productsLive: number;
+  campaigns: number;
+  campaignsActive: number;
+  totalSpend: number;
+  totalRevenue: number;
+  roas: number | null;
+  recentLogs: AgentLogRow[];
+}
+
+async function loadData(): Promise<DashboardData> {
+  const sb = getServerSupabase();
+  const [themesQ, storesQ, productsQ, campaignsQ, metricsQ, logsQ] = await Promise.all([
+    sb.from("themes").select("id, status"),
+    sb.from("stores").select("id, status"),
+    sb.from("products").select("id, status"),
+    sb.from("ad_campaigns").select("id, status"),
+    sb.from("ad_metrics").select("spend, revenue"),
+    sb
+      .from("agent_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+
+  const themes = (themesQ.data ?? []) as Pick<ThemeRow, "id" | "status">[];
+  const stores = (storesQ.data ?? []) as Pick<StoreRow, "id" | "status">[];
+  const products = (productsQ.data ?? []) as Pick<ProductRow, "id" | "status">[];
+  const campaigns = (campaignsQ.data ?? []) as Pick<AdCampaignRow, "id" | "status">[];
+  const metrics = (metricsQ.data ?? []) as Pick<AdMetricRow, "spend" | "revenue">[];
+  const recentLogs = (logsQ.data ?? []) as AgentLogRow[];
+
+  const totalSpend = metrics.reduce((acc, m) => acc + Number(m.spend ?? 0), 0);
+  const totalRevenue = metrics.reduce((acc, m) => acc + Number(m.revenue ?? 0), 0);
+
+  return {
+    themes: themes.length,
+    themesActive: themes.filter((t) => t.status === "active").length,
+    stores: stores.length,
+    storesLive: stores.filter((s) => s.status === "live").length,
+    products: products.length,
+    productsLive: products.filter((p) => p.status === "live").length,
+    campaigns: campaigns.length,
+    campaignsActive: campaigns.filter((c) => c.status === "active").length,
+    totalSpend,
+    totalRevenue,
+    roas: totalSpend > 0 ? totalRevenue / totalSpend : null,
+    recentLogs,
+  };
+}
+
+export default async function HomePage(): Promise<JSX.Element> {
+  if (!hasSupabaseConfig()) {
+    return (
+      <>
+        <PageHeader
+          title="Tableau de bord"
+          subtitle="Vue d'ensemble du système multi-agent"
         />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <EmptyState
+          title="Supabase non configuré"
+          description="Renseignez SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY dans .env puis relancez la commande."
+          cta={{ label: "Setup", cmd: "pnpm run setup" }}
+        />
+      </>
+    );
+  }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+  const data = await loadData();
+  return (
+    <>
+      <PageHeader
+        title="Tableau de bord"
+        subtitle="Vue d'ensemble du système multi-agent — données temps réel."
+      />
+
+      <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <KpiCard
+          label="Thèmes"
+          value={formatNumber(data.themes)}
+          hint={`${data.themesActive} actifs`}
+        />
+        <KpiCard
+          label="Boutiques"
+          value={formatNumber(data.stores)}
+          hint={`${data.storesLive} en ligne`}
+        />
+        <KpiCard
+          label="Produits"
+          value={formatNumber(data.products)}
+          hint={`${data.productsLive} en ligne`}
+        />
+        <KpiCard
+          label="Campagnes"
+          value={formatNumber(data.campaigns)}
+          hint={`${data.campaignsActive} actives`}
+        />
+      </section>
+
+      <section className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <KpiCard label="Dépenses totales" value={formatCurrency(data.totalSpend)} />
+        <KpiCard
+          label="Revenus totaux"
+          value={formatCurrency(data.totalRevenue)}
+          tone="success"
+        />
+        <KpiCard
+          label="ROAS global"
+          value={data.roas == null ? "—" : `${data.roas.toFixed(2)}×`}
+          tone={
+            data.roas == null ? "default" : data.roas >= 2 ? "success" : "warning"
+          }
+        />
+      </section>
+
+      <section className="mt-10">
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-neutral-500">
+          Dernières actions agents
+        </h2>
+        {data.recentLogs.length === 0 ? (
+          <EmptyState
+            title="Aucune action enregistrée"
+            description="Lancez un workflow pour générer des logs d'agents."
+            cta={{ label: "CLI", cmd: "pnpm run workflow:full -- --theme=<uuid>" }}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        ) : (
+          <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+            <table className="w-full text-sm">
+              <thead className="bg-neutral-50 text-left text-xs uppercase tracking-wider text-neutral-500">
+                <tr>
+                  <th className="px-4 py-2">Agent</th>
+                  <th className="px-4 py-2">Action</th>
+                  <th className="px-4 py-2">Statut</th>
+                  <th className="px-4 py-2">Durée</th>
+                  <th className="px-4 py-2">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentLogs.map((log) => (
+                  <tr key={log.id} className="border-t border-neutral-100">
+                    <td className="px-4 py-2 font-medium text-neutral-900">
+                      {log.agent_name}
+                    </td>
+                    <td className="px-4 py-2 text-neutral-600">
+                      {truncate(log.action, 40)}
+                    </td>
+                    <td className="px-4 py-2">
+                      <Badge value={log.status} />
+                    </td>
+                    <td className="px-4 py-2 text-neutral-600">
+                      {log.duration_ms == null
+                        ? "—"
+                        : `${formatNumber(log.duration_ms)} ms`}
+                    </td>
+                    <td className="px-4 py-2 text-neutral-500">
+                      {formatDateTime(log.created_at)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </>
   );
 }

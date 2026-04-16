@@ -16,12 +16,17 @@ Config.setCrf(20);
 // Dossier de sortie par défaut
 Config.setOutputLocation("out/");
 
-// Autoriser les imports depuis le monorepo (modules/commun)
+// Résolution ESM moderne :
+//  - extensionAlias mappe les imports `./foo.js` vers `./foo.ts(x)` (norme TS bundler).
+//  - extensions ajoute .ts/.tsx aux résolutions implicites (pour modules/commun).
 Config.overrideWebpackConfig((currentConfiguration) => {
   return {
     ...currentConfiguration,
     resolve: {
       ...currentConfiguration.resolve,
+      extensionAlias: {
+        ".js": [".ts", ".tsx", ".js"],
+      },
       extensions: [
         ...(currentConfiguration.resolve?.extensions ?? []),
         ".ts",

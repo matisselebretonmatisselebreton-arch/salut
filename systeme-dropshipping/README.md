@@ -2,7 +2,7 @@
 
 Système multi-agents TypeScript pour automatiser le workflow dropshipping de bout en bout : recherche produit → branding → boutique Shopify → créas vidéo (Remotion) → pub TikTok/Meta → analytics.
 
-> ⚠️ **État actuel : étape 3/8 (sous-agents Claude Code).** Monorepo, base de données et 8 sous-agents (`product-research`, `branding`, `shopify-builder`, `copywriter`, `creative-generator`, `ads-launcher`, `analytics`, `orchestrator`) sont en place. Les étapes 4 à 8 ajouteront : templates Remotion, services API, workflows, dashboard Next.js et documentation finale.
+> ⚠️ **État actuel : étape 4/8 (templates Remotion).** Monorepo, base de données, 8 sous-agents et templates vidéo (Punchy / Minimal / UGC × 9:16 / 1:1) sont en place. Les étapes 5 à 8 ajouteront : services API, workflows, dashboard Next.js et documentation finale.
 
 ## Prérequis (Windows)
 
@@ -121,7 +121,7 @@ Pour l'instant, pointeurs rapides :
 - [x] **Étape 1** — Init monorepo (pnpm + Next.js + Remotion)
 - [x] **Étape 2** — Schéma Supabase + migrations + types TS + client factory
 - [x] **Étape 3** — Les 8 sous-agents Claude Code (`.claude/agents/*.md`)
-- [ ] **Étape 4** — Templates Remotion (Punchy / Minimal / UGC) + composants réutilisables
+- [x] **Étape 4** — Templates Remotion (Punchy / Minimal / UGC) + composants réutilisables
 - [ ] **Étape 5** — Services API + scraper AliExpress
 - [ ] **Étape 6** — Scripts d'orchestration + setup guidé
 - [ ] **Étape 7** — Dashboard Next.js complet

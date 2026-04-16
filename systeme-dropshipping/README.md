@@ -2,26 +2,73 @@
 
 Système multi-agents TypeScript pour automatiser le workflow dropshipping de bout en bout : recherche produit → branding → boutique Shopify → créas vidéo (Remotion) → pub TikTok/Meta → analytics.
 
-> ⚠️ **État actuel : étape 7/8 (dashboard Next.js).** Monorepo, base de données, 8 sous-agents, templates Remotion, services API + scraper, agents TS et workflows CLI sont en place. Le dashboard Next.js 14 est désormais complet : 8 pages (tableau de bord, thèmes, candidats, boutiques, produits, créatives, campagnes, analytics) connectées à Supabase via service_role, avec server actions pour approuver/rejeter les candidats et pause/kill les campagnes. L'étape 8 ajoutera la documentation finale et le TROUBLESHOOTING détaillé.
+> ✅ **MVP livré (8/8).** Monorepo, base de données, 8 sous-agents, templates Remotion, services API, scraper, agents TypeScript, workflows CLI, dashboard Next.js et documentation finale sont en place. Voir la [Roadmap](#roadmap).
 
-## Prérequis (Windows)
+## Sommaire
 
-- [Node.js ≥ 20 LTS](https://nodejs.org/)
-- [pnpm ≥ 9](https://pnpm.io/installation) : `npm install -g pnpm`
-- [Git for Windows](https://git-scm.com/download/win)
-- Un compte sur : Shopify, Supabase, Anthropic, Pexels, Meta Business (+ TikTok Ads optionnel)
-- ffmpeg (auto-installé par Remotion au premier rendu)
+- [Démarrage rapide (5 min)](#démarrage-rapide-5-min)
+- [Prérequis](#prérequis)
+- [Installation détaillée](#installation-détaillée)
+- [Arborescence](#arborescence-en-français)
+- [Commandes principales](#commandes-principales)
+- [Documentation détaillée](#documentation-détaillée)
+- [Base de données Supabase](#base-de-données-supabase)
+- [Récupération des clés API](#récupération-des-clés-api)
+- [Avertissements légaux](#avertissements-légaux)
+- [Roadmap](#roadmap)
 
-## Installation
+---
+
+## Démarrage rapide (5 min)
+
+```bash
+# 1. Cloner et installer
+cd systeme-dropshipping
+pnpm install
+
+# 2. Configurer (assistant interactif)
+pnpm run setup
+
+# 3. Appliquer le schéma Supabase
+pnpm run db:setup
+
+# 4. Vérifier que toutes les APIs répondent
+pnpm run validate-env -- --ping
+
+# 5. Lancer le dashboard
+pnpm run dashboard
+# → http://localhost:3000
+
+# 6. Lancer un pipeline complet sur une niche (mode dry-run)
+pnpm run workflow:full -- --theme-id=<uuid>
+```
+
+> 💡 Tant que `DRY_RUN=true` dans `.env` (par défaut), aucune dépense pub n'est engagée — tout le pipeline se déroule mais Meta/TikTok renvoient des IDs synthétiques.
+
+## Prérequis
+
+- **Node.js ≥ 20 LTS** — https://nodejs.org/
+- **pnpm ≥ 9** — `npm install -g pnpm`
+- **Git** — https://git-scm.com/
+- **Comptes** : [Anthropic](https://console.anthropic.com), [Supabase](https://supabase.com), [Shopify](https://www.shopify.com), [Pexels](https://www.pexels.com/api/), [Meta Business](https://business.facebook.com) (TikTok Ads et ElevenLabs : optionnels).
+- **ffmpeg** — auto-installé par Remotion au premier rendu.
+
+OS testés : **Windows 11**, **macOS 14+**, **Ubuntu 22.04+**.
+
+## Installation détaillée
 
 ```powershell
 # À la racine du repo
 cd systeme-dropshipping
 pnpm install
-copy .env.example .env        # sous Linux/macOS : cp .env.example .env
-notepad .env                  # remplir les clés API
-pnpm run validate-env         # vérifie la config
+copy .env.example .env        # Linux/macOS : cp .env.example .env
+pnpm run setup                # assistant interactif → remplit .env
+pnpm run validate-env         # contrôle les variables (format)
+pnpm run db:setup             # applique le schéma Supabase
+pnpm run validate-env -- --ping  # ping chaque API
 ```
+
+> 📖 Procédure pas-à-pas pour chaque API : [`docs/setup-apis.md`](./docs/setup-apis.md).
 
 ## Arborescence (en français)
 
@@ -29,48 +76,65 @@ pnpm run validate-env         # vérifie la config
 systeme-dropshipping/
 ├── .claude/agents/                       # Sous-agents Claude Code (étape 3) — nom imposé par Claude Code
 ├── applications/
-│   ├── tableau-de-bord/                  # Next.js 14 + Tailwind + shadcn/ui (étape 7)
+│   ├── tableau-de-bord/                  # Dashboard Next.js 14 (étape 7) — 8 pages + server actions
 │   └── generateur-videos/                # Templates vidéo Remotion (étape 4)
 ├── modules/
-│   ├── commun/                           # Logique partagée : agents TS, services API (étape 5)
+│   ├── commun/                           # Logique partagée (étape 5–6)
 │   │   └── src/
 │   │       ├── agents/                   # Implémentations TypeScript des 8 agents
-│   │       ├── services/                 # Clients Shopify, Meta, TikTok, Supabase…
+│   │       ├── services/                 # Clients Anthropic, Shopify, Meta, TikTok, ElevenLabs, Pexels, Supabase
 │   │       ├── extracteurs/              # Scrapers (AliExpress…)
 │   │       ├── types/                    # Types partagés
-│   │       └── utilitaires/              # Logger, env, helpers
-│   └── base-de-donnees/                  # Schéma Supabase + types (étape 2)
+│   │       └── utilitaires/              # Logger, env, HTTP/retry
+│   └── base-de-donnees/                  # Schéma Supabase + migrations + types (étape 2)
 ├── commandes/
 │   ├── setup.ts                          # Assistant de configuration (étape 6)
-│   ├── validate-env.ts                   # Vérification des clés API
-│   ├── db-setup.ts                       # Guide création base Supabase
+│   ├── validate-env.ts                   # Vérification des clés API (avec --ping)
+│   ├── db-setup.ts                       # Application du schéma Supabase
 │   ├── scrape-aliexpress.ts              # Scraper standalone
 │   └── processus/                        # Scripts d'orchestration (workflow:*)
-└── donnees/                              # Exports locaux (git-ignoré)
+├── docs/                                 # Documentation détaillée (étape 8)
+│   ├── setup-apis.md                     # Récupération des clés, pas-à-pas
+│   ├── workflow.md                       # Pipeline complet expliqué
+│   └── agents.md                         # Référence des 8 agents
+├── donnees/                              # Exports / cache locaux (git-ignoré)
+├── TROUBLESHOOTING.md                    # Problèmes courants
+└── README.md
 ```
 
 > 💡 Les noms `package.json`, `tsconfig.json`, `next.config.mjs`, `remotion.config.ts`, `node_modules/` et `.claude/agents/` sont **conservés tels quels** car imposés par les outils correspondants (npm, TypeScript, Next.js, Remotion, Claude Code).
 
 ## Commandes principales
 
-| Commande                           | Rôle                                               |
-|------------------------------------|----------------------------------------------------|
-| `pnpm run setup`                   | Assistant interactif de configuration              |
-| `pnpm run validate-env`            | Teste les clés API                                 |
-| `pnpm run db:setup`                | Guide + applique le schéma Supabase                |
-| `pnpm run dashboard`               | Lance le dashboard Next.js (http://localhost:3000) |
-| `pnpm run remotion:studio`         | Ouvre Remotion Studio pour preview                 |
-| `pnpm run remotion:render`         | Rend une vidéo depuis la CLI                       |
-| `pnpm run workflow:full -- --theme="sport"` | Pipeline complet sur une niche            |
-| `pnpm run workflow:research`       | Recherche produit (étape 1 du pipeline)            |
-| `pnpm run workflow:build`          | Branding + boutique + copy                         |
-| `pnpm run workflow:creatives`      | Génère les vidéos pub                              |
-| `pnpm run workflow:launch`         | Lance les campagnes (dry-run par défaut)           |
-| `pnpm run workflow:analyze`        | Pull métriques + rapport                           |
-| `pnpm run scrape -- --url="..."`   | Scrape un produit AliExpress                       |
-| `pnpm run test`                    | Tests (Vitest)                                     |
+| Commande                                          | Rôle                                               |
+|---------------------------------------------------|----------------------------------------------------|
+| `pnpm run setup`                                  | Assistant interactif de configuration              |
+| `pnpm run validate-env`                           | Contrôle les variables `.env`                      |
+| `pnpm run validate-env -- --ping`                 | Ping chaque API (Supabase, Shopify, Meta…)         |
+| `pnpm run db:setup`                               | Applique le schéma Supabase                        |
+| `pnpm run dashboard`                              | Lance le dashboard Next.js (`http://localhost:3000`) |
+| `pnpm run remotion:studio`                        | Ouvre Remotion Studio pour preview                 |
+| `pnpm run workflow:full -- --theme-id=<uuid>`     | Pipeline complet sur une niche                     |
+| `pnpm run workflow:research -- --theme-id=<uuid>` | Étape 1 : recherche produit                        |
+| `pnpm run workflow:build-store -- --theme-id=<uuid>` | Étape 2 : branding + boutique + copy            |
+| `pnpm run workflow:generate-creatives -- --store-id=<uuid>` | Étape 3 : variations + rendus vidéo      |
+| `pnpm run workflow:launch-ads -- --store-id=<uuid>` | Étape 4 : campagnes (dry-run par défaut)         |
+| `pnpm run workflow:analyze`                       | Étape 5 : pull métriques + kill-switch             |
+| `pnpm run scrape -- --url="..."`                  | Scrape un produit AliExpress                       |
 
-## Base de données Supabase (étape 2)
+> 📖 Pipeline complet expliqué : [`docs/workflow.md`](./docs/workflow.md).
+
+## Documentation détaillée
+
+| Document                                          | Contenu                                            |
+|---------------------------------------------------|----------------------------------------------------|
+| [`docs/setup-apis.md`](./docs/setup-apis.md)      | Récupération de chaque clé API (pas-à-pas)         |
+| [`docs/workflow.md`](./docs/workflow.md)          | Pipeline thème → recherche → boutique → créas → pub → analyse |
+| [`docs/agents.md`](./docs/agents.md)              | Référence des 8 agents (rôle, entrées, sorties, stack) |
+| [`TROUBLESHOOTING.md`](./TROUBLESHOOTING.md)      | Problèmes courants et solutions, par domaine       |
+| [`modules/base-de-donnees/README.md`](./modules/base-de-donnees/README.md) | Schéma SQL, migrations, ENUMs, vues |
+
+## Base de données Supabase
 
 Le schéma complet (11 tables + 12 ENUMs + vue d'agrégat + seed) est dans
 `modules/base-de-donnees/`. Voir le [README du module](./modules/base-de-donnees/README.md)
@@ -98,16 +162,15 @@ La migration est **idempotente** (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`,
 
 ## Récupération des clés API
 
-Documentation pas-à-pas par API (étape 8 : captures annotées pour chaque registrar).
+Procédure complète et annotée dans [`docs/setup-apis.md`](./docs/setup-apis.md). Liens rapides :
 
-Pour l'instant, pointeurs rapides :
-- **Anthropic** : https://console.anthropic.com/settings/keys
-- **Supabase** : https://supabase.com/dashboard → Settings > API
-- **Shopify** : votre boutique → Settings > Apps and sales channels > Develop apps
-- **Meta** : https://developers.facebook.com/apps/ (app Business)
-- **TikTok** : https://ads.tiktok.com/marketing_api/homepage (approbation lente)
-- **Pexels** : https://www.pexels.com/api/new/
-- **ElevenLabs** : https://elevenlabs.io/app/settings/api-keys
+- **Anthropic** — https://console.anthropic.com/settings/keys
+- **Supabase** — https://supabase.com/dashboard → Settings > API
+- **Shopify** — votre boutique → Settings > Apps > Develop apps
+- **Meta** — https://developers.facebook.com/apps/ (app Business)
+- **TikTok** — https://ads.tiktok.com/marketing_api/homepage (validation 2–6 sem.)
+- **Pexels** — https://www.pexels.com/api/new/
+- **ElevenLabs** — https://elevenlabs.io/app/settings/api-keys
 
 ## Avertissements légaux
 
@@ -125,9 +188,9 @@ Pour l'instant, pointeurs rapides :
 - [x] **Étape 5** — Services API (Anthropic, Supabase, Shopify, Meta, TikTok, ElevenLabs, Pexels) + scraper AliExpress + utilitaires HTTP/retry
 - [x] **Étape 6** — Scripts d'orchestration (research / build-store / generate-creatives / launch-ads / analyze / full) + setup interactif + validate-env avec pings
 - [x] **Étape 7** — Dashboard Next.js complet (8 pages + server actions Supabase)
-- [ ] **Étape 8** — Documentation finale + TROUBLESHOOTING.md
+- [x] **Étape 8** — Documentation finale (`docs/setup-apis.md`, `docs/workflow.md`, `docs/agents.md`) + `TROUBLESHOOTING.md` détaillé
 
-**Post-MVP** : SaaS multi-tenants, cache Redis, queues BullMQ, Sentry, CI GitHub Actions, auto-deploy Vercel.
+**Post-MVP** : SaaS multi-tenants, cache Redis, queues BullMQ, Sentry, CI GitHub Actions, auto-deploy Vercel, page `/themes/new` et `/stores/new` côté dashboard, support Shopify multi-store par compte.
 
 ## Licence
 

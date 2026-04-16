@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+apps/remotion/out/
+
+# Remotion
+apps/remotion/.remotion/
+
+# Environment variables (JAMAIS committer)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+!.env.example
+
+# Caches
+.cache/
+.turbo/
+.vercel/
+.eslintcache
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# Tests
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/*
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+
+# Données exportées (temporaires, générées, sensibles)
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Exports Supabase/backups
+*.sql.backup
+*.dump
+
+# Credentials accidentels (double filet)
+**/credentials*.json
+**/service-account*.json
+**/*.pem
+**/*.key

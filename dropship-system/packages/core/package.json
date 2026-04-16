@@ -1,0 +1,34 @@
+{
+  "name": "@dropship/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Logique métier partagée : agents TS, clients API (Shopify/Meta/TikTok/Supabase/Anthropic/ElevenLabs/Pexels), scrapers, types.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./agents": "./src/agents/index.ts",
+    "./services": "./src/services/index.ts",
+    "./scrapers": "./src/scrapers/index.ts",
+    "./types": "./src/types/index.ts",
+    "./utils": "./src/utils/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@supabase/supabase-js": "^2.47.10",
+    "cheerio": "^1.0.0",
+    "pino": "^9.5.0",
+    "undici": "^6.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

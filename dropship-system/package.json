@@ -1,0 +1,41 @@
+{
+  "name": "dropship-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Système multi-agents automatisé pour le dropshipping e-commerce (recherche produit → branding → boutique Shopify → créas Remotion → pub TikTok/Meta → analytics).",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "setup": "tsx scripts/setup.ts",
+    "validate-env": "tsx scripts/validate-env.ts",
+    "dashboard": "pnpm --filter @dropship/dashboard dev",
+    "dashboard:build": "pnpm --filter @dropship/dashboard build",
+    "dashboard:start": "pnpm --filter @dropship/dashboard start",
+    "remotion:studio": "pnpm --filter @dropship/remotion studio",
+    "remotion:render": "pnpm --filter @dropship/remotion render",
+    "workflow:full": "tsx scripts/workflow/full.ts",
+    "workflow:research": "tsx scripts/workflow/research.ts",
+    "workflow:build": "tsx scripts/workflow/build-store.ts",
+    "workflow:creatives": "tsx scripts/workflow/generate-creatives.ts",
+    "workflow:launch": "tsx scripts/workflow/launch-ads.ts",
+    "workflow:analyze": "tsx scripts/workflow/analyze.ts",
+    "scrape": "tsx scripts/scrape-aliexpress.ts",
+    "db:setup": "tsx scripts/db-setup.ts",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rimraf \"**/node_modules\" \"**/.next\" \"**/dist\" \"apps/remotion/out\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "cross-env": "^7.0.3",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

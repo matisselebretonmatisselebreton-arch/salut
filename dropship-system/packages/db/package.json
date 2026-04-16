@@ -1,0 +1,22 @@
+{
+  "name": "@dropship/db",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Schéma Supabase + migrations + helpers (typés) pour la base de données du système.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./schema.sql"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

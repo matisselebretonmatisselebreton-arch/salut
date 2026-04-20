@@ -213,6 +213,62 @@ export interface ScoreOutput {
   };
 }
 
+/**
+ * Recherche AliExpress par mots-clés → renvoie une liste d'URLs produit.
+ */
+const SEARCH_URL = "https://fr.aliexpress.com/wholesale";
+const PRODUCT_LINK_RE = /\/item\/(\d+)\.html/g;
+
+export async function searchAliExpress(
+  query: string,
+  options: ScrapeOptions & { maxResults?: number } = {},
+): Promise<string[]> {
+  const { userAgent = DEFAULT_USER_AGENT, timeoutMs = 20_000, maxResults = 10 } = options;
+  const searchUrl = `${SEARCH_URL}?SearchText=${encodeURIComponent(query)}`;
+
+  log.info({ query, searchUrl }, "search AliExpress");
+
+  const html = await withRetry(
+    async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(searchUrl, {
+          headers: {
+            "user-agent": userAgent,
+            "accept-language": "fr-FR,fr;q=0.9,en;q=0.8",
+          },
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          const err: Error & { status?: number } = new Error(
+            `AliExpress search HTTP ${res.status}`,
+          );
+          err.status = res.status;
+          throw err;
+        }
+        return res.text();
+      } finally {
+        clearTimeout(timeout);
+      }
+    },
+    { shouldRetry: isRetryableHttpError, maxAttempts: 3 },
+  );
+
+  const ids = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = PRODUCT_LINK_RE.exec(html)) !== null) {
+    if (match[1]) ids.add(match[1]);
+  }
+
+  const urls = Array.from(ids)
+    .slice(0, maxResults)
+    .map((id) => `https://fr.aliexpress.com/item/${id}.html`);
+
+  log.info({ query, found: urls.length }, "search results");
+  return urls;
+}
+
 export function scoreCandidate(input: ScoreInput): ScoreOutput {
   // Marge (30 %)
   const margin =

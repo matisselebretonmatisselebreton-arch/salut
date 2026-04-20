@@ -12,9 +12,11 @@ import { readFileSync } from "node:fs";
 import {
   scoreCandidate,
   scrapeAliExpressProduct,
+  searchAliExpress,
 } from "../extracteurs/aliexpress.js";
+import { createAnthropicService } from "../services/anthropic.js";
 import { getSupabase, withAgentLogging } from "../services/supabase.js";
-import { agentLog, AgentError, envNumber } from "./common.js";
+import { agentLog, AgentError, envNumber, extractJsonBlock } from "./common.js";
 
 export interface ProductResearchInput {
   /** Nom OU id du thème (au moins l'un des deux). */
@@ -77,15 +79,38 @@ async function resolveTheme(input: ProductResearchInput): Promise<ResolvedTheme>
   return data as ResolvedTheme;
 }
 
+async function discoverUrls(themeName: string, themeDesc: string | null, max: number): Promise<string[]> {
+  const anthropic = createAnthropicService();
+  const prompt = `Tu es un expert en dropshipping. Pour la niche "${themeName}"${themeDesc ? ` (${themeDesc})` : ""}, génère ${Math.min(max, 5)} mots-clés de recherche AliExpress pour trouver des produits gagnants (forte marge, tendance, faciles à expédier).
+
+Renvoie UNIQUEMENT un JSON valide, sans markdown :
+{"keywords": ["keyword1", "keyword2", ...]}`;
+
+  const raw = await anthropic.ask(prompt, { tier: "default", temperature: 0.3 });
+  const parsed = extractJsonBlock<{ keywords: string[] }>(raw);
+  const keywords = parsed?.keywords ?? [themeName];
+
+  agentLog.info({ keywords }, "auto-discovery keywords");
+
+  const allUrls: string[] = [];
+  const perKeyword = Math.ceil(max / keywords.length);
+  for (const kw of keywords) {
+    try {
+      const urls = await searchAliExpress(kw, { maxResults: perKeyword });
+      allUrls.push(...urls);
+    } catch (err) {
+      agentLog.warn({ keyword: kw, error: err instanceof Error ? err.message : String(err) }, "search failed");
+    }
+  }
+
+  const unique = [...new Set(allUrls)].slice(0, max);
+  agentLog.info({ total: unique.length }, "URLs discovered");
+  return unique;
+}
+
 export async function runProductResearch(
   input: ProductResearchInput,
 ): Promise<ProductResearchOutput> {
-  if (!input.urls || input.urls.length === 0) {
-    throw new AgentError(
-      "product-research",
-      "Aucune URL fournie. Passer --urls=… ou --urls-file=…",
-    );
-  }
   const minScore = input.minScore ?? envNumber("MIN_SCORE_TO_PERSIST", 60);
   const maxResults = input.maxResults ?? envNumber("MAX_CANDIDATES_PER_THEME", 30);
   const multiplier = input.priceSellMultiplier ?? 2.5;
@@ -96,6 +121,20 @@ export async function runProductResearch(
     input,
     run: async () => {
       const theme = await resolveTheme(input);
+
+      if (!input.urls || input.urls.length === 0) {
+        const { data: themeRow } = await getSupabase()
+          .from("themes")
+          .select("description")
+          .eq("id", theme.id)
+          .single();
+        const desc = (themeRow as { description: string | null } | null)?.description ?? null;
+        input.urls = await discoverUrls(theme.name, desc, maxResults);
+        if (input.urls.length === 0) {
+          throw new AgentError("product-research", "Aucun produit trouvé automatiquement pour ce thème.");
+        }
+      }
+
       agentLog.info({ theme: theme.name, urls: input.urls.length }, "research start");
 
       const scraped: Array<{

@@ -40,8 +40,7 @@ async function main(): Promise<void> {
   }
   const urls = urlsFile ? readUrlsFile(urlsFile) : urlsInline;
   if (urls.length === 0) {
-    console.error(`${C.red}❌  --urls=a,b,c ou --urls-file=path requis${C.reset}\n`);
-    process.exit(1);
+    console.log(`${C.cyan}🔍  Aucune URL fournie → découverte automatique via Claude + AliExpress...${C.reset}\n`);
   }
 
   const result = await runProductResearch({

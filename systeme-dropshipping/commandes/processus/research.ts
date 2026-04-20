@@ -9,6 +9,7 @@
  *   pnpm run workflow:research -- --theme="sport" --urls="url1,url2"
  */
 import { readUrlsFile, runProductResearch } from "../../modules/commun/src/agents/index.js";
+import { getSupabase } from "../../modules/commun/src/services/supabase.js";
 import { loadEnv } from "../../modules/commun/src/utilitaires/env.js";
 import {
   C,
@@ -73,12 +74,7 @@ const DEMO_PRODUCTS: Record<string, DemoProduct[]> = {
 };
 
 async function runDemo(resolvedThemeId: string, themeName: string): Promise<void> {
-  const { createClient } = await import("@supabase/supabase-js");
-  const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } },
-  );
+  const supabase = getSupabase();
 
   const products = DEMO_PRODUCTS[themeName.toLowerCase()] ?? DEMO_PRODUCTS["tech"]!;
   console.log(`${C.cyan}📦  Mode démo → insertion de ${products.length} produits exemples pour "${themeName}"...${C.reset}\n`);
@@ -136,12 +132,7 @@ async function main(): Promise<void> {
   }
 
   if (demo) {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { persistSession: false } },
-    );
+    const supabase = getSupabase();
     let resolvedId = themeId;
     let resolvedName = theme ?? "tech";
     if (themeId) {

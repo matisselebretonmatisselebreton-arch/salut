@@ -57,6 +57,11 @@ export function envNumber(key: string, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+export function hasAnthropicCredits(): boolean {
+  return process.env.ANTHROPIC_API_KEY !== undefined
+    && process.env.ANTHROPIC_NO_API !== "true";
+}
+
 export class AgentError extends Error {
   constructor(
     public agentName: string,

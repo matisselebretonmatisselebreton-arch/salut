@@ -7,7 +7,7 @@
 import { createAnthropicService } from "../services/anthropic.js";
 import { getSupabase, withAgentLogging } from "../services/supabase.js";
 import type { ColorPalette } from "../types/index.js";
-import { agentLog, AgentError, extractJsonBlock } from "./common.js";
+import { agentLog, AgentError, extractJsonBlock, hasAnthropicCredits } from "./common.js";
 
 export interface BrandingInput {
   storeId: string;
@@ -95,26 +95,47 @@ export async function runBranding(input: BrandingInput): Promise<BrandingOutput>
         return { brandingId: e.id, brandName: e.brand_name, created: false };
       }
 
-      const ai = createAnthropicService();
-      const raw = await ai.chat(
-        [
-          {
-            role: "user",
-            content: buildUserPrompt({
-              storeName: (store as { name: string }).name,
-              themeName: (theme as { name: string } | null)?.name ?? "(unknown)",
-              themeDescription: (theme as { description: string | null } | null)?.description ?? null,
-              language: (store as { language: string }).language,
-              market: (store as { market: string }).market,
-            }),
-          },
-        ],
-        { tier: "creative", system: SYSTEM_PROMPT, maxTokens: 2000 },
-      );
+      const themeName = (theme as { name: string } | null)?.name ?? "store";
+      const storeLanguage = (store as { language: string }).language;
+      const storeMarket = (store as { market: string }).market;
 
-      const payload = extractJsonBlock<ClaudeBrandingPayload>(raw);
-      if (!payload) {
-        throw new AgentError("branding", "Réponse Claude non parsable en JSON");
+      let payload: ClaudeBrandingPayload;
+
+      if (hasAnthropicCredits()) {
+        const ai = createAnthropicService();
+        const raw = await ai.chat(
+          [
+            {
+              role: "user",
+              content: buildUserPrompt({
+                storeName: (store as { name: string }).name,
+                themeName,
+                themeDescription: (theme as { description: string | null } | null)?.description ?? null,
+                language: storeLanguage,
+                market: storeMarket,
+              }),
+            },
+          ],
+          { tier: "creative", system: SYSTEM_PROMPT, maxTokens: 2000 },
+        );
+        const parsed = extractJsonBlock<ClaudeBrandingPayload>(raw);
+        if (!parsed) {
+          throw new AgentError("branding", "Réponse Claude non parsable en JSON");
+        }
+        payload = parsed;
+      } else {
+        agentLog.info("Mode template (sans API Anthropic)");
+        const slug = themeName.slice(0, 8).replace(/\s/g, "");
+        payload = {
+          brand_name: slug.charAt(0).toUpperCase() + slug.slice(1) + "ify",
+          domain_suggestions: [`${slug}shop.com`, `${slug}store.com`, `my${slug}.com`, `get${slug}.com`, `${slug}.fr`],
+          color_palette: { primary: "#2563EB", secondary: "#1E40AF", accent: "#F59E0B", background: "#FFFFFF", foreground: "#111827" } as ColorPalette,
+          font_primary: "Inter",
+          font_secondary: "Playfair Display",
+          storytelling: storeLanguage === "fr"
+            ? `Bienvenue chez ${slug.charAt(0).toUpperCase() + slug.slice(1)}ify. Nous sélectionnons les meilleurs produits ${themeName} pour vous. Notre mission : qualité, prix juste, livraison rapide. Rejoignez notre communauté de passionnés.`
+            : `Welcome to ${slug.charAt(0).toUpperCase() + slug.slice(1)}ify. We curate the best ${themeName} products for you. Our mission: quality, fair prices, fast shipping. Join our community.`,
+        };
       }
 
       const upsertPayload = {

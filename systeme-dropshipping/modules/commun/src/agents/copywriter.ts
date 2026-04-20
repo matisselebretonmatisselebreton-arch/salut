@@ -5,7 +5,7 @@ import type { EmailSequence, FaqEntry, Locale } from "../types/index.js";
 
 import { createAnthropicService } from "../services/anthropic.js";
 import { getSupabase, withAgentLogging } from "../services/supabase.js";
-import { agentLog, AgentError, extractJsonBlock } from "./common.js";
+import { agentLog, AgentError, extractJsonBlock, hasAnthropicCredits } from "./common.js";
 
 export interface CopywriterInput {
   productId: string;
@@ -96,7 +96,6 @@ export async function runCopywriter(
         .map((l) => l.trim()) as Locale[];
       const languages = input.languages ?? supportedLocales;
 
-      const ai = createAnthropicService();
       const generated: CopywriterOutput["generated"] = [];
 
       for (const language of languages) {
@@ -116,23 +115,71 @@ export async function runCopywriter(
           continue;
         }
 
-        const raw = await ai.chat(
-          [
-            {
-              role: "user",
-              content: buildUserPrompt({
-                productName: p.name,
-                productDescription: p.description,
-                brandTone: tone,
-                language,
-              }),
+        let payload: ClaudeCopyPayload;
+
+        if (hasAnthropicCredits()) {
+          const ai = createAnthropicService();
+          const raw = await ai.chat(
+            [
+              {
+                role: "user",
+                content: buildUserPrompt({
+                  productName: p.name,
+                  productDescription: p.description,
+                  brandTone: tone,
+                  language,
+                }),
+              },
+            ],
+            { tier: "creative", system: SYSTEM_PROMPT, maxTokens: 4000 },
+          );
+          const parsed = extractJsonBlock<ClaudeCopyPayload>(raw);
+          if (!parsed) {
+            throw new AgentError("copywriter", `JSON invalide pour ${language}`);
+          }
+          payload = parsed;
+        } else {
+          agentLog.info({ language }, "Mode template (sans API Anthropic)");
+          const isFr = language === "fr";
+          payload = {
+            title: isFr ? `${p.name} — Qualité premium, livraison rapide` : `${p.name} — Premium quality, fast shipping`,
+            description: isFr
+              ? `Découvrez ${p.name}. ${p.description ?? "Un produit soigneusement sélectionné pour vous."}  Commandez maintenant et profitez de notre garantie satisfaction.`
+              : `Discover ${p.name}. ${p.description ?? "A carefully selected product for you."} Order now and enjoy our satisfaction guarantee.`,
+            bullet_points: isFr
+              ? ["Qualité premium garantie", "Livraison rapide", "Satisfait ou remboursé", "Service client réactif", "Design moderne"]
+              : ["Premium quality guaranteed", "Fast shipping", "Money-back guarantee", "Responsive customer service", "Modern design"],
+            faq: isFr
+              ? [
+                  { question: "Quels sont les délais de livraison ?", answer: "7 à 15 jours ouvrés selon votre localisation." },
+                  { question: "Puis-je retourner le produit ?", answer: "Oui, retour gratuit sous 14 jours." },
+                  { question: "Le produit est-il garanti ?", answer: "Oui, garantie satisfaction 30 jours." },
+                  { question: "Comment contacter le service client ?", answer: "Par email, réponse sous 24h." },
+                  { question: "Quels modes de paiement acceptez-vous ?", answer: "CB, PayPal, Apple Pay, Google Pay." },
+                  { question: "Le produit est-il conforme à la description ?", answer: "Oui, photos et descriptions fidèles au produit réel." },
+                ]
+              : [
+                  { question: "What are the shipping times?", answer: "7 to 15 business days depending on location." },
+                  { question: "Can I return the product?", answer: "Yes, free returns within 14 days." },
+                  { question: "Is the product guaranteed?", answer: "Yes, 30-day satisfaction guarantee." },
+                  { question: "How do I contact support?", answer: "By email, response within 24h." },
+                  { question: "What payment methods?", answer: "Credit card, PayPal, Apple Pay, Google Pay." },
+                  { question: "Is the product as described?", answer: "Yes, photos and descriptions match the real product." },
+                ],
+            hooks: isFr
+              ? ["Ce produit change tout", "Vous n'allez pas en revenir", "Enfin disponible en France", "Le produit viral du moment", "Arrêtez de scroller", "Regardez ce que j'ai trouvé", "Testé et approuvé", "Le secret des pros"]
+              : ["This product changes everything", "You won't believe this", "Finally available", "The viral product of the moment", "Stop scrolling", "Look what I found", "Tested and approved", "The secret of pros"],
+            email_sequences: {
+              abandon_cart: [
+                { subject: isFr ? "Vous avez oublié quelque chose..." : "You forgot something...", body: isFr ? "Votre panier vous attend !" : "Your cart is waiting!", send_after_hours: 1 },
+                { subject: isFr ? "Dernière chance !" : "Last chance!", body: isFr ? "Finalisez votre commande avant rupture." : "Complete your order before it's gone.", send_after_hours: 24 },
+              ],
+              post_purchase: [
+                { subject: isFr ? "Merci pour votre commande !" : "Thank you for your order!", body: isFr ? "Votre commande est en préparation." : "Your order is being prepared.", send_after_hours: 1 },
+                { subject: isFr ? "Votre colis arrive bientôt" : "Your package is on its way", body: isFr ? "Suivez votre livraison." : "Track your delivery.", send_after_hours: 72 },
+              ],
             },
-          ],
-          { tier: "creative", system: SYSTEM_PROMPT, maxTokens: 4000 },
-        );
-        const payload = extractJsonBlock<ClaudeCopyPayload>(raw);
-        if (!payload) {
-          throw new AgentError("copywriter", `JSON invalide pour ${language}`);
+          };
         }
 
         const { data, error } = await supabase

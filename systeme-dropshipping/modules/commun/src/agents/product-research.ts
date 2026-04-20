@@ -14,9 +14,8 @@ import {
   scrapeAliExpressProduct,
   searchAliExpress,
 } from "../extracteurs/aliexpress.js";
-import { createAnthropicService } from "../services/anthropic.js";
 import { getSupabase, withAgentLogging } from "../services/supabase.js";
-import { agentLog, AgentError, envNumber, extractJsonBlock } from "./common.js";
+import { agentLog, AgentError, envNumber } from "./common.js";
 
 export interface ProductResearchInput {
   /** Nom OU id du thème (au moins l'un des deux). */
@@ -79,18 +78,34 @@ async function resolveTheme(input: ProductResearchInput): Promise<ResolvedTheme>
   return data as ResolvedTheme;
 }
 
+const KEYWORD_MAP: Record<string, string[]> = {
+  sport: ["fitness gadget", "yoga accessories", "resistance bands", "sport watch", "outdoor camping gear"],
+  cuisine: ["kitchen gadget", "cooking tools", "silicone utensils", "food storage", "kitchen organizer"],
+  animaux: ["pet accessories", "dog toys", "cat bed", "pet grooming", "pet feeding bowl"],
+  beauty: ["skincare tool", "makeup organizer", "beauty gadget", "hair accessories", "LED face mask"],
+  tech: ["phone accessories", "wireless earbuds", "USB gadget", "LED desk lamp", "smart home gadget"],
+};
+
+function generateKeywords(themeName: string, themeDesc: string | null): string[] {
+  const name = themeName.toLowerCase();
+  if (KEYWORD_MAP[name]) return KEYWORD_MAP[name]!;
+
+  const keywords = [name];
+  if (themeDesc) {
+    const words = themeDesc
+      .toLowerCase()
+      .replace(/[^a-zàâäéèêëïîôùûüÿçœæ\s-]/g, "")
+      .split(/\s+/)
+      .filter((w) => w.length > 3);
+    const unique = [...new Set(words)].slice(0, 4);
+    keywords.push(...unique.map((w) => `${w} gadget`));
+  }
+  return keywords.slice(0, 5);
+}
+
 async function discoverUrls(themeName: string, themeDesc: string | null, max: number): Promise<string[]> {
-  const anthropic = createAnthropicService();
-  const prompt = `Tu es un expert en dropshipping. Pour la niche "${themeName}"${themeDesc ? ` (${themeDesc})` : ""}, génère ${Math.min(max, 5)} mots-clés de recherche AliExpress pour trouver des produits gagnants (forte marge, tendance, faciles à expédier).
-
-Renvoie UNIQUEMENT un JSON valide, sans markdown :
-{"keywords": ["keyword1", "keyword2", ...]}`;
-
-  const raw = await anthropic.ask(prompt, { tier: "default", temperature: 0.3 });
-  const parsed = extractJsonBlock<{ keywords: string[] }>(raw);
-  const keywords = parsed?.keywords ?? [themeName];
-
-  agentLog.info({ keywords }, "auto-discovery keywords");
+  const keywords = generateKeywords(themeName, themeDesc);
+  agentLog.info({ keywords }, "auto-discovery keywords (template mode)");
 
   const allUrls: string[] = [];
   const perKeyword = Math.ceil(max / keywords.length);

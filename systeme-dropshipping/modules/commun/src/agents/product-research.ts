@@ -126,7 +126,7 @@ async function discoverUrls(themeName: string, themeDesc: string | null, max: nu
 export async function runProductResearch(
   input: ProductResearchInput,
 ): Promise<ProductResearchOutput> {
-  const minScore = input.minScore ?? envNumber("MIN_SCORE_TO_PERSIST", 60);
+  const minScore = input.minScore ?? envNumber("MIN_SCORE_TO_PERSIST", 5);
   const maxResults = input.maxResults ?? envNumber("MAX_CANDIDATES_PER_THEME", 30);
   const multiplier = input.priceSellMultiplier ?? 2.5;
 

@@ -25,6 +25,11 @@ const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
   "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
 
+function randomDelay(minMs: number, maxMs: number): Promise<void> {
+  const ms = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export interface AliExpressProduct {
   url: string;
   productId: string | null;
@@ -133,6 +138,8 @@ export async function scrapeAliExpressProduct(
 
   log.debug({ url }, "scrape AliExpress");
 
+  await randomDelay(2000, 5000);
+
   const html = await withRetry(
     async () => {
       const controller = new AbortController();
@@ -227,6 +234,8 @@ export async function searchAliExpress(
   const searchUrl = `${SEARCH_URL}?SearchText=${encodeURIComponent(query)}`;
 
   log.info({ query, searchUrl }, "search AliExpress");
+
+  await randomDelay(3000, 6000);
 
   const html = await withRetry(
     async () => {

@@ -152,3 +152,204 @@ Ces anomalies sont étudiées par la **finance comportementale** (Kahneman, Shil
 - Le spread bid-ask est le coût implicite de transaction ; il reflète la liquidité du titre.
 - L'EMH distingue trois niveaux : les formes semi-forte et forte sont largement débattues.
 - Les anomalies de marché (taille, valeur, momentum) remettent en cause l'efficience stricte.
+
+---
+
+## Approfondissement théorique
+
+### Microstructure des marchés : la théorie de l'information adverse
+
+La **microstructure financière** étudie les mécanismes de formation des prix et les coûts de transaction. Le **modèle de Glosten & Milgrom (1985)** décompose le spread bid-ask en trois composantes :
+
+```
+Spread = Coûts d'inventaire + Coûts de traitement + Composante informationnelle
+```
+
+La **composante informationnelle** reflète l'asymétrie d'information entre les teneurs de marché (market makers) et les investisseurs informés. Un teneur de marché qui cote face à un investisseur disposant d'information privée (insider) prend un risque — il augmente donc son spread pour se protéger.
+
+**Modèle de Kyle (1985)** : un investisseur informé trade progressivement pour ne pas révéler son information au marché (trading camouflé dans le flux d'ordres aléatoires). L'**impact de marché** est la variation de prix causée par une transaction.
+
+### Fragmentation des marchés et MIF II
+
+La directive **MIF II** (2018) a profondément restructuré les marchés européens :
+- **Obligation de transparence pré-trade** : publication des carnets d'ordres.
+- **Obligation de transparence post-trade** : publication des transactions.
+- **Systematic Internalisers (SI)** : courtiers qui matchent les ordres de leurs clients en interne.
+- **Dark pools** (MTF sans pré-transparence) : limités à 4 % des échanges par action et 8 % au total.
+
+La fragmentation a réduit les coûts de transaction mais a complexifié la recherche du meilleur prix (**Best Execution**).
+
+### Finance comportementale et inefficience des marchés
+
+**Kahneman & Tversky (1979)** montrent que les investisseurs ne sont pas rationnels. La **théorie des perspectives** (Prospect Theory) décrit des biais cognitifs documentés :
+
+| Biais | Description | Effet sur les marchés |
+|-------|-------------|----------------------|
+| **Excès de confiance** | Les investisseurs surestiment leur précision | Sur-réaction aux informations privées |
+| **Biais de représentativité** | Extrapoler les tendances récentes | Momentum et retournements |
+| **Aversion aux pertes** | Souffrir 2× plus d'une perte que du plaisir d'un gain équivalent | Disposition effect (garder les perdants) |
+| **Ancrage** | S'ancrer sur un prix de référence (cours d'achat) | Résistances/supports psychologiques |
+| **Biais de confirmation** | Ignorer les informations contredisant ses positions | Bulles spéculatives |
+
+**Robert Shiller** (Prix Nobel 2013) a documenté l'**excès de volatilité** : les prix des actions fluctuent bien plus que ne le justifient les variations des dividendes fondamentaux → les marchés ne sont pas pleinement efficients.
+
+---
+
+## Exemples numériques supplémentaires
+
+### Exemple 1 — Calcul du coût implicite de transaction
+
+Un investisseur achète 1 000 actions XYZ au cours de 50,20 € (meilleur ask). La veille, la cotation était : bid 50,15 € / ask 50,20 €.
+
+```
+Spread = 50,20 - 50,15 = 0,05 €
+Point médian (mid-price) = (50,20 + 50,15) / 2 = 50,175 €
+
+Coût de transaction implicite = Cours exécuté - Mid-price
+= 50,20 - 50,175 = 0,025 € par action
+
+Coût total sur 1 000 actions = 0,025 × 1 000 = 25 €
+Coût en % de la transaction = 25 / (50,20 × 1 000) = 0,05 % (5 bp)
+```
+
+Sur un portefeuille de 10 M€ avec 12 rotations par an et des spreads moyens de 10 bp, le coût annuel de transaction est de **10 M€ × 10 bp × 12 = 120 000 €**.
+
+### Exemple 2 — Test d'efficience de forme faible
+
+Un économiste teste si les rendements passés prédisent les rendements futurs sur le CAC 40. Il calcule l'autocorrélation des rendements journaliers sur 10 ans :
+
+```
+ρ(1) = Corr(Rₜ, Rₜ₋₁) = -0,03 (non significatif, p = 0,42)
+ρ(5) = Corr(Rₜ, Rₜ₋₅) = +0,02 (non significatif, p = 0,71)
+```
+
+Conclusion : aucune autocorrélation significative → cohérent avec l'efficience de forme faible.
+
+Mais sur données hebdomadaires d'actions individuelles :
+
+```
+ρ(1 semaine) = +0,08 (p = 0,02) → momentum à court terme significatif
+```
+
+Anomalie de momentum → l'efficience de forme faible n'est pas parfaite pour les actions individuelles.
+
+### Exemple 3 — Liquidité et coût d'impact de marché
+
+Un gérant veut vendre 100 000 actions d'une société dont le volume quotidien moyen est de 200 000 titres. Participation = 50 % du volume journalier.
+
+Le modèle d'impact de marché de **Almgren & Chriss (2001)** estime :
+
+```
+Impact linéaire ≈ η × (Q / V_journalier)
+η (coefficient d'impact) ≈ 0,1 pour les mid-caps
+
+Impact ≈ 0,1 × (100 000 / 200 000) = 5 %
+```
+
+Si le cours est 20 €, l'impact de marché serait de ~1 € par action, soit 100 000 € de coût de transaction supplémentaire. Le gérant devra fragmenter l'ordre sur plusieurs jours.
+
+---
+
+## Applications professionnelles
+
+### Asset Management : TCA (Transaction Cost Analysis)
+
+Les gérants d'actifs mesurent systématiquement la qualité d'exécution par la **TCA** :
+
+- **Mesure du slippage** : écart entre le prix décisionnel et le prix d'exécution moyen.
+- **VWAP benchmark** : comparaison du prix d'exécution au VWAP du jour.
+- **Implementation shortfall** : mesure le "coût" total de l'intention de trading à l'exécution finale.
+
+```
+IS = (Cours final - Cours décision) × Qté non exécutée   ← coût d'opportunité
+   + (Cours exécution - Cours décision) × Qté exécutée   ← coût de marché
+```
+
+### Banque d'investissement : Tenue de marché (Market Making)
+
+Un teneur de marché doit gérer :
+1. **Le risque d'inventaire** : position accumulée due aux flux clients → hedger continuellement.
+2. **Le PnL bid-ask** : chaque transaction lui rapporte le spread (mais le risque de contrepartie informée peut effacer ce gain).
+3. **Les obligations réglementaires** : engagement de continuité de cotation avec des fourchettes maximales définies par Euronext.
+
+**Exemple BNP Paribas** : teneur de marché sur les obligations OAT, cote en permanence avec une fourchette < 1 centime. Gère un inventaire de plusieurs centaines de millions et hedge le risque de taux via des futures sur Bund.
+
+### Régulation : Surveillance de la manipulation de marché
+
+L'**AMF** surveille les comportements abusifs grâce à des algorithmes de détection :
+- **Spoofing** : placement d'ordres jamais destinés à être exécutés → retraits massifs juste avant l'exécution.
+- **Painting the tape** : transactions entre entités liées pour créer un volume fictif.
+- **Front running** : exécuter ses propres ordres avant un ordre client important.
+
+---
+
+## Erreurs fréquentes et pièges
+
+| Erreur | Description | Remède |
+|--------|-------------|--------|
+| **Confondre EV et capitalisation** | La capitalisation boursière n'inclut pas la dette | Toujours utiliser EV pour les comparaisons |
+| **Interpréter un faible spread comme signe de liquidité** | Un spread faible peut masquer une profondeur insuffisante | Analyser aussi la profondeur du carnet d'ordres |
+| **Croire à l'efficience forte** | Des insiders ont légalement accès à des informations avant les autres (ex. avant publication des résultats) | Réglementation MAR/MAD et liste d'initiés |
+| **Ignorer la liquidité lors de l'investissement** | Un actif peu liquide peut être difficile à céder sans impact majeur sur le prix | Intégrer une "prime d'illiquidité" dans le rendement exigé |
+| **Tester l'EMH sur données passées** | Les anomalies disparaissent une fois documentées (arbitrage) — problème du "data mining" | Out-of-sample testing, prudence dans l'interprétation des backtest |
+
+---
+
+## Exercices supplémentaires
+
+### Exercice 1
+Un carnet d'ordres affiche : bid 100,50 € (500 titres) / ask 100,60 € (300 titres). Un institutionnel place un ordre de vente au marché de 700 titres. À quel prix s'exécutent les 700 titres ? Quel est le prix moyen d'exécution ?
+
+> **Correction** :
+> Les 300 premiers titres s'exécutent à 100,50 € (seule bid disponible à ce niveau).
+> Les 400 titres restants s'exécutent au niveau bid suivant (non affiché). Pour cet exercice, supposons bid 2 = 100,40 € (400 titres).
+>
+> Prix moyen = (300 × 100,50 + 400 × 100,40) / 700
+> = (30 150 + 40 160) / 700 = 70 310 / 700 = **100,44 €**
+> Impact de marché = 100,50 - 100,44 = **0,06 €** (coût d'exécution de l'ordre de 700 titres)
+
+### Exercice 2
+Le S&P 500 affiche un rendement annualisé de 10 % sur 20 ans. La prime de risque de marché historique est de 6 % et rf = 2 %. Un fonds actif a réalisé 11,5 % annualisé avec un bêta de 1,2. Calculez l'alpha annualisé. Ce fonds a-t-il créé de la valeur au sens du MEDAF ?
+
+> **Correction** :
+> Rendement MEDAF = 2 % + 1,2 × 6 % = 2 % + 7,2 % = **9,2 %**
+> Alpha = 11,5 % - 9,2 % = **+2,3 %** par an
+> OUI, le fonds a surperformé son niveau de risque systématique de 2,3 % / an.
+> Sur 20 ans, un investissement de 100 000 € aurait donné :
+> - Fonds actif : 100 000 × (1,115)^20 = **811 000 €**
+> - Indice ajusté (9,2 %) : 100 000 × (1,092)^20 = **585 000 €**
+> Survaleur générée : **226 000 €**
+
+### Exercice 3
+Décrivez les mécanismes par lesquels la MIF II a modifié la structure des marchés actions européens. Donnez trois avantages et deux inconvénients de la fragmentation des marchés.
+
+> **Correction** :
+>
+> **Modifications apportées par MIF II** :
+> - Obligation de Best Execution : les courtiers doivent prouver qu'ils ont obtenu le meilleur prix disponible sur tous les lieux d'exécution (bourses, MTF, dark pools, SI).
+> - Transparence pré-trade : publication des ordres avant exécution (sauf waiver volume cap).
+> - Transparence post-trade : publication systématique de toutes les transactions.
+>
+> **Avantages de la fragmentation** :
+> 1. Compétition entre plateformes → réduction des frais de courtage.
+> 2. Innovation : nouvelles plateformes offrant des fonctionnalités avancées (SOR, smart order routing).
+> 3. Résilience : si un marché tombe, les ordres se redirigent vers d'autres plateformes.
+>
+> **Inconvénients** :
+> 1. Complexité pour les investisseurs : comparaison des prix sur 20+ plateformes.
+> 2. Fragilité lors de pics de volatilité : circuit breakers désynchronisés entre plateformes.
+
+### Exercice 4
+Un gérant achète 50 000 actions d'une société mid-cap (cours = 15 €, volume quotidien = 100 000 titres). Estimez le coût d'impact de marché avec η = 0,15. Combien de jours devrait-il fragmenter son ordre pour limiter l'impact à moins de 0,5 % ?
+
+> **Correction** :
+>
+> Si exécution en 1 jour (participation = 50 %) :
+> Impact = 0,15 × (50 000 / 100 000) = 7,5 % → **beaucoup trop élevé**
+>
+> Pour un impact < 0,5 % :
+> 0,15 × (50 000 / (j × 100 000)) < 0,5 %
+> 0,15 / (2j) < 0,005
+> j > 0,15 / (2 × 0,005) = j > **15 jours**
+>
+> Le gérant doit fragmenter son ordre sur **au moins 15 jours** (~3 300 actions/jour) pour limiter l'impact à 0,5 % du cours.

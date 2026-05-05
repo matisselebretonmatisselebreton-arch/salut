@@ -199,3 +199,203 @@ L'entreprise BETA a un EBITDA de 30 M€, une dette nette de 80 M€ et 10 M d'a
 - Le DCF est la méthode de référence théorique ; la valeur terminale représente souvent 60–80 % de l'EV.
 - Les multiples sont des outils de marché : ils reflètent les prix payés, pas nécessairement la valeur intrinsèque.
 - Le football field permet de réconcilier plusieurs approches et de fonder une fourchette de négociation.
+
+---
+
+## Approfondissement théorique
+
+### Sensibilité du DCF et analyse de Monte Carlo
+
+La valeur terminale (VT) représente souvent **60–80 % de l'EV** dans un DCF → la sensibilité aux hypothèses de WACC et de g est critique.
+
+**Analyse de sensibilité bidimensionnelle (table WACC × g)** :
+
+```
+EV (M€) pour FCFF_6 = 100 M€
+
+          g = 1 %    g = 2 %    g = 3 %
+WACC=8%    1 250      1 667      2 500
+WACC=9%    1 000      1 250      1 667
+WACC=10%    833       1 000      1 250
+```
+
+Formule de la VT : VT = FCFF_6 / (WACC - g)
+Les extrêmes (WACC=8%, g=3% vs WACC=10%, g=1%) divergent d'un facteur 3 → le DCF est un outil puissant mais très sensible aux hypothèses terminales.
+
+**Simulation de Monte Carlo sur le DCF** :
+Distribuer les hypothèses clés (WACC, g, marges) selon des distributions de probabilité → obtenir une distribution de l'EV plutôt qu'une valeur ponctuelle.
+
+```
+WACC ~ Uniforme [8 %, 10 %]
+g ~ Normale (μ=2 %, σ=0,5 %)
+Marge EBIT ~ Triangulaire (min=12 %, mode=15 %, max=18 %)
+→ Distribution de l'EV : P10 = 900 M€, médiane = 1 200 M€, P90 = 1 600 M€
+```
+
+### La méthode des Excess Returns (Economic Value Added — EVA)
+
+**Stewart (1991)** propose de valoriser l'entreprise à partir de la richesse économique créée :
+
+```
+EVA_t = NOPAT_t - WACC × Capital_investi_t
+      = (ROCE_t - WACC) × Capital_investi_t
+```
+
+**Valeur de l'entreprise = Capital investi + PV(EVAs futures)**
+
+Si ROCE = WACC : EVA = 0 → l'entreprise vaut exactement son capital investi (pas de survaleur).
+Si ROCE > WACC : EVA > 0 → création de valeur → prime sur le capital investi.
+
+**Relation avec le DCF** : la méthode EVA et le DCF donnent la même EV si les mêmes hypothèses sont utilisées (c'est une reformulation comptable équivalente).
+
+### APV (Adjusted Present Value) — Méthode de Myers
+
+L'**APV** décompose la valeur en deux composantes séparées :
+
+```
+EV = VU + PV(Bouclier fiscal)
+```
+
+- **VU** : valeur de l'entreprise non endettée (actualisation des FCFF au coût des capitaux propres non endetté kU)
+- **PV(Bouclier fiscal)** : valeur des économies d'IS sur les intérêts = t × D (si dette permanente)
+
+**Avantage** : particulièrement utile en LBO (structure de capital variable → WACC change chaque année ; l'APV traite chaque source de valeur séparément).
+
+---
+
+## Exemples numériques supplémentaires
+
+### Exemple 1 — DCF avec sensibilité
+
+**Entreprise EPSILON** : FCFF = 50 M€ en régime stable (sans croissance à long terme). WACC = 9 %, g = 2 %.
+
+```
+EV (Gordon) = 50 × (1,02) / (0,09 - 0,02) = 51 / 0,07 = 728,6 M€
+
+Sensibilité à g :
+g = 1 % : EV = 50,5 / 0,08 = 631 M€
+g = 2 % : EV = 51 / 0,07 = 729 M€
+g = 3 % : EV = 51,5 / 0,06 = 858 M€ (+18 % vs g=2 %)
+
+Sensibilité au WACC :
+WACC = 8 % : EV = 51 / 0,06 = 850 M€
+WACC = 9 % : EV = 51 / 0,07 = 729 M€
+WACC = 10 % : EV = 51 / 0,08 = 638 M€ (-12 % vs WACC=9 %)
+```
+
+### Exemple 2 — Comparable boursier avec ajustements
+
+Secteur des logiciels B2B. Panel de comparables :
+
+| Société | EV (M€) | EBITDA NTM | EV/EBITDA |
+|---------|---------|-----------|-----------|
+| SAP | 180 000 | 11 000 | 16,4× |
+| Dassault Systèmes | 42 000 | 1 900 | 22,1× |
+| Sage | 12 000 | 650 | 18,5× |
+| Médiocre SaaS | 500 | 40 | 12,5× |
+
+Médiane EV/EBITDA = **17,5×**
+
+**Cible Z** : EBITDA = 80 M€, croissance 25 %/an (vs. médiane panel 12 %/an), dette nette = 50 M€, 20 M actions.
+
+```
+EV (médiane) = 80 × 17,5 = 1 400 M€
+Ajustement pour croissance supérieure (+2×) : EV = 80 × 19 = 1 520 M€
+Equity Value = 1 520 - 50 = 1 470 M€
+Prix par action = 1 470 / 20 = 73,50 €
+```
+
+### Exemple 3 — Méthode APV
+
+**Entreprise LBO** : VU = 500 M€ (valeur sans dette, actualisée à kU = 10 %)
+Dette initiale : 200 M€ à 6 %, remboursable sur 5 ans (40 M€/an)
+IS = 25 %
+
+```
+Bouclier fiscal année par année :
+An 1 : Intérêts = 200 × 6 % = 12 M€ → IS sauvé = 3 M€
+An 2 : Intérêts = 160 × 6 % = 9,6 M€ → IS sauvé = 2,4 M€
+An 3 : 120 × 6 % = 7,2 → 1,8 M€
+An 4 : 80 × 6 % = 4,8 → 1,2 M€
+An 5 : 40 × 6 % = 2,4 → 0,6 M€
+
+PV(Bouclier fiscal) actualisé au taux kD = 6 % :
+= 3/1,06 + 2,4/1,06² + 1,8/1,06³ + 1,2/1,06⁴ + 0,6/1,06⁵
+= 2,83 + 2,14 + 1,51 + 0,95 + 0,45 = 7,88 M€
+
+EV APV = 500 + 7,88 = 507,88 M€
+```
+
+---
+
+## Applications professionnelles
+
+### Banque d'investissement : desk Equity Capital Markets (ECM)
+
+Lors d'une **IPO**, la banque arrangeur valorise l'entreprise pour fixer la fourchette de prix :
+
+**Processus de valorisation ECM** :
+1. Construction du modèle DCF (3–5 ans, VT).
+2. Sélection du panel de comparables cotés (10–15 sociétés).
+3. Analyse des transactions IPO récentes dans le secteur.
+4. Construction du football field.
+5. **Book building** : sondage des intentions des investisseurs institutionnels pour tester la demande à différents prix.
+
+**Prime d'IPO** : traditionnellement, les IPO sont légèrement décotées (10–15 %) par rapport à la valeur fair par rapport aux comparables cotés — pour assurer un "pop" le premier jour et fidéliser les investisseurs participants.
+
+### Asset Management : analyse fondamentale bottom-up
+
+Un analyste sell-side (banque) ou buy-side (fonds) construit un **modèle financier 3-statement** :
+1. Compte de résultat prévisionnel (CA → EBIT → résultat net).
+2. Bilan prévisionnel (actifs immobilisés, BFR, dette).
+3. Tableau de flux de trésorerie (FCFF à partir du résultat).
+4. DCF → target price.
+5. **Recommandation** : Acheter / Conserver / Vendre avec catalyseurs identifiés.
+
+---
+
+## Erreurs fréquentes et pièges
+
+| Erreur | Description | Remède |
+|--------|-------------|--------|
+| **Valeur terminale trop optimiste** | Un g trop proche du WACC explose la VT | Utiliser g ≈ PIB nominal long terme (1,5–2,5 %) |
+| **WACC trop faible par biais optimiste** | Sous-estimer le risque → surévaluer l'entreprise | Vérifier la prime de risque de marché avec le consensus (Damodaran) |
+| **Comparables mal sélectionnés** | Utiliser des sociétés de taille/secteur différents | Critères : même secteur, marché géographique, niveau de croissance et de marge |
+| **Ignorer les synergies dans les transactions comparables** | Les multiples de transactions incluent la prime de contrôle + synergies | Bien distinguer "comparable boursier" (pas de prime) vs "transaction comparable" (prime incluse) |
+| **Oublier la dette nette dans le bridge EV → Equity** | L'EV est la valeur des actifs ; les actionnaires ont droit à EV - dette nette | Toujours ajuster pour la dette nette, les minoritaires, les participations |
+
+---
+
+## Exercices supplémentaires
+
+### Exercice 1
+Calculez l'EV d'une entreprise avec : FCFF = 30 M€ (stable, sans croissance à LT), WACC = 8 %, g = 1,5 %. Puis calculez le prix par action si dette nette = 50 M€ et 10 M actions.
+
+> **Correction** :
+> VT (perpétuité croissante) = 30 × (1,015) / (0,08 - 0,015) = 30,45 / 0,065 = **468,5 M€**
+> Equity Value = 468,5 - 50 = **418,5 M€**
+> Prix/action = 418,5 / 10 = **41,85 €**
+
+### Exercice 2
+Un analyste valorise une société par les comparables. Le panel donne une médiane EV/EBITDA de 9× et EV/EBIT de 12×. La cible a : EBITDA = 40 M€, EBIT = 28 M€, dette nette = 80 M€, 5 M actions. Calculez deux fourchettes d'EV et de prix par action.
+
+> **Correction** :
+> **Via EV/EBITDA** : EV = 9 × 40 = 360 M€ → Equity = 360 - 80 = 280 M€ → Prix = **56 €/action**
+> **Via EV/EBIT** : EV = 12 × 28 = 336 M€ → Equity = 336 - 80 = 256 M€ → Prix = **51,2 €/action**
+> Fourchette de valorisation : **51–56 €/action**
+
+### Exercice 3
+Construisez un mini football field avec les résultats suivants pour l'entreprise F :
+- DCF : 400–550 M€
+- Comparables boursiers : 380–480 M€
+- Transactions comparables : 500–650 M€
+- ANR : 300–350 M€
+
+Quelle fourchette de négociation recommandez-vous ?
+
+> **Correction** :
+> Fourchette de recoupement des méthodes : les méthodes intrinsèques (DCF : 400–550 M€) et les comparables boursiers (380–480 M€) convergent autour de **400–500 M€**.
+> Les transactions comparables (500–650 M€) incluent la prime de contrôle → pertinent pour une opération M&A.
+> L'ANR (300–350 M€) reflète une valeur plancher (liquidation).
+>
+> **Fourchette de négociation en M&A** : 480–580 M€ (entre les comparables boursiers élevés et les transactions comparables bas), soit une prime implicite de 20–45 % sur les comparables boursiers.

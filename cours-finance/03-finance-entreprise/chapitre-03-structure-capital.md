@@ -199,3 +199,194 @@ L'entreprise GAMMA a : EBIT = 80 M€, charges financières = 20 M€, dette net
 - Le trade-off équilibre bouclier fiscal et coûts de détresse : il existe un optimum.
 - La pecking order explique le comportement empirique des entreprises : autofinancement d'abord.
 - Pour valoriser une cible, on désendette/réendette le bêta selon la structure financière cible.
+
+---
+
+## Approfondissement théorique
+
+### Market Timing et la théorie de l'opportunité de marché
+
+**Baker & Wurgler (2002)** proposent la **Market Timing Theory** : les entreprises émettent des actions quand elles sont surévaluées (cours élevé) et rachètent leurs actions quand elles sont sous-évaluées. La structure financière serait donc le résultat cumulatif des décisions de market timing passées, non une cible optimale.
+
+**Implication** : les entreprises ayant émis beaucoup d'actions en période de hautes valorisations ont tendance à avoir des ratios dettes/capitaux propres durablement bas.
+
+**Evidence** : le ratio M/B (Market-to-Book) historique prédit la structure financière actuelle → preuve empirique du market timing.
+
+### La théorie des signaux (Signaling Theory)
+
+**Ross (1977)** modélise la dette comme un **signal de qualité** : un dirigeant qui sait que son entreprise est solide s'endette davantage (il sait qu'elle peut honorer ses dettes). Une entreprise fragile ne peut pas imiter ce signal (trop coûteux).
+
+→ Annonces d'émission d'obligations → signal positif (confiance dans les cash-flows futurs)
+→ Annonces d'augmentation de capital → signal négatif (le management pense l'action surévaluée)
+
+Ce raisonnement renforce la **Pecking Order** : l'émission d'actions est toujours interprétée négativement.
+
+**Myers (1984)** introduit le concept de "**debt overhang**" : si une entreprise très endettée souhaite lever des capitaux pour investir, les nouveaux actionnaires craignent que la valeur revienne principalement aux créanciers → sous-investissement.
+
+### Les coûts de détresse financière : évidence empirique
+
+**Andrade & Kaplan (1998)** étudient les LBO des années 1980 tombés en détresse financière. Ils estiment les **coûts indirects** de la détresse à 10–20 % de la valeur de l'entreprise (perte de clients, fournisseurs exigeant paiement comptant, départs de talents).
+
+**Coûts directs** (faillite légale) : 3–5 % de la valeur des actifs (honoraires avocats, administrateurs judiciaires).
+
+→ Total coûts de détresse : **15–25 %** de la valeur de l'entreprise en cas de faillite.
+
+Cela tempère significativement le gain du bouclier fiscal dans la trade-off theory.
+
+---
+
+## Exemples numériques supplémentaires
+
+### Exemple 1 — Trade-off Theory : structure optimale
+
+**Entreprise ZETA** non endettée vaut 1 000 M€. IS = 25 %, coût de la dette = 5 %.
+Coûts de détresse financière :
+
+| Niveau dette (D) | Bouclier fiscal (t×D) | Coûts détresse estimés | VL |
+|-----------------|----------------------|----------------------|----|
+| 0 | 0 | 0 | 1 000 |
+| 100 | 25 | 5 | 1 020 |
+| 200 | 50 | 15 | 1 035 |
+| 300 | 75 | 35 | 1 040 |
+| 400 | 100 | 75 | 1 025 |
+| 500 | 125 | 150 | 975 |
+
+**Optimum** : D = 300 M€ → VL = 1 040 M€. Au-delà, les coûts de détresse augmentent plus vite que le bouclier fiscal.
+
+### Exemple 2 — Désendettement/ré-endettement du bêta en M&A
+
+**Contexte** : valorisation d'une cible non cotée dans le secteur agroalimentaire.
+
+**Comparables cotés** :
+
+| Comparable | βE | D/CP | t |
+|-----------|-----|------|---|
+| Danone | 0,70 | 0,60 | 25 % |
+| Nestlé | 0,65 | 0,50 | 20 % |
+| Unilever | 0,80 | 0,80 | 25 % |
+
+**Désendettement** :
+```
+Danone : βA = 0,70 / (1 + 0,75 × 0,60) = 0,70 / 1,45 = 0,483
+Nestlé : βA = 0,65 / (1 + 0,80 × 0,50) = 0,65 / 1,40 = 0,464
+Unilever : βA = 0,80 / (1 + 0,75 × 0,80) = 0,80 / 1,60 = 0,500
+
+βA moyen = (0,483 + 0,464 + 0,500) / 3 = 0,482
+```
+
+**Ré-endettement pour la cible** (D/CP cible = 1,0, t = 25 %) :
+```
+βE cible = 0,482 × (1 + 0,75 × 1,0) = 0,482 × 1,75 = 0,844
+
+WACC cible : rf = 2,5 %, prime marché = 5 %
+kE = 2,5 % + 0,844 × 5 % = 2,5 % + 4,22 % = 6,72 %
+kD après IS = 5 % × (1 - 25 %) = 3,75 %
+WACC = 6,72 % × 0,5 + 3,75 % × 0,5 = 5,24 %
+```
+
+### Exemple 3 — Effet de levier sur le ROE
+
+**Entreprise THETA** : ROCE = 14 %, IS = 25 %, trois scénarios d'endettement :
+
+| Scénario | D/CP | Coût dette brut | Effet levier |
+|---------|------|-----------------|-------------|
+| Zéro dette | 0 | — | ROE = ROCE = 14 % |
+| Modéré | 0,5 | 6 % | ROE = 14 % + (14 % - 4,5 %) × 0,5 = **18,75 %** |
+| Élevé | 2,0 | 8 % | ROE = 14 % + (14 % - 6 %) × 2 = **30 %** |
+| Stress (ROCE < kD) | 2,0 | 8 % (ROCE=7 %) | ROE = 7 % + (7 % - 6 %) × 2 = **9 %** → dégradé |
+
+*Coût dette après IS = 6 % × 0,75 = 4,5 % ; 8 % × 0,75 = 6 %*
+
+---
+
+## Applications professionnelles
+
+### Corporate Treasury : gestion de la structure de capital
+
+Le département Trésorerie/Finance d'un groupe (ex. Airbus, LVMH) gère en permanence :
+
+**1. Politique de financement** :
+- Définir le levier cible (ex. : "Nous visons un ratio Dette nette/EBITDA de 1,5–2,0×").
+- Diversifier les sources de financement : syndicated loans, obligations corporate, commercial paper, NEU-CP (France).
+- Gérer la maturité de la dette : étaler les remboursements ("maturity wall" à éviter).
+
+**2. Note de crédit** :
+Les émetteurs investment grade (BBB- à AAA) bénéficient de coûts de financement bien inférieurs aux high yield. La différence de spread peut être 100–300 bp → impact significatif sur le résultat financier.
+
+```
+Emprunt de 1 Md€ sur 7 ans :
+IG (BBB+) → taux = 3,5 % → intérêts annuels = 35 M€
+HY (BB+) → taux = 6,0 % → intérêts annuels = 60 M€
+Différentiel = 25 M€/an × 7 ans = 175 M€ d'économie sur la durée de vie
+```
+
+**3. Rachats d'actions (buybacks)** :
+Quand ROCE > kD et que les opportunités d'investissement sont limitées, distribuer aux actionnaires via rachat d'actions est préférable au thésaurisation.
+
+### Agences de notation : processus d'évaluation
+
+Moody's/S&P analysent la structure du capital selon plusieurs axes :
+
+- **Profil de l'activité** : secteur, position concurrentielle, diversification.
+- **Profil financier** : ratio de levier (Dette/EBITDA), couverture (EBITDA/intérêts), liquidité.
+- **Facteurs qualitatifs** : gouvernance, management, stratégie.
+
+Exemple de grille Moody's (simplifiée) :
+| Dette/EBITDA | Couverture intérêts | Rating implicite |
+|-------------|---------------------|-----------------|
+| < 1× | > 8× | Aaa–Aa |
+| 1–2× | 5–8× | A |
+| 2–3× | 3–5× | Baa (IG) |
+| 3–5× | 1,5–3× | Ba–B (HY) |
+| > 5× | < 1,5× | Caa+ (distressed) |
+
+---
+
+## Erreurs fréquentes et pièges
+
+| Erreur | Description | Remède |
+|--------|-------------|--------|
+| **Croire que plus de dette = toujours mieux** | Le bouclier fiscal est limité par les coûts de détresse et les risques de covenant breach | Optimiser autour de la structure cible, pas à 100 % dette |
+| **Ignorer la note de crédit dans le coût de la dette** | Plus d'endettement → downgrade → hausse du coût de la dette → coûts de détresse financière plus tôt | Modéliser l'impact des ratios de crédit sur le spread |
+| **Confondre gearing comptable et levier économique** | La dette nette (dettes - cash) diffère de l'endettement brut | Toujours calculer la dette nette (netting du cash) |
+| **Ne pas désendetter le bêta** | Comparer des bêtas d'entreprises avec des structures financières différentes | Désendetter systématiquement avant toute comparaison de risque opérationnel |
+| **Oublier les provisions et engagements dans la "dette"** | Provisions retraites, engagements de lease → dette économique hors bilan | Intégrer dans la dette nette ajustée |
+
+---
+
+## Exercices supplémentaires
+
+### Exercice 1
+Une entreprise non endettée vaut 800 M€ (t = 25 %). Elle s'endette à 300 M€ (dette perpétuelle). (a) Quelle est sa nouvelle valeur selon MM avec impôt ? (b) Si les coûts de détresse sont estimés à 40 M€ (présents), quelle est la valeur réelle ?
+
+> **Correction** :
+> (a) V_L = 800 + 0,25 × 300 = **875 M€**
+> (b) V_L ajustée = 875 - 40 = **835 M€** (supérieure à V_U = 800 M€ mais moins qu'en MM pur)
+
+### Exercice 2
+Une entreprise a ROCE = 16 %, coût de la dette avant IS = 7 %, IS = 25 %, D/CP = 1,5. Calculez le ROE. L'endettement est-il favorable ?
+
+> **Correction** :
+> Coût dette après IS = 7 % × (1 - 25 %) = 5,25 %
+> ROE = ROCE + (ROCE - kD après IS) × D/CP
+>     = 16 % + (16 % - 5,25 %) × 1,5 = 16 % + 10,75 % × 1,5 = 16 % + **16,1 % = 32,1 %**
+> ROCE (16 %) > coût dette après IS (5,25 %) → effet de levier positif ✓
+
+### Exercice 3
+Trois comparables du secteur retail ont des bêtas capitaux propres et structures financières suivantes : A (βE=1,2, D/CP=0,8, t=25 %), B (βE=1,0, D/CP=0,5, t=25 %), C (βE=1,4, D/CP=1,2, t=25 %). La cible X visée aura D/CP = 0,6, t = 25 %. Calculez le WACC de X (rf = 2 %, prime marché = 5 %, coût dette brut = 4,5 %).
+
+> **Correction** :
+> Désendettement des comparables :
+> βA_A = 1,2 / (1 + 0,75 × 0,8) = 1,2 / 1,60 = 0,750
+> βA_B = 1,0 / (1 + 0,75 × 0,5) = 1,0 / 1,375 = 0,727
+> βA_C = 1,4 / (1 + 0,75 × 1,2) = 1,4 / 1,90 = 0,737
+> βA moyen = (0,750 + 0,727 + 0,737) / 3 = **0,738**
+>
+> Ré-endettement de X (D/CP = 0,6) :
+> βE_X = 0,738 × (1 + 0,75 × 0,6) = 0,738 × 1,45 = **1,070**
+>
+> WACC de X :
+> kE = 2 % + 1,070 × 5 % = **7,35 %**
+> kD après IS = 4,5 % × 0,75 = 3,375 %
+> Poids : E/(D+E) = 1/1,6 = 62,5 %, D/(D+E) = 37,5 %
+> WACC = 7,35 % × 62,5 % + 3,375 % × 37,5 % = 4,594 % + 1,266 % = **5,86 %**

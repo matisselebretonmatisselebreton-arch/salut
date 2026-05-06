@@ -1,0 +1,1729 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>01 Mathematiques Financieres</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-1-mathematiques-financieres">Module 1 — Mathématiques Financières</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Maîtriser les outils quantitatifs fondamentaux qui sous-tendent toute décision financière : valoriser des flux dans le temps, comprendre les conventions de taux, et construire des tableaux d'amortissement.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-valeur-temps-argent.md">La valeur temps de l'argent</a></li>
+<li><a href="./chapitre-02-taux-interet.md">Les taux d'intérêt : conventions et conversions</a></li>
+<li><a href="./chapitre-03-actualisation-capitalisation.md">Actualisation, capitalisation et annuités</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>12 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Exercices numériques (calculs de VAN, taux équivalents, tableaux d'amortissement)</li>
+<li>QCM de compréhension conceptuelle</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-la-valeur-temps-de-largent">Chapitre 1 — La valeur temps de l'argent</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Un euro aujourd'hui vaut plus qu'un euro demain. Ce principe fondamental est le pilier de toute la finance. Il repose sur trois raisons :</p>
+<ol>
+<li><strong>La préférence pour le présent</strong> : un agent économique préfère consommer maintenant plutôt que plus tard.</li>
+<li><strong>L'inflation</strong> : le pouvoir d'achat d'une somme diminue avec le temps.</li>
+<li><strong>Le risque</strong> : un flux futur est incertain ; on exige une compensation pour cette incertitude.</li>
+</ol>
+<hr />
+<h2 id="1-capitalisation-future-value">1. Capitalisation (Future Value)</h2>
+<h3 id="definition">Définition</h3>
+<p>La <strong>capitalisation</strong> consiste à calculer la valeur future d'un capital investi aujourd'hui au taux <code>r</code> pendant <code>n</code> périodes.</p>
+<h3 id="formule-interets-composes">Formule (intérêts composés)</h3>
+<pre><code>FV = PV × (1 + r)ⁿ
+</code></pre>
+<ul>
+<li><code>FV</code> : Future Value (valeur future)</li>
+<li><code>PV</code> : Present Value (valeur actuelle)</li>
+<li><code>r</code>  : taux d'intérêt par période</li>
+<li><code>n</code>  : nombre de périodes</li>
+</ul>
+<h3 id="exemple">Exemple</h3>
+<p>Vous investissez <strong>10 000 €</strong> à <strong>5 %</strong> par an pendant <strong>3 ans</strong>.</p>
+<pre><code>FV = 10 000 × (1,05)³
+FV = 10 000 × 1,157625
+FV = 11 576,25 €
+</code></pre>
+<h3 id="interets-simples-vs-composes">Intérêts simples vs. composés</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Formule</th>
+<th>FV (10 000 €, 5 %, 3 ans)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Intérêts simples</td>
+<td>PV × (1 + r × n)</td>
+<td>11 500 €</td>
+</tr>
+<tr>
+<td>Intérêts composés</td>
+<td>PV × (1 + r)ⁿ</td>
+<td>11 576,25 €</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Règle des 72</strong> : Pour estimer le nombre d'années nécessaires pour doubler un capital au taux <code>r</code>, calculez <code>72 / r</code>. Ex : à 6 %, un capital double en ≈ 12 ans.</p>
+</blockquote>
+<hr />
+<h2 id="2-actualisation-present-value">2. Actualisation (Present Value)</h2>
+<h3 id="definition_1">Définition</h3>
+<p>L'<strong>actualisation</strong> est l'opération inverse de la capitalisation : elle calcule la valeur aujourd'hui d'un flux futur.</p>
+<h3 id="formule">Formule</h3>
+<pre><code>PV = FV / (1 + r)ⁿ
+</code></pre>
+<p>Le facteur <code>1 / (1 + r)ⁿ</code> est appelé <strong>facteur d'actualisation</strong> ou <strong>discount factor</strong>.</p>
+<h3 id="exemple_1">Exemple</h3>
+<p>Vous recevrez <strong>15 000 €</strong> dans <strong>4 ans</strong>. Le taux d'actualisation est <strong>6 %</strong>.</p>
+<pre><code>PV = 15 000 / (1,06)⁴
+PV = 15 000 / 1,26248
+PV = 11 881 €
+</code></pre>
+<h3 id="interpretation">Interprétation</h3>
+<p>Recevoir 15 000 € dans 4 ans équivaut à recevoir 11 881 € aujourd'hui si le taux d'opportunité est 6 %.</p>
+<hr />
+<h2 id="3-valeur-actuelle-nette-van">3. Valeur Actuelle Nette (VAN)</h2>
+<h3 id="definition_2">Définition</h3>
+<p>La <strong>VAN</strong> (ou NPV — Net Present Value) mesure la création de valeur d'un projet en actualisant tous ses flux (investissement initial + flux futurs).</p>
+<h3 id="formule_1">Formule</h3>
+<pre><code>VAN = -I₀ + CF₁/(1+r) + CF₂/(1+r)² + ... + CFₙ/(1+r)ⁿ
+</code></pre>
+<ul>
+<li><code>I₀</code> : investissement initial (flux négatif à t=0)</li>
+<li><code>CFₜ</code> : cash-flow à la période t</li>
+<li><code>r</code> : taux d'actualisation (coût du capital)</li>
+</ul>
+<h3 id="regle-de-decision">Règle de décision</h3>
+<table>
+<thead>
+<tr>
+<th>VAN</th>
+<th>Décision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VAN &gt; 0</td>
+<td>Projet créateur de valeur → <strong>ACCEPTER</strong></td>
+</tr>
+<tr>
+<td>VAN = 0</td>
+<td>Projet neutre</td>
+</tr>
+<tr>
+<td>VAN &lt; 0</td>
+<td>Projet destructeur de valeur → <strong>REFUSER</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exemple_2">Exemple</h3>
+<p>Un projet nécessite un investissement de <strong>50 000 €</strong> et génère les flux suivants :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>Cash-flow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>15 000 €</td>
+</tr>
+<tr>
+<td>2</td>
+<td>20 000 €</td>
+</tr>
+<tr>
+<td>3</td>
+<td>25 000 €</td>
+</tr>
+</tbody>
+</table>
+<p>Taux d'actualisation : <strong>8 %</strong></p>
+<pre><code>VAN = -50 000 + 15 000/1,08 + 20 000/1,08² + 25 000/1,08³
+VAN = -50 000 + 13 889 + 17 147 + 19 845
+VAN = +881 €
+</code></pre>
+<p>VAN &gt; 0 → le projet crée de la valeur, on l'accepte.</p>
+<hr />
+<h2 id="4-taux-de-rendement-interne-tri">4. Taux de Rendement Interne (TRI)</h2>
+<h3 id="definition_3">Définition</h3>
+<p>Le <strong>TRI</strong> (ou IRR — Internal Rate of Return) est le taux d'actualisation qui annule la VAN :</p>
+<pre><code>VAN(TRI) = 0
+</code></pre>
+<h3 id="methode-de-calcul">Méthode de calcul</h3>
+<p>Le TRI n'a pas de formule analytique générale ; on le calcule par <strong>interpolation linéaire</strong> ou itération numérique.</p>
+<p><strong>Interpolation linéaire</strong> :</p>
+<pre><code>TRI ≈ r₁ + VAN(r₁) / [VAN(r₁) - VAN(r₂)] × (r₂ - r₁)
+</code></pre>
+<h3 id="regle-de-decision_1">Règle de décision</h3>
+<table>
+<thead>
+<tr>
+<th>Comparaison</th>
+<th>Décision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TRI &gt; coût du capital</td>
+<td><strong>ACCEPTER</strong></td>
+</tr>
+<tr>
+<td>TRI &lt; coût du capital</td>
+<td><strong>REFUSER</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="limites-du-tri">Limites du TRI</h3>
+<ul>
+<li>Peut donner plusieurs solutions si les flux changent de signe plusieurs fois.</li>
+<li>Ne distingue pas la taille des projets (préférer la VAN pour comparer des projets mutuellement exclusifs).</li>
+</ul>
+<hr />
+<h2 id="5-exercices">5. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>Vous placez 5 000 € à 4 % d'intérêts composés pendant 6 ans. Quelle est la valeur finale ?</p>
+<blockquote>
+<p><strong>Correction</strong> : FV = 5 000 × (1,04)⁶ = 5 000 × 1,2653 = <strong>6 326,60 €</strong></p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Quelle somme faut-il investir aujourd'hui à 7 % pour obtenir 20 000 € dans 5 ans ?</p>
+<blockquote>
+<p><strong>Correction</strong> : PV = 20 000 / (1,07)⁵ = 20 000 / 1,4026 = <strong>14 259,70 €</strong></p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Un projet coûte 100 000 €. Il génère 40 000 € par an pendant 3 ans. Le taux d'actualisation est 10 %. Calculez la VAN et concluez.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VAN = -100 000 + 40 000/1,1 + 40 000/1,21 + 40 000/1,331
+VAN = -100 000 + 36 364 + 33 058 + 30 053
+VAN = <strong>-525 €</strong> → Projet légèrement destructeur de valeur, à <strong>refuser</strong>.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>La valeur temps de l'argent justifie l'actualisation de tout flux futur.</li>
+<li>La VAN est le critère de référence pour les décisions d'investissement.</li>
+<li>Le TRI est complémentaire mais à utiliser avec prudence.</li>
+<li>Intérêts composés ≠ intérêts simples : l'écart croît exponentiellement avec le temps.</li>
+</ul>
+<hr />
+<h2 id="6-approfondissement-theorique">6. Approfondissement théorique</h2>
+<h3 id="61-fondements-microeconomiques-de-la-preference-temporelle">6.1 Fondements microéconomiques de la préférence temporelle</h3>
+<p>La préférence pour le présent est formalisée en microéconomie par le <strong>taux marginal de substitution intertemporel</strong> (TMSI). L'agent maximise son utilité intertemporelle :</p>
+<pre><code>U = u(C₀) + δ × u(C₁)
+</code></pre>
+<p>où <code>δ = 1/(1+ρ)</code> est le <strong>facteur d'escompte subjectif</strong> et <code>ρ</code> le <strong>taux de préférence pure pour le présent</strong> (généralement positif pour un individu rationnel).</p>
+<p>À l'équilibre de marché, le taux d'intérêt réel s'établit au niveau qui égalise la préférence subjective pour le présent et la productivité marginale du capital dans l'économie réelle. C'est la contribution fondamentale de <strong>Irving Fisher</strong> (1930) à la théorie du taux d'intérêt.</p>
+<h3 id="62-la-courbe-de-transformation-et-larbitrage-consommation-investissement">6.2 La courbe de transformation et l'arbitrage consommation-investissement</h3>
+<p>En présence d'opportunités d'investissement productives, l'agent peut transformer la consommation présente en consommation future via l'investissement. La <strong>ligne de marché des capitaux</strong> (représentée dans l'espace (C₀, C₁)) montre qu'avec un marché financier parfait, tous les agents optimisent selon le même taux d'intérêt, indépendamment de leurs préférences (théorème de séparation de <strong>Hirshleifer</strong>, 1958).</p>
+<h3 id="63-relation-entre-taux-nominal-reel-et-inflation-equation-de-fisher">6.3 Relation entre taux nominal, réel et inflation (équation de Fisher)</h3>
+<p>La relation exacte de Fisher :</p>
+<pre><code>(1 + r_nominal) = (1 + r_réel) × (1 + π)
+</code></pre>
+<p>Développée :</p>
+<pre><code>r_nominal = r_réel + π + r_réel × π
+</code></pre>
+<p>Le terme croisé <code>r_réel × π</code> est négligeable pour de faibles taux mais significatif en période d'inflation élevée (exemple : r_réel = 3 %, π = 8 % → r_nominal = 11,24 % et non 11 %).</p>
+<p><strong>Implication pour l'investisseur</strong> : pour préserver son pouvoir d'achat, le rendement nominal doit au minimum couvrir l'inflation. Un taux réel négatif (r_nominal &lt; π) signifie que l'investisseur s'appauvrit en termes réels.</p>
+<h3 id="64-le-taux-dactualisation-composantes-et-prime-de-risque">6.4 Le taux d'actualisation : composantes et prime de risque</h3>
+<p>Le taux d'actualisation <code>r</code> n'est pas unique : il dépend du profil de risque des flux actualisés. Il se décompose selon le modèle CAPM :</p>
+<pre><code>r = r_f + β × (E[Rm] - r_f)
+</code></pre>
+<ul>
+<li><code>r_f</code> : taux sans risque (obligations d'État)</li>
+<li><code>β</code> : sensibilité au risque systématique</li>
+<li><code>E[Rm] - r_f</code> : prime de risque de marché (historiquement 4–6 % en Europe)</li>
+</ul>
+<p><strong>Conséquence pratique</strong> : actualiser des flux d'une start-up (β élevé) au taux des obligations d'État (r_f) revient à surestimer massivement leur valeur actuelle.</p>
+<h3 id="65-sensibilite-de-la-van-au-taux-dactualisation">6.5 Sensibilité de la VAN au taux d'actualisation</h3>
+<p>La VAN est une fonction décroissante et convexe du taux d'actualisation. Sa dérivée par rapport à <code>r</code> s'appelle la <strong>duration modifiée</strong> en finance obligataire (voir chapitre 2). Plus les flux sont éloignés dans le temps, plus la VAN est sensible au taux.</p>
+<p>Illustration : pour un flux unique de 100 000 € dans 20 ans :</p>
+<pre><code>À r = 5 %  : PV = 100 000 / (1,05)²⁰ = 37 689 €
+À r = 8 %  : PV = 100 000 / (1,08)²⁰ = 21 455 €
+À r = 10 % : PV = 100 000 / (1,10)²⁰ = 14 864 €
+</code></pre>
+<p>Une variation de taux de 5 % à 8 % (+3 points) réduit la valeur actuelle de 43 %. Cette sensibilité est au cœur des modèles d'évaluation à long terme (immobilier, infrastructures, retraites).</p>
+<hr />
+<h2 id="7-exemples-numeriques-supplementaires">7. Exemples numériques supplémentaires</h2>
+<h3 id="exemple-a-comparaison-de-deux-projets-mutuellement-exclusifs">Exemple A — Comparaison de deux projets mutuellement exclusifs</h3>
+<p>Une entreprise choisit entre deux investissements, avec un coût du capital de 9 % :</p>
+<p><strong>Projet Alpha</strong> : investissement 80 000 €, flux annuels sur 5 ans :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CF (€)</td>
+<td>10 000</td>
+<td>20 000</td>
+<td>30 000</td>
+<td>30 000</td>
+<td>20 000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Projet Beta</strong> : investissement 80 000 €, flux annuels sur 5 ans :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CF (€)</td>
+<td>30 000</td>
+<td>30 000</td>
+<td>20 000</td>
+<td>10 000</td>
+<td>5 000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calcul des VAN</strong> :</p>
+<pre><code>VAN Alpha = -80 000 + 10 000/1,09 + 20 000/1,09² + 30 000/1,09³ + 30 000/1,09⁴ + 20 000/1,09⁵
+          = -80 000 + 9 174 + 16 843 + 23 176 + 21 261 + 12 993
+          = +3 447 €
+
+VAN Beta = -80 000 + 30 000/1,09 + 30 000/1,09² + 20 000/1,09³ + 10 000/1,09⁴ + 5 000/1,09⁵
+         = -80 000 + 27 523 + 25 251 + 15 451 + 7 084 + 3 248
+         = -1 443 €
+</code></pre>
+<p><strong>Conclusion</strong> : Alpha est supérieur (VAN positive) et Beta doit être refusé. Remarque : Beta génère plus de cash en début de période, mais la somme totale actualisée est moindre. Cet exemple illustre l'importance du calendrier des flux.</p>
+<hr />
+<h3 id="exemple-b-tri-par-interpolation-lineaire">Exemple B — TRI par interpolation linéaire</h3>
+<p>Reprenons le Projet Alpha. On cherche son TRI.</p>
+<p>À r = 9 % : VAN = +3 447 € (calculé ci-dessus)
+À r = 12 % :</p>
+<pre><code>VAN(12 %) = -80 000 + 10 000/1,12 + 20 000/1,12² + 30 000/1,12³ + 30 000/1,12⁴ + 20 000/1,12⁵
+           = -80 000 + 8 929 + 15 944 + 21 353 + 19 066 + 11 349
+           = -3 359 €
+</code></pre>
+<p>Interpolation :</p>
+<pre><code>TRI ≈ 9 % + 3 447 / (3 447 + 3 359) × (12 % - 9 %)
+    ≈ 9 % + 3 447 / 6 806 × 3 %
+    ≈ 9 % + 1,52 %
+    ≈ 10,52 %
+</code></pre>
+<p><strong>Interprétation</strong> : le projet crée de la valeur tant que le coût du capital est inférieur à 10,52 %. Au-delà, il serait destructeur de valeur.</p>
+<hr />
+<h3 id="exemple-c-impact-de-linflation-sur-la-valeur-reelle-dun-placement">Exemple C — Impact de l'inflation sur la valeur réelle d'un placement</h3>
+<p>Un épargnant investit 50 000 € à 4 % nominal pendant 10 ans, dans un contexte d'inflation à 2,5 %.</p>
+<p><strong>Valeur nominale à terme</strong> :</p>
+<pre><code>FV_nominale = 50 000 × (1,04)¹⁰ = 50 000 × 1,4802 = 74 012 €
+</code></pre>
+<p><strong>Valeur réelle à terme</strong> (en euros d'aujourd'hui) :</p>
+<pre><code>FV_réelle = FV_nominale / (1 + π)¹⁰
+           = 74 012 / (1,025)¹⁰
+           = 74 012 / 1,2801
+           = 57 816 €
+</code></pre>
+<p><strong>Vérification par le taux réel de Fisher</strong> :</p>
+<pre><code>r_réel = (1,04 / 1,025) - 1 = 1,4634 % par an
+FV_réelle = 50 000 × (1,014634)¹⁰ = 50 000 × 1,1563 = 57 816 € ✓
+</code></pre>
+<p><strong>Conclusion</strong> : le gain réel est de 7 816 € (et non 24 012 €). L'inflation érode 69 % du gain nominal apparent.</p>
+<hr />
+<h2 id="8-erreurs-frequentes-et-pieges">8. Erreurs fréquentes et pièges</h2>
+<h3 id="piege-1-confondre-taux-annuel-et-taux-periodique">Piège 1 — Confondre taux annuel et taux périodique</h3>
+<p>Appliquer directement le taux annuel à des flux mensuels ou trimestriels sans conversion équivalente conduit à sous-estimer la valeur future. Si le taux annuel est 12 % et les flux sont mensuels, le taux mensuel équivalent n'est pas 1 % (proportionnel) mais 0,9489 % (équivalent, soit (1,12)^(1/12) - 1). Sur 10 ans, l'écart est de plusieurs milliers d'euros.</p>
+<h3 id="piege-2-negliger-le-signe-des-flux-dans-la-van">Piège 2 — Négliger le signe des flux dans la VAN</h3>
+<p>L'investissement initial est un flux négatif (décaissement) et les recettes sont des flux positifs. Oublier le signe négatif de I₀ ou d'une sortie de trésorerie intermédiaire fausse complètement le résultat. Toujours établir un échéancier explicite avec convention de signe avant de calculer.</p>
+<h3 id="piege-3-utiliser-le-tri-seul-pour-classer-des-projets-mutuellement-exclusifs">Piège 3 — Utiliser le TRI seul pour classer des projets mutuellement exclusifs</h3>
+<p>Deux projets peuvent avoir des TRI identiques mais des VAN très différentes (si les montants investis ou les horizons diffèrent). Le TRI ne tient pas compte de l'échelle : un projet de 100 € avec TRI 50 % crée moins de valeur qu'un projet de 1 M€ avec TRI 12 % si le coût du capital est 8 %. La VAN est toujours le critère souverain pour les décisions mutuellement exclusives.</p>
+<h3 id="piege-4-oublier-la-valeur-terminale-dans-les-projets-a-horizon-long">Piège 4 — Oublier la valeur terminale dans les projets à horizon long</h3>
+<p>Pour les projets immobiliers, les infrastructures ou les acquisitions d'entreprises, la valeur terminale (valeur de revente ou perpétuité de flux) représente souvent 60 à 80 % de la valeur totale. L'omettre ou la sous-estimer entraîne une sous-évaluation majeure.</p>
+<h3 id="piege-5-actualiser-au-taux-nominal-des-flux-reels-ou-vice-versa">Piège 5 — Actualiser au taux nominal des flux réels (ou vice-versa)</h3>
+<p>Si les flux futurs sont exprimés en euros constants (pouvoir d'achat constant), il faut les actualiser au taux réel. Si les flux sont exprimés en euros courants (incluant l'inflation), on actualise au taux nominal. Mélanger les deux est une erreur classique qui peut conduire à doubler l'effet de l'inflation ou à l'ignorer.</p>
+<hr />
+<h2 id="9-exercices-supplementaires-de-difficulte-croissante">9. Exercices supplémentaires de difficulté croissante</h2>
+<h3 id="exercice-4-delai-de-recuperation-et-complement-a-la-van">Exercice 4 — Délai de récupération et complément à la VAN</h3>
+<p>Un investissement de 200 000 € génère les flux suivants :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CF (€)</td>
+<td>40 000</td>
+<td>60 000</td>
+<td>70 000</td>
+<td>70 000</td>
+<td>50 000</td>
+</tr>
+</tbody>
+</table>
+<p>Taux d'actualisation : 8 %</p>
+<p>a) Calculez la VAN.
+b) Calculez le délai de récupération actualisé (DRA).
+c) Calculez le TRI par interpolation entre 8 % et 15 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>a) Calcul des flux actualisés :</p>
+<p><code>t=1 : 40 000 / 1,08   = 37 037 €
+t=2 : 60 000 / 1,08²  = 51 440 €
+t=3 : 70 000 / 1,08³  = 55 566 €
+t=4 : 70 000 / 1,08⁴  = 51 450 €
+t=5 : 50 000 / 1,08⁵  = 34 029 €
+Somme actualisée = 229 522 €
+VAN = 229 522 - 200 000 = +29 522 €  → Accepter</code></p>
+<p>b) Cumul des flux actualisés :</p>
+<p><code>Fin t=1 :  37 037 €  (investissement non récupéré : 162 963 €)
+Fin t=2 :  88 477 €  (investissement non récupéré : 111 523 €)
+Fin t=3 : 144 043 €  (investissement non récupéré : 55 957 €)
+Fin t=4 : 195 493 €  (investissement non récupéré : 4 507 €)
+Fin t=5 : 229 522 €  → récupéré !</code></p>
+<p>DRA = 4 ans + 4 507 / 34 029 = 4 ans + 0,13 an ≈ <strong>4 ans et 1,6 mois</strong></p>
+<p>c) À r = 15 % :</p>
+<p><code>40 000/1,15 + 60 000/1,15² + 70 000/1,15³ + 70 000/1,15⁴ + 50 000/1,15⁵
+= 34 783 + 45 369 + 46 028 + 40 024 + 24 858 = 191 062 €
+VAN(15 %) = 191 062 - 200 000 = -8 938 €</code></p>
+<p>Interpolation :</p>
+<p><code>TRI ≈ 8 % + 29 522 / (29 522 + 8 938) × (15 % - 8 %)
+     ≈ 8 % + 29 522 / 38 460 × 7 %
+     ≈ 8 % + 5,37 %
+     ≈ 13,37 %</code></p>
+</blockquote>
+<hr />
+<h3 id="exercice-5-choix-dinvestissement-avec-horizons-differents">Exercice 5 — Choix d'investissement avec horizons différents</h3>
+<p>Deux machines ont des durées de vie différentes. Le coût du capital est 10 %.</p>
+<p><strong>Machine A</strong> : coût 50 000 €, durée 3 ans, flux annuels 22 000 €
+<strong>Machine B</strong> : coût 80 000 €, durée 5 ans, flux annuels 25 000 €</p>
+<p>Pour comparer des projets de durée différente, on calcule l'<strong>annuité équivalente</strong> (AE ou EAC — Equivalent Annual Cost/Benefit).</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Machine A</strong> :</p>
+<p>```
+VAN_A = -50 000 + 22 000 × [1 - (1,10)^(-3)] / 0,10
+      = -50 000 + 22 000 × 2,4869
+      = -50 000 + 54 712 = +4 712 €</p>
+<p>AE_A = VAN_A / facteur de rente (3 ans, 10 %)
+     = 4 712 / 2,4869 = 1 894 € / an
+```</p>
+<p><strong>Machine B</strong> :</p>
+<p>```
+VAN_B = -80 000 + 25 000 × [1 - (1,10)^(-5)] / 0,10
+      = -80 000 + 25 000 × 3,7908
+      = -80 000 + 94 770 = +14 770 €</p>
+<p>AE_B = 14 770 / 3,7908 = 3 896 € / an
+```</p>
+<p><strong>Conclusion</strong> : Bien que VAN_B &gt; VAN_A en valeur absolue, la comparaison par annuité équivalente confirme que Machine B crée plus de valeur par année d'utilisation (3 896 € vs 1 894 €). Choisir Machine B.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-6-projet-avec-flux-irreguliers-et-valeur-terminale">Exercice 6 — Projet avec flux irréguliers et valeur terminale</h3>
+<p>Une entreprise évalue l'acquisition d'une PME. Les flux prévisionnels (en k€) sont :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FCFF</td>
+<td>120</td>
+<td>140</td>
+<td>160</td>
+<td>175</td>
+<td>185</td>
+</tr>
+</tbody>
+</table>
+<p>À partir de l'année 6, les flux croissent à 2 % par an à perpétuité. Le WACC est 9 %. Le prix demandé est 1 600 k€.</p>
+<p>a) Calculez la valeur terminale à la fin de l'année 5.
+b) Calculez la VAN de l'acquisition.
+c) Quel prix maximum serait acceptable ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>a) Valeur terminale (modèle de Gordon-Shapiro) :</p>
+<p><code>VT₅ = FCFF₆ / (WACC - g)
+     = FCFF₅ × (1 + g) / (WACC - g)
+     = 185 × 1,02 / (0,09 - 0,02)
+     = 188,7 / 0,07
+     = 2 695,7 k€</code></p>
+<p>b) Actualisation de tous les flux :</p>
+<p>```
+PV flux 1-5 :
+  120/1,09 + 140/1,09² + 160/1,09³ + 175/1,09⁴ + 185/1,09⁵
+  = 110,1 + 117,9 + 123,5 + 123,9 + 120,2 = 595,6 k€</p>
+<p>PV de VT₅ :
+  2 695,7 / (1,09)⁵ = 2 695,7 / 1,5386 = 1 751,3 k€</p>
+<p>Valeur d'entreprise = 595,6 + 1 751,3 = 2 346,9 k€</p>
+<p>VAN = 2 346,9 - 1 600 = +746,9 k€  → Acquisition créatrice de valeur
+```</p>
+<p>c) Le prix maximum acceptable est la valeur d'entreprise calculée : <strong>2 346,9 k€</strong>. Au-delà, la VAN devient négative et l'acquisition détruit de la valeur.</p>
+<p>Note : la valeur terminale représente 74,6 % de la valeur totale, soulignant la sensibilité au taux de croissance g et au WACC.</p>
+</blockquote>
+<hr />
+<h2 id="10-applications-professionnelles">10. Applications professionnelles</h2>
+<h3 id="101-analyse-dinvestissement-en-banque-daffaires-ma">10.1 Analyse d'investissement en banque d'affaires (M&amp;A)</h3>
+<p>Lors d'une acquisition (fusion-acquisition), les équipes de banquiers construisent un modèle DCF détaillé sur 5 à 10 ans. La valeur d'entreprise est obtenue en actualisant les FCFF au WACC. Le prix offert doit être inférieur à cette valeur intrinsèque pour créer de la valeur pour l'acheteur. En pratique, les banques ajoutent une prime de contrôle (20–40 % au-dessus du cours de bourse) qui doit être justifiée par des synergies futures identifiables.</p>
+<p><strong>Sensitivité analysis</strong> : les modèles professionnels présentent systématiquement un tableau de sensibilité de la valeur d'entreprise en fonction de deux variables (WACC et taux de croissance terminal), montrant comment la valorisation varie selon les hypothèses.</p>
+<h3 id="102-choix-dinvestissement-en-controle-de-gestion">10.2 Choix d'investissement en contrôle de gestion</h3>
+<p>Les directions financières des grands groupes industriels (automobile, aéronautique, chimie) utilisent la VAN pour valider les investissements de capacité (nouvelles usines, lignes de production). Chaque projet doit généralement respecter un <strong>hurdle rate</strong> (taux de rendement minimum) supérieur au WACC de 2 à 3 points pour intégrer l'incertitude des prévisions. Les projets stratégiques (R&amp;D, digital) peuvent bénéficier d'un hurdle rate aménagé ou d'une valorisation par options réelles.</p>
+<h3 id="103-gestion-de-portefeuille-et-duration-obligataire">10.3 Gestion de portefeuille et duration obligataire</h3>
+<p>En gestion obligataire, l'actualisation des coupons et du nominal constitue la base du pricing. La duration (ou duration de Macaulay) mesure la sensibilité du prix d'une obligation au taux :</p>
+<pre><code>Duration = Σ [t × CF_t / (1+r)^t] / Prix
+</code></pre>
+<p>Un gérant obligataire ajuste la duration de son portefeuille pour couvrir son exposition aux variations de taux. Un portefeuille de duration 7 ans perd environ 7 % de sa valeur si les taux montent de 1 point.</p>
+<h3 id="104-valorisation-immobiliere-par-capitalisation-des-revenus">10.4 Valorisation immobilière par capitalisation des revenus</h3>
+<p>Les fonds immobiliers (SCPI, REIT) valorisent leurs actifs par capitalisation des loyers nets :</p>
+<pre><code>Valeur vénale = Loyer net annuel / Taux de capitalisation
+</code></pre>
+<p>Exemple : un immeuble de bureaux génère 2 M€ de loyers nets par an. Avec un taux de capitalisation de 4 % (prime immobilière), la valeur est 2 / 0,04 = 50 M€. Un resserrement de 50 bp du taux (4 % → 3,5 %) valorise l'actif à 57,1 M€ (+14 %), illustrant la sensibilité extrême aux conditions de taux.</p>
+<hr />
+<h2 id="11-points-de-vigilance-et-nuances-importantes">11. Points de vigilance et nuances importantes</h2>
+<h3 id="sur-le-choix-du-taux-dactualisation">Sur le choix du taux d'actualisation</h3>
+<p>Le taux d'actualisation synthétise toute l'incertitude sur les flux futurs. Un débat académique persistant porte sur la façon d'intégrer le <strong>risque de modèle</strong> (model risk) : les prévisions à 5 ou 10 ans sont intrinsèquement incertaines, et un léger changement du taux terminal peut changer radicalement la conclusion.</p>
+<p>Règle professionnelle : ne jamais conclure sans <strong>analyse de sensibilité</strong> et <strong>scénarios</strong> (base, optimiste, pessimiste).</p>
+<h3 id="sur-la-comparabilite-des-projets">Sur la comparabilité des projets</h3>
+<p>La VAN est additive (VAN d'un portefeuille de projets = somme des VAN individuelles) si les projets sont indépendants. Cette propriété disparaît en présence de complémentarités ou de synergies. Les projets mutuellement exclusifs ne se comparent qu'à horizon identique ou par annuité équivalente.</p>
+<h3 id="sur-les-biais-comportementaux">Sur les biais comportementaux</h3>
+<p>Les études en <strong>finance comportementale</strong> (Kahneman, Tversky) montrent que les décideurs ont tendance à :
+- Sous-estimer les délais de réalisation des projets (<strong>planning fallacy</strong>).
+- Surestimer les flux futurs par excès d'optimisme.
+- Préférer le TRI à la VAN car il est plus intuitif (mais potentiellement trompeur).</p>
+<p>Ces biais conduisent à un taux d'échec élevé des grands projets d'investissement industriels et publics. La solution : <strong>reference class forecasting</strong> (comparer aux projets similaires passés) et comités d'investissement indépendants.</p>
+<h3 id="sur-la-fiscalite">Sur la fiscalité</h3>
+<p>Les flux à actualiser doivent être des flux <strong>après impôt</strong>. En France, l'IS à 25 % réduit les flux nets d'impôt, mais les amortissements créent un <strong>bouclier fiscal</strong> (tax shield) : la dotation aux amortissements diminue la base imposable et donc l'IS dû. Pour des projets financés partiellement par dette, les intérêts sont également déductibles (bouclier fiscal des intérêts, à intégrer dans le WACC ou le modèle APV — Adjusted Present Value).</p>
+<hr />
+<h1 id="chapitre-2-les-taux-dinteret-conventions-et-conversions">Chapitre 2 — Les taux d'intérêt : conventions et conversions</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>Les taux d'intérêt sont omniprésents en finance : coût d'un crédit, rendement d'un placement, taux de référence des banques centrales. Maîtriser leurs conventions et leurs conversions est indispensable pour comparer des produits financiers.</p>
+<hr />
+<h2 id="1-typologies-de-taux">1. Typologies de taux</h2>
+<h3 id="11-taux-fixe-vs-taux-variable">1.1 Taux fixe vs. taux variable</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Définition</th>
+<th>Exemple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Taux fixe</strong></td>
+<td>Inchangé sur toute la durée</td>
+<td>Crédit immobilier à 3,5 % sur 20 ans</td>
+</tr>
+<tr>
+<td><strong>Taux variable</strong></td>
+<td>Révisé périodiquement selon un indice de référence</td>
+<td>Euribor 3 mois + 1 %</td>
+</tr>
+<tr>
+<td><strong>Taux mixte</strong></td>
+<td>Fixe les premières années, puis variable</td>
+<td>Crédit sur 25 ans : fixe 5 ans puis variable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-taux-nominal-vs-taux-reel">1.2 Taux nominal vs. taux réel</h3>
+<p>La <strong>relation de Fisher</strong> :</p>
+<pre><code>(1 + r_nominal) = (1 + r_réel) × (1 + π)
+</code></pre>
+<p>Approximation (valable pour de faibles taux) :</p>
+<pre><code>r_réel ≈ r_nominal - π
+</code></pre>
+<ul>
+<li><code>π</code> : taux d'inflation</li>
+</ul>
+<p><strong>Exemple</strong> : taux nominal = 5 %, inflation = 2 % → taux réel ≈ 3 %</p>
+<h3 id="13-taux-brut-vs-taux-net">1.3 Taux brut vs. taux net</h3>
+<p>Le taux net tient compte de la fiscalité applicable aux revenus financiers (en France : prélèvement forfaitaire unique — PFU — de 30 %).</p>
+<pre><code>r_net = r_brut × (1 - taux_imposition)
+</code></pre>
+<hr />
+<h2 id="2-periodicite-et-conventions-de-calcul">2. Périodicité et conventions de calcul</h2>
+<h3 id="21-taux-proportionnel">2.1 Taux proportionnel</h3>
+<p>Un taux annuel <code>r</code> est dit <strong>proportionnel</strong> à un taux mensuel <code>r_m</code> si :</p>
+<pre><code>r_m = r / 12
+</code></pre>
+<p><strong>Usage</strong> : intérêts simples, crédits à court terme.</p>
+<h3 id="22-taux-equivalent">2.2 Taux équivalent</h3>
+<p>Un taux annuel <code>r</code> est dit <strong>équivalent</strong> à un taux mensuel <code>r_m</code> si un placement d'un an au taux mensuel produit le même résultat qu'un placement d'un an au taux annuel (intérêts composés) :</p>
+<pre><code>(1 + r_m)¹² = (1 + r)
+→ r_m = (1 + r)^(1/12) - 1
+</code></pre>
+<p><strong>Exemple</strong> : taux annuel = 12 %
+- Taux mensuel proportionnel : 12 % / 12 = <strong>1,00 %</strong>
+- Taux mensuel équivalent : (1,12)^(1/12) - 1 = <strong>0,9489 %</strong></p>
+<blockquote>
+<p>En régime d'intérêts composés, on utilise <strong>toujours</strong> les taux équivalents.</p>
+</blockquote>
+<h3 id="23-tableau-de-conversion-des-taux-equivalents">2.3 Tableau de conversion des taux équivalents</h3>
+<table>
+<thead>
+<tr>
+<th>Taux annuel</th>
+<th>Taux trimestriel</th>
+<th>Taux mensuel</th>
+<th>Taux journalier (base 365)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4 %</td>
+<td>(1,04)^(1/4) - 1 = 0,9853 %</td>
+<td>(1,04)^(1/12) - 1 = 0,3274 %</td>
+<td>(1,04)^(1/365) - 1 = 0,01072 %</td>
+</tr>
+<tr>
+<td>6 %</td>
+<td>1,4674 %</td>
+<td>0,4868 %</td>
+<td>0,01597 %</td>
+</tr>
+<tr>
+<td>8 %</td>
+<td>1,9427 %</td>
+<td>0,6434 %</td>
+<td>0,02108 %</td>
+</tr>
+<tr>
+<td>12 %</td>
+<td>2,8737 %</td>
+<td>0,9489 %</td>
+<td>0,03096 %</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-taux-actuariel-et-taux-de-rendement-actuariel-tra">3. Taux Actuariel et Taux de Rendement Actuariel (TRA)</h2>
+<h3 id="definition_4">Définition</h3>
+<p>Le <strong>taux actuariel</strong> est le taux d'actualisation qui égalise la valeur actuelle des flux entrants et sortants d'un instrument financier. C'est le standard pour comparer des obligations et des placements.</p>
+<p>Pour une obligation :</p>
+<pre><code>Prix = Σ [Coupon / (1 + TRA)ᵗ] + Valeur nominale / (1 + TRA)ⁿ
+</code></pre>
+<hr />
+<h2 id="4-taux-annuel-effectif-global-taeg">4. Taux Annuel Effectif Global (TAEG)</h2>
+<h3 id="definition_5">Définition</h3>
+<p>Le <strong>TAEG</strong> est le taux actuariel annuel qui reflète le coût total d'un crédit : intérêts + frais de dossier + assurance. C'est le seul taux comparable légalement entre offres de crédit.</p>
+<h3 id="calcul">Calcul</h3>
+<p>Le TAEG résout l'équation :</p>
+<pre><code>Montant emprunté = Σ [Mensualité / (1 + TAEG)^(t/12)]
+</code></pre>
+<p><strong>Exemple</strong> : Crédit de 10 000 €, 12 mensualités de 870 €, frais de dossier 100 €</p>
+<p>Le TAEG est le taux <code>r</code> tel que :</p>
+<pre><code>10 000 - 100 = Σ (870 / (1 + r)^(t/12))   pour t = 1 à 12
+</code></pre>
+<hr />
+<h2 id="5-structure-par-terme-des-taux-courbe-des-taux">5. Structure par terme des taux (courbe des taux)</h2>
+<h3 id="definition_6">Définition</h3>
+<p>La <strong>courbe des taux</strong> (yield curve) représente les taux d'intérêt en fonction de la maturité. Elle est fondamentale en finance de marché.</p>
+<h3 id="formes-typiques">Formes typiques</h3>
+<pre><code>Taux
+  |        Normale (haussière)
+  |       /
+  |      /
+  |     /
+  |____/_____________________ Maturité
+
+Taux
+  |  \
+  |   \    Inversée
+  |    \
+  |     \____________________ Maturité
+
+Taux
+  |    ___
+  |   /   \  Bosse (humped)
+  |  /     \_________________ Maturité
+</code></pre>
+<h3 id="interpretations-economiques">Interprétations économiques</h3>
+<table>
+<thead>
+<tr>
+<th>Forme</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Normale</strong> (croissante)</td>
+<td>Anticipations de croissance, prime de risque de maturité</td>
+</tr>
+<tr>
+<td><strong>Inversée</strong> (décroissante)</td>
+<td>Anticipations de baisse de taux, signal de récession</td>
+</tr>
+<tr>
+<td><strong>Plate</strong></td>
+<td>Incertitude, transition de cycle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="theories-explicatives">Théories explicatives</h3>
+<ol>
+<li><strong>Théorie des anticipations pures</strong> : les taux longs reflètent les anticipations de taux courts futurs.</li>
+<li><strong>Théorie de la prime de liquidité</strong> : les investisseurs exigent une prime pour immobiliser leur argent longtemps.</li>
+<li><strong>Théorie de la segmentation des marchés</strong> : chaque segment de maturité obéit à une offre/demande indépendante.</li>
+</ol>
+<hr />
+<h2 id="6-taux-spot-et-taux-forward">6. Taux spot et taux forward</h2>
+<h3 id="taux-spot-zero-coupon">Taux spot (zéro-coupon)</h3>
+<p>Le <strong>taux spot</strong> <code>s(t)</code> est le taux d'une obligation zéro-coupon de maturité <code>t</code> (pas de coupon intermédiaire, remboursement unique).</p>
+<h3 id="taux-forward">Taux forward</h3>
+<p>Le <strong>taux forward</strong> <code>f(t₁, t₂)</code> est le taux implicite pour un placement entre <code>t₁</code> et <code>t₂</code>, déduit des taux spot :</p>
+<pre><code>(1 + s(t₂))^t₂ = (1 + s(t₁))^t₁ × (1 + f(t₁, t₂))^(t₂-t₁)
+</code></pre>
+<p><strong>Exemple</strong> : <code>s(1) = 3 %</code>, <code>s(2) = 4 %</code>. Quel est le taux forward 1 an dans 1 an ?</p>
+<pre><code>(1,04)² = (1,03)¹ × (1 + f(1,2))¹
+1,0816 = 1,03 × (1 + f)
+1 + f = 1,0501
+f(1,2) = 5,01 %
+</code></pre>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Convertissez un taux annuel de 9 % en taux trimestriel équivalent.</p>
+<blockquote>
+<p><strong>Correction</strong> : r_trim = (1,09)^(1/4) - 1 = 2,178 %</p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>Un taux mensuel proportionnel de 1,2 % correspond à quel taux annuel en intérêts composés ?</p>
+<blockquote>
+<p><strong>Correction</strong> : r_annuel = (1,012)^12 - 1 = 15,39 %</p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>Les taux spot 1 an et 2 ans sont respectivement 2,5 % et 3,2 %. Calculez le taux forward 1 an dans 1 an.</p>
+<blockquote>
+<p><strong>Correction</strong> : (1,032)² = (1,025) × (1 + f) → f = (1,032)²/1,025 - 1 = 3,91 %</p>
+</blockquote>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="la-theorie-des-anticipations-et-lhypothese-des-marches-efficients">La théorie des anticipations et l'hypothèse des marchés efficients</h3>
+<p>La relation entre taux spot et taux forward constitue l'un des piliers de la théorie des taux d'intérêt. Dans le cadre de la <strong>théorie des anticipations pures</strong> (Pure Expectations Theory, PET), formalisée notamment par Lutz (1940) et Fisher (1896), le taux forward n'est autre que la prévision de marché du taux spot futur. En d'autres termes :</p>
+<pre><code>f(t₁, t₂) = E[s(t₁, t₂)]
+</code></pre>
+<p>Cette relation implique que la structure par terme de taux contient toute l'information disponible sur les taux futurs, ce qui est cohérent avec l'hypothèse d'efficience informationnelle semi-forte des marchés financiers (Fama, 1970).</p>
+<p>Cependant, plusieurs études empiriques (Fama &amp; Bliss, 1987 ; Campbell &amp; Shiller, 1991) ont montré que les taux forward sont de mauvais prédicteurs des taux spot futurs, suggérant l'existence d'une <strong>prime de terme</strong> (term premium) variable dans le temps.</p>
+<h3 id="la-prime-de-terme-et-ses-determinants">La prime de terme et ses déterminants</h3>
+<p>La <strong>prime de terme</strong> <code>TP(t)</code> représente la rémunération supplémentaire exigée par les investisseurs pour détenir des obligations de long terme plutôt que de renouveler des placements courts. Elle peut être décomposée comme suit :</p>
+<pre><code>Taux long(t) = Taux court moyen attendu(t) + Prime de terme(t)
+</code></pre>
+<p>Les déterminants empiriques de la prime de terme incluent :
+- <strong>L'incertitude macroéconomique</strong> : plus la volatilité des taux courts est élevée, plus la prime est importante.
+- <strong>L'offre nette d'obligations</strong> : un excès d'émissions longues pousse la prime à la hausse.
+- <strong>Les préférences d'habitat préféré</strong> : certains investisseurs institutionnels (assureurs, fonds de pension) ont une préférence structurelle pour des maturités spécifiques.</p>
+<h3 id="le-modele-de-nelson-siegel">Le modèle de Nelson-Siegel</h3>
+<p>En pratique, les banques centrales et les institutions financières modélisent la courbe des taux à l'aide du modèle de <strong>Nelson-Siegel</strong> (1987) :</p>
+<pre><code>s(t) = β₀ + β₁ × [(1 - e^(-t/λ)) / (t/λ)] + β₂ × [(1 - e^(-t/λ)) / (t/λ) - e^(-t/λ)]
+</code></pre>
+<p>Où :
+- <code>β₀</code> : niveau long terme (taux à l'infini)
+- <code>β₁</code> : pente (différence entre taux long et taux court)
+- <code>β₂</code> : courbure (forme de bosse)
+- <code>λ</code> : paramètre de décroissance exponentielle</p>
+<p>Ce modèle à 4 paramètres capture les trois formes classiques de courbe (normale, inversée, bosse) avec une grande parcimonie.</p>
+<h3 id="leffet-fisher-et-ses-limites-empiriques">L'effet Fisher et ses limites empiriques</h3>
+<p>L'effet Fisher stipule une relation de long terme entre taux nominaux et inflation. Toutefois, plusieurs nuances s'imposent au niveau M2 :</p>
+<ol>
+<li>
+<p><strong>L'effet Fisher ex ante vs ex post</strong> : la relation théorique porte sur l'inflation <em>anticipée</em>, non réalisée. Or, les anticipations sont inobservables directement.</p>
+</li>
+<li>
+<p><strong>Les marchés indexés sur l'inflation</strong> : les obligations indexées (OATi en France, TIPS aux États-Unis) permettent de décomposer le taux nominal en taux réel + point mort d'inflation :</p>
+</li>
+</ol>
+<pre><code>Taux nominal ≈ Taux réel OATi + Point mort d'inflation
+</code></pre>
+<ol>
+<li><strong>L'effet Fisher partiel</strong> : dans les pays à faible mobilité de capitaux ou en présence de rigidités financières, l'ajustement nominal-réel peut être incomplet.</li>
+</ol>
+<h3 id="taux-continus-vs-taux-discrets">Taux continus vs. taux discrets</h3>
+<p>En finance quantitative, on travaille souvent avec des <strong>taux à capitalisation continue</strong> (continuous compounding), particulièrement dans la valorisation des dérivés (modèle de Black-Scholes). La relation entre taux discret <code>r</code> et taux continu <code>r_c</code> est :</p>
+<pre><code>e^(r_c × t) = (1 + r)^t
+→ r_c = ln(1 + r)
+→ r = e^(r_c) - 1
+</code></pre>
+<p><strong>Exemple</strong> : un taux annuel discret de 5 % correspond à un taux continu de :</p>
+<pre><code>r_c = ln(1,05) = 4,879 %
+</code></pre>
+<p>Cette convention est préférable pour les modèles stochastiques car elle est additive dans le temps, ce qui simplifie considérablement les démonstrations mathématiques.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-construction-dune-courbe-des-taux-zero-coupon-par-bootstrapping">Exemple 1 — Construction d'une courbe des taux zéro-coupon par bootstrapping</h3>
+<p>On dispose des prix de marché des obligations suivantes (valeur nominale 1 000 €, coupons annuels) :</p>
+<table>
+<thead>
+<tr>
+<th>Maturité</th>
+<th>Coupon annuel</th>
+<th>Prix observé</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 an</td>
+<td>3 %</td>
+<td>1 000,00 €</td>
+</tr>
+<tr>
+<td>2 ans</td>
+<td>4 %</td>
+<td>1 010,50 €</td>
+</tr>
+<tr>
+<td>3 ans</td>
+<td>5 %</td>
+<td>1 025,00 €</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Étape 1 : taux spot 1 an</strong></p>
+<p>L'obligation 1 an verse un seul flux de 1 030 € à t=1.</p>
+<pre><code>1 000 = 1 030 / (1 + s₁)
+s₁ = 1 030 / 1 000 - 1 = 3,00 %
+</code></pre>
+<p><strong>Étape 2 : taux spot 2 ans</strong></p>
+<p>L'obligation 2 ans verse 40 € à t=1 et 1 040 € à t=2.</p>
+<pre><code>1 010,50 = 40 / (1 + s₁) + 1 040 / (1 + s₂)²
+1 010,50 = 40 / 1,03 + 1 040 / (1 + s₂)²
+1 010,50 - 38,835 = 1 040 / (1 + s₂)²
+971,665 = 1 040 / (1 + s₂)²
+(1 + s₂)² = 1 040 / 971,665 = 1,07031
+s₂ = √1,07031 - 1 = 3,454 %
+</code></pre>
+<p><strong>Étape 3 : taux spot 3 ans</strong></p>
+<p>L'obligation 3 ans verse 50 € à t=1, 50 € à t=2 et 1 050 € à t=3.</p>
+<pre><code>1 025 = 50/1,03 + 50/(1,03454)² + 1 050/(1 + s₃)³
+1 025 = 48,544 + 46,769 + 1 050/(1 + s₃)³
+929,687 = 1 050/(1 + s₃)³
+(1 + s₃)³ = 1 050 / 929,687 = 1,12942
+s₃ = (1,12942)^(1/3) - 1 = 4,13 %
+</code></pre>
+<p><strong>Résultat</strong> : Courbe zéro-coupon : s₁ = 3,00 %, s₂ = 3,454 %, s₃ = 4,13 %</p>
+<hr />
+<h3 id="exemple-2-decomposition-dun-taux-nominal-en-composantes-reelles-et-inflationnistes">Exemple 2 — Décomposition d'un taux nominal en composantes réelles et inflationnistes</h3>
+<p>Un investisseur envisage un placement obligataire à 5 ans au taux nominal de 4,8 %. Les anticipations d'inflation sont les suivantes :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>Inflation anticipée</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1,5 %</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1,8 %</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2,0 %</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2,2 %</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2,3 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calcul de l'inflation moyenne géométrique anticipée sur 5 ans :</strong></p>
+<pre><code>(1 + π_moy)⁵ = (1,015) × (1,018) × (1,020) × (1,022) × (1,023)
+             = 1,015 × 1,018 × 1,020 × 1,022 × 1,023
+             = 1,10367
+π_moy = (1,10367)^(1/5) - 1 = 1,999 % ≈ 2,00 %
+</code></pre>
+<p><strong>Calcul du taux réel via Fisher exacte :</strong></p>
+<pre><code>(1 + r_réel) = (1 + r_nominal) / (1 + π)
+             = 1,048 / 1,020
+             = 1,02745
+r_réel = 2,745 %
+</code></pre>
+<p><strong>Versus approximation Fisher :</strong></p>
+<pre><code>r_réel ≈ 4,8 % - 2,0 % = 2,8 %
+</code></pre>
+<p>Écart : 0,055 point de base — l'approximation introduit une erreur de 2 % relative ici. Cet écart devient significatif pour des taux nominaux élevés (supérieurs à 8-10 %).</p>
+<hr />
+<h3 id="exemple-3-calcul-du-taeg-dun-credit-automobile-avec-assurance">Exemple 3 — Calcul du TAEG d'un crédit automobile avec assurance</h3>
+<p>Un client souscrit un crédit auto aux conditions suivantes :
+- Montant financé : 15 000 €
+- Durée : 36 mois
+- Mensualité hors assurance : 445 €
+- Assurance décès-invalidité : 8 € / mois
+- Frais de dossier : 200 €
+- Frais de garantie : 150 €</p>
+<p><strong>Calcul du montant net reçu :</strong></p>
+<pre><code>Montant net = 15 000 - 200 - 150 = 14 650 €
+</code></pre>
+<p><strong>Flux totaux mensuels :</strong></p>
+<pre><code>Mensualité totale = 445 + 8 = 453 €
+</code></pre>
+<p><strong>Équation du TAEG (taux mensuel <code>r_m</code>) :</strong></p>
+<pre><code>14 650 = Σ [453 / (1 + r_m)^t]  pour t = 1 à 36
+</code></pre>
+<p>Cette équation est résolue numériquement (Newton-Raphson ou tableur) :</p>
+<table>
+<thead>
+<tr>
+<th>Taux mensuel testé</th>
+<th>VA des flux</th>
+<th>Écart</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0,80 %</td>
+<td>14 819 €</td>
+<td>+169 €</td>
+</tr>
+<tr>
+<td>0,90 %</td>
+<td>14 649 €</td>
+<td>-1 €</td>
+</tr>
+<tr>
+<td>0,901 %</td>
+<td>14 647 €</td>
+<td>-3 €</td>
+</tr>
+</tbody>
+</table>
+<p><strong>→ Taux mensuel ≈ 0,900 %</strong></p>
+<p><strong>Conversion en TAEG annuel :</strong></p>
+<pre><code>TAEG = (1 + 0,009)¹² - 1 = (1,009)¹² - 1 = 11,38 %
+</code></pre>
+<p>Ce TAEG de 11,38 % doit figurer obligatoirement dans l'offre de crédit préalable et permet la comparaison avec toute autre offre concurrente.</p>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="usage-en-banque-de-detail-la-tarification-du-credit">Usage en banque de détail : la tarification du crédit</h3>
+<p>Les banques commerciales utilisent la structure par terme des taux pour fixer leurs conditions de crédit. La logique est la suivante :</p>
+<ol>
+<li><strong>Refinancement</strong> : la banque se refinance sur le marché interbancaire ou obligataire à un taux <code>r_refinancement</code> correspondant à la maturité du crédit accordé.</li>
+<li><strong>Marge nette d'intérêt</strong> : le taux client est fixé à <code>r_client = r_refinancement + marge_commerciale + prime_de_risque_crédit</code>.</li>
+<li><strong>Modèle ALM (Asset-Liability Management)</strong> : le département ALM surveille l'appariement des maturités entre actifs (crédits) et passifs (dépôts, emprunts). Un mismatch de taux ou de liquidité constitue un risque majeur, régulé notamment par les ratios LCR (Liquidity Coverage Ratio) et NSFR (Net Stable Funding Ratio) de Bâle III.</li>
+</ol>
+<h3 id="usage-en-salle-des-marches-le-trading-de-taux">Usage en salle des marchés : le trading de taux</h3>
+<p>Les traders de taux (fixed income traders) exploitent les anomalies dans la courbe des taux :</p>
+<ul>
+<li><strong>Steepener / Flattener</strong> : un trader anticipe que la courbe va se pentifier (steepener) et vend des obligations courtes pour acheter des longues. Un flattener fait l'inverse.</li>
+<li><strong>Butterfly</strong> : stratégie à trois jambes exploitant la courbure de la courbe. On achète les points extrêmes (courts et longs) et on vend le point médian.</li>
+<li><strong>Taux forward implicites</strong> : les taux forward sont la base de la valorisation des contrats de taux (FRA — Forward Rate Agreement, swaps de taux IRS, futures sur Euribor).</li>
+</ul>
+<h3 id="usage-en-gestion-dactifs-la-duration-et-la-sensibilite">Usage en gestion d'actifs : la duration et la sensibilité</h3>
+<p>Un gérant obligataire convertit la courbe des taux en mesures de risque de son portefeuille :</p>
+<pre><code>Duration de Macaulay = Σ [t × (flux_t / (1 + r)^t)] / Prix
+Sensibilité (Modified Duration) = Duration / (1 + r)
+</code></pre>
+<p>La sensibilité indique la variation de prix approximative pour une variation de 1 % (100 bps) du taux. Un portefeuille de duration 7 ans perdra environ 7 % de valeur si les taux montent de 100 bps.</p>
+<h3 id="usage-en-controle-de-gestion-le-taux-de-cession-interne">Usage en contrôle de gestion : le taux de cession interne</h3>
+<p>Dans les grandes banques universelles, chaque ligne métier emprunte et prête à un <strong>taux de cession interne (TCI)</strong> calculé à partir de la courbe des taux swap. Ce mécanisme permet d'isoler la marge commerciale de la marge financière et d'évaluer la performance pure de chaque activité.</p>
+<h3 id="usage-chez-les-corporates-la-politique-de-couverture-des-taux">Usage chez les corporates : la politique de couverture des taux</h3>
+<p>Une entreprise ayant une dette à taux variable (Euribor + spread) est exposée au risque de hausse des taux. Le trésorier d'entreprise peut :
+- Souscrire un <strong>swap taux fixe/variable</strong> (IRS) pour fixer son coût d'emprunt.
+- Acheter un <strong>cap</strong> de taux (option de taux plafond) pour se protéger sans renoncer à la baisse.
+- Mettre en place un <strong>tunnel</strong> (achat d'un cap, vente d'un floor) pour réduire le coût de la couverture.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-confondre-taux-proportionnel-et-taux-equivalent">Erreur 1 — Confondre taux proportionnel et taux équivalent</h3>
+<p>C'est l'erreur la plus répandue chez les étudiants débutants. On est tenté d'utiliser la simple division (taux proportionnel) même en régime d'intérêts composés.</p>
+<p><strong>Exemple de l'erreur</strong> : pour un taux annuel de 12 %, calculer le taux mensuel comme 12 %/12 = 1 %.</p>
+<p><strong>Conséquence</strong> : utiliser 1 % mensuel en capitalisation composée sur 12 mois donne <code>(1,01)¹² - 1 = 12,68 %</code>, soit 68 bps de plus que le taux annuel de 12 %. Sur un crédit de 100 000 € sur 20 ans, l'erreur peut représenter plusieurs milliers d'euros d'intérêts.</p>
+<p><strong>Règle</strong> : en régime composé, toujours utiliser <code>r_m = (1 + r_annuel)^(1/12) - 1</code>.</p>
+<h3 id="erreur-2-negliger-la-base-de-calcul-des-jours-day-count-convention">Erreur 2 — Négliger la base de calcul des jours (day count convention)</h3>
+<p>En finance de marché, la convention de décompte des jours est cruciale. Il existe plusieurs conventions :</p>
+<table>
+<thead>
+<tr>
+<th>Convention</th>
+<th>Description</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actual/365</td>
+<td>Jours réels / 365</td>
+<td>Obligations UK, dépôts GBP</td>
+</tr>
+<tr>
+<td>Actual/360</td>
+<td>Jours réels / 360</td>
+<td>Marché monétaire EUR, USD</td>
+</tr>
+<tr>
+<td>30/360</td>
+<td>Mois de 30 jours / 360</td>
+<td>Obligations corporates</td>
+</tr>
+</tbody>
+</table>
+<p>Confondre Actual/360 et Actual/365 génère une erreur systématique de 365/360 - 1 = 1,39 % sur le calcul des intérêts. Sur des montants notionnels importants (plusieurs millions d'euros), c'est significatif.</p>
+<h3 id="erreur-3-appliquer-la-relation-de-fisher-approchee-a-des-taux-eleves">Erreur 3 — Appliquer la relation de Fisher approchée à des taux élevés</h3>
+<p>L'approximation <code>r_réel ≈ r_nominal - π</code> n'est valide que pour des taux faibles (inférieurs à 5-6 %). Au-delà, l'erreur devient substantielle :</p>
+<p><strong>Exemple</strong> : taux nominal = 20 %, inflation = 15 %.
+- Approximation : r_réel ≈ 5 %
+- Formule exacte : r_réel = 1,20/1,15 - 1 = 4,35 %
+- Erreur : 65 bps — ce qui peut suffire à transformer un projet rentable en projet déficitaire.</p>
+<h3 id="erreur-4-confondre-taux-actuariel-et-taux-facial-dune-obligation">Erreur 4 — Confondre taux actuariel et taux facial d'une obligation</h3>
+<p>Le <strong>taux facial</strong> (coupon rate) est le pourcentage du nominal versé en coupon chaque année. Le <strong>taux actuariel</strong> (yield to maturity) est le taux de rentabilité interne de l'obligation, tenant compte du prix de marché. Ces deux grandeurs ne sont égales que lorsque l'obligation cote au pair (prix = 100).</p>
+<pre><code>Si prix &gt; 100 (prime) → taux actuariel &lt; taux facial
+Si prix &lt; 100 (décote) → taux actuariel &gt; taux facial
+</code></pre>
+<p>Un étudiant qui utilise le taux facial à la place du taux actuariel dans une formule d'actualisation commettra une erreur fondamentale de valorisation.</p>
+<h3 id="erreur-5-negliger-la-distinction-entre-taux-periodique-et-taeg-dans-les-comparaisons">Erreur 5 — Négliger la distinction entre taux périodique et TAEG dans les comparaisons</h3>
+<p>Comparer des offres de crédit sur la base du taux mensuel ou du taux nominal annuel (sans tenir compte des frais) peut conduire à choisir une offre plus coûteuse. Seul le TAEG permet une comparaison légalement valide et économiquement correcte car il intègre :
+- Les frais de dossier
+- L'assurance emprunteur obligatoire
+- Les frais de garantie (hypothèque, caution)
+- Les frais d'ouverture de compte si obligatoires</p>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-1-conversion-multi-periodicite-difficulte">Exercice 1 — Conversion multi-périodicité (difficulté : ★☆☆☆)</h3>
+<p>Un livret d'épargne affiche un taux nominal annuel de 3 %, avec capitalisation mensuelle.</p>
+<p><strong>Questions :</strong>
+1. Calculez le taux mensuel équivalent.
+2. Calculez le taux annuel effectif (TEG) obtenu avec capitalisation mensuelle.
+3. Quelle est la différence entre le taux nominal et le TEG ? Comment s'appelle cet écart ?</p>
+<p><strong>Corrigé :</strong></p>
+<ol>
+<li>Taux mensuel équivalent :</li>
+</ol>
+<pre><code>r_m = (1 + 0,03)^(1/12) - 1 = (1,03)^(0,08333) - 1
+    = 1,002466 - 1 = 0,2466 %
+</code></pre>
+<ol>
+<li>Taux annuel effectif avec capitalisation mensuelle (en utilisant le taux <em>proportionnel</em> mensuel = 3%/12 = 0,25%) :</li>
+</ol>
+<pre><code>TEG = (1 + 0,0025)^12 - 1 = (1,0025)^12 - 1
+    = 1,030416 - 1 = 3,0416 %
+</code></pre>
+<ol>
+<li>Différence : 3,0416 % - 3,0000 % = 0,0416 %. Cet écart correspond à l'<strong>effet de la capitalisation des intérêts</strong> sur les sous-périodes. Plus la fréquence de capitalisation est élevée, plus le TEG dépasse le taux nominal. À la limite (capitalisation continue), on obtient <code>e^(0,03) - 1 = 3,0455 %</code>.</li>
+</ol>
+<hr />
+<h3 id="exercice-2-relation-de-fisher-et-taux-reel-ex-post-difficulte">Exercice 2 — Relation de Fisher et taux réel ex post (difficulté : ★★☆☆)</h3>
+<p>En 2023, un investisseur a placé 50 000 € sur un compte à terme offrant 4,2 % annuel brut. L'inflation réalisée sur l'année a été de 5,7 %. Le PFU est de 30 %.</p>
+<p><strong>Questions :</strong>
+1. Calculez le taux net d'imposition.
+2. Calculez le taux réel après impôt en utilisant la formule de Fisher exacte.
+3. Quel est le gain ou la perte de pouvoir d'achat en euros ?</p>
+<p><strong>Corrigé :</strong></p>
+<ol>
+<li>Taux net d'imposition :</li>
+</ol>
+<pre><code>r_net = 4,2 % × (1 - 0,30) = 4,2 % × 0,70 = 2,94 %
+</code></pre>
+<ol>
+<li>Taux réel après impôt (Fisher exacte) :</li>
+</ol>
+<pre><code>(1 + r_réel_net) = (1 + r_net) / (1 + π)
+                 = 1,0294 / 1,057
+                 = 0,97388
+r_réel_net = -2,61 %
+</code></pre>
+<ol>
+<li>Gain/perte de pouvoir d'achat :</li>
+</ol>
+<pre><code>Valeur nominale finale = 50 000 × 1,0294 = 51 470 €
+Valeur en euros constants = 51 470 / 1,057 = 48 694 €
+Perte de pouvoir d'achat = 50 000 - 48 694 = 1 306 €
+</code></pre>
+<p><strong>Conclusion</strong> : malgré un rendement nominal positif de 4,2 %, l'investisseur a perdu 1 306 € de pouvoir d'achat, car l'inflation (5,7 %) a largement dépassé le rendement net d'impôt (2,94 %).</p>
+<hr />
+<h3 id="exercice-3-extraction-des-taux-forward-et-arbitrage-difficulte">Exercice 3 — Extraction des taux forward et arbitrage (difficulté : ★★★☆)</h3>
+<p>Les taux spot suivants sont observés sur le marché :</p>
+<table>
+<thead>
+<tr>
+<th>Maturité</th>
+<th>Taux spot</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 an</td>
+<td>2,00 %</td>
+</tr>
+<tr>
+<td>2 ans</td>
+<td>2,50 %</td>
+</tr>
+<tr>
+<td>3 ans</td>
+<td>3,00 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Questions :</strong>
+1. Calculez les taux forward f(1,2), f(2,3) et f(1,3).
+2. Un investisseur peut placer à 3 ans au taux spot de 3 %, ou placer à 1 an (à 2 %), puis renouveler à f(1,2), puis à f(2,3). Montrez que les deux stratégies sont équivalentes (absence d'arbitrage).
+3. Si une banque propose un dépôt de 2 ans dans 1 an au taux de 3,5 %, est-ce une opportunité d'arbitrage ? Comment en profiter ?</p>
+<p><strong>Corrigé :</strong></p>
+<ol>
+<li>Calcul des taux forward :</li>
+</ol>
+<pre><code>f(1,2) : (1,025)² = (1,02)¹ × (1 + f(1,2))¹
+         1,050625 / 1,02 = 1 + f(1,2)
+         f(1,2) = 3,003 %
+
+f(2,3) : (1,03)³ = (1,025)² × (1 + f(2,3))¹
+         1,092727 / 1,050625 = 1 + f(2,3)
+         f(2,3) = 4,007 %
+
+f(1,3) : (1,03)³ = (1,02)¹ × (1 + f(1,3))²
+         1,092727 / 1,02 = (1 + f(1,3))²
+         1,070320 = (1 + f(1,3))²
+         f(1,3) = √1,070320 - 1 = 3,456 %
+</code></pre>
+<ol>
+<li>Vérification de l'absence d'arbitrage :</li>
+</ol>
+<pre><code>Stratégie 1 (placement direct 3 ans) :
+1 € × (1,03)³ = 1,092727 €
+
+Stratégie 2 (3 placements successifs) :
+1 € × (1,02) × (1,03003) × (1,04007)
+= 1,02 × 1,03003 × 1,04007
+= 1,02 × 1,07127
+= 1,092727 €
+</code></pre>
+<p>Les deux stratégies donnent exactement le même résultat — il n'y a pas d'arbitrage.</p>
+<ol>
+<li>Opportunité d'arbitrage :
+Le taux forward f(1,3) implicite = 3,456 %. La banque propose 3,5 % pour un dépôt 2 ans dans 1 an, soit un taux supérieur au taux d'équilibre.</li>
+</ol>
+<p><strong>Stratégie d'arbitrage :</strong>
+- <strong>Aujourd'hui</strong> : emprunter <code>X</code> euros à 1 an (taux 2 %), placer <code>X</code> euros à 3 ans (taux 3 %).
+- <strong>Dans 1 an</strong> : rembourser l'emprunt <code>X × 1,02</code>, placer le produit du désinvestissement partiel (montant équivalent) sur 2 ans à 3,5 %.
+- Cette structure génère un profit sans risque grâce à l'écart entre 3,5 % et le taux forward d'équilibre de 3,456 % ≈ 4,4 bps de gain annuel.</p>
+<hr />
+<h3 id="exercice-4-modelisation-dune-courbe-des-taux-nelson-siegel-difficulte">Exercice 4 — Modélisation d'une courbe des taux Nelson-Siegel (difficulté : ★★★★)</h3>
+<p>Les paramètres suivants du modèle Nelson-Siegel ont été estimés pour la courbe des taux souverains français :
+- β₀ = 4,00 %
+- β₁ = -2,00 %
+- β₂ = 1,50 %
+- λ = 2,00</p>
+<p><strong>Questions :</strong>
+1. Calculez les taux zéro-coupon pour les maturités : 1 an, 2 ans, 5 ans, 10 ans, 30 ans.
+2. Interprétez la forme de la courbe.
+3. Si β₁ passait de -2 % à +1 %, quel impact cela aurait-il sur la forme de la courbe ? Interprétez économiquement.</p>
+<p><strong>Corrigé :</strong></p>
+<ol>
+<li>Application de la formule :</li>
+</ol>
+<pre><code>s(t) = β₀ + β₁ × φ₁(t) + β₂ × φ₂(t)
+
+où :
+φ₁(t) = (1 - e^(-t/2)) / (t/2)
+φ₂(t) = (1 - e^(-t/2)) / (t/2) - e^(-t/2)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Maturité t</th>
+<th>φ₁(t)</th>
+<th>φ₂(t)</th>
+<th>s(t)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 an</td>
+<td>0,7869</td>
+<td>0,4148</td>
+<td>4,00 - 2×0,7869 + 1,5×0,4148 = <strong>3,047 %</strong></td>
+</tr>
+<tr>
+<td>2 ans</td>
+<td>0,6321</td>
+<td>0,3995</td>
+<td>4,00 - 2×0,6321 + 1,5×0,3995 = <strong>3,335 %</strong></td>
+</tr>
+<tr>
+<td>5 ans</td>
+<td>0,3297</td>
+<td>0,2982</td>
+<td>4,00 - 2×0,3297 + 1,5×0,2982 = <strong>3,788 %</strong></td>
+</tr>
+<tr>
+<td>10 ans</td>
+<td>0,1813</td>
+<td>0,1977</td>
+<td>4,00 - 2×0,1813 + 1,5×0,1977 = <strong>3,934 %</strong></td>
+</tr>
+<tr>
+<td>30 ans</td>
+<td>0,0656</td>
+<td>0,0919</td>
+<td>4,00 - 2×0,0656 + 1,5×0,0919 = <strong>4,007 %</strong></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>
+<p>Interprétation : β₁ = -2 % (négatif) → la courbe est croissante (normale). Le taux à 30 ans (4,007 %) est proche de β₀ = 4 %, valeur limite à l'infini. Le taux court (1 an) est le plus bas (3,047 %).</p>
+</li>
+<li>
+<p>Si β₁ = +1 % (positif) → la composante β₁ × φ₁(t) s'additionne positivement pour les courtes maturités et s'annule pour les longues. Cela inverserait la courbe : les taux courts deviendraient supérieurs aux taux longs. Économiquement, cela reflèterait des anticipations de baisse des taux directeurs (politique monétaire restrictive appelée à se détendre) ou des craintes de récession à court terme.</p>
+</li>
+</ol>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>Taux équivalent ≠ taux proportionnel : en intérêts composés, toujours utiliser l'équivalent.</li>
+<li>Le TAEG est la mesure légale et comparative du coût d'un crédit.</li>
+<li>La courbe des taux est un baromètre des anticipations économiques.</li>
+<li>Les taux forward sont implicitement contenus dans la structure par terme.</li>
+</ul>
+<hr />
+<h1 id="chapitre-3-actualisation-capitalisation-et-annuites">Chapitre 3 — Actualisation, capitalisation et annuités</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Les annuités sont des flux réguliers et identiques. Leur traitement par les formules de rente permet d'évaluer en un calcul ce qui nécessiterait d'actualiser chaque flux individuellement : emprunts immobiliers, obligations, leasing, plans d'épargne retraite.</p>
+<hr />
+<h2 id="1-rappel-somme-geometrique">1. Rappel : somme géométrique</h2>
+<p>Toutes les formules de rente découlent de la <strong>somme d'une suite géométrique</strong> :</p>
+<pre><code>Σ (k=0 à n-1) aᵏ = (1 - aⁿ) / (1 - a)   si a ≠ 1
+</code></pre>
+<hr />
+<h2 id="2-annuites-constantes">2. Annuités constantes</h2>
+<h3 id="21-valeur-actuelle-dune-rente-annuites-de-fin-de-periode">2.1 Valeur actuelle d'une rente (annuités de fin de période)</h3>
+<p>Série de <code>n</code> versements de <code>CF</code> payés en <strong>fin</strong> de chaque période, taux <code>r</code> :</p>
+<pre><code>VA = CF × [1 - (1 + r)^(-n)] / r
+</code></pre>
+<p>Le facteur <code>[1 - (1+r)^(-n)] / r</code> est la <strong>valeur actuelle de la rente unitaire</strong> (annuity factor).</p>
+<p><strong>Exemple</strong> : Loyer de 800 € par mois pendant 5 ans, taux d'actualisation 6 %/an → taux mensuel = (1,06)^(1/12) - 1 = 0,4868 %</p>
+<pre><code>VA = 800 × [1 - (1,004868)^(-60)] / 0,004868
+VA = 800 × 51,726
+VA = 41 381 €
+</code></pre>
+<h3 id="22-valeur-future-dune-rente">2.2 Valeur future d'une rente</h3>
+<pre><code>VF = CF × [(1 + r)ⁿ - 1] / r
+</code></pre>
+<p><strong>Exemple</strong> : Vous épargnez 200 € par mois pendant 10 ans à 4 %/an.</p>
+<p>Taux mensuel équivalent = (1,04)^(1/12) - 1 = 0,3274 %</p>
+<pre><code>VF = 200 × [(1,003274)^120 - 1] / 0,003274
+VF = 200 × 148,00
+VF = 29 599 €
+</code></pre>
+<h3 id="23-annuites-de-debut-de-periode-annuites-due">2.3 Annuités de début de période (annuités-due)</h3>
+<p>Les versements ont lieu en <strong>début</strong> de période. La formule se multiplie par <code>(1 + r)</code> :</p>
+<pre><code>VA_due = CF × [1 - (1 + r)^(-n)] / r × (1 + r)
+</code></pre>
+<hr />
+<h2 id="3-perpetuites">3. Perpétuités</h2>
+<p>Une <strong>perpétuité</strong> est une rente infinie (<code>n → ∞</code>).</p>
+<h3 id="perpetuite-simple">Perpétuité simple</h3>
+<pre><code>VA = CF / r
+</code></pre>
+<p><strong>Exemple</strong> : Une action verse un dividende perpétuel de 3 € par an. Taux d'actualisation 8 % → VA = 3 / 0,08 = <strong>37,50 €</strong></p>
+<h3 id="perpetuite-croissante-modele-de-gordon-shapiro">Perpétuité croissante (Modèle de Gordon-Shapiro)</h3>
+<p>Si les flux croissent au taux constant <code>g</code> par an :</p>
+<pre><code>VA = CF₁ / (r - g)   avec r &gt; g
+</code></pre>
+<p><strong>Exemple</strong> : Dividende de l'année prochaine = 2 €, croissance perpétuelle = 3 %, taux d'actualisation = 9 %</p>
+<pre><code>VA = 2 / (0,09 - 0,03) = 2 / 0,06 = 33,33 €
+</code></pre>
+<hr />
+<h2 id="4-tableaux-damortissement">4. Tableaux d'amortissement</h2>
+<h3 id="41-amortissement-constant">4.1 Amortissement constant</h3>
+<p>Chaque période, le remboursement du capital est identique. Les intérêts diminuent, donc les annuités diminuent.</p>
+<p><strong>Structure</strong> :</p>
+<pre><code>Amortissement = Capital / n
+Intérêts(t) = Capital restant dû(t-1) × r
+Annuité(t) = Amortissement + Intérêts(t)
+</code></pre>
+<p><strong>Exemple</strong> : Emprunt de 12 000 €, 4 ans, taux 5 %</p>
+<table>
+<thead>
+<tr>
+<th>Période</th>
+<th>Capital restant</th>
+<th>Amortissement</th>
+<th>Intérêts</th>
+<th>Annuité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>12 000 €</td>
+<td>3 000 €</td>
+<td>600 €</td>
+<td>3 600 €</td>
+</tr>
+<tr>
+<td>2</td>
+<td>9 000 €</td>
+<td>3 000 €</td>
+<td>450 €</td>
+<td>3 450 €</td>
+</tr>
+<tr>
+<td>3</td>
+<td>6 000 €</td>
+<td>3 000 €</td>
+<td>300 €</td>
+<td>3 300 €</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3 000 €</td>
+<td>3 000 €</td>
+<td>150 €</td>
+<td>3 150 €</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>12 000 €</strong></td>
+<td><strong>1 500 €</strong></td>
+<td><strong>13 500 €</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-annuites-constantes-amortissement-progressif">4.2 Annuités constantes (amortissement progressif)</h3>
+<p>L'annuité est constante. L'amortissement croît et les intérêts diminuent.</p>
+<p><strong>Calcul de l'annuité</strong> :</p>
+<pre><code>a = K × r / [1 - (1 + r)^(-n)]
+</code></pre>
+<p><strong>Capital restant dû après k versements</strong> :</p>
+<pre><code>CRD(k) = K × (1 + r)ᵏ - a × [(1 + r)ᵏ - 1] / r
+</code></pre>
+<p><strong>Exemple</strong> : Crédit immobilier 200 000 €, 20 ans, taux 3 %</p>
+<pre><code>Annuité annuelle = 200 000 × 0,03 / [1 - (1,03)^(-20)]
+= 6 000 / 0,44632
+= 13 438 €
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Période</th>
+<th>Capital restant</th>
+<th>Intérêts</th>
+<th>Amortissement</th>
+<th>Annuité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>200 000 €</td>
+<td>6 000 €</td>
+<td>7 438 €</td>
+<td>13 438 €</td>
+</tr>
+<tr>
+<td>2</td>
+<td>192 562 €</td>
+<td>5 777 €</td>
+<td>7 661 €</td>
+<td>13 438 €</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>13 438 €</td>
+</tr>
+<tr>
+<td>20</td>
+<td>13 046 €</td>
+<td>391 €</td>
+<td>13 047 €</td>
+<td>13 438 €</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td></td>
+<td><strong>68 760 €</strong></td>
+<td><strong>200 000 €</strong></td>
+<td><strong>268 760 €</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-in-fine">4.3 In fine</h3>
+<p>Le capital est remboursé en <strong>totalité à l'échéance</strong>. Seuls les intérêts sont payés chaque période.</p>
+<pre><code>Intérêts(t) = K × r   (constant chaque période)
+Annuité finale = K × (1 + r)   (capital + derniers intérêts)
+</code></pre>
+<p><strong>Usage</strong> : obligations, crédits associés à une assurance-vie ou produit de capitalisation.</p>
+<hr />
+<h2 id="5-applications-pratiques">5. Applications pratiques</h2>
+<h3 id="51-capacite-demprunt">5.1 Capacité d'emprunt</h3>
+<p>Pour un ménage pouvant rembourser <strong>1 500 €/mois</strong> sur <strong>25 ans</strong> à un taux de <strong>3,5 %/an</strong> :</p>
+<p>Taux mensuel équivalent ≈ 3,5 % / 12 ≈ 0,2917 % (approximation pratique)</p>
+<pre><code>Capital empruntable = 1 500 × [1 - (1,002917)^(-300)] / 0,002917
+= 1 500 × 211,28
+= 316 920 €
+</code></pre>
+<h3 id="52-loyer-economique-lease">5.2 Loyer économique (lease)</h3>
+<p>Pour un bien de 50 000 €, valeur résiduelle 10 000 € au bout de 5 ans, taux 4 % :</p>
+<pre><code>Loyer = [50 000 - 10 000 / (1,04)⁵] × 0,04 / [1 - (1,04)^(-5)]
+= [50 000 - 8 219] × 0,04 / 0,2192
+= 41 781 × 0,1825
+= 7 625 € / an
+</code></pre>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Calculez la valeur actuelle d'une rente de 1 000 € par an pendant 8 ans au taux de 5 %.</p>
+<blockquote>
+<p><strong>Correction</strong> : VA = 1 000 × [1 - (1,05)^(-8)] / 0,05 = 1 000 × 6,4632 = <strong>6 463,20 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Vous souhaitez avoir 50 000 € dans 10 ans. Combien devez-vous épargner par an (fin de période) à un taux de 4 % ?</p>
+<blockquote>
+<p><strong>Correction</strong> : CF = 50 000 × 0,04 / [(1,04)^10 - 1] = 50 000 / 12,006 = <strong>4 164,55 €/an</strong></p>
+</blockquote>
+<h3 id="exercice-3_2">Exercice 3</h3>
+<p>Construisez le tableau d'amortissement d'un emprunt de 30 000 € sur 3 ans à 6 %, annuités constantes.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Annuité = 30 000 × 0,06 / [1 - (1,06)^(-3)] = 1 800 / 0,2396 = <strong>11 228 €</strong></p>
+<table>
+<thead>
+<tr>
+<th>An</th>
+<th>CRD début</th>
+<th>Intérêts</th>
+<th>Amort.</th>
+<th>Annuité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>30 000 €</td>
+<td>1 800 €</td>
+<td>9 428 €</td>
+<td>11 228 €</td>
+</tr>
+<tr>
+<td>2</td>
+<td>20 572 €</td>
+<td>1 234 €</td>
+<td>9 994 €</td>
+<td>11 228 €</td>
+</tr>
+<tr>
+<td>3</td>
+<td>10 578 €</td>
+<td>635 €</td>
+<td>10 593 €</td>
+<td>11 228 €</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>Les formules d'annuités évitent d'actualiser chaque flux individuellement.</li>
+<li>La perpétuité croissante (Gordon-Shapiro) est le fondement de l'évaluation des actions.</li>
+<li>L'amortissement constant réduit la charge d'intérêts plus vite, mais l'annuité décroît.</li>
+<li>L'annuité constante lisse les remboursements, mais l'amortissement initial est faible.</li>
+<li>Le crédit in fine maximise le coût total des intérêts.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_1">Approfondissement théorique</h2>
+<h3 id="les-annuites-et-la-decision-dinvestissement-cout-annuel-equivalent-cae">Les annuités et la décision d'investissement : coût annuel équivalent (CAE)</h3>
+<p>Le <strong>Coût Annuel Équivalent (CAE)</strong> permet de comparer des projets de durées différentes en les ramenant à un coût annuel uniforme. Il est utilisé pour les décisions de remplacement d'équipements.</p>
+<pre><code>CAE = -VAN / Facteur d'annuité
+    = -VAN × r / [1 - (1+r)^(-n)]
+</code></pre>
+<p><strong>Exemple</strong> : Deux machines :
+- Machine A : coût 50 000 €, durée 4 ans, coûts d'exploitation 10 000 €/an, VAN (à 8 %) = -83 000 €
+- Machine B : coût 80 000 €, durée 6 ans, coûts d'exploitation 8 000 €/an, VAN = -121 000 €</p>
+<pre><code>CAE_A = -(-83 000) × 0,08 / [1 - (1,08)^(-4)] = 6 640 / 0,2650 = 25 057 €/an
+CAE_B = -(-121 000) × 0,08 / [1 - (1,08)^(-6)] = 9 680 / 0,3702 = 26 153 €/an
+</code></pre>
+<p>Machine A est préférable (CAE plus bas).</p>
+<h3 id="taux-effectif-global-teg-et-comparaison-de-credits">Taux effectif global (TEG) et comparaison de crédits</h3>
+<p>Le <strong>TEG</strong> (ou TAEG — Taux Annuel Effectif Global en France) intègre tous les coûts d'un crédit : intérêts, assurance, frais de dossier, garanties.</p>
+<pre><code>TEG : résoudre K = Σ Annuités_t / (1 + TEG)^t
+</code></pre>
+<p><strong>Exemple</strong> : Prêt de 100 000 €, mensualité = 600 €/mois, durée 20 ans. Le TEG se calcule par itération numérique :</p>
+<pre><code>100 000 = 600 × [1 - (1 + TEG_mensuel)^(-240)] / TEG_mensuel
+TEG_mensuel ≈ 0,495 % → TEG annuel ≈ (1,00495)^12 - 1 = 6,1 %
+</code></pre>
+<p>Toujours comparer les crédits sur la base du TAEG, pas seulement du taux nominal.</p>
+<h3 id="valeur-temps-en-finance-dentreprise-les-options-reelles">Valeur temps en finance d'entreprise : les options réelles</h3>
+<p>La logique des annuités et de la valeur temps s'étend aux <strong>options réelles</strong> — la valeur de la flexibilité dans les décisions d'investissement :</p>
+<p><strong>Option de report</strong> : reporter un investissement jusqu'à ce que l'incertitude se réduise.
+<strong>Option d'expansion</strong> : possibilité d'agrandir un projet si les résultats sont bons.
+<strong>Option d'abandon</strong> : possibilité de céder le projet si les perspectives se dégradent.</p>
+<p>Ces options sont valorisées par les mêmes formules que les options financières (Black-Scholes, arbres binomiaux), mais avec :
+- S = VAN du projet (valeur de l'actif sous-jacent)
+- K = coût d'investissement
+- T = durée de l'option
+- σ = volatilité des cash-flows du projet</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_1">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-emprunt-in-fine-vs-amortissable-comparaison-complete">Exemple 1 — Emprunt in fine vs. amortissable : comparaison complète</h3>
+<p><strong>Prêt de 100 000 €, 10 ans, taux 5 %</strong></p>
+<p><strong>Amortissement constant</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>An</th>
+<th>Capital</th>
+<th>Amort.</th>
+<th>Intérêts</th>
+<th>Annuité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>100 000</td>
+<td>10 000</td>
+<td>5 000</td>
+<td>15 000</td>
+</tr>
+<tr>
+<td>5</td>
+<td>60 000</td>
+<td>10 000</td>
+<td>3 000</td>
+<td>13 000</td>
+</tr>
+<tr>
+<td>10</td>
+<td>10 000</td>
+<td>10 000</td>
+<td>500</td>
+<td>10 500</td>
+</tr>
+<tr>
+<td>Total</td>
+<td></td>
+<td>100 000</td>
+<td>27 500</td>
+<td>127 500</td>
+</tr>
+</tbody>
+</table>
+<p><strong>In fine</strong> :
+Intérêts = 100 000 × 5 % × 10 = 50 000 €
+Total décaissé = 100 000 + 50 000 = 150 000 €</p>
+<p><strong>Annuités constantes</strong> :
+Annuité = 100 000 × 0,05 / [1 - (1,05)^(-10)] = 5 000 / 0,3861 = 12 950 €/an
+Total = 12 950 × 10 = 129 500 €</p>
+<p><strong>Synthèse</strong> :
+| Type | Total décaissé | Trésorerie an 1 |
+|------|---------------|----------------|
+| Amortissement constant | 127 500 € | -15 000 € |
+| Annuités constantes | 129 500 € | -12 950 € |
+| In fine | 150 000 € | -5 000 € |</p>
+<p>L'in fine libère de la trésorerie à court terme mais coûte bien plus cher au total.</p>
+<h3 id="exemple-2-plan-depargne-retraite-capitalisation">Exemple 2 — Plan d'épargne retraite : capitalisation</h3>
+<p>Un salarié de 35 ans souhaite avoir 500 000 € à 65 ans (30 ans). Rendement annuel attendu = 5 %.</p>
+<p><strong>Calcul de l'épargne mensuelle nécessaire</strong> :</p>
+<p>Taux mensuel équivalent = (1,05)^(1/12) - 1 = 0,4074 %</p>
+<pre><code>VF = CF × [(1 + r)^n - 1] / r
+500 000 = CF × [(1,004074)^360 - 1] / 0,004074
+500 000 = CF × [4,322 - 1] / 0,004074
+500 000 = CF × 815,5
+CF = 500 000 / 815,5 = 613 €/mois
+</code></pre>
+<p><strong>Si le rendement passe à 7 %</strong> :
+r_mensuel = (1,07)^(1/12) - 1 = 0,5654 %</p>
+<pre><code>500 000 = CF × [(1,005654)^360 - 1] / 0,005654
+          = CF × [7,686 - 1] / 0,005654 = CF × 1 182
+CF = 500 000 / 1 182 = 423 €/mois
+</code></pre>
+<p><strong>Effet du rendement</strong> : passer de 5 % à 7 % réduit l'effort d'épargne mensuel de <strong>613 → 423 €</strong> (-31 %).</p>
+<h3 id="exemple-3-analyse-dun-bail-lease-vs-achat">Exemple 3 — Analyse d'un bail (lease) vs. achat</h3>
+<p>Bien industriel coûtant 200 000 €. Deux options :
+- <strong>Achat</strong> : financement à 4 % sur 5 ans, amortissement linéaire sur 5 ans (déductible fiscalement).
+- <strong>Location-financement (bail)</strong> : loyer annuel = 45 000 €, déductible fiscalement.</p>
+<p>IS = 25 %. Taux d'actualisation = 4 %.</p>
+<pre><code>ACHAT :
+Annuité emprunt = 200 000 × 0,04 / [1 - (1,04)^(-5)] = 8 000 / 0,2192 = 36 500 €/an
+
+Économie fiscale sur intérêts (décroissante) :
+An 1 : intérêts ≈ 8 000 € → éco IS = 2 000 €
+An 2 : intérêts ≈ 6 400 € → éco IS = 1 600 €
+...
+
+Économie IS sur amortissement = 200 000 / 5 × 25 % = 10 000 €/an
+
+BAIL :
+Loyer décaissé après IS = 45 000 × (1 - 25 %) = 33 750 €/an net d'IS
+
+PV(charges bail) = 33 750 × [1 - (1,04)^(-5)] / 0,04 = 33 750 × 4,452 = 150 255 €
+
+PV(charges achat) ≈ 36 500 × 4,452 - PV(economies IS amort.)
+= 162 500 - (10 000 × 4,452) = 162 500 - 44 520 = ~118 000 €
+</code></pre>
+<p><strong>L'achat est moins cher en VAN</strong> mais nécessite un financement initial. Le bail préserve la trésorerie.</p>
+<hr />
+<h2 id="applications-professionnelles_1">Applications professionnelles</h2>
+<h3 id="ingenierie-financiere-structuration-des-emprunts-obligataires">Ingénierie financière : structuration des emprunts obligataires</h3>
+<p>Les émetteurs d'obligations modulent la structure des remboursements selon leurs besoins :</p>
+<p><strong>Obligation "bullet"</strong> (= in fine) : modalité standard pour les émetteurs investment grade.</p>
+<p><strong>Obligation amortissable</strong> : utilisée pour les ABS (Asset-Backed Securities) où les actifs sous-jacents génèrent des flux de remboursement réguliers (crédits immobiliers, crédits auto).</p>
+<p><strong>Sinking fund</strong> : l'émetteur constitue une réserve (fonds de remboursement) pour rembourser l'obligation par tranches → rassure les créanciers.</p>
+<p><strong>Exemple</strong> : Une émission d'obligations de 500 M€ avec amortissement de 100 M€/an à partir de l'an 3 → calendrier de remboursement prévisible pour l'investisseur.</p>
+<h3 id="credit-immobilier-comprendre-le-tableau-damortissement">Crédit immobilier : comprendre le tableau d'amortissement</h3>
+<p>Le tableau d'amortissement est un outil clé pour :</p>
+<ol>
+<li>
+<p><strong>Négocier le remboursement anticipé</strong> : calculer les indemnités de remboursement anticipé (IRA) = pénalité sur l'encours restant (généralement 3 % de l'encours ou 6 mois d'intérêts, le plus petit des deux).</p>
+</li>
+<li>
+<p><strong>Comparer les offres</strong> : même mensualité peut cacher des durées ou taux différents.</p>
+</li>
+<li>
+<p><strong>Planifier le rachat de crédit</strong> : modéliser l'économie réalisée en rachetant un crédit à 5 % pour un crédit à 3 %.</p>
+</li>
+</ol>
+<pre><code>Crédit 200 000 € à 5 %, 20 ans, 4 ans déjà remboursés
+CRD actuel ≈ 200 000 × (1,05)^4 - Annuité × [(1,05)^4 - 1]/0,05
+Annuité = 200 000 × 0,05 / [1 - (1,05)^(-20)] = 16 053 €
+CRD(4) = 200 000 × (1,2155) - 16 053 × 0,2155 / 0,05 = 243 100 - 69 200 = 173 900 €
+
+Nouveau crédit 173 900 € à 3 %, 16 ans restants :
+Nouvelle annuité = 173 900 × 0,03 / [1 - (1,03)^(-16)] = 13 556 €
+
+Économie = 16 053 - 13 556 = 2 497 €/an pendant 16 ans
+PV économies (à 3 %) = 2 497 × [1 - (1,03)^(-16)] / 0,03 = 2 497 × 12,56 = 31 370 €
+</code></pre>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_1">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mélanger taux annuel et taux mensuel</strong></td>
+<td>Diviser le taux par 12 ≠ taux mensuel équivalent exact</td>
+<td>Toujours utiliser la conversion (1 + r_annuel)^(1/12) - 1</td>
+</tr>
+<tr>
+<td><strong>Confondre rente de début et de fin de période</strong></td>
+<td>Une rente de début de période vaut (1+r) fois une rente de fin</td>
+<td>Bien identifier quand arrive le premier flux</td>
+</tr>
+<tr>
+<td><strong>Ignorer les frais dans le TEG</strong></td>
+<td>Comparer les taux nominaux sans intégrer frais de dossier et assurance → sous-estimer le coût réel</td>
+<td>Calculer le TEG (TAEG) pour toute comparaison</td>
+</tr>
+<tr>
+<td><strong>Oublier la valeur temps dans les projets d'investissement</strong></td>
+<td>Sommer des flux sans actualiser → surestime la rentabilité</td>
+<td>Toujours actualiser les flux au coût du capital approprié</td>
+</tr>
+<tr>
+<td><strong>Utiliser la règle √T pour annualiser sans condition</strong></td>
+<td>La règle VaR(n jours) = VaR(1j) × √n suppose des rendements i.i.d.</td>
+<td>Vérifier les hypothèses ou calculer directement sur l'horizon</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_1">Exercices supplémentaires</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Calculez la valeur actuelle d'une rente perpétuelle croissante. Un actif rapporte 500 € de loyer mensuel au premier mois, croissant de 0,2 %/mois à l'infini. Taux d'actualisation mensuel = 0,5 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VA = CF₁ / (r - g) = 500 / (0,5 % - 0,2 %) = 500 / 0,3 % = <strong>166 667 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_3">Exercice 2</h3>
+<p>Un crédit de 80 000 €, annuités constantes sur 8 ans, taux 4 %. Calculez l'annuité, le CRD après 3 ans, et l'amortissement inclus dans la 4e annuité.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Annuité = 80 000 × 0,04 / [1 - (1,04)^(-8)] = 3 200 / 0,2745 = <strong>11 659 €</strong></p>
+<p>CRD(3) = 80 000 × (1,04)³ - 11 659 × [(1,04)³ - 1] / 0,04
+       = 80 000 × 1,1249 - 11 659 × (0,1249/0,04)
+       = 89 993 - 36 379 = <strong>53 614 €</strong></p>
+<p>Intérêts an 4 = 53 614 × 4 % = 2 145 €
+Amortissement an 4 = 11 659 - 2 145 = <strong>9 514 €</strong></p>
+</blockquote>
+<h3 id="exercice-3_3">Exercice 3</h3>
+<p>Vous avez la possibilité de recevoir 10 000 € dans 2 ans OU 12 000 € dans 5 ans. Taux d'actualisation 6 %. Quelle option est préférable ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VA(option 1) = 10 000 / (1,06)² = 10 000 / 1,1236 = <strong>8 900 €</strong>
+VA(option 2) = 12 000 / (1,06)⁵ = 12 000 / 1,3382 = <strong>8 968 €</strong></p>
+<p>L'option 2 (12 000 € dans 5 ans) est légèrement préférable en valeur actuelle : 8 968 &gt; 8 900.
+Si le taux était 8 % : VA(opt 2) = 12 000/1,469 = 8 168 € &lt; 8 573 € (opt 1) → ordre inversé.</p>
+</blockquote>
+<h3 id="exercice-4">Exercice 4</h3>
+<p>Un immeuble génère des loyers de 2 000 €/mois pendant 15 ans, puis est revendu 400 000 €. Taux d'actualisation = 5 %/an. Calculez la valeur actuelle totale.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Taux mensuel = (1,05)^(1/12) - 1 = 0,4074 %</p>
+<p>VA des loyers = 2 000 × [1 - (1,004074)^(-180)] / 0,004074
+             = 2 000 × [1 - 0,4810] / 0,004074
+             = 2 000 × 127,3 = <strong>254 600 €</strong></p>
+<p>VA de la revente = 400 000 / (1,05)^15 = 400 000 / 2,0789 = <strong>192 440 €</strong></p>
+<p>Valeur actuelle totale = 254 600 + 192 440 = <strong>447 040 €</strong>
+Prix d'acquisition rentable si &lt; 447 040 € (au taux d'actualisation de 5 %)</p>
+</blockquote>
+<hr />
+</body>
+</html>

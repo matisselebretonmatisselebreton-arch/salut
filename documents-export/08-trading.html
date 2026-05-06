@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>08 Trading</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-8-trading-bonus">Module 8 — Trading (Bonus)</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Comprendre les mécanismes du trading professionnel : organisation des salles de marchés, analyse technique, stratégies quantitatives, trading algorithmique et gestion d'un book de trading. Ce module s'adresse aux étudiants souhaitant intégrer une salle de marchés (trading, sales, structuration) ou une société de gestion.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-salle-marches.md">La salle des marchés : organisation et métiers</a></li>
+<li><a href="./chapitre-02-analyse-technique.md">Analyse technique</a></li>
+<li><a href="./chapitre-03-strategies-trading.md">Stratégies de trading : momentum, mean reversion, arbitrage</a></li>
+<li><a href="./chapitre-04-trading-algorithmique.md">Trading algorithmique et haute fréquence</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>16 heures (4h par chapitre)</p>
+<h2 id="prerequis">Prérequis</h2>
+<ul>
+<li>Module 4 (Marchés Financiers) — indispensable</li>
+<li>Module 6 (Gestion des Risques) — recommandé</li>
+<li>Notions de statistiques descriptives</li>
+</ul>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Backtest d'une stratégie simple sur données historiques</li>
+<li>Analyse technique d'un actif réel</li>
+<li>Étude de cas : gestion d'un book de trading en simulation</li>
+</ul>
+<h2 id="debouches">Débouchés</h2>
+<ul>
+<li>Trader (flow, prop, structured)</li>
+<li>Sales / Structureur</li>
+<li>Quant / Quant Researcher</li>
+<li>Gestionnaire de portefeuille</li>
+<li>Risk Manager (front office)</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-la-salle-des-marches-organisation-et-metiers">Chapitre 1 — La salle des marchés : organisation et métiers</h1>
+<h2 id="introduction">Introduction</h2>
+<p>La <strong>salle des marchés</strong> (trading floor) est le lieu où sont achetés et vendus les instruments financiers pour compte propre ou pour compte de clients. C'est l'un des environnements les plus exigeants de la finance, où les décisions se prennent en quelques secondes et les pertes peuvent être colossales.</p>
+<p>Depuis la dématérialisation des années 1990, la salle des marchés est aussi (et surtout) un environnement technologique : des centaines d'écrans, des flux de données en temps réel, et des systèmes d'exécution ultrarapides.</p>
+<hr />
+<h2 id="1-organisation-dune-salle-des-marches">1. Organisation d'une salle des marchés</h2>
+<h3 id="11-structure-type">1.1 Structure type</h3>
+<pre><code>Direction des Marchés
+│
+├── Front Office ──────────────── Contact direct avec le marché
+│   ├── Trading (prop + flow)
+│   ├── Sales
+│   └── Structuration
+│
+├── Middle Office ─────────────── Contrôle et support
+│   ├── Risk Management (MO)
+│   ├── Validation des trades
+│   └── Reporting P&amp;L
+│
+└── Back Office ───────────────── Traitement opérationnel
+    ├── Confirmation / Règlement-livraison
+    ├── Comptabilité des opérations
+    └── Réconciliation
+</code></pre>
+<h3 id="12-le-front-office">1.2 Le Front Office</h3>
+<p>Le <strong>front office</strong> est en contact direct avec le marché. Il génère les revenus.</p>
+<h4 id="les-traders">Les traders</h4>
+<table>
+<thead>
+<tr>
+<th>Type de trader</th>
+<th>Description</th>
+<th>Horizon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Flow trader</strong></td>
+<td>Exécute les ordres des clients (market-making)</td>
+<td>Secondes à heures</td>
+</tr>
+<tr>
+<td><strong>Prop trader</strong></td>
+<td>Prend des positions pour compte propre (P&amp;L propre)</td>
+<td>Jours à semaines</td>
+</tr>
+<tr>
+<td><strong>Structured trader</strong></td>
+<td>Gère le risque de produits structurés complexes</td>
+<td>Mois à années</td>
+</tr>
+<tr>
+<td><strong>Quant trader</strong></td>
+<td>Exécute des stratégies quantitatives/algorithmiques</td>
+<td>Microsecondes à jours</td>
+</tr>
+</tbody>
+</table>
+<h4 id="les-sales">Les sales</h4>
+<p>Les <strong>sales</strong> sont les intermédiaires entre les clients institutionnels et les traders. Ils :
+- Comprennent les besoins du client.
+- Proposent des produits adaptés.
+- Négocient les conditions avec le trader.
+- Ne prennent pas de risque de marché directement.</p>
+<h4 id="les-structureurs">Les structureurs</h4>
+<p>Les <strong>structureurs</strong> conçoivent des produits financiers sur mesure (produits structurés, dérivés exotiques) en combinant des instruments standard. Ils nécessitent des compétences à la fois en finance quantitative et en relation client.</p>
+<hr />
+<h2 id="2-le-pl-profit-loss-mesure-de-performance">2. Le P&amp;L (Profit &amp; Loss) — mesure de performance</h2>
+<h3 id="21-definition">2.1 Définition</h3>
+<p>Le <strong>P&amp;L</strong> (ou résultat) d'un trader est la variation de valeur de son portefeuille (book) sur une période :</p>
+<pre><code>P&amp;L journalier = Valeur book (fin de journée) - Valeur book (début de journée)
+               = Δ Mark-to-Market + Revenus (coupons, dividendes) - Financement
+</code></pre>
+<h3 id="22-mark-to-market-mtm">2.2 Mark-to-Market (MtM)</h3>
+<p>Toutes les positions sont valorisées <strong>chaque soir au prix de marché</strong> (marked-to-market), que les gains soient réalisés ou non. C'est ce qui distingue la finance de marché de la comptabilité traditionnelle.</p>
+<pre><code>MtM d'une position = Prix de marché × Quantité détenue
+</code></pre>
+<h3 id="23-decomposition-du-pl">2.3 Décomposition du P&amp;L</h3>
+<p>Les traders décomposent leur P&amp;L selon les "sensibilités" (grecques) :</p>
+<pre><code>P&amp;L = Delta P&amp;L + Gamma P&amp;L + Vega P&amp;L + Theta P&amp;L + Autres
+</code></pre>
+<p>Cette décomposition permet d'identifier quelle exposition a contribué au gain ou à la perte.</p>
+<h3 id="24-explained-vs-unexplained-pl">2.4 Explained vs. Unexplained P&amp;L</h3>
+<p>Chaque soir, le <strong>Middle Office</strong> compare :
+- Le <strong>P&amp;L expliqué</strong> : calculé à partir des mouvements de marché et des sensibilités.
+- Le <strong>P&amp;L réel</strong> (MtM) : valorisation directe.</p>
+<p>Un écart significatif ("unexplained P&amp;L") déclenche une investigation immédiate : erreur de modèle, trade non enregistré, donnée de marché incorrecte.</p>
+<hr />
+<h2 id="3-les-instruments-traites">3. Les instruments traités</h2>
+<h3 id="31-par-desk-equipe">3.1 Par desk (équipe)</h3>
+<table>
+<thead>
+<tr>
+<th>Desk</th>
+<th>Instruments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Rates</strong></td>
+<td>Obligations d'État, swaps de taux (IRS), options de taux (swaptions, caps/floors)</td>
+</tr>
+<tr>
+<td><strong>Credit</strong></td>
+<td>Obligations corporate, CDS, CLO, indices crédit (iTraxx, CDX)</td>
+</tr>
+<tr>
+<td><strong>Equity</strong></td>
+<td>Actions, futures/options sur actions et indices, variance swaps</td>
+</tr>
+<tr>
+<td><strong>FX</strong></td>
+<td>Spots, forwards, options de change, NDFs (Non Deliverable Forwards)</td>
+</tr>
+<tr>
+<td><strong>Commodities</strong></td>
+<td>Futures pétrole, gaz, métaux, agricole</td>
+</tr>
+<tr>
+<td><strong>Exotics / Structured</strong></td>
+<td>Produits structurés, dérivés exotiques (barrières, lookbacks, etc.)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-le-carnet-dordres-interne">3.2 Le carnet d'ordres interne</h3>
+<p>Chaque trader gère un <strong>book</strong> : l'ensemble de ses positions. Il doit en permanence connaître :
+- Sa position nette (long / short) sur chaque actif.
+- Ses sensibilités (delta, gamma, vega, rho...).
+- Sa limite de risque allouée (VaR, stop-loss).</p>
+<hr />
+<h2 id="4-systemes-et-technologie">4. Systèmes et technologie</h2>
+<h3 id="41-le-flux-dexecution">4.1 Le flux d'exécution</h3>
+<pre><code>Décision d'investissement
+         ↓
+OMS (Order Management System) — saisie et routage de l'ordre
+         ↓
+EMS (Execution Management System) — choix du lieu d'exécution
+         ↓
+Marchés / Contreparties — exécution
+         ↓
+TMS (Trade Management System) — confirmation et réconciliation
+         ↓
+Back Office / Règlement-Livraison
+</code></pre>
+<h3 id="42-sources-de-donnees-de-marche">4.2 Sources de données de marché</h3>
+<table>
+<thead>
+<tr>
+<th>Fournisseur</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bloomberg Terminal</strong></td>
+<td>Données de marché, analyses, messaging</td>
+</tr>
+<tr>
+<td><strong>Refinitiv (LSEG)</strong></td>
+<td>Flux temps réel, données historiques</td>
+</tr>
+<tr>
+<td><strong>Reuters</strong></td>
+<td>Actualités financières</td>
+</tr>
+<tr>
+<td><strong>FactSet</strong></td>
+<td>Données fondamentales, consensus analystes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-protocoles-de-trading">4.3 Protocoles de trading</h3>
+<ul>
+<li><strong>FIX Protocol</strong> (Financial Information eXchange) : standard mondial pour la communication des ordres.</li>
+<li><strong>FIXML</strong> : version XML du FIX.</li>
+<li><strong>API REST/WebSocket</strong> : pour le trading algorithmique moderne.</li>
+</ul>
+<hr />
+<h2 id="5-gestion-du-risque-en-salle-des-marches">5. Gestion du risque en salle des marchés</h2>
+<h3 id="51-les-limites-de-risque">5.1 Les limites de risque</h3>
+<p>Chaque trader se voit allouer des <strong>limites</strong> qu'il ne peut pas dépasser :</p>
+<table>
+<thead>
+<tr>
+<th>Type de limite</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>VaR limit</strong></td>
+<td>Perte maximale probable par jour</td>
+</tr>
+<tr>
+<td><strong>Stop-loss</strong></td>
+<td>Perte maximale acceptée (journalière / mensuelle)</td>
+</tr>
+<tr>
+<td><strong>Notional limit</strong></td>
+<td>Montant nominal maximum par position</td>
+</tr>
+<tr>
+<td><strong>Greeks limits</strong></td>
+<td>Delta max, gamma max, vega max</td>
+</tr>
+<tr>
+<td><strong>Concentration limit</strong></td>
+<td>Exposition max par émetteur / secteur</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-le-processus-de-controle">5.2 Le processus de contrôle</h3>
+<pre><code>Pré-trade : vérification des limites avant l'exécution (straight-through processing)
+Post-trade : surveillance en temps réel du P&amp;L et des limites
+Fin de journée : réconciliation, rapport de risk, explication P&amp;L
+</code></pre>
+<h3 id="53-accidents-celebres-et-lecons">5.3 Accidents célèbres et leçons</h3>
+<table>
+<thead>
+<tr>
+<th>Affaire</th>
+<th>Perte</th>
+<th>Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Nick Leeson (Barings, 1995)</strong></td>
+<td>1,3 Md$</td>
+<td>Positions non autorisées sur futures Nikkei, absence de contrôle</td>
+</tr>
+<tr>
+<td><strong>Jérôme Kerviel (SocGen, 2008)</strong></td>
+<td>4,9 Mds€</td>
+<td>Positions directionnelles non couvertes masquées par de faux hedges</td>
+</tr>
+<tr>
+<td><strong>London Whale (JPMorgan, 2012)</strong></td>
+<td>6 Mds$</td>
+<td>CDS mal valorisés, positions concentrées trop importantes</td>
+</tr>
+<tr>
+<td><strong>Knight Capital (2012)</strong></td>
+<td>440 M$ en 45 min</td>
+<td>Bug algorithmique sur l'EMS</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Leçons communes</strong> :
+1. Le contrôle des risques doit être indépendant du front office.
+2. L'unexplained P&amp;L doit déclencher des alertes immédiates.
+3. Les limites doivent être techniques (bloquantes) et pas seulement déclaratives.</p>
+<hr />
+<h2 id="6-les-metiers-quantitatifs">6. Les métiers quantitatifs</h2>
+<h3 id="61-le-quant-quantitative-analyst">6.1 Le Quant (Quantitative Analyst)</h3>
+<p>Les <strong>quants</strong> développent les modèles de pricing, de gestion des risques et les stratégies algorithmiques. On distingue :</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Mission</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Front office quant (desk quant)</strong></td>
+<td>Modèles de pricing pour les traders</td>
+</tr>
+<tr>
+<td><strong>Quant researcher</strong></td>
+<td>Recherche de stratégies systématiques</td>
+</tr>
+<tr>
+<td><strong>Risk quant</strong></td>
+<td>Modèles de VaR, stress tests</td>
+</tr>
+<tr>
+<td><strong>Quant developer</strong></td>
+<td>Implémentation et optimisation des modèles</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Compétences</strong> : mathématiques (calcul stochastique, probabilités), statistiques, programmation (Python, C++, R), finance de marché.</p>
+<h3 id="62-le-role-du-structureur">6.2 Le rôle du Structureur</h3>
+<p>Le structureur :
+1. Identifie le besoin du client (exposition, protection, rendement).
+2. Conçoit le produit en combinant des instruments (call + obligation = capital garanti, par exemple).
+3. Prix et documente le produit.
+4. Travaille avec le trader sur la couverture (hedging) du produit.</p>
+<hr />
+<h2 id="7-la-journee-type-dun-trader-actions">7. La journée type d'un trader actions</h2>
+<pre><code>07h00  Lecture des news overnight (Asie, USA), résultats d'entreprises, flux macro
+07h30  Morning meeting : vision macro, positions en cours, ordres à passer
+08h00  Ouverture pré-marché, calibrage des modèles de pricing
+09h00  Ouverture Euronext Paris : flux d'ordres clients, positions propres
+09h00–17h30  Trading continu, gestion des limites, échanges avec les sales et clients
+16h30  Préparation de la clôture : réduction des positions si besoin (fin de journée)
+17h30  Fermeture Euronext : MtM final, explanation du P&amp;L, réconciliation
+18h00  Préparation du lendemain, watch list, niveaux clés à surveiller
+</code></pre>
+<hr />
+<h2 id="8-exercices">8. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>Un trader a en portefeuille :
+- 10 000 actions à 45 € (achat à 43 €)
+- Short 500 futures CAC 40 à 7 200 (valeur actuelle 7 150)
+- 1 option call sur 1 000 actions, delta = 0,4, prémium payé = 5 €</p>
+<p>Calculez le P&amp;L MtM de chaque position et le P&amp;L total.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+P&amp;L actions = 10 000 × (45 - 43) = <strong>+20 000 €</strong></p>
+<p>P&amp;L futures = 500 × (7 200 - 7 150) × 10 (multiplicateur CAC) = 500 × 50 × 10 = <strong>+250 000 €</strong> (short, le prix baisse → gain)</p>
+<p>P&amp;L option : l'option a un delta de 0,4, son prix a évolué approximativement de delta × ΔS. Sans information sur ΔS, on note que la prime payée = 5 € × 1 000 = 5 000 € (coût initial, pas de P&amp;L MtM sans prix actuel de l'option).</p>
+<p><strong>P&amp;L total ≈ +270 000 €</strong> (hors option, dont on n'a pas le prix actuel)</p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Quelles sont les 3 principales différences entre un flow trader et un prop trader ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+1. <strong>Source du P&amp;L</strong> : le flow trader gagne sur le spread bid-ask (service aux clients) ; le prop trader gagne (ou perd) sur ses anticipations de marché.
+2. <strong>Relation client</strong> : le flow trader sert des clients externes ; le prop trader n'en a pas.
+3. <strong>Profil de risque</strong> : le flow trader cherche à rester delta-neutre (il couvre immédiatement) ; le prop trader assume délibérément un risque directionnel.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>La salle des marchés se divise en front (revenus), middle (contrôle) et back office (opérations).</li>
+<li>Le P&amp;L est marqué au marché chaque soir : les gains et pertes sont comptabilisés même non réalisés.</li>
+<li>Les limites de risque (VaR, stop-loss, greeks) encadrent l'activité de chaque trader.</li>
+<li>Les accidents historiques (Kerviel, Leeson) montrent l'importance critique du contrôle indépendant.</li>
+<li>Les quants sont au cœur de la finance de marché moderne : pricing, risque, stratégies systématiques.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="microstructure-des-marches-et-market-making">Microstructure des marchés et market making</h3>
+<p>La <strong>microstructure des marchés</strong> est la discipline qui étudie les mécanismes de formation des prix et d'exécution des ordres à un niveau granulaire. Elle est au cœur du métier de market maker (teneur de marché).</p>
+<h4 id="le-modele-de-glosten-milgrom-1985">Le modèle de Glosten-Milgrom (1985)</h4>
+<p>Le modèle de <strong>Glosten et Milgrom</strong> est l'un des modèles fondateurs de la microstructure. Il explique pourquoi le spread bid-ask existe même en l'absence de coûts d'inventaire, en introduisant le concept d'<strong>asymétrie d'information</strong>.</p>
+<p>Le modèle repose sur les hypothèses suivantes :
+- Le market maker fait face à deux types d'agents : des traders <strong>informés</strong> (qui connaissent la vraie valeur de l'actif) et des traders <strong>non informés</strong> (qui tradent pour des raisons de liquidité).
+- Le market maker ne peut pas distinguer a priori à quel type il a affaire.</p>
+<pre><code>Valeur fondamentale de l'actif : V ∈ {V_H, V_L}  avec V_H &gt; V_L
+Probabilité a priori : P(V = V_H) = μ
+
+Pour un ordre d'achat entrant :
+  P(informé | achat) = α · μ / [α · μ + (1-α) · 0.5]
+
+Le market maker fixe :
+  Ask = E[V | ordre d'achat]
+  Bid = E[V | ordre de vente]
+
+Spread = Ask - Bid = f(α, μ, V_H - V_L)
+</code></pre>
+<p>Où <code>α</code> est la proportion de traders informés dans la population. Plus <code>α</code> est élevé, plus le spread est large, car le market maker doit se protéger de la sélection adverse.</p>
+<h4 id="le-cout-dadverse-selection">Le coût d'adverse selection</h4>
+<p>L'<strong>adverse selection cost</strong> (coût de sélection adverse) représente la perte espérée subie par le market maker lorsqu'il traite avec un trader informé. C'est la composante principale du spread dans les marchés peu liquides.</p>
+<pre><code>Spread total = Coût d'adverse selection + Coût d'inventaire + Coût de traitement
+
+Adverse selection component = 2 · α · (V_H - V_L) · μ · (1-μ)
+</code></pre>
+<p>En pratique, les market makers modèlent ce coût via l'<strong>Amihud illiquidity ratio</strong> :</p>
+<pre><code>ILLIQ_t = |R_t| / Volume_t
+
+Où :
+  R_t = rendement du jour t
+  Volume_t = volume négocié en valeur ($)
+</code></pre>
+<p>Un ratio élevé signifie que les prix bougent beaucoup pour un volume donné : le marché est illiquide et le coût d'adverse selection est fort.</p>
+<h4 id="payment-for-order-flow-pfof">Payment for Order Flow (PFOF)</h4>
+<p>Le <strong>PFOF</strong> est une pratique par laquelle un broker reçoit une rémunération de la part d'un market maker pour lui router les ordres de ses clients. Très répandue aux États-Unis (Robinhood, Citadel Securities), elle est controversée en Europe où MiFID II la réglemente strictement.</p>
+<pre><code>Mécanisme PFOF :
+  Broker (retail) → Order flow → Market maker
+                 ← Rémunération ←
+
+Avantage pour le client : meilleur prix d'exécution vs. bourse (price improvement)
+Risque : conflit d'intérêts entre broker et client (meilleur exécution vs. rémunération maximale)
+</code></pre>
+<p>Le PFOF soulève la question de la <strong>Best Execution</strong> : le broker est-il obligé d'exécuter au meilleur prix disponible, ou peut-il prioriser la rémunération reçue ?</p>
+<h4 id="fragmentation-des-marches-et-dark-pools">Fragmentation des marchés et dark pools</h4>
+<p>Depuis MiFID I (2007) et MiFID II (2018), les marchés européens sont fragmentés entre :
+- <strong>Marchés réglementés</strong> (Euronext, Xetra) : transparents, avec carnet d'ordres visible
+- <strong>MTF</strong> (Multilateral Trading Facilities) : ex. Chi-X, BATS Europe
+- <strong>Dark pools</strong> : pas de transparence pré-trade, prix dérivés du marché de référence</p>
+<pre><code>Fragmentation : même action tradée sur 15+ venues différentes
+Consolidation nécessaire : tape consolidée (ESMA European Consolidated Tape)
+
+Part de marché typique (actions européennes, 2024) :
+  Euronext     ~25%
+  CBOE Europe  ~20%
+  Aquis        ~6%
+  Dark pools   ~8-10%
+  SI (internalisateurs systématiques) ~15%
+</code></pre>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-decomposition-complete-du-pl-dun-desk-equity">Exemple 1 : Décomposition complète du P&amp;L d'un desk Equity</h3>
+<p>Considérons un trader equity qui gère un book d'options sur actions. En début de journée, sa position est :</p>
+<pre><code>Position : Long 100 calls sur Total SA
+  Strike K = 55 €, échéance 3 mois
+  Sous-jacent S₀ = 53 €, σ_implicite = 25%
+  Delta = 0,42, Gamma = 0,08 (par €), Vega = 12 (€ par point de vol)
+  Theta = -3,5 (€ par jour)
+  Valeur de la position = 100 × 350 € = 35 000 €
+</code></pre>
+<p>En fin de journée :</p>
+<pre><code>Mouvement du sous-jacent : S₁ = 54,20 €  →  ΔS = +1,20 €
+Mouvement de volatilité   : σ₁ = 26,5%   →  Δσ = +1,5 vol points
+Passage du temps          : Δt = 1 jour
+</code></pre>
+<p>Calcul du P&amp;L décomposé :</p>
+<pre><code>Delta P&amp;L = Delta × ΔS × Notionnel
+          = 0,42 × 1,20 × 100 × 100 actions
+          = 0,42 × 1,20 × 10 000
+          = +5 040 €
+
+Gamma P&amp;L = ½ × Gamma × (ΔS)² × Notionnel
+           = 0,5 × 0,08 × (1,20)² × 10 000
+           = 0,5 × 0,08 × 1,44 × 10 000
+           = +576 €
+
+Vega P&amp;L  = Vega × Δσ × Notionnel
+           = 12 × 1,5 × 100
+           = +1 800 €
+
+Theta P&amp;L = -3,5 × 100 = -350 €
+
+P&amp;L expliqué total = +5 040 + 576 + 1 800 - 350 = +7 066 €
+</code></pre>
+<p>Si le MtM réel donne +7 120 €, l'unexplained P&amp;L = +54 € (résidu acceptable, sans doute dû aux termes d'ordre supérieur — Vanna, Volga — non capturés).</p>
+<p><strong>Conclusion</strong> : le P&amp;L est dominé par le delta (mouvement directionnel du sous-jacent), suivi par le vega (réévaluation de la volatilité implicite).</p>
+<hr />
+<h3 id="exemple-2-calcul-du-cout-de-selection-adverse-et-calibration-du-spread">Exemple 2 : Calcul du coût de sélection adverse et calibration du spread</h3>
+<p>Un market maker tient un marché sur l'action ABC (liquidité modérée). Il observe :</p>
+<pre><code>Données historiques (20 jours) :
+  Volume moyen journalier : 500 000 titres
+  Taille moyenne des ordres : 1 000 titres
+  Nombre de trades par jour : 500
+  Volatilité journalière : σ_daily = 1,5%
+  Prix actuel : S = 100 €
+</code></pre>
+<p>Calibration du modèle de Glosten-Milgrom :</p>
+<pre><code>Paramètres estimés :
+  α (proportion de traders informés) = 20%
+  V_H = 101,5 €, V_L = 98,5 €  → range = 3 €
+  μ (probabilité de V_H) = 0,5
+
+Adverse selection component :
+  AS = 2 × α × (V_H - V_L) × μ × (1-μ)
+     = 2 × 0,20 × 3,00 × 0,5 × 0,5
+     = 2 × 0,20 × 3,00 × 0,25
+     = 0,30 €
+
+Coût d'inventaire (spread de Kyle) :
+  λ = σ²_daily / (2 × profondeur)
+    = (0,015 × 100)² / (2 × 50 000)
+    = 2,25 / 100 000 = 0,0000225 €/titre
+
+  Pour un ordre de 1 000 titres :
+  Price impact = λ × 1 000 = 0,0225 €
+
+Spread total recommandé :
+  Half-spread = AS/2 + λ × Q_moyen/2
+              = 0,15 + 0,011 = 0,161 €
+  Spread = ~0,32 €  soit ~32 bps sur 100 €
+</code></pre>
+<p>Le market maker affichera donc une fourchette bid-ask de l'ordre de 99,84 € / 100,16 €.</p>
+<hr />
+<h3 id="exemple-3-analyse-dun-incident-de-risque-operationnel-style-knight-capital">Exemple 3 : Analyse d'un incident de risque opérationnel (style Knight Capital)</h3>
+<p>Scénario : un algorithme de market making est déployé en production à 09h30. Un paramètre de taille de lot est mal configuré (lot size = 10 000 au lieu de 100).</p>
+<pre><code>Simulation des 30 premières minutes :
+
+Marché : action XYZ, spread = 0,05 €, prix mid = 50 €
+
+Chaque cycle (toutes les 100ms) :
+  - L'algo envoie 1 ordre achat de 10 000 titres au bid (49,975 €)
+  - L'algo envoie 1 ordre vente de 10 000 titres à l'ask (50,025 €)
+
+Mais le paramètre erroné crée un déséquilibre : 
+  seuls les ordres d'achat sont exécutés correctement,
+  les ordres de vente sont ignorés (bug de routing)
+
+En 30 minutes (18 000 secondes / 100ms = 1 800 cycles) :
+  Achats exécutés : 1 800 × 10 000 = 18 000 000 titres
+  Position nette : Long 18 000 000 titres × 50 € = 900 000 000 € (!)
+
+Impact de marché :
+  L'algo achète massivement → prix monte vers 51 €
+  P&amp;L latent = 18 M × (51 - 50) = +18 M€ (apparent)
+
+À la fermeture forcée de la position (liquidation d'urgence) :
+  Prix de liquidation moyen : 49 € (impact inverse)
+  P&amp;L réalisé = 18 M × (49 - 50) = -18 000 000 € 
+             + coûts de transaction ≈ 18 M × 0,05 = -900 000 €
+
+  Perte totale estimée : ~19 M€ en 30 minutes
+</code></pre>
+<p><strong>Leçons</strong> : kill switch obligatoire, limites de position en temps réel, monitoring automatique du P&amp;L avec seuil d'alerte à 1% de la perte maximale tolérable.</p>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="workflow-quotidien-dun-trader-professionnel">Workflow quotidien d'un trader professionnel</h3>
+<p>La journée d'un trader senior en salle des marchés suit un rythme précis, dicté par les ouvertures et fermetures des marchés mondiaux :</p>
+<p><strong>Phase de préparation (06h30 – 08h45)</strong></p>
+<p>Le trader commence par lire le <strong>morning pack</strong> préparé par l'équipe de recherche : résumé des marchés asiatiques, indicateurs économiques publiés dans la nuit, résultats d'entreprises, événements géopolitiques. Il consulte ses positions overnight sur le système de risk management (Bloomberg POMS ou propriétaire) pour identifier les PnL ouverts et les déltas résiduels. Si le desk gère des options, il recalibre les surfaces de volatilité implicite en fonction des mouvements de nuit.</p>
+<p>Le <strong>morning meeting</strong> (07h30 en général) réunit le desk, les sales et parfois les économistes maison. Chaque trader présente ses positions, ses vues et ses ordres à passer à l'ouverture.</p>
+<p><strong>Phase de trading actif (08h45 – 17h30)</strong></p>
+<p>Les premières minutes après l'ouverture (09h00 Euronext) sont cruciales : forte volatilité, large spread, flux d'ordres déséquilibrés. Le trader experienced sait lire le <strong>flux d'ordres</strong> (order flow) pour anticiper la direction du marché à court terme. Il surveille simultanément :</p>
+<pre><code>Outils moniteur typique d'un trader actions (8 écrans) :
+  Écran 1 : Bloomberg — flux macro et news
+  Écran 2 : Carnet d'ordres (Level 2) — bid/ask en profondeur
+  Écran 3 : Système interne P&amp;L temps réel
+  Écran 4 : Risk dashboard — greeks, VaR, limites
+  Écran 5 : Chat Bloomberg (IB) — communication avec sales et contreparties
+  Écran 6 : Graphiques et analyse technique
+  Écran 7 : OMS (Fidessa, Bloomberg EMSX)
+  Écran 8 : Watchlist — positions annexes et benchmarks
+</code></pre>
+<p><strong>Phase de clôture (16h30 – 19h00)</strong></p>
+<p>La dernière heure de trading voit souvent des mouvements de rééquilibrage liés aux <strong>index reconstitutions</strong> (fin de mois, fin de trimestre) et aux <strong>ETF rebalancing</strong>. Le trader doit décider s'il porte des positions overnight ou s'il rentre flat (position nulle). Après la fermeture, il prépare l'explication du P&amp;L pour le middle office et renseigne son blotter (journal de trades).</p>
+<h3 id="outils-et-plateformes-reelles">Outils et plateformes réelles</h3>
+<table>
+<thead>
+<tr>
+<th>Catégorie</th>
+<th>Outil</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Données de marché</strong></td>
+<td>Bloomberg Terminal, Refinitiv Eikon</td>
+<td>Cours, news, analytics</td>
+</tr>
+<tr>
+<td><strong>OMS</strong></td>
+<td>Fidessa, Bloomberg EMSX, FlexTrade</td>
+<td>Saisie et routage d'ordres</td>
+</tr>
+<tr>
+<td><strong>Risk</strong></td>
+<td>Murex, Calypso, Summit</td>
+<td>Calcul des greeks, VaR, limites</td>
+</tr>
+<tr>
+<td><strong>Algos d'exécution</strong></td>
+<td>ITG POSIT, Liquidnet, Instinet</td>
+<td>TWAP, VWAP, implementation shortfall</td>
+</tr>
+<tr>
+<td><strong>Communication</strong></td>
+<td>Bloomberg IB (messaging), ICE Chat</td>
+<td>Communication inter-desks</td>
+</tr>
+<tr>
+<td><strong>Analyse</strong></td>
+<td>FactSet, Capital IQ</td>
+<td>Fondamentaux, modèles DCF</td>
+</tr>
+<tr>
+<td><strong>Back-testing</strong></td>
+<td>Python/pandas, Matlab, propriétaire</td>
+<td>Développement de stratégies</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-biais-de-confirmation-et-ancrage-psychologique">Erreur 1 : Biais de confirmation et ancrage psychologique</h3>
+<p>L'un des biais cognitifs les plus dangereux en trading est le <strong>biais de confirmation</strong> : le trader cherche inconsciemment des informations qui confirment sa position existante et ignore les signaux contraires. Si un trader est long sur une action et que les résultats sont décevants, il sera tenté de minimiser les mauvaises nouvelles ("c'est temporaire") et de sur-pondérer les éléments positifs mineurs.</p>
+<p>L'<strong>ancrage</strong> est connexe : le trader est "ancré" sur son prix d'achat et ne peut envisager une sortie en dessous de ce niveau. Le marché, lui, ne sait pas à quel prix vous avez acheté. La seule question pertinente est : si je n'avais pas cette position, est-ce que je l'initierais maintenant ?</p>
+<p><strong>Remède</strong> : utiliser des stop-loss systématiques, pré-définis avant d'entrer en position. Se forcer à écrire une <strong>thèse d'investissement</strong> avec les conditions d'invalidation avant d'initier le trade.</p>
+<h3 id="erreur-2-over-trading-et-churning">Erreur 2 : Over-trading et churning</h3>
+<p>L'<strong>over-trading</strong> désigne le fait de passer trop d'ordres, souvent par ennui, par volonté d'être "actif" ou par excès de confiance. Chaque transaction génère des coûts (spread, commissions, impact de marché) qui s'accumulent rapidement.</p>
+<pre><code>Exemple chiffré :
+  Trader avec capital de 100 000 €
+  Tourne son capital 10 fois par mois (1 000 000 € de volume)
+  Coût de transaction : 10 bps (spread + commission)
+
+  Coût mensuel = 1 000 000 × 0,10% = 1 000 €
+  Coût annuel  = 12 000 € = 12% du capital
+
+  → Le trader doit générer 12% de alpha net juste pour couvrir ses frais !
+</code></pre>
+<p><strong>Remède</strong> : tenir un journal de trading avec analyse de la <strong>hit rate</strong> et du <strong>profit factor</strong>. Poser la question avant chaque trade : "Quel est mon edge sur cette transaction ?"</p>
+<h3 id="erreur-3-revenge-trading">Erreur 3 : Revenge trading</h3>
+<p>Le <strong>revenge trading</strong> est la tendance à essayer de "récupérer" rapidement ses pertes après une mauvaise séquence, en prenant des positions plus grosses et moins réfléchies. C'est un cercle vicieux : la pression émotionnelle dégrade la qualité des décisions, ce qui aggrave les pertes, ce qui augmente la pression.</p>
+<p>Jérôme Kerviel a clairement présenté ce pattern : après une perte initiale sur ses positions directionnelles fin 2007, il a augmenté massivement son exposition pour "récupérer", atteignant des positions de 50 milliards d'euros.</p>
+<p><strong>Remède</strong> : règle stricte du <strong>daily loss limit</strong> avec obligation de s'arrêter de trader pour la journée si cette limite est franchie. Certaines firmes implémentent cette règle de façon automatique dans les systèmes.</p>
+<h3 id="erreur-4-position-sizing-inadapte-ignorer-la-correlation">Erreur 4 : Position sizing inadapté — ignorer la corrélation</h3>
+<p>Un débutant calcule souvent la taille de ses positions de façon isolée, sans tenir compte des corrélations entre positions. Or, deux positions "distinctes" peuvent être très corrélées.</p>
+<pre><code>Exemple :
+  Position 1 : Long Total SA (secteur énergie)
+  Position 2 : Long Shell (secteur énergie)
+  Position 3 : Long Schlumberger (services pétroliers)
+
+Ces 3 positions ont toutes une corrélation ≥ 0,70 avec le prix du pétrole.
+En cas de choc sur le pétrole (−20%), les 3 positions perdent simultanément.
+
+Calcul naïf du risque :
+  VaR individuelle de chaque position = 10 000 €
+  VaR totale supposée = 30 000 €
+
+Calcul correct avec corrélation ρ = 0,75 :
+  VaR_portfolio = √(VaR₁² + VaR₂² + VaR₃² + 2ρ(VaR₁VaR₂ + VaR₁VaR₃ + VaR₂VaR₃))
+                = √(3 × 10 000² + 2 × 0,75 × 3 × 10 000²)
+                = 10 000 × √(3 + 4,5) = 10 000 × √7,5 ≈ 27 386 €
+
+  Mais pour ρ = 1 : VaR = 30 000 € (additive pure)
+  En stress, ρ → 1 : le bénéfice de diversification disparaît !
+</code></pre>
+<p><strong>Remède</strong> : construire une matrice de corrélation du portfolio. Utiliser la méthode de <strong>risk budgeting</strong> (chaque position contribue au maximum X% au risque total du book).</p>
+<h3 id="erreur-5-ignorer-les-couts-dimpact-de-marche">Erreur 5 : Ignorer les coûts d'impact de marché</h3>
+<p>Les traders débutants sur des stratégies backtestées ignorent souvent le <strong>market impact</strong> : le fait que passer un ordre gros modifie le prix en votre défaveur. Un backtest sans impact de marché est systématiquement trop optimiste.</p>
+<pre><code>Modèle simple de market impact (linéaire) :
+  ΔP / P = λ × Q / ADV
+
+Où :
+  Q   = taille de l'ordre
+  ADV = volume journalier moyen
+  λ   = coefficient d'impact (typiquement 0,1 à 0,5 pour les actions liquides)
+
+Exemple :
+  Ordre de 50 000 actions sur une valeur dont l'ADV = 500 000
+  Q / ADV = 10%
+  ΔP / P = 0,3 × 10% = 3%
+
+  Sur un prix de 100 €, l'achat se fait en moyenne à 101,5 € (en moyenne)
+  Coût d'impact = 50 000 × 1,5 € = 75 000 €
+</code></pre>
+<p>Ce coût de 75 000 € doit être soustrait du P&amp;L simulé. Toute stratégie qui requiert des ordres importants doit intégrer ce modèle.</p>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-3-decomposition-du-pl-par-sensibilites-niveau-intermediaire">Exercice 3 — Décomposition du P&amp;L par sensibilités (niveau intermédiaire)</h3>
+<p>Un trader de taux détient un portefeuille obligataire avec les caractéristiques suivantes en début de journée :</p>
+<pre><code>Portefeuille :
+  - 10 M€ nominal d'OAT 10 ans, coupon 3%, prix = 98,50, DV01 = 900 €/bp
+  - Short 100 contrats futures OAT (multiplicateur 1 000 €, DV01 = 90 €/bp/contrat)
+  - Position nette DV01 = 900 - 100 × 90 = 900 - 9 000 = -8 100 €/bp (short duration)
+
+Mouvements de marché en journée :
+  - Taux 10 ans OAT : -5 bps (de 3,50% à 3,45%)
+  - Pente 2-10 ans : +2 bps (flattening / pentification)
+</code></pre>
+<p><strong>Question</strong> : calculez le P&amp;L du portefeuille. Interprétez le résultat.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>Le trader est <strong>short duration</strong> (DV01 négatif). Les taux baissent de 5 bps → les obligations montent → le trader perd sur cette composante.</p>
+<p><code>P&amp;L = DV01_net × Δtaux (en bps)
+     = -8 100 € × (-5)
+     = +40 500 €</code></p>
+<p>Wait — il faut vérifier le signe. Une position <strong>short duration</strong> (DV01 négatif) <strong>gagne</strong> quand les taux <strong>montent</strong> et <strong>perd</strong> quand les taux baissent.</p>
+<p>Les taux baissent de 5 bps → le portefeuille perd :</p>
+<p><code>P&amp;L = DV01_net × Δtaux
+     = -8 100 × (-5) = +40 500 €</code></p>
+<p>Ici, la convention est : DV01 = gain pour une baisse de 1 bp. Donc avec DV01_net = -8 100 (short), une baisse de 5 bps génère :
+-8 100 × (-5) = +40 500 € de P&amp;L. Le short duration a gagné car les taux ont... attendu, recalculons avec la bonne convention.</p>
+<p><strong>Convention standard</strong> : DV01 &gt; 0 signifie que la position gagne quand les taux baissent.
+DV01_net = -8 100 (short duration) → position qui <strong>perd</strong> quand les taux baissent.</p>
+<p><code>P&amp;L duration = DV01_net × (-Δtaux_en_bps)
+             = -8 100 × (-(-5))   [les taux baissent de 5 bps → Δtaux = -5 bps]
+             = -8 100 × 5 = -40 500 €</code></p>
+<p>Le trader perd 40 500 € sur sa position duration, car il était short et les taux ont baissé (les obligations ont monté).</p>
+<p>La composante de pente (steepening/flattening) affecterait différemment la position selon la structure du book. Si le trader avait une exposition neutre à la pente, ce composant est nul.</p>
+<p><strong>P&amp;L total ≈ -40 500 €</strong> sur la journée.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-4-calcul-du-cout-dadverse-selection-et-calibration-du-spread-niveau-avance">Exercice 4 — Calcul du coût d'adverse selection et calibration du spread (niveau avancé)</h3>
+<p>Un market maker sur options observe les données suivantes sur une séance :</p>
+<pre><code>Transactions sur CALL BNP Paribas K=60€, échéance 1 mois :
+  Transaction 1 : vente 100 calls à 2,10 € (market maker vend, client achète)
+  Transaction 2 : vente 50 calls à 2,08 €
+  Transaction 3 : achat 80 calls à 2,05 € (market maker achète, client vend)
+  Transaction 4 : vente 120 calls à 2,15 €
+  Transaction 5 : achat 60 calls à 2,02 €
+
+Prix de clôture du call : 2,18 €
+</code></pre>
+<p><strong>Questions</strong> :
+1. Calculez le P&amp;L réalisé du market maker sur les transactions 1 à 5.
+2. Calculez le P&amp;L MtM total (position ouverte valorisée à 2,18 €).
+3. Identifiez si les acheteurs ou vendeurs étaient davantage "informés".</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Position nette du market maker</strong> :
+<code>Ventes : 100 + 50 + 120 = 270 calls vendus
+Achats : 80 + 60 = 140 calls achetés
+Position nette : Short 130 calls</code></p>
+<p><strong>P&amp;L réalisé (sur les 140 calls achetés puis revendus — partial)</strong>
+<code>Revenus des ventes (totaux) = 100 × 2,10 + 50 × 2,08 + 120 × 2,15
+                            = 210 + 104 + 258 = 572 €
+Coûts des achats (totaux) = 80 × 2,05 + 60 × 2,02
+                          = 164 + 121,20 = 285,20 €
+P&amp;L brut = 572 - 285,20 = +286,80 € sur le flux traité</code></p>
+<p><strong>P&amp;L MtM de la position résiduelle (short 130 calls)</strong> :
+```
+Prix moyen de vente des 130 calls résiduels :
+  On a vendu en net 270 calls, acheté 140. Les 130 restants sont issus des ventes.
+  Prix moyen des ventes : 572 / 270 ≈ 2,118 €</p>
+<p>P&amp;L MtM = (prix moyen de vente - prix de clôture) × position short
+         = (2,118 - 2,18) × 130 = -0,062 × 130 = -8,06 €
+```</p>
+<p><strong>Interprétation</strong> : les acheteurs (clients qui achetaient des calls) étaient davantage informés : le prix de clôture (2,18 €) est supérieur au prix moyen des transactions, ce qui signifie que les calls ont monté. Les acheteurs ont réalisé un profit, aux dépens du market maker (coût d'adverse selection).</p>
+</blockquote>
+<hr />
+<h3 id="exercice-5-analyse-dun-book-de-risque-et-optimisation-des-limites-niveau-avance">Exercice 5 — Analyse d'un book de risque et optimisation des limites (niveau avancé)</h3>
+<p>Un desk equity options présente le bilan de risque suivant en fin de journée :</p>
+<pre><code>Book equity options (10 positions différentes) :
+  Delta net     = +450 000 € (long delta)
+  Gamma net     = +8 500 €/% (long gamma — position longue d'options)
+  Vega net      = -25 000 € (short vega — vendeur de volatilité nette)
+  Theta net     = +3 200 €/jour (gain de time decay)
+
+Limites allouées :
+  Delta limit   : ±500 000 €
+  Gamma limit   : ±10 000 €/%
+  Vega limit    : ±30 000 €
+  Stop-loss day : -50 000 €
+
+Scénario de stress test :
+  Baisse du sous-jacent de 3%
+  Hausse de la volatilité de +5 vol points
+</code></pre>
+<p><strong>Question</strong> : calculez l'impact du scénario de stress sur le P&amp;L et vérifiez si les limites sont respectées après le choc.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>P&amp;L sous stress :</strong>
+```
+Impact Delta = Delta × ΔS = +450 000 × (-0,03) = -13 500 €</p>
+<p>Impact Gamma = ½ × Gamma × (ΔS)² = 0,5 × 8 500 × (0,03)² = 0,5 × 8 500 × 0,0009 = +3,83 €
+  (Le gamma est long, donc le portefeuille est convexe — bénéfice de la grande baisse)
+  Note : gamma exprimé en €/% donc : Impact = ½ × 8 500 × 3² = +38 250 €  [si ΔS en %]</p>
+<p>Impact Vega = Vega × Δσ = -25 000 × 5 = -125 000 €
+  (Short vega, la vol monte → perte significative)</p>
+<p>P&amp;L stress total = -13 500 + 38 250 - 125 000 = -100 250 €
+```</p>
+<p><strong>Vérification des limites :</strong>
+```
+Stop-loss day = -50 000 € → BREACHED (-100 250 € &lt; -50 000 €)</p>
+<p>Delta post-choc (approximation) :
+  Delta ≈ Delta initial + Gamma × ΔS
+         = +450 000 + 8 500 × (-3) = +450 000 - 25 500 = +424 500 € → OK (&lt;500 000€)</p>
+<p>Vega : inchangé en première approximation → -25 000 € → OK (&lt;30 000€)
+```</p>
+<p><strong>Conclusion</strong> : le stop-loss journalier serait franchi dans ce scénario de stress. Le trader devrait réduire son exposition vega (acheter de la volatilité) pour se protéger contre ce type de scénario. Une vente de calls out-of-the-money ou l'achat de variance swaps permettrait de réduire le short vega net.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-6-microstructure-estimation-du-spread-et-adverse-selection-niveau-expert">Exercice 6 — Microstructure : estimation du spread et adverse selection (niveau expert)</h3>
+<p>Un analyste en microstructure étudie les transactions sur l'action CAP Gemini pendant une heure :</p>
+<pre><code>Données (10 transactions) :
+  Heure    | Prix  | Sens       | Volume
+  09:05:12 | 185,4 | Achat      | 2 000
+  09:08:33 | 185,2 | Vente      | 1 500
+  09:12:01 | 185,6 | Achat      | 3 000
+  09:15:44 | 185,5 | Achat      | 800
+  09:19:22 | 185,3 | Vente      | 2 200
+  09:23:55 | 185,1 | Vente      | 4 000
+  09:27:08 | 184,9 | Vente      | 1 800
+  09:31:19 | 185,0 | Achat      | 900
+  09:35:42 | 185,2 | Achat      | 1 200
+  09:40:00 | 185,4 | Vente      | 600
+</code></pre>
+<p><strong>Questions</strong> :
+1. Estimez le spread effectif moyen par la méthode de Roll (1984).
+2. Identifiez la composante informationnelle en utilisant la méthode de Glosten-Harris.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Méthode de Roll — spread effectif :</strong></p>
+<p>La méthode de Roll estime le spread à partir de la covariance des variations de prix successives.
+```
+ΔP_t = P_t - P_{t-1}</p>
+<p>Variations :
+ΔP₁ = 185,2 - 185,4 = -0,2
+ΔP₂ = 185,6 - 185,2 = +0,4
+ΔP₃ = 185,5 - 185,6 = -0,1
+ΔP₄ = 185,3 - 185,5 = -0,2
+ΔP₅ = 185,1 - 185,3 = -0,2
+ΔP₆ = 184,9 - 185,1 = -0,2
+ΔP₇ = 185,0 - 184,9 = +0,1
+ΔP₈ = 185,2 - 185,0 = +0,2
+ΔP₉ = 185,4 - 185,2 = +0,2</p>
+<p>Produits ΔP_t × ΔP_{t-1} :
+(-0,2)(+0,4) = -0,08
+(+0,4)(-0,1) = -0,04
+(-0,1)(-0,2) = +0,02
+(-0,2)(-0,2) = +0,04
+(-0,2)(-0,2) = +0,04
+(-0,2)(+0,1) = -0,02
+(+0,1)(+0,2) = +0,02
+(+0,2)(+0,2) = +0,04</p>
+<p>Covariance estimée = moyenne = (-0,08 - 0,04 + 0,02 + 0,04 + 0,04 - 0,02 + 0,02 + 0,04) / 8
+                  = 0,02 / 8 = +0,0025</p>
+<p>Si Cov(ΔP_t, ΔP_{t-1}) &lt; 0 → Spread de Roll = 2 × √(-Cov)
+Ici la covariance est positive (faible), ce qui indique une légère tendance → 
+le spread de Roll n'est pas applicable directement (il suppose Cov &lt; 0).
+On constate une légère momentum dans les prix.
+```</p>
+<p><strong>Interprétation</strong> : la covariance légèrement positive des variations de prix suggère qu'il y a de l'information dans le flux d'ordres (les achats sont suivis de hausses, les ventes de baisses). C'est la signature d'une composante informationnelle significative, cohérente avec la présence de traders informés dans cet échantillon.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-2-analyse-technique">Chapitre 2 — Analyse technique</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>L'<strong>analyse technique</strong> (AT) est l'étude des graphiques de cours et de volumes pour anticiper les mouvements futurs des prix. Elle repose sur trois postulats fondamentaux formulés par Charles Dow (fin XIXe siècle) :</p>
+<ol>
+<li><strong>Le marché actualise tout</strong> : les prix reflètent toutes les informations disponibles (fondamentales, psychologiques, politiques).</li>
+<li><strong>Les prix évoluent en tendances</strong> : un mouvement en cours a tendance à se poursuivre jusqu'à un signal de retournement.</li>
+<li><strong>L'histoire se répète</strong> : les comportements humains étant cycliques, les configurations graphiques se reproduisent.</li>
+</ol>
+<blockquote>
+<p><strong>Note</strong> : l'analyse technique est complémentaire de l'analyse fondamentale. Les praticiens combinent souvent les deux approches.</p>
+</blockquote>
+<hr />
+<h2 id="1-les-types-de-graphiques">1. Les types de graphiques</h2>
+<h3 id="11-le-graphique-en-chandeliers-japonais-candlestick">1.1 Le graphique en chandeliers japonais (Candlestick)</h3>
+<p>Le chandelier est la représentation la plus utilisée en trading actif :</p>
+<pre><code>      │   ← Ombre haute (High)
+    ┌─┴─┐
+    │   │ ← Corps (Open → Close)
+    │   │   Corps vert/blanc = hausse (Close &gt; Open)
+    └─┬─┘   Corps rouge/noir = baisse (Close &lt; Open)
+      │   ← Ombre basse (Low)
+</code></pre>
+<p>Chaque chandelier représente une période (1 min, 5 min, 1h, 1j, 1 semaine...).</p>
+<h3 id="12-graphique-en-barres-ohlc">1.2 Graphique en barres (OHLC)</h3>
+<pre><code>    │ ← High
+  ──┤ ← Open (trait gauche)
+    │
+    ├── ← Close (trait droit)
+    │ ← Low
+</code></pre>
+<h3 id="13-graphique-en-ligne">1.3 Graphique en ligne</h3>
+<p>Relie les cours de clôture. Simple mais perd les informations intraday.</p>
+<h3 id="14-graphique-en-point-figure">1.4 Graphique en point &amp; figure</h3>
+<p>Élimine le temps pour ne conserver que les mouvements de prix significatifs. Utile pour identifier les supports/résistances sans bruit.</p>
+<hr />
+<h2 id="2-la-theorie-de-dow-et-les-tendances">2. La théorie de Dow et les tendances</h2>
+<h3 id="21-les-six-principes-de-dow">2.1 Les six principes de Dow</h3>
+<ol>
+<li>Les indices actualisent tout.</li>
+<li>Il existe trois tendances simultanées (primaire, secondaire, tertiaire).</li>
+<li>Les tendances primaires ont trois phases.</li>
+<li>Les indices doivent se confirmer mutuellement.</li>
+<li>Le volume confirme la tendance.</li>
+<li>Une tendance est en vigueur jusqu'à preuve du contraire.</li>
+</ol>
+<h3 id="22-identification-de-la-tendance">2.2 Identification de la tendance</h3>
+<pre><code>TENDANCE HAUSSIÈRE         TENDANCE BAISSIÈRE         RANGE (NEUTRE)
+     /\/\                      \  /\                   ─────────────
+    /    \                      \/  \  /               ─────────────
+   /      \                          \/
+Sommets et creux             Sommets et creux        Pas de direction
+ croissants                    décroissants             claire
+</code></pre>
+<p><strong>Règle</strong> :
+- Tendance haussière = <strong>Higher Highs (HH) + Higher Lows (HL)</strong>
+- Tendance baissière = <strong>Lower Highs (LH) + Lower Lows (LL)</strong></p>
+<h3 id="23-les-phases-dune-tendance-haussiere-dow">2.3 Les phases d'une tendance haussière (Dow)</h3>
+<pre><code>Phase 1 — Accumulation : les &quot;mains fortes&quot; achètent discrètement (pessimisme général)
+Phase 2 — Participation : la tendance est reconnue, le grand public entre
+Phase 3 — Distribution : les &quot;mains fortes&quot; vendent à la foule euphorique
+</code></pre>
+<hr />
+<h2 id="3-supports-et-resistances">3. Supports et résistances</h2>
+<h3 id="31-definitions">3.1 Définitions</h3>
+<ul>
+<li><strong>Support</strong> : niveau de prix où la demande est suffisamment forte pour stopper une baisse.</li>
+<li><strong>Résistance</strong> : niveau de prix où l'offre est suffisamment forte pour stopper une hausse.</li>
+</ul>
+<p><strong>Principes</strong> :
+- Un support cassé devient résistance (et vice versa) → <strong>principe de polarité</strong>.
+- Plus un niveau a été testé souvent, plus il est significatif.
+- Un niveau rompu avec fort volume est plus fiable.</p>
+<h3 id="32-identification-des-supportsresistances">3.2 Identification des supports/résistances</h3>
+<pre><code>     R2 ──────────────────── (ancienne résistance, maintenant résistance)
+     R1 ──────────────────── (résistance actuelle)
+
+     Cours actuel ↑
+
+     S1 ──────────────────── (support immédiat)
+     S2 ──────────────────── (support historique fort)
+</code></pre>
+<h3 id="33-niveaux-de-fibonacci">3.3 Niveaux de Fibonacci</h3>
+<p>Les retracements de Fibonacci (23,6 %, 38,2 %, 50 %, 61,8 %, 78,6 %) sont des niveaux de support/résistance très surveillés après une impulsion directionnelle.</p>
+<pre><code>Mouvement impulsif de A (0 %) vers B (100 %)
+Retracement vers :
+  23,6 % → support faible
+  38,2 % → support modéré
+  50,0 % → support important (psychologique)
+  61,8 % → support clé (golden ratio)
+  78,6 % → support profond
+</code></pre>
+<p><strong>Exemple</strong> : Une action monte de 40 € à 60 € (+20 €). Le retracement 61,8 % se situe à :</p>
+<pre><code>60 - 20 × 61,8 % = 60 - 12,36 = 47,64 €
+</code></pre>
+<hr />
+<h2 id="4-indicateurs-techniques">4. Indicateurs techniques</h2>
+<h3 id="41-moyennes-mobiles-moving-averages">4.1 Moyennes mobiles (Moving Averages)</h3>
+<h4 id="moyenne-mobile-simple-sma">Moyenne mobile simple (SMA)</h4>
+<pre><code>SMA(n) = (C_t + C_{t-1} + ... + C_{t-n+1}) / n
+</code></pre>
+<ul>
+<li><code>n</code> : nombre de périodes (ex : SMA 20, SMA 50, SMA 200)</li>
+</ul>
+<h4 id="moyenne-mobile-exponentielle-ema">Moyenne mobile exponentielle (EMA)</h4>
+<p>L'EMA pondère plus fortement les cours récents :</p>
+<pre><code>EMA_t = C_t × k + EMA_{t-1} × (1 - k)
+k = 2 / (n + 1)
+</code></pre>
+<p>L'EMA réagit plus vite aux mouvements de prix que la SMA.</p>
+<h4 id="signaux-des-moyennes-mobiles">Signaux des moyennes mobiles</h4>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Golden Cross</strong></td>
+<td>SMA 50 croise SMA 200 à la hausse → signal haussier fort</td>
+</tr>
+<tr>
+<td><strong>Death Cross</strong></td>
+<td>SMA 50 croise SMA 200 à la baisse → signal baissier fort</td>
+</tr>
+<tr>
+<td><strong>Rebond sur MA</strong></td>
+<td>Le cours rebondit sur une moyenne mobile → confirmation de tendance</td>
+</tr>
+<tr>
+<td><strong>Cassure de MA</strong></td>
+<td>Le cours casse une moyenne mobile → possible retournement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-macd-moving-average-convergence-divergence">4.2 MACD (Moving Average Convergence Divergence)</h3>
+<pre><code>MACD Line = EMA(12) - EMA(26)
+Signal Line = EMA(9) de la MACD Line
+Histogramme = MACD Line - Signal Line
+</code></pre>
+<p><strong>Signaux</strong> :
+- MACD croise Signal à la hausse → <strong>signal d'achat</strong>
+- MACD croise Signal à la baisse → <strong>signal de vente</strong>
+- <strong>Divergence</strong> : le cours fait un nouveau sommet mais le MACD non → signal de faiblesse (et vice versa)</p>
+<h3 id="43-rsi-relative-strength-index">4.3 RSI (Relative Strength Index)</h3>
+<pre><code>RSI = 100 - [100 / (1 + RS)]
+RS = Moyenne des hausses / Moyenne des baisses (sur n périodes, généralement 14)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Zone RSI</th>
+<th>Interprétation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&gt; 70</td>
+<td><strong>Surachat</strong> (overbought) → risque de correction</td>
+</tr>
+<tr>
+<td>30–70</td>
+<td>Zone neutre</td>
+</tr>
+<tr>
+<td>&lt; 30</td>
+<td><strong>Survente</strong> (oversold) → potentiel de rebond</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Divergence RSI</strong> : cours fait un nouveau sommet mais RSI non → signal de retournement baissier imminent.</p>
+<h3 id="44-bandes-de-bollinger">4.4 Bandes de Bollinger</h3>
+<pre><code>Bande médiane = SMA(20)
+Bande supérieure = SMA(20) + 2 × σ(20)
+Bande inférieure = SMA(20) - 2 × σ(20)
+</code></pre>
+<p><strong>Signaux</strong> :
+- <strong>Squeeze</strong> (bandes très resserrées) → faible volatilité → explosion imminente.
+- Cours touchant la bande supérieure → potentiel surachat.
+- Cours touchant la bande inférieure → potentiel survente.
+- <strong>%B</strong> = (Cours - Bande inférieure) / (Bande supérieure - Bande inférieure)</p>
+<h3 id="45-volume">4.5 Volume</h3>
+<p>Le volume confirme ou infirme les mouvements de prix :</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>Interprétation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hausse des prix + Volume fort</td>
+<td>Tendance haussière confirmée</td>
+</tr>
+<tr>
+<td>Hausse des prix + Volume faible</td>
+<td>Mouvement peu fiable ("fake breakout" possible)</td>
+</tr>
+<tr>
+<td>Baisse des prix + Volume fort</td>
+<td>Vente de panique, possible capitulation</td>
+</tr>
+<tr>
+<td>Baisse des prix + Volume faible</td>
+<td>Baisse peu convainquante, potentiel rebond</td>
+</tr>
+</tbody>
+</table>
+<p><strong>OBV</strong> (On-Balance Volume) : indicateur de volume cumulé → divergence OBV/prix = signal fort.</p>
+<h3 id="46-atr-average-true-range">4.6 ATR (Average True Range)</h3>
+<p>Mesure la <strong>volatilité moyenne</strong> du marché :</p>
+<pre><code>True Range = max(High - Low, |High - Close_prev|, |Low - Close_prev|)
+ATR(n) = Moyenne(True Range, n périodes)
+</code></pre>
+<p>Usage : calibrer les stop-loss (ex : stop à 2× ATR sous le point d'entrée).</p>
+<hr />
+<h2 id="5-figures-chartistes">5. Figures chartistes</h2>
+<h3 id="51-figures-de-retournement">5.1 Figures de retournement</h3>
+<h4 id="epaule-tete-epaule-head-shoulders">Épaule-Tête-Épaule (Head &amp; Shoulders)</h4>
+<pre><code>          ┌─┐  ← Tête (T)
+         /   \
+    ┌─┐ /     \ ┌─┐  ← Épaules (E)
+   / E\/       \/ E\
+──/──────────────────── Ligne de cou (neckline)
+</code></pre>
+<p><strong>Signal</strong> : cassure de la neckline vers le bas → baisse attendue ≈ hauteur tête - neckline.</p>
+<p>Version inverse (creux) → signal de retournement haussier.</p>
+<h4 id="double-sommet-double-creux">Double sommet / Double creux</h4>
+<pre><code>DOUBLE SOMMET (M)          DOUBLE CREUX (W)
+   /\    /\                    \/    \/
+  /  \  /  \                  /  /\  \
+ /    \/    \                /  /  \  \
+</code></pre>
+<p>Signal : cassure du support intermédiaire → mouvement mesuré ≈ hauteur de la figure.</p>
+<h3 id="52-figures-de-continuation">5.2 Figures de continuation</h3>
+<h4 id="triangle-ascendant">Triangle ascendant</h4>
+<pre><code>résistance ────────────────
+           /\/\/\
+          /      \  ← sommets plafonnés, creux croissants
+</code></pre>
+<p>Généralement résolution haussière (continuation).</p>
+<h4 id="drapeau-flag-et-fanion-pennant">Drapeau (Flag) et fanion (Pennant)</h4>
+<p>Formation courte après une forte impulsion, puis consolidation avant continuation :</p>
+<pre><code>   │ ← mât (impulsion)
+   │  ─────
+   │ /     \─ ← drapeau (consolidation)
+   │        ─
+   ↓ continuation
+</code></pre>
+<h3 id="53-les-chandeliers-japonais-significatifs">5.3 Les chandeliers japonais significatifs</h3>
+<table>
+<thead>
+<tr>
+<th>Chandelier</th>
+<th>Description</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Doji</strong></td>
+<td>Open ≈ Close, longues ombres</td>
+<td>Indécision → possible retournement</td>
+</tr>
+<tr>
+<td><strong>Marteau (Hammer)</strong></td>
+<td>Petit corps en haut, longue ombre basse</td>
+<td>Retournement haussier en bas de tendance</td>
+</tr>
+<tr>
+<td><strong>Étoile du soir (Evening Star)</strong></td>
+<td>Séquence 3 bougies : haussier + doji + baissier</td>
+<td>Retournement baissier en sommet</td>
+</tr>
+<tr>
+<td><strong>Avalement haussier (Bullish Engulfing)</strong></td>
+<td>Grand corps haussier englobant le corps baissier précédent</td>
+<td>Retournement haussier</td>
+</tr>
+<tr>
+<td><strong>Marteau inversé (Inverted Hammer)</strong></td>
+<td>Petit corps en bas, longue ombre haute</td>
+<td>Retournement haussier possible</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-gestion-du-risque-en-analyse-technique">6. Gestion du risque en analyse technique</h2>
+<h3 id="61-le-ratio-riskreward-rr">6.1 Le ratio Risk/Reward (R:R)</h3>
+<p>Avant d'entrer en position, le trader doit définir :</p>
+<pre><code>Entrée : niveau d'achat / vente
+Stop-loss : niveau où la position est abandonnée (invalidation de la thèse)
+Objectif (Target) : niveau de prise de bénéfice
+
+Risk/Reward = (Target - Entrée) / (Entrée - Stop)
+</code></pre>
+<p><strong>Règle minimale</strong> : n'entrer que si R:R ≥ 2:1 (gains potentiels = 2× risque).</p>
+<p><strong>Exemple</strong> :
+- Achat à 50 €
+- Stop-loss à 47 € (risque = 3 €)
+- Objectif à 56 € (gain = 6 €)
+- R:R = 6 / 3 = <strong>2:1</strong> ✓</p>
+<h3 id="62-la-position-sizing">6.2 La position sizing</h3>
+<p>La <strong>position sizing</strong> détermine la taille optimale de la position en fonction du risque accepté :</p>
+<pre><code>Taille de position = (Capital × Risque %) / (Entrée - Stop-loss)
+</code></pre>
+<p><strong>Exemple</strong> :
+- Capital = 100 000 €, risque par trade = 1 %, entrée = 50 €, stop = 47 €
+- Taille = (100 000 × 1 %) / (50 - 47) = 1 000 / 3 = <strong>333 actions</strong>
+- Risque réel = 333 × 3 € = 999 € ≈ 1 % du capital ✓</p>
+<h3 id="63-le-pyramidage-scaling">6.3 Le pyramidage (scaling)</h3>
+<p>Technique consistant à ajouter des positions en cours de tendance (après confirmation) :</p>
+<pre><code>1ère entrée : 50 % de la position totale visée
+2ème entrée (après confirmation) : 30 %
+3ème entrée : 20 %
+→ Montée du stop-loss au fur et à mesure (trailing stop)
+</code></pre>
+<hr />
+<h2 id="7-limites-de-lanalyse-technique">7. Limites de l'analyse technique</h2>
+<table>
+<thead>
+<tr>
+<th>Limite</th>
+<th>Commentaire</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Auto-réalisation</strong></td>
+<td>Les signaux fonctionnent parfois parce que tout le monde les regarde</td>
+</tr>
+<tr>
+<td><strong>Efficience des marchés</strong></td>
+<td>En théorie semi-forte, les patterns passés ne devraient pas prédire l'avenir</td>
+</tr>
+<tr>
+<td><strong>Subjectivité</strong></td>
+<td>Deux analystes peuvent tracer la même figure différemment</td>
+</tr>
+<tr>
+<td><strong>Faux signaux (whipsaws)</strong></td>
+<td>Les indicateurs génèrent de nombreux faux signaux en range</td>
+</tr>
+<tr>
+<td><strong>Lag des indicateurs</strong></td>
+<td>Les moyennes mobiles et MACD sont retardés par nature</td>
+</tr>
+<tr>
+<td><strong>Marchés peu liquides</strong></td>
+<td>L'AT est moins fiable sur les actifs peu liquides (manipulation plus facile)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommandation</strong> : utiliser l'AT en complément de l'analyse fondamentale et du contexte macro. Éviter de l'utiliser isolément.</p>
+<hr />
+<h2 id="8-exercices_1">8. Exercices</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Une action présente le mouvement suivant : montée de 30 € à 50 €, puis retracement. Calculez les niveaux de retracement Fibonacci 38,2 %, 50 % et 61,8 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Amplitude = 50 - 30 = 20 €
+38,2 % : 50 - 20 × 0,382 = 50 - 7,64 = <strong>42,36 €</strong>
+50 % : 50 - 20 × 0,50 = <strong>40,00 €</strong>
+61,8 % : 50 - 20 × 0,618 = 50 - 12,36 = <strong>37,64 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>Un trader achète 100 actions à 80 € avec un stop-loss à 76 € et un objectif à 90 €. Son capital est de 50 000 €. Calculez le ratio R:R, le risque en euros et en % du capital.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+R:R = (90 - 80) / (80 - 76) = 10 / 4 = <strong>2,5:1</strong> ✓ (&gt; 2:1)
+Risque en € = 100 × (80 - 76) = <strong>400 €</strong>
+Risque en % = 400 / 50 000 = <strong>0,8 %</strong> du capital (correct, &lt; 1-2 %)</p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Le RSI d'une action est à 28. Le cours vient de toucher un support historique avec un fort volume. Comment interprétez-vous cette situation et quelle stratégie envisagez-vous ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+<strong>Interprétation</strong> : RSI &lt; 30 = zone de survente (signal de rebond potentiel) + support historique testé + volume élevé (capitulation probable). Trois signaux convergents → situation favorable pour un trade haussier.</p>
+<p><strong>Stratégie possible</strong> :
+- Entrée : légèrement au-dessus du support (confirmation du rebond)
+- Stop-loss : sous le support (invalidation)
+- Objectif : prochaine résistance identifiée
+- Attendre une bougie de confirmation haussière (ex : marteau, engulfing haussier)</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>L'analyse technique repose sur 3 postulats : le marché actualise tout, les prix suivent des tendances, l'histoire se répète.</li>
+<li>Les supports/résistances et les Fibonacci sont les outils les plus utilisés en pratique.</li>
+<li>MACD, RSI, Bandes de Bollinger sont des indicateurs de confirmation (jamais de déclenchement seul).</li>
+<li>Le volume valide les mouvements de prix : un breakout sans volume est suspect.</li>
+<li>Le ratio Risk/Reward doit être ≥ 2:1 avant d'entrer en position.</li>
+<li>L'AT a ses limites : subjectivité, faux signaux, lag. Toujours combiner avec le contexte macro.</li>
+</ul>
+<hr />
+<h1 id="chapitre-3-strategies-de-trading-momentum-mean-reversion-arbitrage">Chapitre 3 — Stratégies de trading : momentum, mean reversion, arbitrage</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Au-delà de l'analyse technique discrétionnaire, les marchés financiers accueillent une large variété de <strong>stratégies systématiques</strong> — c'est-à-dire fondées sur des règles reproductibles et back-testables. Ces stratégies peuvent être exécutées manuellement ou de façon algorithmique. On les regroupe en trois grandes familles : le <strong>momentum</strong> (tendance), le <strong>mean reversion</strong> (retour à la moyenne), et l'<strong>arbitrage</strong> (exploitation d'inefficiences de prix).</p>
+<hr />
+<h2 id="1-strategies-de-momentum-trend-following">1. Stratégies de momentum (trend following)</h2>
+<h3 id="11-principe">1.1 Principe</h3>
+<p>Le <strong>momentum</strong> repose sur la persistance des mouvements de prix : un actif qui monte a tendance à continuer de monter, et inversement. C'est l'anomalie de marché documentée par <strong>Jegadeesh &amp; Titman (1993)</strong> et confirmée sur des dizaines d'années et de marchés.</p>
+<pre><code>Signal momentum = Performance de l'actif sur les 12 derniers mois (excluant le dernier mois)
+</code></pre>
+<p>Les stratégies momentum achètent les "gagnants" et vendent à découvert les "perdants".</p>
+<h3 id="12-momentum-de-serie-temporelle-time-series-momentum">1.2 Momentum de série temporelle (Time-Series Momentum)</h3>
+<p>On prend position dans la <strong>direction du signal</strong> de chaque actif, indépendamment des autres :</p>
+<pre><code>Si rendement(t-12, t-1) &gt; 0 → Long
+Si rendement(t-12, t-1) &lt; 0 → Short
+</code></pre>
+<p><strong>Moskowitz, Ooi &amp; Pedersen (2012)</strong> montrent que cette stratégie est positive sur une large gamme d'actifs (actions, obligations, devises, matières premières) sur 25 ans.</p>
+<h3 id="13-momentum-cross-sectionnel">1.3 Momentum cross-sectionnel</h3>
+<p>On classe les actifs par performance relative et on achète les N meilleurs, vend les N moins bons :</p>
+<pre><code>Univers de 100 actions → Acheter les 10 meilleures performers (decile 10)
+                       → Vendre les 10 pires performers (decile 1)
+</code></pre>
+<h3 id="14-strategie-de-suivi-de-tendance-cta-managed-futures">1.4 Stratégie de suivi de tendance (CTA / Managed Futures)</h3>
+<p>Les <strong>CTA</strong> (Commodity Trading Advisors) et les fonds <strong>Managed Futures</strong> appliquent du trend following à grande échelle sur des dizaines de marchés à terme (futures) à l'aide de systèmes automatisés.</p>
+<p><strong>Indicateurs typiques utilisés</strong> :
+- Croisement de moyennes mobiles (ex : SMA 50 / SMA 200)
+- Breakout de canaux (Donchian Channel : cassure du plus haut / bas des N derniers jours)
+- Filtre de volatilité (ATR) pour ajuster la taille des positions</p>
+<p><strong>Exemple de règle simple (Turtle Trading — Dennis &amp; Eckhardt, 1983)</strong> :</p>
+<pre><code>Achat si le cours dépasse le plus haut des 20 dernières séances
+Vente si le cours passe sous le plus bas des 10 dernières séances
+Taille de position : 1 % du capital / ATR(20)
+</code></pre>
+<h3 id="15-performance-et-risques-du-momentum">1.5 Performance et risques du momentum</h3>
+<table>
+<thead>
+<tr>
+<th>Caractéristique</th>
+<th>Détail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sharpe historique</strong></td>
+<td>0,3–0,7 selon les implémentations</td>
+</tr>
+<tr>
+<td><strong>Drawdown</strong></td>
+<td>Episodes de pertes sévères lors des retournements ("momentum crash")</td>
+</tr>
+<tr>
+<td><strong>Diversification</strong></td>
+<td>Excellent diversificateur de portefeuille (décorrélé des actions en crise)</td>
+</tr>
+<tr>
+<td><strong>Coûts</strong></td>
+<td>Rotation élevée → coûts de transaction significatifs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Momentum crash</strong> : lors des rebonds violents après des crises (ex. mars 2009, avril 2020), le momentum inverse s'effondre brutalement car les "perdants" rebondissent le plus fort.</p>
+<hr />
+<h2 id="2-strategies-de-mean-reversion-retour-a-la-moyenne">2. Stratégies de mean reversion (retour à la moyenne)</h2>
+<h3 id="21-principe">2.1 Principe</h3>
+<p>Contrairement au momentum, le <strong>mean reversion</strong> suppose que les prix reviennent vers une valeur d'équilibre (moyenne historique, valeur fondamentale, relation statistique stable) après s'en être écartés.</p>
+<pre><code>Si le prix s'écarte au-dessus de la moyenne → Short (anticipation de retour)
+Si le prix s'écarte en dessous de la moyenne → Long (anticipation de rebond)
+</code></pre>
+<h3 id="22-mean-reversion-sur-actif-unique">2.2 Mean reversion sur actif unique</h3>
+<h4 id="rsi-oversoldoverbought">RSI oversold/overbought</h4>
+<pre><code>RSI &lt; 30 (survente) → Achat
+RSI &gt; 70 (surachat) → Vente
+</code></pre>
+<p>Simple mais générateur de faux signaux en tendance forte.</p>
+<h4 id="bandes-de-bollinger">Bandes de Bollinger</h4>
+<pre><code>Cours touche la bande inférieure (−2σ) → Achat
+Cours touche la bande supérieure (+2σ) → Vente
+Stop-loss : clôture hors bande de 2,5σ
+</code></pre>
+<h4 id="z-score-sur-spread">Z-score sur spread</h4>
+<pre><code>Z = (Prix - Moyenne mobile n jours) / Écart-type n jours
+
+Achat si Z &lt; -2
+Vente si Z &gt; +2
+Neutralisation si |Z| &lt; 0,5
+</code></pre>
+<h3 id="23-pairs-trading-trading-en-paires">2.3 Pairs trading (trading en paires)</h3>
+<p>Le <strong>pairs trading</strong> exploite la relation stable entre deux actifs fortement corrélés (ex. deux actions du même secteur, deux ETF similaires, futures sur indices liés).</p>
+<p><strong>Étapes</strong> :</p>
+<ol>
+<li><strong>Identification de la paire</strong> : recherche de cointégration (test de Engle-Granger ou Johansen).</li>
+<li><strong>Calcul du spread</strong> :
+   <code>Spread = Prix_A - β × Prix_B</code>
+   où β est le ratio de couverture estimé par régression OLS.</li>
+<li><strong>Signal sur le Z-score du spread</strong> :
+   <code>Z = (Spread - μ_spread) / σ_spread
+   Achat spread si Z &lt; -2 (A sous-évalué / B surévalué)
+   Vente spread si Z &gt; +2 (A surévalué / B sous-évalué)</code></li>
+</ol>
+<p><strong>Exemple</strong> :
+- Paire Shell / TotalEnergies (secteur pétrolier européen)
+- β estimé = 0,95
+- Spread habituellement centré autour de 5 € avec σ = 2 €
+- Signal d'achat si Spread &lt; 5 - 2×2 = <strong>1 €</strong></p>
+<p><strong>Risques</strong> :
+- Rupture de la relation de cointégration (changement fondamental d'un des actifs)
+- Divergence prolongée avant retour à la moyenne (risque de liquidation forcée)</p>
+<h3 id="24-strategies-de-retour-a-la-moyenne-sur-indices">2.4 Stratégies de retour à la moyenne sur indices</h3>
+<p><strong>Statistique de retour à la moyenne sur indice (Ornstein-Uhlenbeck)</strong> :</p>
+<pre><code>dX_t = θ(μ - X_t)dt + σdW_t
+</code></pre>
+<ul>
+<li><code>θ</code> : vitesse de retour à la moyenne</li>
+<li><code>μ</code> : niveau d'équilibre</li>
+<li><code>σ</code> : volatilité</li>
+</ul>
+<p>La demi-vie du processus (temps pour revenir à mi-chemin de l'équilibre) :</p>
+<pre><code>t_1/2 = ln(2) / θ
+</code></pre>
+<p>Une demi-vie courte (&lt; 5 jours) est exploitable en trading intraday/swing. Une demi-vie longue (&gt; 20 jours) convient mieux à une stratégie positionnelle.</p>
+<hr />
+<h2 id="3-strategies-darbitrage">3. Stratégies d'arbitrage</h2>
+<h3 id="31-larbitrage-pur-sans-risque">3.1 L'arbitrage pur (sans risque)</h3>
+<p>En théorie, l'<strong>arbitrage pur</strong> consiste à exploiter une différence de prix entre deux marchés pour le même actif sans prendre de risque :</p>
+<pre><code>Achat de l'actif au prix bas sur le marché A
+Vente simultanée au prix élevé sur le marché B
+Profit = Différence de prix - Coûts de transaction
+</code></pre>
+<p>En pratique, les marchés modernes sont trop efficients pour offrir un arbitrage pur persistant. On parle plutôt d'<strong>arbitrage quasi-sans-risque</strong> ou de <strong>relative value</strong>.</p>
+<h3 id="32-arbitrage-cash-and-carry-futures">3.2 Arbitrage cash-and-carry (futures)</h3>
+<p>Exploit la relation théorique entre prix spot et prix futures :</p>
+<pre><code>Futures théorique : F* = S × e^(r-d)T
+Si F &gt; F* → Acheter le sous-jacent + Vendre le futures (contango excessif)
+Si F &lt; F* → Vendre le sous-jacent + Acheter le futures (backwardation excessif)
+</code></pre>
+<p><strong>Limites</strong> : coûts de financement, coûts de stockage (matières premières), contraintes de vente à découvert.</p>
+<h3 id="33-arbitrage-statistique-stat-arb">3.3 Arbitrage statistique (stat arb)</h3>
+<p>L'<strong>arbitrage statistique</strong> est une forme sophistiquée de mean reversion appliquée à un large portefeuille de paires ou de facteurs, avec une neutralisation soigneuse du risque de marché.</p>
+<p><strong>Architecture typique</strong> :</p>
+<pre><code>1. Univers : 500 actions (S&amp;P 500)
+2. Neutralisation beta : portefeuille dollar-neutre et beta-neutre
+3. Signal : alpha résiduel prédit par modèles ML ou factoriels
+4. Exécution : centaines de positions simultaneously (long/short)
+5. Rebalancement : quotidien ou hebdomadaire
+</code></pre>
+<p><strong>Facteurs alpha typiquement exploités</strong> :
+- Momentum à court terme (1–5 jours, effet rebond)
+- Révisions de bénéfices par les analystes
+- Sentiment des nouvelles (NLP sur flux d'actualités)
+- Indicateurs comptables (price-to-book, accruals)</p>
+<h3 id="34-arbitrage-de-convertibles">3.4 Arbitrage de convertibles</h3>
+<p>Les <strong>obligations convertibles</strong> combinent une obligation et une option d'achat sur les actions de l'émetteur. L'<strong>arbitrage de convertibles</strong> consiste à :</p>
+<ol>
+<li>Acheter l'obligation convertible (sous-évaluée).</li>
+<li>Vendre à découvert les actions de l'émetteur (couverture delta).</li>
+<li>Profiter de la convergence de la valorisation + du gamma positif (la position profite de la volatilité).</li>
+</ol>
+<h3 id="35-arbitrage-de-fusions-merger-arbitrage-risk-arb">3.5 Arbitrage de fusions (merger arbitrage / risk arb)</h3>
+<p>Après l'annonce d'une OPA, le cours de la cible converge progressivement vers le prix de l'offre (avec une décote reflétant le risque d'échec) :</p>
+<pre><code>Spread = Prix offre - Cours actuel cible
+Rendement annualisé = Spread / Cours × 365 / Jours jusqu'au closing
+</code></pre>
+<p><strong>Stratégie</strong> :
+- Achat de la cible (spread à capturer)
+- Vente à découvert de l'acquéreur (si paiement en actions)</p>
+<p><strong>Risque principal</strong> : échec de l'opération (recours régulateur, refus des actionnaires) → le cours de la cible rechute vers son niveau pré-annonce.</p>
+<p><strong>Exemple</strong> :</p>
+<pre><code>Prix OPA = 50 €, cours actuel cible = 47 €
+Spread = 3 €, closing estimé dans 3 mois
+Rendement annualisé = (3/47) × (365/90) = 25,9 % (brut, avant risque d'échec)
+</code></pre>
+<hr />
+<h2 id="4-gestion-du-risque-et-dimensionnement-des-positions">4. Gestion du risque et dimensionnement des positions</h2>
+<h3 id="41-le-critere-de-kelly">4.1 Le critère de Kelly</h3>
+<p>Le <strong>critère de Kelly</strong> donne la fraction optimale du capital à investir pour maximiser le taux de croissance à long terme :</p>
+<pre><code>f* = (p × b - q) / b
+</code></pre>
+<ul>
+<li><code>p</code> : probabilité de gain</li>
+<li><code>q = 1 - p</code> : probabilité de perte</li>
+<li><code>b</code> : ratio gain/perte</li>
+</ul>
+<p><strong>Exemple</strong> : p = 55 %, b = 1 (gain = perte)</p>
+<pre><code>f* = (0,55 × 1 - 0,45) / 1 = 0,10 → Investir 10 % du capital par trade
+</code></pre>
+<p>En pratique, on utilise le <strong>demi-Kelly</strong> (f*/2) pour réduire la volatilité du portefeuille.</p>
+<h3 id="42-correlation-entre-strategies">4.2 Corrélation entre stratégies</h3>
+<p>Un portefeuille de stratégies décorrélées réduit la volatilité globale sans réduire le rendement espéré :</p>
+<pre><code>Sharpe combiné ≈ Sharpe individuel × √n  (si corrélations nulles)
+</code></pre>
+<p><strong>Exemple</strong> : 4 stratégies de Sharpe 0,5 non corrélées → Sharpe portefeuille ≈ 0,5 × √4 = <strong>1,0</strong></p>
+<h3 id="43-drawdown-maximal-et-ratio-de-calmar">4.3 Drawdown maximal et ratio de Calmar</h3>
+<pre><code>Calmar = Rendement annualisé / Drawdown maximal
+</code></pre>
+<p>Un bon ratio de Calmar est &gt; 1. Les stratégies de trend following ont souvent un Calmar de 0,5–1, tandis que les stratégies de mean reversion peuvent atteindre 2–3 (au prix d'une exposition au risque de crise).</p>
+<hr />
+<h2 id="5-erreurs-frequentes-et-pieges">5. Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Overfitting</strong></td>
+<td>Stratégie sur-optimisée sur l'historique, ne fonctionne pas out-of-sample</td>
+<td>Walk-forward testing, cross-validation, regularisation</td>
+</tr>
+<tr>
+<td><strong>Sélection des données (data mining)</strong></td>
+<td>Tester 1000 stratégies et garder la meilleure → résultat biaisé</td>
+<td>Correction de Bonferroni, haircut sur le Sharpe attendu</td>
+</tr>
+<tr>
+<td><strong>Ignorer les coûts de transaction</strong></td>
+<td>Un spread de 5 bps peut anéantir une stratégie à fort turnover</td>
+<td>Modéliser réalistement les coûts (spread, impact marché, commissions)</td>
+</tr>
+<tr>
+<td><strong>Survivorship bias</strong></td>
+<td>Backtester sur un univers d'actions actuelles (qui ont "survécu")</td>
+<td>Utiliser des données point-in-time incluant les délistings</td>
+</tr>
+<tr>
+<td><strong>Look-ahead bias</strong></td>
+<td>Utiliser une information non disponible à la date du signal</td>
+<td>Construction rigoureuse du pipeline de données</td>
+</tr>
+<tr>
+<td><strong>Sous-estimation du risque de queue</strong></td>
+<td>Le backtests ne reproduit pas les crises rares</td>
+<td>Stress tests sur scénarios historiques (2008, 2020)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Un trader teste un pairs trading entre deux actions A et B. Le spread historique a une moyenne de 10 € et un écart-type de 3 €. Le spread actuel est de 4 €. Quel est le Z-score ? Quelle position prendre ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Z = (4 - 10) / 3 = <strong>-2,0</strong>
+Signal : Z &lt; -2 → le spread est anormalement bas → A est sous-évalué par rapport à B.
+<strong>Position</strong> : Acheter A + Vendre B (attendre que le spread remonte vers 10 €).
+Gain potentiel si retour à la moyenne : 10 - 4 = <strong>6 €</strong> par unité de spread.</p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Une stratégie a 60 % de trades gagnants, un gain moyen de 200 € et une perte moyenne de 150 €. Calculez le ratio b, le critère de Kelly et le demi-Kelly.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+b = 200 / 150 = <strong>1,333</strong>
+f<em> = (0,60 × 1,333 - 0,40) / 1,333 = (0,800 - 0,400) / 1,333 = 0,400 / 1,333 = </em><em>30,0 %</em><em>
+Demi-Kelly = </em><em>15 %</em>* du capital par trade</p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>Une OPA est annoncée à 60 € par action. Le cours de la cible est à 56 €. Le closing est estimé dans 4 mois. Probabilité de succès estimée à 85 %. Calculez le rendement espéré annualisé de la stratégie de merger arb.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+En cas de succès (85 %) : gain = 60 - 56 = 4 €
+En cas d'échec (15 %) : retour au cours pré-annonce estimé à 45 € → perte = 45 - 56 = -11 €</p>
+<p>Gain espéré = 0,85 × 4 + 0,15 × (-11) = 3,40 - 1,65 = <strong>+1,75 €</strong>
+Rendement = 1,75 / 56 = 3,13 %
+Annualisé = 3,13 % × (12/4) = <strong>9,38 %</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>Le <strong>momentum</strong> exploite la persistance des tendances : acheter les gagnants, vendre les perdants.</li>
+<li>Le <strong>mean reversion</strong> exploite les écarts à l'équilibre : le prix revient toujours vers sa moyenne.</li>
+<li>L'<strong>arbitrage</strong> exploite des inefficiences de prix entre actifs liés (stat arb, merger arb, cash-and-carry).</li>
+<li>Toute stratégie doit être backtestée rigoureusement en évitant overfitting, look-ahead bias et survivorship bias.</li>
+<li>Le critère de Kelly optimise le dimensionnement des positions ; en pratique, on utilise le demi-Kelly.</li>
+<li>La combinaison de stratégies décorrélées améliore le Sharpe sans augmenter le risque individuel.</li>
+</ul>
+<hr />
+<h1 id="chapitre-4-trading-algorithmique-et-haute-frequence">Chapitre 4 — Trading algorithmique et haute fréquence</h1>
+<h2 id="introduction_3">Introduction</h2>
+<p>Le <strong>trading algorithmique</strong> désigne l'utilisation d'algorithmes informatiques pour générer, router et exécuter des ordres sur les marchés financiers. Il représente aujourd'hui plus de <strong>70 % des volumes</strong> sur les marchés actions américains et plus de <strong>40 % en Europe</strong>. À son extrémité la plus technique se trouve le <strong>trading haute fréquence</strong> (HFT — High Frequency Trading), où les décisions se prennent en microsecondes.</p>
+<p>Ce chapitre couvre l'architecture technique, les stratégies d'exécution, les stratégies HFT et le cadre réglementaire.</p>
+<hr />
+<h2 id="1-taxonomie-du-trading-algorithmique">1. Taxonomie du trading algorithmique</h2>
+<pre><code>Trading algorithmique
+│
+├── Algo d'exécution ─────── Minimiser l'impact marché d'un ordre large
+│   ├── TWAP / VWAP
+│   ├── Implementation Shortfall
+│   └── Participation (POV)
+│
+├── Stratégies quantitatives ── Générer de l'alpha systématiquement
+│   ├── Momentum / Trend following
+│   ├── Statistical arbitrage
+│   └── Factor investing
+│
+└── Haute fréquence (HFT) ─── Latence sub-milliseconde
+    ├── Market making électronique
+    ├── Arbitrage de latence
+    └── Détection de flux d'ordres (order flow trading)
+</code></pre>
+<hr />
+<h2 id="2-algorithmes-dexecution">2. Algorithmes d'exécution</h2>
+<p>Les algorithmes d'exécution ont pour objectif de <strong>minimiser le coût d'exécution</strong> d'un ordre large sans dévoiler l'intention au marché.</p>
+<h3 id="21-twap-time-weighted-average-price">2.1 TWAP (Time-Weighted Average Price)</h3>
+<p>Découpe l'ordre en tranches égales exécutées à intervalles réguliers.</p>
+<pre><code>Ordre total : 100 000 actions sur 4 heures
+Tranches : 25 000 actions / heure → 1 tranche toutes les 60 minutes
+</code></pre>
+<p><strong>Avantage</strong> : simple, prévisible.
+<strong>Limite</strong> : ne s'adapte pas aux conditions de marché (volume, spread).</p>
+<h3 id="22-vwap-volume-weighted-average-price">2.2 VWAP (Volume-Weighted Average Price)</h3>
+<p>Calque l'exécution sur le <strong>profil de volume historique</strong> de l'actif (souvent en forme de U : fort en ouverture et clôture, faible en milieu de journée).</p>
+<pre><code>Taille tranche_t = Ordre total × Volume historique_t / Volume journalier total
+</code></pre>
+<p><strong>Objectif</strong> : battre le VWAP du jour (benchmark d'exécution standard).</p>
+<p><strong>Formule du VWAP réalisé</strong> :</p>
+<pre><code>VWAP = Σ (Prix_t × Quantité_t) / Σ Quantité_t
+</code></pre>
+<h3 id="23-implementation-shortfall-is">2.3 Implementation Shortfall (IS)</h3>
+<p>Minimise l'<strong>écart entre le prix de décision et le prix d'exécution moyen</strong>, en tenant compte du coût d'opportunité (le prix peut bouger pendant l'exécution) et de l'impact marché.</p>
+<pre><code>Implementation Shortfall = (Prix exécution - Prix décision) × Quantité totale
+                         = Coût d'impact marché + Coût de délai + Coût d'opportunité
+</code></pre>
+<p>L'algorithme IS accélère l'exécution si le marché va dans le mauvais sens (pour limiter le drift), et ralentit si le marché est favorable.</p>
+<h3 id="24-pov-participation-rate">2.4 POV / Participation Rate</h3>
+<p>Suit le marché en exécutant un pourcentage fixe du volume observé :</p>
+<pre><code>Si le marché traite 10 000 actions/minute et le taux de participation = 10 %
+→ Exécuter 1 000 actions/minute
+</code></pre>
+<p><strong>Usage</strong> : ordres discrets où on veut rester "dans la masse".</p>
+<h3 id="25-mesure-du-cout-dexecution-tca-transaction-cost-analysis">2.5 Mesure du coût d'exécution : TCA (Transaction Cost Analysis)</h3>
+<p>La <strong>TCA</strong> évalue la qualité d'exécution après coup :</p>
+<table>
+<thead>
+<tr>
+<th>Métrique</th>
+<th>Formule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slippage</strong></td>
+<td>Prix d'exécution - Prix mid au moment de l'ordre</td>
+</tr>
+<tr>
+<td><strong>Market impact</strong></td>
+<td>Mouvement du prix causé par l'ordre lui-même</td>
+</tr>
+<tr>
+<td><strong>Spread cost</strong></td>
+<td>Demi-spread bid-ask × Quantité</td>
+</tr>
+<tr>
+<td><strong>Timing cost</strong></td>
+<td>Drift du prix entre la décision et l'exécution</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-architecture-technique-dun-systeme-de-trading-algorithmique">3. Architecture technique d'un système de trading algorithmique</h2>
+<h3 id="31-pipeline-de-donnees">3.1 Pipeline de données</h3>
+<pre><code>Sources de données
+  │
+  ├── Market data (flux temps réel) : L1 (bid/ask), L2 (order book), trades
+  ├── Fundamental data (données fondamentales)
+  ├── Alternative data (satellites, réseaux sociaux, brevets...)
+  └── Historical data (backtesting)
+  │
+  ▼
+Data pipeline
+  ├── Nettoyage et normalisation
+  ├── Calcul de features (signaux)
+  └── Stockage (time-series DB : InfluxDB, kdb+)
+  │
+  ▼
+Moteur de signaux (Alpha engine)
+  │
+  ▼
+Construction de portefeuille (Portfolio optimizer)
+  │
+  ▼
+Gestion des ordres (OMS)
+  │
+  ▼
+Exécution (EMS → marchés)
+</code></pre>
+<h3 id="32-latence-les-ordres-de-grandeur">3.2 Latence : les ordres de grandeur</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Latence typique</th>
+<th>Technologie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trading manuel</strong></td>
+<td>Secondes</td>
+<td>Souris, clavier</td>
+</tr>
+<tr>
+<td><strong>Trading algo basse fréquence</strong></td>
+<td>Millisecondes (ms)</td>
+<td>Python, Java, API REST</td>
+</tr>
+<tr>
+<td><strong>Trading algo moyenne fréquence</strong></td>
+<td>100–1 000 µs</td>
+<td>C++, co-location</td>
+</tr>
+<tr>
+<td><strong>HFT</strong></td>
+<td>1–100 µs</td>
+<td>FPGA, co-location, fibres optiques dédiées</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-stack-technologique-typique">3.3 Stack technologique typique</h3>
+<table>
+<thead>
+<tr>
+<th>Composant</th>
+<th>Technologies courantes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Langage</strong></td>
+<td>Python (recherche), C++ (production HF), Rust (systèmes ultra-rapides)</td>
+</tr>
+<tr>
+<td><strong>Base de données</strong></td>
+<td>kdb+ (standard industrie), InfluxDB, Arctic (pandas + MongoDB)</td>
+</tr>
+<tr>
+<td><strong>Backtesting</strong></td>
+<td>Zipline, Backtrader, VectorBT, custom</td>
+</tr>
+<tr>
+<td><strong>Exécution</strong></td>
+<td>FIX Protocol, API propriétaires (Interactive Brokers, Binance...)</td>
+</tr>
+<tr>
+<td><strong>Infrastructure</strong></td>
+<td>Co-location chez l'exchange, AWS/GCP pour le backtesting</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-le-trading-haute-frequence-hft">4. Le trading haute fréquence (HFT)</h2>
+<h3 id="41-definition-et-caracteristiques">4.1 Définition et caractéristiques</h3>
+<p>Le <strong>HFT</strong> est défini réglementairement (MIF II) par :
+- Latence d'exécution infra-quotidienne très faible (micro/nanosecondes).
+- Utilisation de co-location ou de connexions de proximité.
+- Taux de rotation très élevé (parfois 1 000+ ordres/seconde).
+- Positions clôturées en fin de journée (pas d'inventaire overnight).</p>
+<h3 id="42-strategies-hft-principales">4.2 Stratégies HFT principales</h3>
+<h4 id="market-making-electronique">Market making électronique</h4>
+<p>Le HFT tient de marché de façon électronique : il place simultanément des ordres d'achat et de vente, capturant le spread bid-ask.</p>
+<pre><code>Profit théorique = Spread / 2 × Volume traité
+Risque : adverse selection (un client mieux informé lui vend quand le prix va baisser)
+</code></pre>
+<p><strong>Gestion du risque adverse selection</strong> : le market maker détecte les flux informés et élargit son spread ou réduit sa taille en conséquence.</p>
+<h4 id="arbitrage-latence-latency-arbitrage">Arbitrage latence (Latency arbitrage)</h4>
+<p>Exploite le décalage de prix entre plusieurs places de cotation (ex. : Euronext Paris et Chi-X Londres) en étant systématiquement plus rapide que les autres participants.</p>
+<pre><code>Prix sur Euronext : 50,05 / 50,07
+Prix sur Chi-X : 50,04 / 50,06 (décalage de quelques µs)
+→ Acheter sur Chi-X à 50,06 + Vendre sur Euronext à 50,05 → Profit = 0,01 €
+(nécessite latence &lt; 100 µs pour être premier)
+</code></pre>
+<h4 id="detection-et-suivi-des-ordres-institutionnels-order-flow-trading">Détection et suivi des ordres institutionnels (Order Flow Trading)</h4>
+<p>Détecte les grands ordres en cours d'exécution par des acteurs institutionnels et se positionne dans la même direction avant qu'ils aient terminé (controverse éthique importante).</p>
+<h4 id="statistical-arbitrage-hf">Statistical arbitrage HF</h4>
+<p>Version ultra-rapide du pairs trading : exploitation des déséquilibres momentanés entre des actifs très liés (futures vs. ETF, ADR vs. action domestique) avec des positions réinitialisées en quelques secondes.</p>
+<h3 id="43-infrastructure-hft-la-course-a-la-vitesse">4.3 Infrastructure HFT : la course à la vitesse</h3>
+<table>
+<thead>
+<tr>
+<th>Technologie</th>
+<th>Latence gagnée</th>
+<th>Coût</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Co-location</strong> (serveurs dans le datacenter de l'exchange)</td>
+<td>10–100 ms → 100 µs</td>
+<td>10–100 k$/mois</td>
+</tr>
+<tr>
+<td><strong>Fibre optique dédiée</strong> (London–Frankfurt)</td>
+<td>~4 ms → ~2 ms</td>
+<td>Millions €</td>
+</tr>
+<tr>
+<td><strong>Microwave / Laser</strong> (London–Frankfurt, ligne de vue)</td>
+<td>~2 ms → ~1,1 ms</td>
+<td>Dizaines de M€</td>
+</tr>
+<tr>
+<td><strong>FPGA</strong> (Field-Programmable Gate Array)</td>
+<td>Software 10 µs → 1 µs</td>
+<td>Très élevé</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cas emblématique</strong> : Spread Networks a dépensé 300 M$ en 2010 pour creuser un tunnel en ligne droite New York–Chicago, gagnant 3 ms sur la concurrence. Aujourd'hui supplanté par les micro-ondes.</p>
+<hr />
+<h2 id="5-backtesting-et-validation-des-strategies">5. Backtesting et validation des stratégies</h2>
+<h3 id="51-processus-de-developpement-dune-strategie">5.1 Processus de développement d'une stratégie</h3>
+<pre><code>1. Hypothèse (intuition économique ou statistique)
+      ↓
+2. Exploration (EDA sur données historiques)
+      ↓
+3. Signal engineering (construction du signal brut)
+      ↓
+4. Backtest in-sample (développement de la règle)
+      ↓
+5. Walk-forward / Out-of-sample test (validation)
+      ↓
+6. Paper trading (simulation en temps réel sans argent réel)
+      ↓
+7. Live trading (petit capital)
+      ↓
+8. Scaling (augmentation progressive du capital)
+</code></pre>
+<h3 id="52-metriques-de-performance-dune-strategie">5.2 Métriques de performance d'une stratégie</h3>
+<table>
+<thead>
+<tr>
+<th>Métrique</th>
+<th>Formule</th>
+<th>Référence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sharpe Ratio</strong></td>
+<td>(Rendement - rf) / Volatilité</td>
+<td>&gt; 1 acceptable, &gt; 2 excellent</td>
+</tr>
+<tr>
+<td><strong>Sortino Ratio</strong></td>
+<td>(Rendement - rf) / Volatilité négative</td>
+<td>Pénalise uniquement les pertes</td>
+</tr>
+<tr>
+<td><strong>Calmar Ratio</strong></td>
+<td>Rendement annuel / Drawdown max</td>
+<td>&gt; 1 bon</td>
+</tr>
+<tr>
+<td><strong>Max Drawdown</strong></td>
+<td>Perte pic-à-creux maximale</td>
+<td>&lt; 20 % pour stratégie institutionnelle</td>
+</tr>
+<tr>
+<td><strong>Win Rate</strong></td>
+<td>% de trades gagnants</td>
+<td>Variable selon la stratégie</td>
+</tr>
+<tr>
+<td><strong>Profit Factor</strong></td>
+<td>Gains totaux / Pertes totales</td>
+<td>&gt; 1,5</td>
+</tr>
+<tr>
+<td><strong>Turnover</strong></td>
+<td>Rotation annuelle du portefeuille</td>
+<td>Impacte les coûts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-le-probleme-du-multiple-testing">5.3 Le problème du multiple testing</h3>
+<p>En testant 1 000 stratégies différentes, on s'attend à trouver <strong>50 stratégies avec Sharpe &gt; 2</strong> par pur hasard (à 5 % de significativité), sans qu'elles aient de valeur prédictive.</p>
+<p><strong>Correction de Harvey, Liu &amp; Zhu (2016)</strong> : le seuil de t-stat minimal pour une stratégie considérée valide doit être relevé à <strong>3,0</strong> (vs. 2,0 traditionnellement) pour tenir compte du data mining.</p>
+<pre><code>Sharpe ajusté = Sharpe / √(1 + nb_tests / n_données)
+</code></pre>
+<h3 id="54-validation-out-of-sample">5.4 Validation out-of-sample</h3>
+<p><strong>Walk-forward testing</strong> :</p>
+<pre><code>In-sample       Out-of-sample
+[Jan 2010 - Déc 2018] → Test [Jan 2019 - Déc 2020]
+     [Jan 2011 - Déc 2019] → Test [Jan 2020 - Déc 2021]
+          [Jan 2012 - Déc 2020] → Test [Jan 2021 - Déc 2022]
+</code></pre>
+<p>Chaque fenêtre glissante teste la robustesse de la stratégie sur des données jamais vues.</p>
+<hr />
+<h2 id="6-cadre-reglementaire">6. Cadre réglementaire</h2>
+<h3 id="61-directive-mif-ii-europe-2018">6.1 Directive MIF II (Europe, 2018)</h3>
+<p>MIF II (Markets in Financial Instruments Directive II) impose aux acteurs du trading algorithmique :</p>
+<ul>
+<li><strong>Enregistrement</strong> : toute firme pratiquant le HFT doit être autorisée.</li>
+<li><strong>Marquage des ordres algorithmiques</strong> : tous les ordres doivent identifier l'algorithme d'origine.</li>
+<li><strong>Circuit breakers</strong> : systèmes automatiques d'interruption en cas de dysfonctionnement.</li>
+<li><strong>Tests des algorithmes</strong> : obligation de tester les algos en environnement de test avant déploiement.</li>
+<li><strong>Reporting</strong> : journalisation de tous les ordres et transactions pendant 5 ans.</li>
+</ul>
+<h3 id="62-pratiques-interdites">6.2 Pratiques interdites</h3>
+<table>
+<thead>
+<tr>
+<th>Pratique</th>
+<th>Description</th>
+<th>Sanction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Spoofing</strong></td>
+<td>Placer des ordres sans intention d'exécution pour créer une fausse impression de liquidité</td>
+<td>Pénale aux USA (Dodd-Frank), amende/prison</td>
+</tr>
+<tr>
+<td><strong>Layering</strong></td>
+<td>Variante du spoofing avec plusieurs couches d'ordres</td>
+<td>Idem</td>
+</tr>
+<tr>
+<td><strong>Quote stuffing</strong></td>
+<td>Inonder le marché d'ordres pour ralentir les concurrents</td>
+<td>Interdit MIF II</td>
+</tr>
+<tr>
+<td><strong>Momentum ignition</strong></td>
+<td>Provoquer un mouvement de prix pour attirer les autres traders</td>
+<td>Manipulation de marché</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cas réel</strong> : Navinder Sarao, trader britannique condamné en 2020 pour spoofing sur les futures E-mini S&amp;P 500, accusé d'avoir contribué au Flash Crash du 6 mai 2010 (−9 % en 36 minutes, puis retour quasi-immédiat).</p>
+<h3 id="63-le-flash-crash-du-6-mai-2010">6.3 Le Flash Crash du 6 mai 2010</h3>
+<pre><code>14h32 : Un mutual fund lance un ordre de vente algorithmique massif
+        sur les futures E-mini S&amp;P 500 (75 000 contrats, ~4 Mds$)
+
+14h45 : Le Dow Jones perd 998 points (−9 %) en quelques minutes
+        Les HFT stoppent leur activité de market making
+        → Effondrement de la liquidité
+
+14h47 : Reprise quasi-totale en quelques minutes
+</code></pre>
+<p>Cet événement a mis en lumière les <strong>risques systémiques</strong> du trading algorithmique et entraîné l'introduction de coupe-circuits (circuit breakers) obligatoires sur tous les marchés.</p>
+<hr />
+<h2 id="7-donnees-alternatives-alternative-data">7. Données alternatives (Alternative Data)</h2>
+<p>Les hedge funds quantitatifs investissent massivement dans des <strong>données non conventionnelles</strong> pour obtenir un avantage informationnel :</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Exemples</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Données satellites</strong></td>
+<td>Images de parkings de grandes surfaces, pétroliers, chantiers</td>
+<td>Estimation du CA avant publication</td>
+</tr>
+<tr>
+<td><strong>Transactions par carte</strong></td>
+<td>Achats agrégés anonymisés</td>
+<td>Suivi de la consommation en temps réel</td>
+</tr>
+<tr>
+<td><strong>Données web</strong></td>
+<td>Prix e-commerce, offres d'emploi, avis clients</td>
+<td>Suivi des prix et de l'activité</td>
+</tr>
+<tr>
+<td><strong>NLP / Sentiment</strong></td>
+<td>Analyse des news, 10-K SEC, appels téléphoniques</td>
+<td>Score de sentiment sur les entreprises</td>
+</tr>
+<tr>
+<td><strong>Brevets</strong></td>
+<td>Dépôts USPTO, OEB</td>
+<td>Innovation en cours</td>
+</tr>
+<tr>
+<td><strong>Données météo</strong></td>
+<td>Météo agricole, températures</td>
+<td>Marchés commodités agricoles / énergie</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Enjeux</strong> : coût (certains datasets coûtent plusieurs M$/an), latence d'intégration, réglementations RGPD/SEC.</p>
+<hr />
+<h2 id="8-exercices_2">8. Exercices</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Un gérant doit vendre 500 000 actions représentant 5 % du volume journalier moyen (ADV = 10 000 000 actions). Il choisit un algo VWAP sur 6 heures. Le profil volume historique est : 20 % en H1, 15 % H2, 15 % H3, 15 % H4, 15 % H5, 20 % H6. Calculez la quantité à exécuter par heure.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+H1 : 500 000 × 20 % = <strong>100 000 actions</strong>
+H2 : 500 000 × 15 % = <strong>75 000 actions</strong>
+H3 : 500 000 × 15 % = <strong>75 000 actions</strong>
+H4 : 500 000 × 15 % = <strong>75 000 actions</strong>
+H5 : 500 000 × 15 % = <strong>75 000 actions</strong>
+H6 : 500 000 × 20 % = <strong>100 000 actions</strong>
+Total = <strong>500 000 actions</strong> ✓</p>
+</blockquote>
+<h3 id="exercice-2_3">Exercice 2</h3>
+<p>Un système HFT de market making cite EUR/USD à 1,0800/1,0802 (spread 2 pips). Il traite 1 000 allers-retours par jour sur un nominal de 1 M€ chacun. Quel est son profit brut journalier théorique (hors adverse selection) ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Profit par aller-retour = Spread × Nominal = 0,0002 × 1 000 000 = <strong>200 $</strong>
+Profit journalier = 200 × 1 000 = <strong>200 000 $</strong> (brut)
+En pratique, ce chiffre est très fortement réduit par l'adverse selection, les coûts de co-location et d'infrastructure, et les pertes sur inventaire.</p>
+</blockquote>
+<h3 id="exercice-3_2">Exercice 3</h3>
+<p>Une stratégie de trading a réalisé les performances suivantes sur 5 ans : rendement annuel 18 %, volatilité 12 %, drawdown max 25 %, rf = 3 %. Calculez le Sharpe, le Calmar et évaluez si la stratégie est institutionnellement acceptable.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Sharpe = (18 % - 3 %) / 12 % = <strong>1,25</strong> ✓ (&gt; 1 : acceptable)
+Calmar = 18 % / 25 % = <strong>0,72</strong> (&lt; 1 : drawdown un peu élevé pour le rendement)</p>
+<p><strong>Évaluation</strong> : Sharpe correct mais Calmar insuffisant pour la plupart des institutionnels qui exigent &gt; 1. Le drawdown de 25 % peut être rédhibitoire pour des fonds de pension. La stratégie est acceptable pour un hedge fund, mais nécessite de mieux contrôler les pertes maximales (réduction du levier, stop-loss de portefeuille).</p>
+</blockquote>
+<hr />
+<h2 id="9-lavenir-du-trading-algorithmique-intelligence-artificielle">9. L'avenir du trading algorithmique : intelligence artificielle</h2>
+<h3 id="91-machine-learning-en-trading">9.1 Machine Learning en trading</h3>
+<table>
+<thead>
+<tr>
+<th>Approche</th>
+<th>Application</th>
+<th>Exemples d'algorithmes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Supervised learning</strong></td>
+<td>Prédiction de rendements, classification haussier/baissier</td>
+<td>Random Forest, XGBoost, LSTM</td>
+</tr>
+<tr>
+<td><strong>Unsupervised learning</strong></td>
+<td>Détection de régimes de marché, clustering d'actions</td>
+<td>K-means, HMM, PCA</td>
+</tr>
+<tr>
+<td><strong>Reinforcement learning</strong></td>
+<td>Optimisation dynamique de l'exécution, market making</td>
+<td>DQN, PPO, A3C</td>
+</tr>
+<tr>
+<td><strong>NLP</strong></td>
+<td>Analyse de sentiment, parsing de résultats financiers</td>
+<td>BERT, GPT, LLaMA fine-tuned</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-limites-du-ml-en-finance">9.2 Limites du ML en finance</h3>
+<ul>
+<li><strong>Non-stationnarité</strong> : les marchés changent de régime → un modèle entraîné sur 2010–2020 peut échouer en 2022 (inflation, guerre).</li>
+<li><strong>Faible ratio signal/bruit</strong> : les rendements financiers sont proches du bruit blanc.</li>
+<li><strong>Adversarial environment</strong> : plus un signal est exploité, plus il disparaît (crowded trades).</li>
+<li><strong>Explainability</strong> : les régulateurs exigent des modèles interprétables pour la gestion des risques.</li>
+</ul>
+<hr />
+<h2 id="points-cles-a-retenir_3">Points clés à retenir</h2>
+<ul>
+<li>Les algos d'exécution (TWAP, VWAP, IS) réduisent le coût d'impact marché des ordres institutionnels.</li>
+<li>Le HFT opère en microsecondes et capte le spread bid-ask via le market making électronique.</li>
+<li>La qualité d'un système d'exécution se mesure via la TCA (slippage, impact marché).</li>
+<li>Le backtesting doit être rigoureux : éviter overfitting, look-ahead bias et multiple testing.</li>
+<li>Le Sharpe &gt; 1, Calmar &gt; 1 sont des seuils minimaux pour une stratégie institutionnelle.</li>
+<li>Le spoofing et le layering sont des manipulations de marché interdites et sévèrement sanctionnées.</li>
+<li>Le ML améliore les stratégies mais se heurte à la non-stationnarité et au faible signal en finance.</li>
+</ul>
+<hr />
+</body>
+</html>

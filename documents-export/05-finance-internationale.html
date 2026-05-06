@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>05 Finance Internationale</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-5-finance-internationale">Module 5 — Finance Internationale</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Comprendre le fonctionnement du marché des changes, les parités de taux et de prix, et les enjeux de la gestion du risque de change pour les entreprises opérant à l'international.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-marche-changes.md">Le marché des changes (Forex)</a></li>
+<li><a href="./chapitre-02-parites-taux-change.md">Parités et modèles de taux de change</a></li>
+<li><a href="./chapitre-03-risque-change-entreprise.md">Gestion du risque de change en entreprise</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>12 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Exercices de conversion, calcul de cours croisés</li>
+<li>Étude de cas : couverture de change pour une entreprise exportatrice</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-le-marche-des-changes-forex">Chapitre 1 — Le marché des changes (Forex)</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Le marché des changes (Forex — Foreign Exchange) est le plus grand marché financier au monde avec un volume quotidien de plus de <strong>7 500 milliards de dollars</strong> (BRI, 2022). Il permet l'échange de devises entre banques, entreprises, gouvernements et investisseurs.</p>
+<hr />
+<h2 id="1-organisation-et-acteurs">1. Organisation et acteurs</h2>
+<h3 id="11-caracteristiques-du-marche">1.1 Caractéristiques du marché</h3>
+<ul>
+<li><strong>OTC</strong> (de gré à gré) : pas de lieu centralisé, réseau mondial de banques.</li>
+<li>Fonctionne <strong>24h/24, 5j/7</strong> : ouverture à Auckland (dimanche soir Paris), fermeture à New York (vendredi soir Paris).</li>
+<li>Segments géographiques : Tokyo, Singapour, Londres (35 % du volume mondial), New York.</li>
+</ul>
+<h3 id="12-principaux-acteurs">1.2 Principaux acteurs</h3>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Banques commerciales</strong></td>
+<td>Tiennent de marché, exécutent les ordres clients</td>
+</tr>
+<tr>
+<td><strong>Banques centrales</strong></td>
+<td>Interventions de politique monétaire / défense de parités</td>
+</tr>
+<tr>
+<td><strong>Entreprises multinationales</strong></td>
+<td>Couverture de leurs flux commerciaux</td>
+</tr>
+<tr>
+<td><strong>Fonds spéculatifs</strong></td>
+<td>Spéculation sur les tendances de change</td>
+</tr>
+<tr>
+<td><strong>Investisseurs institutionnels</strong></td>
+<td>Couverture des portefeuilles internationaux</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-cotation-des-devises">2. Cotation des devises</h2>
+<h3 id="21-conventions-de-cotation">2.1 Conventions de cotation</h3>
+<p><strong>Cotation à l'incertain</strong> : 1 unité de devise étrangère = x unités de monnaie nationale.</p>
+<p><strong>Cotation au certain</strong> : 1 unité de monnaie nationale = x unités de devise étrangère.</p>
+<p><strong>Standard international</strong> : EUR/USD = 1,08 signifie <strong>1 € = 1,08 $</strong>
+- EUR = <strong>devise de base</strong> (base currency)
+- USD = <strong>devise de contrepartie</strong> (quote currency)</p>
+<h3 id="22-bid-ask-et-spread">2.2 Bid, Ask et spread</h3>
+<pre><code>EUR/USD : 1,0795 / 1,0802
+         ──────   ──────
+          Bid       Ask
+</code></pre>
+<ul>
+<li><strong>Bid</strong> : la banque achète des euros (le client vend des euros) à 1,0795 $.</li>
+<li><strong>Ask</strong> : la banque vend des euros (le client achète des euros) à 1,0802 $.</li>
+<li><strong>Spread</strong> = Ask - Bid = 0,0007 (7 pips) → coût de transaction implicite.</li>
+</ul>
+<h3 id="23-cours-croises-cross-rates">2.3 Cours croisés (cross rates)</h3>
+<p>Si EUR/USD = 1,08 et USD/JPY = 145, alors :</p>
+<pre><code>EUR/JPY = EUR/USD × USD/JPY = 1,08 × 145 = 156,60
+</code></pre>
+<hr />
+<h2 id="3-marche-au-comptant-spot-vs-marche-a-terme-forward">3. Marché au comptant (spot) vs. marché à terme (forward)</h2>
+<h3 id="31-cours-spot">3.1 Cours spot</h3>
+<p>Livraison en <strong>J+2 ouvrés</strong> (convention standard interbancaire).</p>
+<h3 id="32-cours-forward">3.2 Cours forward</h3>
+<p>Cours convenu aujourd'hui pour une livraison à une date future (30, 60, 90 jours, 1 an...).</p>
+<p><strong>Calcul du cours forward</strong> :</p>
+<pre><code>F = S × (1 + r_DOM × T) / (1 + r_ETR × T)
+</code></pre>
+<ul>
+<li><code>S</code> : cours spot</li>
+<li><code>r_DOM</code> : taux d'intérêt de la devise domestique</li>
+<li><code>r_ETR</code> : taux d'intérêt de la devise étrangère</li>
+<li><code>T</code> : durée en fraction d'année</li>
+</ul>
+<p><strong>Formulation continue</strong> :</p>
+<pre><code>F = S × e^((r_DOM - r_ETR) × T)
+</code></pre>
+<h3 id="33-report-deport">3.3 Report / Déport</h3>
+<pre><code>Report (premium) : F &gt; S  (la devise étrangère est plus chère à terme)
+Déport (discount) : F &lt; S  (la devise étrangère est moins chère à terme)
+</code></pre>
+<p>Si r_DOM &gt; r_ETR : la devise domestique est en déport (F &gt; S pour la devise étrangère).</p>
+<p><strong>Exemple</strong> :
+- EUR/USD spot = 1,08
+- r_USD = 5 %, r_EUR = 3 %, T = 1 an</p>
+<pre><code>F = 1,08 × (1 + 0,05) / (1 + 0,03) = 1,08 × 1,0194 = 1,1009
+</code></pre>
+<p>L'euro s'apprécie contre le dollar à terme car les taux USD sont plus élevés.</p>
+<hr />
+<h2 id="4-regimes-de-change">4. Régimes de change</h2>
+<h3 id="41-change-fixe">4.1 Change fixe</h3>
+<p>La banque centrale fixe la parité de sa monnaie contre une devise de référence (USD, EUR) et intervient pour la maintenir.</p>
+<p><strong>Exemples</strong> : Hong Kong Dollar (HKD/USD = 7,80 depuis 1983), franc CFA (FCFA/EUR).</p>
+<p><strong>Avantages</strong> : stabilité, ancrage des anticipations d'inflation.
+<strong>Inconvénients</strong> : perte de la politique monétaire autonome, vulnérabilité aux attaques spéculatives.</p>
+<h3 id="42-change-flottant-flexible">4.2 Change flottant (flexible)</h3>
+<p>Le taux de change est déterminé par le marché (offre/demande). La banque centrale peut intervenir mais n'est pas obligée de défendre une parité.</p>
+<p><strong>Exemples</strong> : EUR/USD, GBP/USD, USD/JPY.</p>
+<h3 id="43-change-intermediaire">4.3 Change intermédiaire</h3>
+<ul>
+<li><strong>Flottement dirigé</strong> : la banque centrale intervient discrètement pour limiter la volatilité.</li>
+<li><strong>Bande de fluctuation</strong> : le cours peut fluctuer dans une fourchette autour d'une parité centrale.</li>
+</ul>
+<hr />
+<h2 id="5-approfondissement-theorique">5. Approfondissement théorique</h2>
+<h3 id="51-la-microstructure-du-marche-des-changes">5.1 La microstructure du marché des changes</h3>
+<p>Le Forex n'est pas un marché anonyme et centralisé. Il repose sur une <strong>architecture à deux niveaux</strong> :</p>
+<ul>
+<li><strong>Le marché interbancaire</strong> (tier 1) : transactions directes entre grandes banques via des plateformes électroniques (EBS, Reuters Matching). Les cours y sont très compétitifs et les volumes unitaires considérables (souvent 5 M$ minimum).</li>
+<li><strong>Le marché client</strong> (tier 2) : les banques vendent aux clients (entreprises, investisseurs) à des prix légèrement moins favorables, ce qui constitue leur revenu commercial.</li>
+</ul>
+<p>L'asymétrie d'information est centrale : les grandes banques qui tiennent le marché disposent d'un <strong>flux d'ordres</strong> (order flow) qui leur fournit une information sur la direction du marché. Cette information est un avantage concurrentiel que les modèles de microstructure (Kyle, 1985 ; Lyons, 2001) ont formalisé.</p>
+<h3 id="52-les-instruments-derives-de-change">5.2 Les instruments dérivés de change</h3>
+<p>Au-delà du spot et du forward, le marché des changes offre une gamme d'instruments dérivés :</p>
+<p><strong>Les swaps cambistes (FX Swaps)</strong> : opération combinant une transaction spot et une transaction forward en sens inverse. Utilisés pour gérer la trésorerie en devises à court terme. C'est l'instrument Forex le plus traité (34 % des volumes BRI 2022).</p>
+<pre><code>Exemple de FX Swap EUR/USD :
+Jambe spot : vente 1 M€ contre USD au cours spot (1,08) → reçoit 1,08 M$
+Jambe forward : achat 1 M€ contre USD à terme (1,09) → paie 1,09 M$ dans 3 mois
+</code></pre>
+<p><strong>Les options de change</strong> (vanilles et exotiques) :
+- <strong>Call/Put vanille</strong> : droit d'acheter ou vendre une devise à un strike donné.
+- <strong>Options barrières</strong> (knock-in/knock-out) : l'option s'active ou se désactive si le cours touche un niveau prédéfini. Moins chères mais profil de risque discontinu.
+- <strong>Options asiatiques</strong> : le payoff dépend de la moyenne du cours sur la période.</p>
+<h3 id="53-le-carry-trade">5.3 Le carry trade</h3>
+<p>Le <strong>carry trade</strong> consiste à emprunter une devise à faible taux d'intérêt pour investir dans une devise à taux élevé. Cette stratégie est rentable tant que le taux de change ne s'ajuste pas conformément à la PTI non couverte.</p>
+<pre><code>Rendement carry trade ≈ r_élevé - r_faible - variation de change
+</code></pre>
+<p><strong>Exemple classique</strong> : emprunter en JPY (taux 0 %) et investir en AUD (taux 5 %). Si l'AUD ne se déprécie pas, le rendement annuel est de 5 %.</p>
+<p><strong>Risque</strong> : le carry trade peut s'effondrer brutalement lors des phases de "risk-off" (fuite vers la qualité) qui provoquent une forte appréciation des devises de financement (JPY, CHF). Les pertes peuvent être abruptes et massives (crash du yen en octobre 1998, crise 2008).</p>
+<h3 id="54-determination-du-taux-de-change-a-tres-court-terme">5.4 Détermination du taux de change à très court terme</h3>
+<p>À très court terme (intraday), le taux de change dépend surtout :
+- Des <strong>flux d'ordres</strong> (order flow) des acteurs du marché.
+- Des <strong>publications macroéconomiques</strong> (NFP américains, IPC, décisions de banques centrales) qui génèrent des pics de volatilité.
+- Du <strong>sentiment de marché</strong> (risk-on / risk-off) mesuré par des indicateurs comme le VIX.</p>
+<hr />
+<h2 id="6-exemples-numeriques-supplementaires">6. Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-calcul-de-spread-en-pourcentage-et-comparaison-dattractivite">Exemple 1 : Calcul de spread en pourcentage et comparaison d'attractivité</h3>
+<p>Un trader compare deux cotations pour EUR/USD :</p>
+<pre><code>Banque A : 1,08450 / 1,08470  → Spread = 0,00020 (2 pips)
+Banque B : 1,08440 / 1,08490  → Spread = 0,00050 (5 pips)
+</code></pre>
+<p>Spread en % (Banque A) = 0,00020 / 1,08450 = <strong>0,0184 %</strong>
+Spread en % (Banque B) = 0,00050 / 1,08440 = <strong>0,0461 %</strong></p>
+<p>Pour une transaction de 10 M€, le coût implicite est :
+- Banque A : 10 000 000 × 0,0184 % = <strong>1 840 €</strong>
+- Banque B : 10 000 000 × 0,0461 % = <strong>4 610 €</strong></p>
+<p>Le choix de la contrepartie représente une économie de 2 770 € sur une seule transaction. Un trésorier gérant plusieurs centaines de millions d'euros par an doit impérativement comparer les spreads.</p>
+<h3 id="exemple-2-fx-swap-et-cout-de-financement-implicite">Exemple 2 : FX Swap et coût de financement implicite</h3>
+<p>Une entreprise française a besoin de 5 M$ pour 3 mois mais dispose d'euros. Elle réalise un FX Swap :</p>
+<pre><code>Données :
+EUR/USD spot = 1,0800
+EUR/USD forward 3 mois = 1,0870
+r_EUR = 3 % / an, r_USD = 5 % / an
+</code></pre>
+<p><strong>Jambe spot</strong> : vend 4 629 630 € contre 5 000 000 $ (au cours 1,08)
+<strong>Jambe forward</strong> : rachète 4 629 630 € contre 5 030 000 $ dans 3 mois (au cours 1,0870 × ajustement)</p>
+<p>Le coût implicite du swap : (1,0870 - 1,0800) / 1,0800 × 4 = <strong>2,59 %/an</strong></p>
+<p>Ce coût est bien inférieur à un emprunt direct en USD (5 %), ce qui illustre pourquoi le swap cambiste est un outil de financement efficace.</p>
+<h3 id="exemple-3-arbitrage-triangulaire">Exemple 3 : Arbitrage triangulaire</h3>
+<p>Un arbitragiste observe les cours suivants sur le marché :</p>
+<pre><code>EUR/USD = 1,1000
+USD/GBP = 0,7900 (c'est-à-dire GBP/USD = 1/0,79 = 1,2658)
+EUR/GBP = 0,8700
+</code></pre>
+<p><strong>Cours croisé théorique</strong> EUR/GBP = EUR/USD × 1/GBP/USD = 1,1000 × 0,7900 = 0,8690</p>
+<p><strong>Cours observé</strong> EUR/GBP = 0,8700 &gt; 0,8690 → l'euro est légèrement surévalué contre la livre directement.</p>
+<p><strong>Stratégie d'arbitrage</strong> (démarrage avec 1 M€) :
+1. Vendre 1 M€ → reçoit 1 100 000 $ (au cours EUR/USD 1,10)
+2. Vendre 1 100 000 $ → reçoit 869 000 £ (au cours USD/GBP 0,79)
+3. Vendre 869 000 £ → reçoit 869 000 / 0,87 = <strong>998 851 €</strong></p>
+<p>Profit = -1 148 €, l'arbitrage est négatif dans ce sens. En sens inverse :
+1. Vendre 1 M€ → 870 000 £ (au cours EUR/GBP 0,87)
+2. Vendre 870 000 £ → 1 101 266 $ (au cours GBP/USD 1,2658)
+3. Vendre 1 101 266 $ → <strong>1 001 151 €</strong></p>
+<p><strong>Profit = 1 151 €</strong> sur 1 M€ engagé. En pratique, les spreads éliminent cet arbitrage en quelques millisecondes sur les systèmes électroniques.</p>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>EUR/USD = 1,0800 / 1,0810. Une entreprise française doit payer 500 000 $ à un fournisseur américain. Combien paiera-t-elle en euros ?</p>
+<blockquote>
+<p><strong>Correction</strong> : Elle doit <strong>acheter</strong> des dollars → elle paie au cours ask = 1,0810.
+Euros à payer = 500 000 / 1,0810 = <strong>462 534 €</strong></p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>EUR/USD = 1,08 (spot). r_EUR = 2 %, r_USD = 5 %, T = 6 mois (0,5 an). Calculez le cours forward EUR/USD 6 mois.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+F = 1,08 × (1 + 0,05 × 0,5) / (1 + 0,02 × 0,5)
+F = 1,08 × 1,025 / 1,01 = 1,08 × 1,01485 = <strong>1,0960</strong>
+L'euro s'apprécie à terme (report de l'euro).</p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>EUR/GBP = 0,8650 et GBP/JPY = 190,00. Calculez EUR/JPY.</p>
+<blockquote>
+<p><strong>Correction</strong> : EUR/JPY = 0,8650 × 190 = <strong>164,35</strong></p>
+</blockquote>
+<h3 id="exercice-4-choix-de-strategie-de-carry-trade">Exercice 4 — Choix de stratégie de carry trade</h3>
+<p>Un investisseur dispose de 1 M€. Il envisage un carry trade : emprunt en euros à 3 % par an, investissement en dollars australiens à 5,5 % par an. EUR/AUD spot = 1,65. Calculez le rendement net si, au bout d'un an : (a) le cours EUR/AUD reste à 1,65 ; (b) le cours EUR/AUD monte à 1,72 (dépréciation AUD).</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Mise en place</strong> :
+Emprunt de 1 M€ → coût = 30 000 € d'intérêts.
+Conversion en AUD : 1 M€ × 1,65 = 1 650 000 AUD
+Placement en AUD à 5,5 % : gain = 90 750 AUD
+Capital + intérêts AUD = 1 740 750 AUD</p>
+<p><strong>(a) EUR/AUD stable à 1,65</strong> :
+Reconversion : 1 740 750 / 1,65 = <strong>1 055 000 €</strong>
+Remboursement emprunt : 1 030 000 €
+Profit net = 1 055 000 - 1 030 000 = <strong>25 000 €</strong> soit <strong>2,5 %</strong> de rendement net
+(différentiel de taux ≈ 2,5 % — cohérent)</p>
+<p><strong>(b) EUR/AUD monte à 1,72 (AUD se déprécie de 4,2 %)</strong> :
+Reconversion : 1 740 750 / 1,72 = <strong>1 012 064 €</strong>
+Remboursement emprunt : 1 030 000 €
+<strong>Perte nette = -17 936 €</strong> soit -1,8 %</p>
+<p>Conclusion : la dépréciation de l'AUD a effacé et retourné le différentiel de taux. Le carry trade est profitable uniquement si la parité des taux d'intérêt non couverte (UIRP) n'est pas vérifiée, ce qui est souvent le cas à court terme mais risqué.</p>
+</blockquote>
+<h3 id="exercice-5-arbitrage-triangulaire-complet">Exercice 5 — Arbitrage triangulaire complet</h3>
+<p>USD/EUR = 0,9200 ; USD/CHF = 0,9050 ; EUR/CHF = 0,9750. Vérifiez s'il existe une opportunité d'arbitrage triangulaire. Si oui, décrivez la stratégie à partir de 1 M USD.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Cours croisé théorique EUR/CHF via USD = (1/0,9200) × 0,9050 = 1,0870 × 0,9050 = <strong>0,9837</strong>
+Cours observé EUR/CHF = 0,9750 &lt; 0,9837</p>
+<p>Le CHF est sous-évalué par rapport à l'EUR dans le croisement direct. Stratégie :
+1. Vendre 1 M USD → acheter EUR : 1 000 000 × 0,9200 = <strong>920 000 €</strong>
+2. Vendre 920 000 EUR → acheter CHF : 920 000 × 0,9750 = <strong>897 000 CHF</strong>
+3. Vendre 897 000 CHF → acheter USD : 897 000 / 0,9050 = <strong>991 160 USD</strong></p>
+<p>Perte de 8 840 USD : l'arbitrage dans ce sens ne fonctionne pas. En sens inverse :
+1. Vendre 1 M USD → CHF : 1 000 000 × 0,9050 = 905 000 CHF
+2. Vendre CHF → EUR : 905 000 / 0,9750 = 928 205 €
+3. Vendre EUR → USD : 928 205 / 0,9200 = <strong>1 008 918 USD</strong></p>
+<p><strong>Profit = 8 918 USD</strong> (0,89 %). L'arbitrage est rentable dans ce sens, tant que les spreads bid-ask n'absorbent pas ce gain.</p>
+</blockquote>
+<hr />
+<h2 id="8-erreurs-frequentes-et-pieges">8. Erreurs fréquentes et pièges</h2>
+<h3 id="piege-1-confondre-la-direction-de-la-cotation">Piège 1 : Confondre la direction de la cotation</h3>
+<p>La confusion entre "acheter" et "vendre" est l'erreur la plus fréquente. Toujours se demander : <strong>qui achète quoi ?</strong> Si une entreprise doit payer en USD, elle <strong>achète</strong> des USD contre EUR → elle utilise le cours <strong>ask</strong> (toujours défavorable pour le client). Inverser bid et ask peut coûter très cher sur de gros volumes.</p>
+<h3 id="piege-2-mal-utiliser-le-cours-croise">Piège 2 : Mal utiliser le cours croisé</h3>
+<p>Pour calculer EUR/JPY à partir de EUR/USD et USD/JPY, on multiplie. Mais pour calculer EUR/JPY à partir de EUR/USD et EUR/GBP, on <strong>divise</strong>. La règle : si la devise intermédiaire est en dénominateur dans les deux cotations, on divise. Construire systématiquement le chemin logique des devises.</p>
+<h3 id="piege-3-confondre-report-et-appreciation-de-la-devise-etrangere">Piège 3 : Confondre report et appréciation de la devise étrangère</h3>
+<p>Si F &gt; S pour EUR/USD, <strong>c'est l'euro</strong> (la devise de base) qui est en report — c'est-à-dire qu'il s'apprécie à terme contre le dollar. Un report de l'euro signifie que les taux USD sont plus élevés que les taux EUR. Ce n'est pas intuitif et souvent inversé par les étudiants.</p>
+<h3 id="piege-4-oublier-de-convertir-le-taux-annuel-en-fraction-dannee">Piège 4 : Oublier de convertir le taux annuel en fraction d'année</h3>
+<p>Dans la formule du forward, si T = 3 mois, il faut T = 0,25 (convention linéaire) ou utiliser l'actualisation exacte. Oublier cette conversion conduit à des cours forward erronés, parfois très éloignés de la réalité.</p>
+<h3 id="piege-5-considerer-que-la-couverture-forward-est-toujours-optimale">Piège 5 : Considérer que la couverture forward est toujours "optimale"</h3>
+<p>En se couvrant à terme, on renonce à toute participation à un mouvement favorable. Si le marché évolue très favorablement, la couverture forward peut coûter plus cher qu'une non-couverture. Elle est optimale pour la <strong>certitude</strong>, pas pour le <strong>rendement espéré</strong>.</p>
+<hr />
+<h2 id="9-applications-professionnelles">9. Applications professionnelles</h2>
+<h3 id="en-salle-des-marches-dealing-room">En salle des marchés (Dealing Room)</h3>
+<p>Un <strong>cambiste corporatif</strong> (corporate FX trader) chez une grande banque exécute quotidiennement des centaines d'ordres de change pour les entreprises clientes. Il doit :
+- Proposer des prix compétitifs tout en gérant sa position nette.
+- Utiliser des plateformes électroniques (FXall, 360T, Bloomberg FXGO) pour les flux automatisés.
+- Couvrir sa position résiduelle sur le marché interbancaire via EBS ou Reuters Matching.</p>
+<h3 id="en-tresorerie-internationale-dentreprise">En trésorerie internationale d'entreprise</h3>
+<p>Un <strong>trésorier international</strong> d'un grand groupe industriel (ex. : Michelin, TotalEnergies) gère quotidiennement des flux dans 30 à 50 devises. Sa mission :
+1. Consolider les expositions de change des filiales (netting intragroupe).
+2. Exécuter les couvertures approuvées par le comité financier.
+3. Surveiller les cours en temps réel et arbitrer les points d'entrée.
+4. Produire un reporting de la position de change consolidée pour la direction financière.</p>
+<h3 id="en-gestion-de-portefeuille-international">En gestion de portefeuille international</h3>
+<p>Un <strong>gérant de fonds actions internationales</strong> doit décider s'il couvre ou non le risque de change de son portefeuille. Les grandes maisons de gestion (Amundi, BlackRock) proposent des fonds en version "hedged" (couverture du risque de change) et "unhedged". La décision impacte significativement la performance, surtout sur des périodes de forte volatilité des devises.</p>
+<hr />
+<h2 id="10-points-de-vigilance-et-nuances-importantes">10. Points de vigilance et nuances importantes</h2>
+<h3 id="sur-la-liquidite-du-marche">Sur la liquidité du marché</h3>
+<p>Le marché Forex est très liquide dans les grandes paires (EUR/USD, USD/JPY, GBP/USD), mais la liquidité se tarit considérablement pour les <strong>devises émergentes</strong> (TRY, BRL, ZAR, INR). En période de crise, même les paires majeures peuvent voir leurs spreads s'élargir de 2 à 10 fois. La liquidité du Forex n'est pas constante dans le temps.</p>
+<h3 id="sur-les-interventions-des-banques-centrales">Sur les interventions des banques centrales</h3>
+<p>Les banques centrales n'interviennent pas de manière transparente. La Banque Nationale Suisse (BNS) a défendu un plancher EUR/CHF à 1,20 de 2011 à 2015, avant de l'abandonner brutalement en janvier 2015, provoquant une appréciation de 20 % du CHF en quelques minutes. Les interventions peuvent cesser sans préavis.</p>
+<h3 id="sur-les-couts-caches-du-forex">Sur les coûts cachés du Forex</h3>
+<p>Au-delà du spread visible, d'autres coûts existent : frais de confirmation (SWIFT), coûts de règlement-livraison, coûts d'opportunité des appels de marge sur les positions à terme. Un benchmark rigoureux (TCA — Transaction Cost Analysis) est indispensable pour évaluer la qualité d'exécution.</p>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>Le Forex est le plus grand marché mondial, OTC et opérant 24h/24.</li>
+<li>La cotation standard : 1 unité de devise de base = x unités de devise cotée.</li>
+<li>Le spread bid-ask est le coût implicite de transaction.</li>
+<li>Le cours forward est déterminé par la parité des taux d'intérêt (PTI) : la devise du pays à taux élevé se déprécie à terme.</li>
+<li>Les régimes de change (fixe, flottant) conditionnent la souveraineté monétaire.</li>
+<li>Le carry trade exploite les différentiels de taux mais est exposé au risque d'une brusque réappréciation de la devise empruntée.</li>
+<li>L'arbitrage triangulaire est quasi-instantanément effacé par les systèmes électroniques ; il sert surtout à comprendre la mécanique des cours croisés.</li>
+</ul>
+<hr />
+<h1 id="chapitre-2-parites-et-modeles-de-taux-de-change">Chapitre 2 — Parités et modèles de taux de change</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>Les <strong>théories de la parité</strong> cherchent à expliquer les niveaux et les variations des taux de change à partir de variables économiques fondamentales. Elles constituent le socle théorique de l'économie internationale.</p>
+<hr />
+<h2 id="1-parite-des-taux-dinteret-pti">1. Parité des Taux d'Intérêt (PTI)</h2>
+<h3 id="11-pti-couverte-covered-interest-rate-parity-cirp">1.1 PTI couverte (Covered Interest Rate Parity — CIRP)</h3>
+<p>Relation d'arbitrage sans risque entre le taux de change spot, le taux de change forward et les taux d'intérêt des deux pays :</p>
+<pre><code>F/S = (1 + r_DOM) / (1 + r_ETR)
+</code></pre>
+<p>Ou en approximation :</p>
+<pre><code>(F - S) / S ≈ r_DOM - r_ETR
+</code></pre>
+<p><strong>La prime (ou décote) forward est égale au différentiel de taux d'intérêt.</strong></p>
+<h3 id="12-pti-non-couverte-uncovered-interest-rate-parity-uirp">1.2 PTI non couverte (Uncovered Interest Rate Parity — UIRP)</h3>
+<p>Avec la PTI couverte, on peut aussi écrire que la variation anticipée du taux de change est égale au différentiel de taux d'intérêt :</p>
+<pre><code>(E[S_t+1] - S_t) / S_t = r_DOM - r_ETR
+</code></pre>
+<p><strong>Intuition</strong> : si les taux américains sont plus élevés qu'en Europe, le marché anticipe une dépréciation du dollar telle que les rendements soient équilibrés une fois la variation de change prise en compte.</p>
+<p><strong>Limite</strong> : l'UIRP est peu vérifiée empiriquement à court terme (puzzle de la prime de change / forward premium puzzle).</p>
+<hr />
+<h2 id="2-parite-des-pouvoirs-dachat-ppa">2. Parité des Pouvoirs d'Achat (PPA)</h2>
+<h3 id="21-ppa-absolue">2.1 PPA absolue</h3>
+<p><strong>Loi du prix unique</strong> : un même bien doit coûter la même chose dans deux pays après conversion :</p>
+<pre><code>S = P_DOM / P_ETR
+</code></pre>
+<ul>
+<li><code>P_DOM</code> : niveau général des prix domestiques</li>
+<li><code>P_ETR</code> : niveau général des prix étrangers</li>
+</ul>
+<p><strong>Exemple</strong> : le Big Mac Index (The Economist) mesure les écarts à la PPA absolue.</p>
+<h3 id="22-ppa-relative">2.2 PPA relative</h3>
+<p>La variation du taux de change compense le différentiel d'inflation :</p>
+<pre><code>(S_t - S_0) / S_0 ≈ π_DOM - π_ETR
+</code></pre>
+<p><strong>Interprétation</strong> : si l'inflation en France est 2 % et aux USA 4 %, l'euro doit s'apprécier d'environ 2 % contre le dollar.</p>
+<h3 id="23-taux-de-change-reel">2.3 Taux de change réel</h3>
+<pre><code>S_réel = S_nominal × (P_ETR / P_DOM)
+</code></pre>
+<p>Un taux de change réel stable implique que la PPA relative est vérifiée.</p>
+<hr />
+<h2 id="3-relation-de-fisher-internationale">3. Relation de Fisher internationale</h2>
+<h3 id="31-effet-fisher-rappel">3.1 Effet Fisher (rappel)</h3>
+<pre><code>(1 + r_nominal) = (1 + r_réel) × (1 + π)
+</code></pre>
+<h3 id="32-effet-fisher-international">3.2 Effet Fisher international</h3>
+<p>En combinant la PTI (non couverte) et la PPA (relative) :</p>
+<pre><code>r_réel_DOM ≈ r_réel_ETR
+</code></pre>
+<p><strong>Les taux d'intérêt réels s'égalisent entre pays</strong> (dans un monde de libre circulation des capitaux et de marchés efficients).</p>
+<hr />
+<h2 id="4-synthese-les-parites-de-change">4. Synthèse : les parités de change</h2>
+<pre><code>                PTI couverte
+Spot ─────────────────────────────► Forward
+  │                                    ▲
+  │ PPA relative                       │ PTI non couverte
+  ▼                                    │
+Spot futur anticipé ────────────────────
+</code></pre>
+<p>Le <strong>carré des parités</strong> résume les quatre relations :
+- PTI couverte : spot ↔ forward (via différentiels de taux nominaux)
+- PTI non couverte : spot ↔ anticipation spot futur (via taux nominaux)
+- PPA relative : spot ↔ anticipation spot futur (via différentiels d'inflation)
+- Effet Fisher international : niveaux des taux réels équilibrés</p>
+<hr />
+<h2 id="5-modeles-de-determination-du-taux-de-change">5. Modèles de détermination du taux de change</h2>
+<h3 id="51-modele-monetaire-approach-monetariste">5.1 Modèle monétaire (approach monétariste)</h3>
+<pre><code>S = (M_DOM / M_ETR) × (Y_ETR / Y_DOM) × f(r_DOM - r_ETR)
+</code></pre>
+<p>Le taux de change reflète les fondamentaux monétaires : masse monétaire, revenu réel, taux d'intérêt.</p>
+<h3 id="52-modele-de-surreaction-overshooting-de-dornbusch-1976">5.2 Modèle de surréaction (overshooting) de Dornbusch (1976)</h3>
+<p>En réponse à un choc monétaire, le taux de change <strong>dépasse</strong> son niveau d'équilibre à long terme avant d'y converger progressivement.</p>
+<p><strong>Intuition</strong> : les marchés financiers ajustent instantanément, mais les prix des biens s'ajustent lentement. La surréaction du change est nécessaire pour satisfaire la PTI à court terme.</p>
+<h3 id="53-approche-de-la-balance-des-paiements">5.3 Approche de la balance des paiements</h3>
+<p>Le taux de change est influencé par :
+- <strong>Compte courant</strong> : solde commercial et des services.
+- <strong>Compte de capital/financier</strong> : flux d'investissements directs et de portefeuille.</p>
+<p>Un déficit courant tend à déprécier la devise (si non compensé par des entrées de capitaux).</p>
+<hr />
+<h2 id="6-approfondissement-theorique">6. Approfondissement théorique</h2>
+<h3 id="61-le-forward-premium-puzzle">6.1 Le forward premium puzzle</h3>
+<p>L'une des anomalies les plus documentées en finance internationale est le <strong>forward premium puzzle</strong> (Fama, 1984). La PTI non couverte prédit que si une devise est en report (F &gt; S), elle doit se déprécier à terme. Or, empiriquement, on observe souvent l'inverse : la devise en report <strong>s'apprécie</strong>, ce qui rend le carry trade profitable.</p>
+<p>Plusieurs explications ont été avancées :
+- <strong>Prime de risque variable</strong> : les investisseurs exigent une compensation pour le risque de change, ce qui crée un écart systématique par rapport à la parité.
+- <strong>Biais rationnel</strong> : les anticipations du marché sont non linéaires et conditionnelles au régime économique.
+- <strong>Irrationalité partielle</strong> : comportements moutonniers, excès de confiance des opérateurs.</p>
+<p>Ce puzzle reste partiellement inexpliqué et constitue un domaine actif de recherche académique.</p>
+<h3 id="62-la-ppa-limites-et-extensions">6.2 La PPA : limites et extensions</h3>
+<p>La PPA absolue est rarement vérifiée en pratique pour plusieurs raisons :
+- <strong>Biens non échangeables</strong> (services, immobilier) : leur prix diverge entre pays car ils ne sont pas soumis à la concurrence internationale.
+- <strong>Barrières tarifaires et non tarifaires</strong> : droits de douane, réglementations qui empêchent l'arbitrage des biens.
+- <strong>Coûts de transport</strong> : créent un écart persistant entre les prix internationaux.
+- <strong>Différences de qualité</strong> : un "iPhone" n'est pas strictement identique d'un pays à l'autre (garanties, réseaux...).</p>
+<p>La <strong>PPA relative est mieux vérifiée sur le long terme</strong> (horizon 5–10 ans) que sur le court terme, ce qui en fait un outil utile pour évaluer si une devise est fondamentalement sur- ou sous-évaluée.</p>
+<p><strong>Le taux de change réel d'équilibre</strong> (FEER — Fundamental Equilibrium Exchange Rate, Williamson, 1994) est le taux qui permettrait d'atteindre simultanément l'équilibre interne (plein emploi, inflation stable) et l'équilibre externe (balance des paiements soutenable). Il est utilisé par le FMI dans ses évaluations de misalignment.</p>
+<h3 id="63-le-modele-de-mundell-fleming">6.3 Le modèle de Mundell-Fleming</h3>
+<p>Le modèle IS-LM-BP de <strong>Mundell (1962) et Fleming (1962)</strong> analyse les politiques économiques en économie ouverte selon le régime de change et la mobilité des capitaux :</p>
+<table>
+<thead>
+<tr>
+<th>Politique</th>
+<th>Change fixe + mobilité parfaite</th>
+<th>Change flottant + mobilité parfaite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Budgétaire expansionniste</td>
+<td>Très efficace (crowding-in via afflux capitaux)</td>
+<td>Inefficace (appréciation change → éviction externe)</td>
+</tr>
+<tr>
+<td>Monétaire expansionniste</td>
+<td>Inefficace (stérilisation obligatoire)</td>
+<td>Très efficace (dépréciation → hausse exportations)</td>
+</tr>
+</tbody>
+</table>
+<p>Ce modèle illustre le <strong>triangle d'incompatibilité de Mundell</strong> : il est impossible d'avoir simultanément la libre circulation des capitaux, un taux de change fixe et une politique monétaire autonome.</p>
+<h3 id="64-modeles-dequilibre-general-et-dsge">6.4 Modèles d'équilibre général et DSGE</h3>
+<p>Les modèles DSGE (Dynamic Stochastic General Equilibrium) avec secteur ouvert permettent de modéliser comment les chocs (technologiques, de préférence, de politique monétaire) se transmettent aux taux de change. Ces modèles, utilisés par les banques centrales (BCE, Banque de France), génèrent des trajectoires de taux de change cohérentes avec le comportement optimal des agents.</p>
+<hr />
+<h2 id="7-exemples-numeriques-supplementaires">7. Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-verification-complete-du-carre-des-parites">Exemple 1 : Vérification complète du carré des parités</h3>
+<p>Données pour la paire EUR/USD :</p>
+<pre><code>EUR/USD spot (S₀) = 1,10
+r_EUR = 2,5 % / an
+r_USD = 4,5 % / an
+π_EUR = 2,0 % / an
+π_USD = 3,5 % / an
+</code></pre>
+<p><strong>PTI couverte — cours forward 1 an</strong> :</p>
+<pre><code>F = 1,10 × (1 + 0,045) / (1 + 0,025) = 1,10 × 1,01951 = 1,1215
+</code></pre>
+<p><strong>PTI non couverte — variation anticipée</strong> :</p>
+<pre><code>E[ΔS/S] = r_USD - r_EUR = 4,5 % - 2,5 % = +2 %
+E[S₁] = 1,10 × 1,02 = 1,1220  (légèrement supérieur au forward → prime de risque)
+</code></pre>
+<p><strong>PPA relative — variation anticipée via inflation</strong> :</p>
+<pre><code>E[ΔS/S] = π_USD - π_EUR = 3,5 % - 2,0 % = +1,5 %
+E[S₁_PPA] = 1,10 × 1,015 = 1,1165
+</code></pre>
+<p><strong>Effet Fisher international</strong> :</p>
+<pre><code>r_réel_EUR = r_nominal_EUR - π_EUR ≈ 2,5 % - 2,0 % = 0,5 %
+r_réel_USD = r_nominal_USD - π_USD ≈ 4,5 % - 3,5 % = 1,0 %
+</code></pre>
+<p>Les taux réels ne s'égalisent pas parfaitement (écart de 0,5 %), ce qui reflète une prime de risque ou une différence d'attractivité des marchés.</p>
+<p><strong>Interprétation</strong> : la PTI couverte donne la prévision forward la plus fiable (relation d'arbitrage). La PPA prédit une appréciation de l'euro plus faible (1,5 %) que la PTI non couverte (2 %). L'écart suggère que le marché anticipe partiellement un maintien du différentiel de taux réels.</p>
+<h3 id="exemple-2-big-mac-index-et-deviations-a-la-ppa-absolue">Exemple 2 : Big Mac Index et déviations à la PPA absolue</h3>
+<p>En 2023, les prix du Big Mac observés dans différents pays :</p>
+<pre><code>USA : 5,58 $
+Zone euro : 5,10 € → au cours de marché (EUR/USD = 1,08), soit 5,51 $
+Suisse : 6,70 CHF → au cours de marché (USD/CHF = 0,90), soit 6,03 $
+Inde : 190 INR → au cours de marché (USD/INR = 83), soit 2,29 $
+</code></pre>
+<p><strong>PPA absolue implicite (vs. USD)</strong> :
+- EUR : prix relatif = 5,10 / 5,58 × cours = 1,08 → cours PPA = 5,10 / 5,58 = <strong>0,914 EUR/$</strong>, soit <strong>1,094 $/€</strong>
+  → L'euro est légèrement sous-évalué (cours marché 1,08 vs PPA 1,094)
+- CHF : cours PPA = 6,70 / 5,58 = <strong>1,20 CHF/$</strong> → à comparer au cours de marché 1/0,90 = 1,11 CHF/$
+  → Le CHF est <strong>surévalué de 8 %</strong> selon le Big Mac Index
+- INR : cours PPA = 190 / 5,58 = <strong>34 INR/$</strong> → cours marché 83 INR/$
+  → La roupie est <strong>sous-évaluée de 58 %</strong> (pays à bas salaires, biens non échangeables moins chers)</p>
+<p>Cet exercice illustre la limite de la PPA absolue (différences de coûts du travail locaux) mais aussi son utilité comme indicateur grossier de misalignment.</p>
+<h3 id="exemple-3-application-du-modele-de-dornbusch">Exemple 3 : Application du modèle de Dornbusch</h3>
+<p>Un pays connaît une expansion monétaire soudaine de 10 % (choc d'offre de monnaie).</p>
+<p><strong>Court terme</strong> (prix des biens rigides) :
+- La PTI impose : si r baisse, le change doit se déprécier immédiatement d'un montant suffisant pour anticiper une <strong>appréciation future</strong>.
+- Si r baisse de 2 % (politique monétaire expansionniste), et que la valeur d'équilibre long terme du change se déprécie de 10 % :</p>
+<pre><code>Dépréciation immédiate (surréaction) = dépréciation LT + différentiel de taux × durée d'ajustement
+</code></pre>
+<p>Le taux de change peut se déprécier de 15–20 % à court terme avant de remonter progressivement vers l'équilibre long terme (-10 %).</p>
+<p><strong>Illustration</strong> : la forte volatilité de l'USD après les décisions de la Fed (annonces de hausses de taux 2022–2023) illustre ce mécanisme de surréaction.</p>
+<hr />
+<h2 id="8-exercices">8. Exercices</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>EUR/USD = 1,10. Inflation zone euro = 2 %, inflation USA = 4 %. Selon la PPA relative, quel sera le cours EUR/USD dans 1 an ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+La PPA prédit une appréciation de l'euro de (4 % - 2 %) = 2 %.
+EUR/USD = 1,10 × 1,02 = <strong>1,122</strong></p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>Les taux français et américains sont respectivement 3 % et 5 %. EUR/USD spot = 1,10. Calculez le cours forward 1 an et vérifiez la CIRP.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+F = 1,10 × (1 + 0,03) / (1 + 0,05) = 1,10 × 0,9810 = <strong>1,0791</strong>
+L'euro se déprécie de (1,10 - 1,0791) / 1,10 = -1,9 % ≈ -(5 % - 3 %) ✓</p>
+</blockquote>
+<h3 id="exercice-3-detection-dopportunite-darbitrage-sur-la-pti-couverte">Exercice 3 — Détection d'opportunité d'arbitrage sur la PTI couverte</h3>
+<p>Données : USD/CHF spot = 0,9100 ; taux USD = 5 % / an ; taux CHF = 1 % / an ; USD/CHF forward 1 an coté = 0,8700. Existe-t-il une opportunité d'arbitrage ? Décrivez la stratégie et calculez le profit sur 1 M USD.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Forward théorique</strong> (PTI couverte) :
+F_théorique = 0,9100 × (1 + 0,01) / (1 + 0,05) = 0,9100 × 0,9619 = <strong>0,8753</strong></p>
+<p><strong>Forward coté</strong> = 0,8700 &lt; 0,8753 → le CHF est trop bon marché à terme → le CHF est <strong>sous-évalué</strong> à terme.</p>
+<p><strong>Stratégie d'arbitrage</strong> (acheter le CHF à terme bon marché, le vendre cher) :
+1. Emprunter 1 M USD à 5 % pour 1 an → doit rembourser 1 050 000 USD
+2. Convertir 1 M USD en CHF au spot : 1 000 000 × 0,9100 = <strong>910 000 CHF</strong>
+3. Placer 910 000 CHF à 1 % → obtient 910 000 × 1,01 = <strong>919 100 CHF</strong>
+4. Vendre 919 100 CHF contre USD au forward coté (0,8700) : 919 100 / 0,8700 = <strong>1 056 437 USD</strong></p>
+<p>Remboursement emprunt : 1 050 000 USD
+<strong>Profit = 6 437 USD</strong> (soit 0,64 % de rendement sans risque)</p>
+<p>Note : en pratique, ces écarts sont imperceptibles et disparaissent très vite sur les marchés liquides.</p>
+</blockquote>
+<h3 id="exercice-4-taux-de-change-reel-et-competitivite">Exercice 4 — Taux de change réel et compétitivité</h3>
+<p>En 2020, l'EUR/USD = 1,20. L'indice des prix en zone euro est 100 et aux USA il est 95. En 2023, l'EUR/USD = 1,05, l'indice des prix zone euro est 115 et aux USA il est 120. Calculez le taux de change réel en 2020 et 2023. La zone euro a-t-elle gagné en compétitivité-prix vis-à-vis des USA ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>Taux de change réel = S_nominal × (P_USA / P_EUR)</p>
+<p><strong>2020</strong> : S_réel = 1,20 × (95 / 100) = <strong>1,14</strong></p>
+<p><strong>2023</strong> : S_réel = 1,05 × (120 / 115) = <strong>1,096</strong></p>
+<p>Le taux de change réel EUR/USD a baissé de 1,14 à 1,096, soit une dépréciation réelle de l'euro de <strong>3,8 %</strong>.</p>
+<p>Interprétation : malgré la dépréciation nominale de l'euro (-12,5 %), l'inflation plus forte aux USA a partiellement compensé. La zone euro a légèrement <strong>gagné en compétitivité-prix</strong> (les biens européens sont relativement moins chers), mais moins que ne le suggère la seule variation nominale.</p>
+</blockquote>
+<h3 id="exercice-5-effet-fisher-international">Exercice 5 — Effet Fisher international</h3>
+<p>En Turquie, le taux nominal est de 40 % et l'inflation de 65 %. En Allemagne, le taux nominal est de 4 % et l'inflation de 3 %. Calculez les taux réels. L'effet Fisher international est-il vérifié ? Quel mouvement de change l'UIRP prédit-elle ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Taux réel Turquie</strong> = (1,40 / 1,65) - 1 = 0,8485 - 1 = <strong>-15,15 %</strong>
+<strong>Taux réel Allemagne</strong> = (1,04 / 1,03) - 1 = 1,0097 - 1 = <strong>+0,97 %</strong></p>
+<p>Les taux réels sont très différents (écart de 16 pp) → l'effet Fisher international n'est <strong>pas vérifié</strong>.</p>
+<p>Cela reflète l'absence de libre circulation parfaite des capitaux, les risques politiques et de contrôle des changes en Turquie, ainsi que la détresse économique.</p>
+<p><strong>UIRP — variation de change attendue</strong> :
+(E[S₁] - S₀) / S₀ = r_TRY - r_EUR = 40 % - 4 % = <strong>+36 %</strong>
+→ La livre turque (TRY) devrait se déprécier de 36 % contre l'euro sur un an.</p>
+</blockquote>
+<hr />
+<h2 id="9-erreurs-frequentes-et-pieges">9. Erreurs fréquentes et pièges</h2>
+<h3 id="piege-1-inverser-le-sens-de-la-depreciation-dans-la-ppa-relative">Piège 1 : Inverser le sens de la dépréciation dans la PPA relative</h3>
+<p>La PPA relative dit que la <strong>devise du pays à forte inflation se déprécie</strong>. Si l'inflation est plus élevée aux USA qu'en zone euro, c'est le <strong>dollar</strong> qui se déprécie (EUR/USD monte). L'erreur classique est de conclure que c'est l'euro qui se déprécie.</p>
+<h3 id="piege-2-appliquer-la-pti-couverte-a-des-horizons-sans-marche-forward-liquide">Piège 2 : Appliquer la PTI couverte à des horizons sans marché forward liquide</h3>
+<p>La PTI couverte est une relation d'arbitrage robuste pour les horizons courts (1 semaine à 2 ans) sur les grandes paires. Au-delà de 5 ans ou pour les devises émergentes, le marché forward est illiquide ou inexistant. La relation ne s'applique plus directement.</p>
+<h3 id="piege-3-confondre-ppa-absolue-et-ppa-relative">Piège 3 : Confondre PPA absolue et PPA relative</h3>
+<p>La PPA <strong>absolue</strong> prédit le niveau du taux de change. La PPA <strong>relative</strong> prédit sa variation. La PPA absolue est rarement vérifiée (niveaux de prix structurellement différents entre pays). La PPA relative est partiellement vérifiée sur le long terme uniquement.</p>
+<h3 id="piege-4-confondre-le-modele-de-dornbusch-avec-une-simple-depreciation">Piège 4 : Confondre le modèle de Dornbusch avec une simple dépréciation</h3>
+<p>Dans le modèle de Dornbusch, la surréaction n'implique pas une dépréciation permanente plus forte. Le change se déprécie <strong>plus que l'équilibre long terme</strong>, puis remonte progressivement. Le résultat final est une dépréciation en ligne avec les fondamentaux monétaires, mais le chemin est non linéaire.</p>
+<h3 id="piege-5-utiliser-la-ppa-pour-des-previsions-a-court-terme">Piège 5 : Utiliser la PPA pour des prévisions à court terme</h3>
+<p>La PPA est un ancre de long terme (5–10 ans), non un outil de prédiction à 3–6 mois. Des études montrent qu'un modèle de marche aléatoire (random walk) prédit mieux le taux de change à court terme que n'importe quel modèle fondamental. C'est le résultat de Meese et Rogoff (1983).</p>
+<hr />
+<h2 id="10-applications-professionnelles">10. Applications professionnelles</h2>
+<h3 id="en-gestion-de-change-souverain-banque-centrale">En gestion de change souverain (banque centrale)</h3>
+<p>Les équipes de gestion de réserves de change des banques centrales utilisent les parités de change pour :
+- Évaluer si leur monnaie est fondamentalement sur- ou sous-évaluée (via FEER, PPA).
+- Décider de l'horizon et de l'intensité des interventions.
+- Structurer la composition par devise des réserves de change (USD, EUR, JPY, CNY).</p>
+<p>La Banque de France et la BCE publient régulièrement des analyses sur l'évolution du taux de change effectif réel de l'euro et ses implications macroéconomiques.</p>
+<h3 id="en-analyse-macro-pour-les-fonds-macro-global">En analyse macro pour les fonds macro-global</h3>
+<p>Les fonds <strong>macro-global</strong> (Bridgewater, Brevan Howard, Man AHL) utilisent les parités et les modèles macroéconomiques comme base de leurs stratégies directionnelles sur le Forex. Ils combinent :
+- PPA pour identifier les devises fondamentalement mal valorisées.
+- PTI couverte pour détecter les anomalies d'arbitrage.
+- Modèles DSGE pour anticiper les effets des politiques monétaires sur les changes.</p>
+<h3 id="en-evaluation-dentreprise-internationale">En évaluation d'entreprise internationale</h3>
+<p>Dans un DCF appliqué à une société ayant des flux dans plusieurs devises, les hypothèses de taux de change à long terme sont cruciales. La pratique standard consiste à utiliser des cours forwards pour les 2–3 premières années, puis la PPA relative pour les années suivantes en cohérence avec les hypothèses d'inflation par pays.</p>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>La PTI couverte est une relation d'arbitrage robuste : le forward compense le différentiel de taux.</li>
+<li>La PPA relative prédit que le change compense les écarts d'inflation à long terme.</li>
+<li>L'effet Fisher international : les taux réels s'égalisent en monde ouvert.</li>
+<li>La surréaction de Dornbusch explique la forte volatilité du change à court terme.</li>
+<li>Le forward premium puzzle : la devise en report s'apprécie souvent au lieu de se déprécier — l'UIRP est mal vérifiée à court terme.</li>
+<li>La PPA absolue échoue à prédire les niveaux de change en raison des biens non échangeables et des barrières commerciales.</li>
+<li>Sur le court terme, le marché Forex est proche d'une marche aléatoire (Meese et Rogoff, 1983).</li>
+</ul>
+<hr />
+<h1 id="chapitre-3-gestion-du-risque-de-change-en-entreprise">Chapitre 3 — Gestion du risque de change en entreprise</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Une entreprise qui effectue des transactions en devises étrangères est exposée au <strong>risque de change</strong> : une variation défavorable du taux de change peut réduire ses marges ou la valeur de ses actifs. La gestion du risque de change est une composante essentielle de la trésorerie internationale.</p>
+<hr />
+<h2 id="1-les-trois-types-dexposition-au-risque-de-change">1. Les trois types d'exposition au risque de change</h2>
+<h3 id="11-exposition-de-transaction">1.1 Exposition de transaction</h3>
+<p>Risque lié aux flux en devises déjà contractualisés (commandes, factures) mais pas encore réglés.</p>
+<p><strong>Exemple</strong> : un exportateur français a une créance de 1 M$ payable dans 90 jours. Si l'euro s'apprécie de 5 %, il encaissera moins d'euros.</p>
+<h3 id="12-exposition-de-conversion-comptable">1.2 Exposition de conversion (comptable)</h3>
+<p>Risque lié à la <strong>traduction</strong> des états financiers de filiales étrangères en devise fonctionnelle du groupe.</p>
+<p><strong>Exemple</strong> : une filiale américaine d'un groupe français. Si le USD s'affaiblit, la valeur en euros de l'actif net de la filiale diminue.</p>
+<h3 id="13-exposition-economique-operationnelle">1.3 Exposition économique (opérationnelle)</h3>
+<p>Risque sur la <strong>compétitivité future</strong> de l'entreprise en raison des variations de change (impact sur la valeur de l'entreprise, pas seulement sur les flux actuels).</p>
+<p><strong>Exemple</strong> : Airbus vend en dollars mais produit en euros. Si l'euro s'apprécie, ses coûts augmentent en dollars → perte de compétitivité face à Boeing.</p>
+<hr />
+<h2 id="2-techniques-de-couverture-interne-naturelle">2. Techniques de couverture interne (naturelle)</h2>
+<h3 id="21-netting">2.1 Netting</h3>
+<p>Compenser les entrées et sorties dans une même devise pour ne couvrir que le solde net.</p>
+<p><strong>Exemple</strong> :
+- Exportations vers USA : +2 M$
+- Importations depuis USA : -1,5 M$
+- Exposition nette : +0,5 M$ (à couvrir)</p>
+<h3 id="22-matching">2.2 Matching</h3>
+<p>Financer des actifs en devise avec de la dette dans la même devise → les flux se compensent naturellement.</p>
+<p><strong>Exemple</strong> : une entreprise française possède une filiale au Royaume-Uni. Elle se finance en GBP pour que les flux de dividendes en GBP servent à rembourser la dette en GBP.</p>
+<h3 id="23-leading-et-lagging">2.3 Leading et Lagging</h3>
+<ul>
+<li><strong>Leading</strong> : accélérer les paiements si l'on anticipe une appréciation de la devise de paiement.</li>
+<li><strong>Lagging</strong> : retarder les paiements si l'on anticipe une dépréciation de la devise de paiement.</li>
+</ul>
+<h3 id="24-clause-monetaire-contractuelle">2.4 Clause monétaire contractuelle</h3>
+<p>Inclure dans les contrats commerciaux des clauses indexant les prix sur le taux de change.</p>
+<hr />
+<h2 id="3-instruments-de-couverture-externe">3. Instruments de couverture externe</h2>
+<h3 id="31-vente-ou-achat-a-terme-forward">3.1 Vente (ou achat) à terme — Forward</h3>
+<p>L'entreprise fixe aujourd'hui le taux de change auquel elle échangera ses devises à une date future.</p>
+<p><strong>Exemple</strong> :
+- Exportateur français : créance 1 M$ dans 90 jours.
+- EUR/USD spot = 1,10 ; forward 90 jours = 1,09.
+- L'exportateur vend 1 M$ à terme à 1,09 → encaissera <strong>917 431 €</strong> certains.</p>
+<pre><code>Avantages : certitude, pas de prime
+Inconvénients : rigide, pas de participation à un mouvement favorable
+</code></pre>
+<h3 id="32-options-de-change">3.2 Options de change</h3>
+<p>L'entreprise <strong>achète un put USD / call EUR</strong> pour se protéger contre la baisse du dollar, tout en bénéficiant d'une appréciation.</p>
+<pre><code>Avantages : asymétrique, participation aux mouvements favorables
+Inconvénients : coût de la prime
+</code></pre>
+<p><strong>Exemple</strong> :
+- Exportateur achète un put USD K = 1,08 (droit de vendre 1 M$ à 1,08).
+- Prime : 15 000 €.
+- Si EUR/USD monte à 1,15 → il exerce son put, encaisse 1 M$ / 1,08 = 925 926 € - prime.
+- Si EUR/USD tombe à 1,05 → il ne l'exerce pas, échange au cours spot (plus favorable).</p>
+<h3 id="33-swap-de-devises-cross-currency-swap">3.3 Swap de devises (Cross-Currency Swap)</h3>
+<p>Échange de flux dans deux devises sur toute la durée d'un financement. Utilisé pour les expositions longues (financement d'actifs étrangers).</p>
+<h3 id="34-tunnel-risk-reversal">3.4 Tunnel (Risk Reversal)</h3>
+<p>Combinaison d'achat de put et de vente de call pour limiter le coût :
+- Achat put K₁ (protection en dessous de K₁)
+- Vente call K₂ (renonce aux gains au-delà de K₂)
+- Prime nette réduite voire nulle</p>
+<pre><code>Gain
+  |        ___________K₂
+  |       /
+──|──────/──────────────── Spot
+  |     K₁
+  |____/
+</code></pre>
+<hr />
+<h2 id="4-politique-de-couverture">4. Politique de couverture</h2>
+<h3 id="41-questions-strategiques">4.1 Questions stratégiques</h3>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Réponse courante</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Doit-on couvrir systématiquement ?</td>
+<td>Débat : MM → couverture inutile si investisseurs peuvent se couvrir eux-mêmes. En pratique : couvrir car coûts de détresse réels.</td>
+</tr>
+<tr>
+<td>Quel horizon couvrir ?</td>
+<td>Exposition de transaction : 3–12 mois. Exposition économique : 1–3 ans.</td>
+</tr>
+<tr>
+<td>Quel taux de couverture ?</td>
+<td>50–100 % de l'exposition nette confirmée.</td>
+</tr>
+<tr>
+<td>Quel instrument ?</td>
+<td>Forward pour certitude ; options pour optionalité.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-politique-de-tresorerie-internationale-centralisation">4.2 Politique de trésorerie internationale — centralisation</h3>
+<p>Les grands groupes centralisent la gestion du change dans une <strong>trésorerie centrale</strong> (in-house bank) qui :
+1. Collecte les positions de toutes les filiales.
+2. Effectue le netting intragroupe.
+3. Couvre le solde résiduel sur le marché.</p>
+<hr />
+<h2 id="5-exercices">5. Exercices</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Une entreprise française importe pour 800 000 $ payables dans 6 mois. EUR/USD spot = 1,08, forward 6 mois = 1,06. Quel est son risque ? Comment le couvrir ? Quel est le coût en euros de la couverture ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+<strong>Risque</strong> : l'euro se déprécie → le dollar devient plus cher → la facture en euros augmente.</p>
+<p><strong>Couverture</strong> : achat de dollars à terme (forward) à 1,06.
+Coût couvert = 800 000 / 1,06 = <strong>754 717 €</strong></p>
+<p>Sans couverture, si EUR/USD tombe à 1,02 :
+Coût non couvert = 800 000 / 1,02 = 784 314 € → économie de 784 314 - 754 717 = 29 597 € grâce à la couverture.</p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Un exportateur reçoit 500 000 $ dans 3 mois. Il hésite entre un forward (EUR/USD = 1,10) et un put dollar K = 1,12 (prime = 8 000 €). Comparez les deux stratégies si le cours à l'échéance est : (a) 1,15 ; (b) 1,05.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Forward</strong> : encaissement = 500 000 / 1,10 = <strong>454 545 €</strong> (certain)</p>
+<p><strong>(a) Cours à l'échéance = 1,15 (euro apprécié)</strong> :
+- Forward : 454 545 € (le forward l'a pénalisé vs spot)
+- Put K=1,12 : non exercé → vente au spot 1,15 = 500 000 / 1,15 = 434 783 € - 8 000 = <strong>426 783 €</strong>
+→ Forward meilleur dans ce scénario (il aurait fallu ne pas se couvrir du tout)</p>
+<p><strong>(b) Cours à l'échéance = 1,05 (euro déprécié)</strong> :
+- Forward : 454 545 € ✓
+- Put K=1,12 : exercé → 500 000 / 1,12 = 446 429 € - 8 000 = <strong>438 429 €</strong>
+→ Forward meilleur encore (protection plus complète)</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>L'exposition de transaction est la plus urgente à couvrir ; l'exposition économique est la plus stratégique.</li>
+<li>La couverture interne (netting, matching) doit précéder la couverture externe.</li>
+<li>Le forward donne la certitude du taux mais supprime la participation aux mouvements favorables.</li>
+<li>L'option de change offre une assurance asymétrique au coût d'une prime.</li>
+<li>Le tunnel réduit le coût de couverture en bornant à la fois le risque et le gain potentiel.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="quantification-de-lexposition-economique">Quantification de l'exposition économique</h3>
+<p>L'exposition économique est la plus difficile à mesurer car elle requiert une modélisation prospective des flux futurs en fonction du taux de change. On la formalise comme l'élasticité de la valeur de l'entreprise au taux de change.</p>
+<p><strong>Définition formelle</strong> : soit V(S) la valeur de marché de l'entreprise en monnaie domestique et S le taux de change (en unités de monnaie domestique par unité de devise étrangère). L'exposition économique β est définie par :</p>
+<pre><code>V(S) = α + β × S + ε
+
+où :
+  α = composante non exposée
+  β = coefficient d'exposition économique (en unités monétaires par unité de S)
+  ε = résidu non corrélé à S
+</code></pre>
+<p>On estime β par régression OLS des variations de valeur de l'entreprise sur les variations du taux de change sur un historique de plusieurs années. Une exposition β = 5 M€ signifie que chaque appréciation d'1 % de la devise étrangère accroît la valeur de l'entreprise de 5 M€ × 1 % = 50 000 €.</p>
+<p><strong>Décomposition de l'exposition économique</strong> : l'exposition économique résulte de plusieurs canaux :
+1. <strong>Canal des revenus</strong> : variation du volume des ventes et du prix de vente en devise étrangère suite à la variation du taux de change (effet de compétitivité).
+2. <strong>Canal des coûts</strong> : variation des coûts d'approvisionnement importés.
+3. <strong>Canal de la valeur terminale</strong> : impact sur la valeur des actifs opérationnels à l'étranger.</p>
+<h3 id="le-modele-de-shapiro">Le modèle de Shapiro</h3>
+<p>Alan Shapiro (1975, 1996) a formalisé l'exposition économique en distinguant deux horizons temporels. À court terme, les prix des biens sont rigides (prix « collants ») et l'entreprise subit l'impact de change dans ses marges. À long terme, les prix s'ajustent en proportion de la variation du change (parité des pouvoirs d'achat), réduisant l'exposition économique résiduelle.</p>
+<p><strong>Formulation de Shapiro</strong> : la valeur actuelle des flux futurs est :</p>
+<pre><code>V₀ = Σ [E(CFt × St) / (1 + r)^t]
+
+où :
+  CFt = flux de trésorerie en devises à la date t
+  St  = taux de change anticipé à la date t
+  r   = taux d'actualisation en monnaie domestique
+</code></pre>
+<p>L'exposition économique mesure alors la sensibilité de V₀ à une variation non anticipée de S. Shapiro montre que cette sensibilité dépend :
+- De la <strong>structure de concurrence</strong> du marché (monopole vs. marché parfait)
+- De l'<strong>élasticité prix de la demande</strong>
+- De la <strong>part des coûts libellés en devises</strong> dans la structure de coûts totale
+- De la <strong>capacité de l'entreprise à répercuter</strong> (pass-through) les variations de change dans ses prix de vente</p>
+<p><strong>Résultat clé</strong> : pour une industrie en concurrence parfaite avec faible pass-through, l'exposition économique est maximale, car l'entreprise ne peut ni baisser ses prix ni préserver ses marges. Inversement, un monopoliste peut plus facilement ajuster ses prix de vente pour absorber le choc de change.</p>
+<h3 id="strategie-de-couverture-optimale">Stratégie de couverture optimale</h3>
+<p>La littérature financière (Adler et Dumas, 1984 ; Stulz, 1984) établit que la couverture optimale minimise la variance de la valeur de l'entreprise sous contrainte de coût.</p>
+<p><strong>Ratio de couverture optimal (minimum variance hedge ratio)</strong> :</p>
+<pre><code>h* = - Cov(ΔV, ΔS) / Var(ΔS)
+
+où :
+  ΔV = variation de la valeur de l'entreprise
+  ΔS = variation du taux de change
+  h*  = nombre d'unités de devise à vendre à terme
+</code></pre>
+<p>Ce ratio correspond à β estimé par régression. Si h* = 2 M$, l'entreprise doit vendre 2 M$ à terme pour immuniser sa valeur contre les fluctuations de change.</p>
+<p><strong>Couverture en présence d'options réelles</strong> : dans des secteurs comme l'automobile ou l'aéronautique, l'entreprise dispose d'options opérationnelles (déplacer la production, changer de fournisseurs) qui constituent une couverture naturelle. Le modèle de Mello, Parsons et Triantis (1995) montre que l'exposition résiduelle, après prise en compte de ces options réelles, est significativement inférieure à l'exposition brute. Dans ce cas, la couverture financière optimale porte uniquement sur l'exposition résiduelle.</p>
+<p><strong>Couverture dynamique</strong> : plutôt qu'une couverture statique (position fixée à t=0), les entreprises adoptent souvent une approche dynamique consistant à réviser périodiquement le ratio de couverture en fonction des nouvelles informations sur le carnet de commandes, les cours de change et la volatilité implicite. Cette approche nécessite un suivi mensuel ou trimestriel des positions.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-estimation-de-lexposition-economique-par-regression">Exemple 1 — Estimation de l'exposition économique par régression</h3>
+<p>Une entreprise française du secteur pharmaceutique réalise 40 % de son chiffre d'affaires aux États-Unis, facturé en dollars, avec des coûts intégralement en euros. On dispose de 5 ans de données trimestrielles (20 observations).</p>
+<p><strong>Données</strong> (extrait simplifié) :</p>
+<table>
+<thead>
+<tr>
+<th>Trimestre</th>
+<th>ΔV/V (%)</th>
+<th>ΔEUR/USD (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1</td>
+<td>+3,2</td>
+<td>+2,1</td>
+</tr>
+<tr>
+<td>Q2</td>
+<td>-1,8</td>
+<td>-1,5</td>
+</tr>
+<tr>
+<td>Q3</td>
+<td>+0,5</td>
+<td>+0,3</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<p>Après régression OLS :</p>
+<pre><code>ΔV/V = 0,012 + 1,45 × ΔEUR/USD + ε
+R² = 0,62 ; t-stat(β) = 5,3 (significatif)
+</code></pre>
+<p><strong>Interprétation</strong> : le coefficient β = 1,45 signifie qu'une appréciation de 1 % de l'EUR/USD (l'euro monte face au dollar) réduit la valeur de l'entreprise de 1,45 %. Pour une capitalisation boursière de 500 M€, une appréciation de 10 % de l'euro coûte 500 × 0,1 × 1,45 = <strong>72,5 M€</strong> de perte de valeur de marché.</p>
+<p><strong>Ratio de couverture</strong> : la valeur des ventes américaines annuelles est de 200 M$. Le ratio de couverture optimal est h<em> = 1,45 × 500 M€ / 1,10 (taux de change) ≈ </em><em>660 M$ à vendre à terme par an</em>*, soit environ 165 M$ par trimestre.</p>
+<h3 id="exemple-2-comparaison-forward-option-tunnel-sur-une-meme-exposition">Exemple 2 — Comparaison forward / option / tunnel sur une même exposition</h3>
+<p>Une PME exportatrice anticipe des recettes de 2 M$ dans 6 mois. EUR/USD spot = 1,08. Les données de marché sont :</p>
+<pre><code>Forward 6 mois    : EUR/USD = 1,075
+Put USD K=1,080   : prime = 25 000 € (OTM de 0,5 %)
+Put USD K=1,100   : prime = 42 000 € (ATM)
+Call USD K=1,050  : prime = 28 000 € (vendu dans le tunnel)
+Tunnel [1,05 ; 1,10] : prime nette = 42 000 - 28 000 = 14 000 €
+</code></pre>
+<p><strong>Calcul des résultats selon le scénario de marché à l'échéance</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Stratégie</th>
+<th>S=1,02</th>
+<th>S=1,08</th>
+<th>S=1,15</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Non couvert</td>
+<td>1 960 784 €</td>
+<td>1 851 852 €</td>
+<td>1 739 130 €</td>
+</tr>
+<tr>
+<td>Forward 1,075</td>
+<td><strong>1 860 465 €</strong></td>
+<td><strong>1 860 465 €</strong></td>
+<td><strong>1 860 465 €</strong></td>
+</tr>
+<tr>
+<td>Put K=1,08 (net prime)</td>
+<td>1 851 852 - 42 000 = <strong>1 809 852 €</strong></td>
+<td>1 851 852 - 42 000 = <strong>1 809 852 €</strong></td>
+<td>1 739 130 - 42 000 = <strong>1 697 130 €</strong></td>
+</tr>
+<tr>
+<td>Tunnel [1,05 ; 1,10] (net prime)</td>
+<td>2 000 000/1,05 - 14 000 = <strong>1 890 476 €</strong></td>
+<td>1 851 852 - 14 000 = <strong>1 837 852 €</strong></td>
+<td>2 000 000/1,10 - 14 000 = <strong>1 804 545 €</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Analyse</strong> : le tunnel est la stratégie la plus avantageuse dans le scénario d'euro fort (S=1,02) car il plafonne le taux applicable à 1,05, tout en limitant la prime. Le forward est optimal dans le scénario médian. L'option ATM protège bien mais sa prime élevée la désavantage dans tous les scénarios de cet exemple.</p>
+<h3 id="exemple-3-couverture-dune-exposition-de-conversion-dune-filiale-etrangere">Exemple 3 — Couverture d'une exposition de conversion d'une filiale étrangère</h3>
+<p>Un groupe français (Groupe Alpha) possède une filiale britannique dont l'actif net IFRS est de 80 M£. EUR/GBP = 0,85 (1 £ = 1/0,85 = 1,176 €). L'actif net en euros vaut donc 80 M£ × 1,176 = <strong>94,12 M€</strong>.</p>
+<p><strong>Scénario</strong> : la livre sterling se déprécie de 10 % → EUR/GBP passe de 0,85 à 0,935 (1 £ = 1,07 €).</p>
+<pre><code>Nouvelle valeur en euros : 80 M£ × 1,07 = 85,6 M€
+Perte de conversion : 94,12 - 85,6 = 8,52 M€
+</code></pre>
+<p>Cette perte de 8,52 M€ affecte directement les <strong>capitaux propres consolidés</strong> du groupe (OCI — Other Comprehensive Income sous IFRS) sans passer par le compte de résultat.</p>
+<p><strong>Couverture</strong> : le groupe emprunte 80 M£ à taux fixe sur 3 ans. Lors de la dépréciation de la livre :
+- La valeur en euros de la dette diminue également de 8,52 M€
+- La perte sur l'actif net est compensée par le gain sur la dette → exposition nette ≈ 0</p>
+<p><strong>Coût de la couverture</strong> : le différentiel de taux d'intérêt UK/France est de 0,8 % par an. Sur 80 M£ × 0,008 = 640 000 £ × 1,176 = <strong>753 000 € par an</strong>. Ce coût est le prix de l'immunisation comptable.</p>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="usage-en-tresorerie-dentreprise">Usage en trésorerie d'entreprise</h3>
+<p>La trésorerie d'une entreprise internationale est organisée autour de quatre processus clés pour la gestion du risque de change.</p>
+<p><strong>1. Identification et mesure des expositions</strong></p>
+<p>Le trésorier consolide chaque mois l'ensemble des expositions confirmées (factures reçues/émises en devises, prêts/emprunts en devises) et probables (commandes en cours, budgets de ventes/achats prévus). Cette distinction est fondamentale : les expositions confirmées appellent une couverture systématique, les expositions probables une couverture partielle (généralement 50 à 80 %) pour laisser de la flexibilité si les flux ne se réalisent pas.</p>
+<p><strong>Outil pratique</strong> : le <strong>livre de positions de change</strong> (FX blotter) recense par devise, par maturité et par contrepartie l'ensemble des positions ouvertes et couvertes. Il est mis à jour quotidiennement dans les ERP (SAP Treasury, Kyriba, FIS).</p>
+<p><strong>2. Fixation du budget de change</strong></p>
+<p>En début d'exercice, le groupe fixe un <strong>cours budgété</strong> (budget rate) pour chaque devise significative. Ce cours est généralement le taux forward 12 mois au 1er janvier. Toutes les prévisions de revenus et de coûts sont exprimées à ce cours budgété. La mission de la trésorerie est d'atteindre le cours budgété en moyenne sur l'exercice — pas nécessairement de maximiser le gain de change, qui n'est pas le cœur de métier de l'entreprise.</p>
+<p><strong>3. Mise en place des couvertures</strong></p>
+<p>La politique de couverture est définie dans la <strong>charte de trésorerie</strong> validée par le Conseil d'administration. Elle précise :
+- Les instruments autorisés (forwards, options, swaps, tunnels)
+- Les contreparties bancaires agréées et les lignes de crédit allouées (ISDA/CSA)
+- Les horizons de couverture par type d'exposition
+- Les taux de couverture minimaux et maximaux
+- Le reporting requis au Comité de Direction</p>
+<p><strong>4. Comptabilisation en couverture (hedge accounting IFRS 9)</strong></p>
+<p>Depuis IFRS 9 (applicable depuis 2018), l'entreprise peut opter pour la <strong>comptabilité de couverture</strong> qui permet d'éviter la volatilité artificielle du résultat. Trois conditions doivent être respectées : (i) documentation formelle de la relation de couverture au départ, (ii) démonstration de l'efficacité (ratio entre 80 et 125 %), (iii) qualification comme couverture de flux futurs (cash flow hedge) ou de juste valeur (fair value hedge). Le traitement comptable diffère selon le type : en cash flow hedge, les variations de juste valeur de l'instrument de couverture passent en OCI jusqu'à ce que l'élément couvert affecte le résultat.</p>
+<h3 id="usage-en-risk-management-bancaire">Usage en risk management bancaire</h3>
+<p>Dans les établissements bancaires, la gestion du risque de change s'inscrit dans le cadre réglementaire et prudentiel de Bâle III/IV.</p>
+<p><strong>Position de change réglementaire</strong> : la banque calcule sa <strong>position de change nette</strong> par devise (différence entre actifs et passifs, éléments de hors-bilan inclus). L'exigence de fonds propres au titre du risque de change est de 8 % de la position de change globale nette (ancienne approche standard) ou calculée par modèle interne validé par le superviseur (approche FRTB sous Bâle IV).</p>
+<p><strong>Desk de change</strong> : le trading book de change comprend les positions pour compte propre (proprietary trading, en voie de disparition post-Volcker) et les positions résultant du market-making pour les clients. La limite de VaR par desk est fixée par l'ALM (Asset-Liability Management) et le Risk Committee.</p>
+<p><strong>Transfert des expositions des filiales</strong> : les positions de change générées par les filiales métiers (banque de détail, financement de projet) sont <strong>transférées à prix de marché</strong> au desk central de change via des prix de cession interne. Le desk assume alors la couverture sur le marché interbancaire, rationalisant les coûts et mutualisant la gestion.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-confondre-exposition-de-transaction-et-exposition-economique">Erreur 1 — Confondre exposition de transaction et exposition économique</h3>
+<p>L'erreur la plus répandue consiste à croire que couvrir toutes les factures en devises suffit à éliminer le risque de change. Or une entreprise peut n'avoir aucune facture en devises et subir une perte économique majeure si ses concurrents étrangers s'apprécient (exemple : un fabricant français de pièces automobiles qui ne vend qu'en euros mais concurrence des fournisseurs japonais — une appréciation du yen rend ces derniers plus chers, une dépréciation les rend plus compétitifs). L'exposition économique est souvent 3 à 5 fois plus grande que l'exposition de transaction.</p>
+<h3 id="erreur-2-negliger-le-risque-de-contre-valeur-sur-les-options-exercees">Erreur 2 — Négliger le risque de contre-valeur sur les options exercées</h3>
+<p>Lorsqu'une option de change est exercée, l'entreprise doit livrer physiquement les devises à la date d'exercice. Si elle ne dispose pas des devises sous-jacentes (par exemple parce que la créance commerciale a finalement été réglée en avance), elle devra acheter les devises au spot pour honorer l'exercice, générant un risque de liquidité. Il convient donc de s'assurer que le calendrier de couverture est aligné avec le calendrier effectif des flux commerciaux.</p>
+<h3 id="erreur-3-sur-couvrir-une-exposition-incertaine-over-hedging">Erreur 3 — Sur-couvrir une exposition incertaine (over-hedging)</h3>
+<p>Couvrir 100 % d'une commande anticipée mais non encore confirmée crée un <strong>risque de position ouverte inversée</strong> si la commande est annulée. Dans ce cas, l'entreprise se retrouve avec une position de change synthétique spéculative. La règle prudente est de couvrir les expositions probables à 50–70 % et de n'aller à 100 % que pour les expositions contractuellement fermes. Ce principe est codifié dans les normes IFRS 9 qui exigent une probabilité élevée (highly probable) pour qualifier un flux en cash flow hedge.</p>
+<h3 id="erreur-4-ignorer-le-cout-de-portage-carry-dans-levaluation-dun-forward">Erreur 4 — Ignorer le coût de portage (carry) dans l'évaluation d'un forward</h3>
+<p>Le cours forward intègre le différentiel de taux d'intérêt entre les deux devises (parité couverte des taux d'intérêt). Pour des devises à fort différentiel (ex. : EUR vs TRY, BRL), le cours forward peut être très défavorable par rapport au spot, reflétant les taux d'intérêt élevés dans la devise étrangère. Certains trésoriers comparent à tort le cours forward au cours spot actuel et concluent que la couverture est « chère ». En réalité, si la parité des taux d'intérêt tient, le cours spot futur s'approchera du cours forward en moyenne — la couverture n'est pas coûteuse en espérance, elle élimine seulement la variance.</p>
+<h3 id="erreur-5-ne-pas-comptabiliser-correctement-les-instruments-de-couverture-mark-to-market">Erreur 5 — Ne pas comptabiliser correctement les instruments de couverture (mark-to-market)</h3>
+<p>Hors comptabilité de couverture IFRS 9, les instruments dérivés (forwards, options) sont évalués à la juste valeur avec impact direct sur le résultat (P&amp;L). Une entreprise qui a vendu des dollars à terme à 1,10 verra apparaître une <strong>perte latente</strong> si l'EUR/USD tombe à 1,05, même si cette perte est économiquement compensée par une plus-value sur la créance commerciale. Cette asymétrie comptable crée une volatilité artificielle du résultat, source de confusion pour les analystes. La solution est de mettre en place la documentation de couverture IFRS 9 dès l'initiation de la position.</p>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-3-estimation-du-ratio-de-couverture-optimal-niveau-intermediaire">Exercice 3 — Estimation du ratio de couverture optimal (niveau intermédiaire)</h3>
+<p>Une entreprise agroalimentaire française (chiffre d'affaires 150 M€) exporte 35 % de ses ventes vers les États-Unis en dollars. Sur les 20 derniers trimestres, on dispose des données suivantes :</p>
+<pre><code>Variance des variations trimestrielles de l'EUR/USD :  Var(ΔS) = 0,0042
+Covariance entre variations de la valeur de l'entreprise
+et variations de l'EUR/USD :                          Cov(ΔV, ΔS) = -0,0128
+Valeur de marché de l'entreprise :                    V = 280 M€
+</code></pre>
+<ol>
+<li>Calculez le coefficient d'exposition économique β.</li>
+<li>Calculez le montant (en dollars) à vendre à terme chaque trimestre pour une couverture optimale (EUR/USD spot = 1,08).</li>
+<li>Discutez la pertinence de couvrir à 100 % de h* vs 50 %.</li>
+</ol>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. Coefficient d'exposition β</strong> :
+<code>β = Cov(ΔV, ΔS) / Var(ΔS) = -0,0128 / 0,0042 = -3,048</code>
+Une appréciation de 1 % de l'EUR/USD réduit la valeur de l'entreprise de 3,048 % × 280 M€ = <strong>8,53 M€</strong>.</p>
+<p><strong>2. Montant à couvrir</strong> :
+L'exposition économique en euros est β × V / (dS/S) mais en termes absolus, le nombre de dollars à vendre à terme est :
+<code>h* = |β| × V / S = 3,048 × 280 M€ / 1,08 = 789,9 M$ / an
+     soit 197,5 M$ par trimestre</code>
+Ce montant (197,5 M$) est bien supérieur aux exportations effectives (150 × 35% / 4 × 1,08 ≈ 14,2 M$ par trimestre), ce qui illustre que l'exposition économique dépasse les seuls flux d'exportation : elle incorpore aussi les effets de compétitivité sur le marché domestique.</p>
+<p><strong>3. Discussion 100 % vs 50 %</strong> :
+Couvrir à 100 % de h<em> minimise la variance mais génère une position forward très importante, consommatrice de lignes de crédit bancaires et exposée au risque de sur-couverture si les flux effectifs s'écartent des prévisions. Une couverture à 50 % réduit le coût de mise en place et le risque opérationnel, au prix d'une exposition résiduelle. Dans la pratique, les entreprises ciblent 60–80 % de h</em> pour les horizons 3–6 mois et 30–50 % pour les horizons 12–24 mois.</p>
+</blockquote>
+<h3 id="exercice-4-mise-en-place-dun-tunnel-et-seuil-de-rentabilite-niveau-avance">Exercice 4 — Mise en place d'un tunnel et seuil de rentabilité (niveau avancé)</h3>
+<p>Un importateur français doit payer 3 M$ dans 9 mois. EUR/USD spot = 1,12. Les données d'options sont :</p>
+<pre><code>Call USD K=1,08 (ITM) : prime achat = 48 000 €
+Call USD K=1,12 (ATM) : prime achat = 31 000 €
+Call USD K=1,16 (OTM) : prime achat = 18 000 €
+Put USD K=1,16 (ITM)  : prime vente = 45 000 €
+Put USD K=1,20 (OTM)  : prime vente = 22 000 €
+Forward 9 mois        : EUR/USD = 1,115
+</code></pre>
+<ol>
+<li>Construisez un tunnel zéro coût (ou quasi-zéro) en combinant un call et un put appropriés. Précisez les bornes du tunnel.</li>
+<li>Calculez le coût en euros d'achat des 3 M$ pour S_9 = 1,05 ; 1,12 ; 1,18 ; 1,25.</li>
+<li>Comparez avec le forward. Dans quel cas le tunnel est-il préférable ?</li>
+</ol>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. Construction du tunnel</strong> :
+L'importateur craint une baisse de l'EUR/USD (dollar qui monte). Il achète un call USD (droit d'acheter des dollars). Il finance la prime en vendant un put USD (il renonce aux gains si l'EUR/USD monte beaucoup).</p>
+<p>Tunnel quasi-zéro coût : Achat call K=1,08 (prime 48 000 €) et vente put K=1,20 (prime encaissée 22 000 €) → prime nette = 48 000 - 22 000 = <strong>26 000 €</strong>.
+Pour un tunnel à coût nul exact, on ajuste les strikes : Achat call K=1,09 (~43 000 €, interpolé) + vente put K=1,175 (~43 000 €) → prime nette ≈ 0. Nous travaillons avec le tunnel [1,08 ; 1,20] à prime nette de 26 000 € pour la clarté des calculs.</p>
+<p><strong>2. Calcul du coût d'achat des 3 M$</strong> :</p>
+<p>Le call K=1,08 protège contre EUR/USD &lt; 1,08 (dollar trop cher). Le put vendu K=1,20 oblige à acheter à 1,20 si EUR/USD &gt; 1,20 (on perd la hausse de l'euro au-delà de 1,20).</p>
+<p><code>S=1,05 : call exercé à K=1,08 → coût = 3 000 000/1,08 + 26 000 = 2 777 778 + 26 000 = 2 803 778 €
+S=1,12 : call non exercé, put non exercé → coût spot = 3 000 000/1,12 + 26 000 = 2 678 571 + 26 000 = 2 704 571 €
+S=1,18 : call non exercé, put non exercé → coût spot = 3 000 000/1,18 + 26 000 = 2 542 373 + 26 000 = 2 568 373 €
+S=1,25 : put exercé à K=1,20 → coût = 3 000 000/1,20 + 26 000 = 2 500 000 + 26 000 = 2 526 000 €</code></p>
+<p><strong>3. Comparaison avec le forward (1,115)</strong> :
+Coût forward = 3 000 000 / 1,115 = <strong>2 690 135 €</strong> (certain, sans prime)</p>
+<table>
+<thead>
+<tr>
+<th>Scénario</th>
+<th>Tunnel + prime</th>
+<th>Forward</th>
+<th>Différence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S=1,05</td>
+<td>2 803 778 €</td>
+<td>2 690 135 €</td>
+<td>Tunnel +113 643 € (défavorable)</td>
+</tr>
+<tr>
+<td>S=1,12</td>
+<td>2 704 571 €</td>
+<td>2 690 135 €</td>
+<td>Quasi-égal</td>
+</tr>
+<tr>
+<td>S=1,18</td>
+<td>2 568 373 €</td>
+<td>2 690 135 €</td>
+<td>Tunnel -121 762 € (favorable)</td>
+</tr>
+<tr>
+<td>S=1,25</td>
+<td>2 526 000 €</td>
+<td>2 690 135 €</td>
+<td>Tunnel -164 135 € (favorable)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusion</strong> : le tunnel est préférable au forward si l'entreprise anticipe une appréciation de l'euro (baisse de l'EUR/USD &lt; 1,12... non, ici EUR/USD monte). Ici, si l'entreprise anticipe que l'EUR/USD restera au-dessus de 1,12 (l'euro se renforce), le tunnel permet de profiter de cette évolution favorable jusqu'à 1,20, contrairement au forward qui verrouille le coût à 1,115.</p>
+</blockquote>
+<h3 id="exercice-5-couverture-dune-filiale-etrangere-et-hedge-accounting-ifrs-9-niveau-m2">Exercice 5 — Couverture d'une filiale étrangère et hedge accounting IFRS 9 (niveau M2)</h3>
+<p>Le groupe Sofrana (coté en France) possède une filiale australienne dont le bilan IFRS (en AUD) au 31/12/N est :</p>
+<pre><code>Actifs nets (filiale) : 120 M AUD
+EUR/AUD au 31/12/N   : 1,65 (1 € = 1,65 AUD)
+Actif net en euros   : 120 / 1,65 = 72,73 M€
+</code></pre>
+<p>Le groupe emprunte 120 M AUD à 5 ans à taux fixe 4,2 % pour couvrir cette exposition de conversion. Au 31/12/N+1, EUR/AUD = 1,48 (appréciation du dollar australien).</p>
+<ol>
+<li>Calculez la variation de la réserve de conversion dans les capitaux propres consolidés (sans couverture).</li>
+<li>Calculez le gain sur la dette AUD et démontrez l'effet de compensation.</li>
+<li>Discutez l'efficacité de la couverture au sens IFRS 9 (ratio d'efficacité).</li>
+</ol>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. Variation de la réserve de conversion</strong> (sans couverture) :
+<code>Valeur au 31/12/N+1 : 120 / 1,48 = 81,08 M€
+Gain de conversion  : 81,08 - 72,73 = +8,35 M€ (gain car AUD s'est apprécié)
+→ OCI positif de +8,35 M€ dans les capitaux propres consolidés</code></p>
+<p><strong>2. Gain/perte sur la dette AUD</strong> :
+<code>Valeur dette au 31/12/N   : 120 / 1,65 = 72,73 M€
+Valeur dette au 31/12/N+1 : 120 / 1,48 = 81,08 M€
+Perte sur la dette (en €)  : 81,08 - 72,73 = -8,35 M€
+→ OCI négatif de -8,35 M€</code>
+La perte sur la dette (-8,35 M€) compense exactement le gain de conversion (+8,35 M€) → <strong>exposition nette nulle</strong> dans les capitaux propres consolidés.</p>
+<p><strong>3. Ratio d'efficacité IFRS 9</strong> :
+<code>Ratio = Variation de juste valeur de l'instrument de couverture
+      / Variation de juste valeur de l'élément couvert
+      = -8,35 / +8,35 = -1,00 → ratio en valeur absolue = 100 %</code>
+La couverture est <strong>parfaitement efficace</strong> (ratio = 100 %, dans la plage acceptée de 80–125 %). En pratique, de légères divergences apparaissent à cause des intérêts courus sur la dette (4,2 % × 120 M AUD = 5,04 M AUD par an), qui constituent un <strong>coût de couverture</strong> non compensé par la réserve de conversion. Ce coût de couverture est comptabilisé en <strong>OCI séparé</strong> (« Cost of Hedging Reserve ») selon IFRS 9, et recyclé en résultat sur la durée de la couverture, sans affecter l'efficacité mesurée sur le nominal.</p>
+</blockquote>
+<h3 id="exercice-6-politique-de-couverture-et-theoreme-de-modigliani-miller-niveau-m2-approfondi">Exercice 6 — Politique de couverture et théorème de Modigliani-Miller (niveau M2 approfondi)</h3>
+<p>Dans un monde sans frictions (Modigliani-Miller), la couverture du risque de change par l'entreprise est inutile car les actionnaires peuvent se couvrir eux-mêmes. Discutez les arguments théoriques et pratiques qui justifient néanmoins la couverture au niveau de l'entreprise. Proposez un cadre d'analyse quantitatif intégrant les coûts de détresse financière.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Arguments théoriques en faveur de la couverture</strong> :</p>
+<ol>
+<li>
+<p><strong>Coûts de détresse financière</strong> (Stulz, 1984 ; Smith &amp; Stulz, 1985) : si les cash flows baissent sous un seuil critique S<em>, l'entreprise supporte des coûts de détresse (renégociation de dettes, perte de clientèle, départ des salariés clés). La couverture réduit la probabilité d'atteindre S</em> et crée de la valeur :
+<code>ΔV = P(CF &lt; S*) × Coût de détresse
+   ≈ [P_non-couvert - P_couvert] × D</code>
+où D est le coût de détresse attendu.</p>
+</li>
+<li>
+<p><strong>Sous-investissement</strong> (Froot, Scharfstein &amp; Stein, 1993) : si les cash flows externes sont plus coûteux que les cash flows internes (asymétrie d'information), une baisse des cash flows due au change peut forcer l'entreprise à renoncer à des projets à VAN positive (sous-investissement). La couverture stabilise les cash flows internes et préserve la capacité d'investissement.</p>
+</li>
+<li>
+<p><strong>Fiscalité convexe</strong> : si le taux marginal d'imposition est croissant avec le bénéfice (impôt progressif), une réduction de la variance des bénéfices réduit l'impôt attendu en espérance grâce à la convexité de la fonction fiscale :
+<code>E[T(π)] &gt; T(E[π])  si T(.) est convexe
+→ Couverture réduit E[T(π)]</code></p>
+</li>
+<li>
+<p><strong>Rémunération des dirigeants</strong> : les managers, dont la richesse personnelle est concentrée dans l'entreprise (options, actions), ont une aversion au risque idiosyncratique plus forte que les actionnaires diversifiés. Ils valorisent subjectivement la couverture au-delà de sa valeur de marché (Jensen &amp; Meckling, 1976).</p>
+</li>
+</ol>
+<p><strong>Cadre quantitatif</strong> : la valeur créée par la couverture peut s'écrire :
+<code>V_couverture = [P(CF &lt; S*) × D] + [Gain fiscal] + [VAN projets préservés] - [Coût de la couverture]</code>
+Pour une entreprise avec une probabilité de détresse de 8 % sans couverture et 1 % avec, des coûts de détresse de 30 M€, un gain fiscal de 1,5 M€ et un coût de couverture de 800 000 € :
+<code>V = (0,08 - 0,01) × 30 M€ + 1,5 M€ - 0,8 M€
+  = 2,1 M€ + 1,5 M€ - 0,8 M€
+  = 2,8 M€ de valeur créée</code>
+La couverture est justifiée tant que cette valeur créée est positive, ce qui constitue le fondement rationnel de la gestion du risque de change en entreprise.</p>
+</blockquote>
+<hr />
+</body>
+</html>

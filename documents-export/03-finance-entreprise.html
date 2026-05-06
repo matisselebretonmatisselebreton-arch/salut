@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>03 Finance Entreprise</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-3-finance-dentreprise-corporate-finance">Module 3 — Finance d'Entreprise (Corporate Finance)</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Comprendre les décisions financières stratégiques de l'entreprise : comment évaluer un projet d'investissement, choisir une structure de financement, valoriser une entreprise, définir une politique de dividendes, et mener une opération de fusion-acquisition.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-decisions-investissement.md">Décisions d'investissement et critères de sélection</a></li>
+<li><a href="./chapitre-02-evaluation-entreprise.md">Évaluation d'entreprise (Valuation)</a></li>
+<li><a href="./chapitre-03-structure-capital.md">Structure du capital et théorèmes de Modigliani-Miller</a></li>
+<li><a href="./chapitre-04-politique-dividendes.md">Politique de dividendes</a></li>
+<li><a href="./chapitre-05-fusions-acquisitions.md">Fusions et acquisitions (M&amp;A)</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>20 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Étude de cas : valorisation d'une entreprise fictive (DCF + multiples)</li>
+<li>Note de M&amp;A : analyse d'une opération réelle</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-decisions-dinvestissement-et-criteres-de-selection">Chapitre 1 — Décisions d'investissement et critères de sélection</h1>
+<h2 id="introduction">Introduction</h2>
+<p>La décision d'investissement est au cœur de la création de valeur. Elle consiste à allouer des ressources rares (capital) à des projets dont les flux futurs doivent compenser l'immobilisation du capital et rémunérer le risque pris.</p>
+<p>En grande entreprise comme en banque d'investissement, la sélection des investissements suit un processus rigoureux : identification des flux pertinents, choix du taux d'actualisation adapté au risque du projet, application des critères de décision et analyse de robustesse. Ce chapitre détaille chacune de ces étapes.</p>
+<hr />
+<h2 id="1-identification-et-estimation-des-flux-pertinents">1. Identification et estimation des flux pertinents</h2>
+<h3 id="11-le-principe-des-flux-incrementaux">1.1 Le principe des flux incrementaux</h3>
+<p>On retient uniquement les flux <strong>supplémentaires</strong> générés par le projet, par rapport à la situation sans projet.</p>
+<p><strong>Flux à inclure</strong> :
+- Variation du CA attribuable au projet
+- Variation des charges opérationnelles
+- Investissement initial (CAPEX)
+- Variation du BFR
+- Valeur résiduelle en fin de projet</p>
+<p><strong>Flux à exclure</strong> :
+- <strong>Coûts irrécupérables</strong> (sunk costs) : dépenses déjà engagées, indépendamment de la décision
+- <strong>Coûts d'opportunité</strong> : la valeur de la meilleure alternative doit être prise en compte (ex : loyer implicite d'un terrain propriété de l'entreprise)</p>
+<h3 id="12-construction-du-tableau-de-flux">1.2 Construction du tableau de flux</h3>
+<pre><code>Année 0          Années 1 à n        Année n (fin)
+──────────       ─────────────       ──────────────
+- Investissement + EBE × (1-t)       + Valeur résiduelle
+- ΔBFR           + Amortissements    + Récupération BFR
+                 × t (économie IS)
+                 - ΔBFR annuel
+</code></pre>
+<p><strong>Formulation synthétique</strong> :</p>
+<pre><code>CF_t = (ΔCA - ΔCharges) × (1 - t) + Amortissements × t - ΔCAPEX - ΔBFR
+</code></pre>
+<p>Le terme <code>Amortissements × t</code> est le <strong>bouclier fiscal</strong> des amortissements (tax shield).</p>
+<h3 id="13-valeur-residuelle">1.3 Valeur résiduelle</h3>
+<pre><code>Valeur résiduelle nette = Valeur de cession - IS sur plus-value
+Plus-value = Prix de cession - Valeur nette comptable
+</code></pre>
+<h3 id="14-traitement-du-bfr-precisions">1.4 Traitement du BFR — précisions</h3>
+<p>Le BFR (Besoin en Fonds de Roulement) est souvent oublié dans les calculs naïfs, mais son impact peut être considérable :</p>
+<ul>
+<li><strong>À l'ouverture du projet</strong> : la hausse des stocks et des créances clients génère un besoin de financement immédiat → flux négatif en année 0 ou dès la montée en puissance.</li>
+<li><strong>En cours de projet</strong> : si l'activité croît, le BFR s'accroît chaque année (flux négatif annuel).</li>
+<li><strong>En fin de projet</strong> : le BFR est totalement récupéré (flux positif) car les stocks sont vendus et les créances encaissées.</li>
+</ul>
+<p><strong>Règle pratique</strong> : le BFR est souvent estimé à X jours de CA (ex : 45 jours de CA). Si le CA augmente de 1 M€, le ΔBFR = 1 M€ × 45/365 ≈ 123 k€.</p>
+<hr />
+<h2 id="2-criteres-de-selection">2. Critères de sélection</h2>
+<h3 id="21-valeur-actuelle-nette-van-critere-principal">2.1 Valeur Actuelle Nette (VAN) — critère principal</h3>
+<pre><code>VAN = Σ [CF_t / (1 + k)^t]   pour t = 0 à n
+</code></pre>
+<ul>
+<li><code>k</code> : coût du capital (WACC)</li>
+</ul>
+<p><strong>Règle</strong> : retenir tout projet avec VAN &gt; 0.</p>
+<p><strong>Pour des projets mutuellement exclusifs</strong> : choisir celui avec la VAN maximale.</p>
+<h3 id="22-taux-de-rendement-interne-tri">2.2 Taux de Rendement Interne (TRI)</h3>
+<pre><code>VAN(TRI) = 0
+</code></pre>
+<p><strong>Règle</strong> : accepter si TRI &gt; coût du capital.</p>
+<p><strong>Limites</strong> :
+- Hypothèse de réinvestissement au TRI (souvent irréaliste).
+- Plusieurs TRI possibles si les flux changent de signe plus d'une fois.
+- Ne pas utiliser pour comparer des projets de tailles différentes.</p>
+<h3 id="23-delai-de-recuperation-payback">2.3 Délai de récupération (Payback)</h3>
+<pre><code>Payback = Nombre de périodes pour que Σ CF_t ≥ 0
+</code></pre>
+<p><strong>Avantage</strong> : simple, mesure le risque de liquidité.
+<strong>Limite</strong> : ignore les flux après le payback et la valeur temps.</p>
+<h3 id="24-delai-de-recuperation-actualise">2.4 Délai de récupération actualisé</h3>
+<p>Identique au payback classique, mais avec des flux actualisés.</p>
+<h3 id="25-indice-de-profitabilite-ip">2.5 Indice de profitabilité (IP)</h3>
+<pre><code>IP = VAN / Investissement initial
+</code></pre>
+<p>Utile en cas de <strong>rationnement du capital</strong> : on priorise les projets selon leur IP décroissant.</p>
+<hr />
+<h2 id="3-choix-du-taux-dactualisation">3. Choix du taux d'actualisation</h2>
+<h3 id="31-wacc-weighted-average-cost-of-capital">3.1 WACC (Weighted Average Cost of Capital)</h3>
+<p>Le <strong>WACC</strong> est le coût moyen pondéré des ressources de financement (capitaux propres + dette) :</p>
+<pre><code>WACC = kE × [E / (E + D)] + kD × (1 - t) × [D / (E + D)]
+</code></pre>
+<ul>
+<li><code>kE</code> : coût des capitaux propres</li>
+<li><code>kD</code> : coût de la dette avant IS</li>
+<li><code>t</code> : taux d'imposition</li>
+<li><code>E</code> : valeur de marché des capitaux propres</li>
+<li><code>D</code> : valeur de marché de la dette</li>
+</ul>
+<p><strong>La dette bénéficie d'un avantage fiscal</strong> : les intérêts sont déductibles → coût effectif = kD × (1 - t).</p>
+<h3 id="32-cout-des-capitaux-propres-le-medaf-capm">3.2 Coût des capitaux propres : le MEDAF (CAPM)</h3>
+<pre><code>kE = rf + β × (E[Rm] - rf)
+</code></pre>
+<ul>
+<li><code>rf</code> : taux sans risque (obligations d'État 10 ans)</li>
+<li><code>β</code> : bêta de l'action (sensibilité au risque systématique)</li>
+<li><code>E[Rm] - rf</code> : prime de risque du marché (≈ 5–6 % historiquement)</li>
+</ul>
+<p><strong>Exemple</strong> :
+- rf = 3 %, β = 1,2, prime de risque = 5,5 %
+- kE = 3 % + 1,2 × 5,5 % = 3 % + 6,6 % = <strong>9,6 %</strong></p>
+<h3 id="33-exemple-de-calcul-du-wacc">3.3 Exemple de calcul du WACC</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Valeur marché</th>
+<th>Coût</th>
+<th>Poids</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capitaux propres</td>
+<td>600 M€</td>
+<td>9,6 %</td>
+<td>60 %</td>
+</tr>
+<tr>
+<td>Dette</td>
+<td>400 M€</td>
+<td>5 % × (1-25 %) = 3,75 %</td>
+<td>40 %</td>
+</tr>
+</tbody>
+</table>
+<pre><code>WACC = 9,6 % × 60 % + 3,75 % × 40 % = 5,76 % + 1,50 % = 7,26 %
+</code></pre>
+<h3 id="34-cas-particulier-projet-a-risque-different-de-lentreprise">3.4 Cas particulier : projet à risque différent de l'entreprise</h3>
+<p>Lorsqu'un projet présente un risque opérationnel différent de celui de l'entreprise dans son ensemble (ex : une entreprise industrielle qui investit dans un projet logiciel), il faut ajuster le taux d'actualisation :</p>
+<ol>
+<li>Trouver des entreprises comparables <strong>spécialisées</strong> dans le secteur du projet.</li>
+<li>Désendetter leur bêta pour obtenir un bêta d'actif (βA).</li>
+<li>Réendetter ce bêta à la structure financière cible du projet.</li>
+<li>Calculer un WACC spécifique au projet.</li>
+</ol>
+<p>Cette approche est appelée <strong>approche du bêta pur</strong> (pure play approach).</p>
+<hr />
+<h2 id="4-analyse-de-sensibilite-et-risque">4. Analyse de sensibilité et risque</h2>
+<h3 id="41-analyse-de-sensibilite">4.1 Analyse de sensibilité</h3>
+<p>On fait varier un paramètre clé (taux d'actualisation, croissance du CA, marge opérationnelle) et on observe l'impact sur la VAN.</p>
+<p><strong>Tableau de sensibilité (exemple)</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>WACC \ Croissance CA</th>
+<th>2 %</th>
+<th>4 %</th>
+<th>6 %</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6 %</td>
+<td>450</td>
+<td>620</td>
+<td>830</td>
+</tr>
+<tr>
+<td>8 %</td>
+<td>280</td>
+<td>420</td>
+<td>580</td>
+</tr>
+<tr>
+<td>10 %</td>
+<td>120</td>
+<td>230</td>
+<td>360</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-analyse-de-scenarios">4.2 Analyse de scénarios</h3>
+<table>
+<thead>
+<tr>
+<th>Scénario</th>
+<th>Hypothèses</th>
+<th>VAN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pessimiste</td>
+<td>Croissance -2 %, marges -3 pts</td>
+<td>-150 k€</td>
+</tr>
+<tr>
+<td>Central</td>
+<td>Base</td>
+<td>+350 k€</td>
+</tr>
+<tr>
+<td>Optimiste</td>
+<td>Croissance +4 %, marges +2 pts</td>
+<td>+800 k€</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-monte-carlo">4.3 Monte Carlo</h3>
+<p>Simulation probabiliste : on tire aléatoirement des valeurs pour chaque paramètre incertain selon leur distribution statistique et on obtient une distribution de VAN.</p>
+<h3 id="44-taux-de-rendement-interne-modifie-trim">4.4 Taux de rendement interne modifié (TRIM)</h3>
+<p>Le <strong>TRIM</strong> (ou MIRR en anglais) corrige la principale limite du TRI en distinguant deux taux :
+- Taux de réinvestissement des flux intermédiaires positifs (souvent le WACC ou le taux de placement disponible).
+- Taux de financement des flux négatifs (coût de la dette).</p>
+<pre><code>TRIM : [FV des flux positifs réinvestis au taux de réinvestissement]^(1/n)
+        / [PV des flux négatifs financés au taux de financement] - 1
+</code></pre>
+<p>Le TRIM est plus réaliste que le TRI car il n'impose pas que les flux soient réinvestis au TRI lui-même.</p>
+<hr />
+<h2 id="5-approfondissement-theorique">5. Approfondissement théorique</h2>
+<h3 id="51-la-van-etendue-et-les-options-reelles">5.1 La VAN étendue et les options réelles</h3>
+<p>La VAN classique suppose que le projet est accepté ou refusé définitivement aujourd'hui. Or, en réalité, les managers disposent de <strong>flexibilité</strong> :</p>
+<ul>
+<li><strong>Option d'abandon</strong> : possibilité de stopper le projet si les résultats sont décevants.</li>
+<li><strong>Option d'expansion</strong> : possibilité d'investir davantage si le projet réussit.</li>
+<li><strong>Option de report</strong> : possibilité d'attendre une information supplémentaire avant de décider.</li>
+</ul>
+<p>La <strong>VAN étendue</strong> intègre la valeur de ces options :</p>
+<pre><code>VAN étendue = VAN classique + Valeur des options réelles
+</code></pre>
+<p>Cette approche s'appuie sur les outils de valorisation d'options (Black-Scholes, arbres binomiaux) pour quantifier la valeur de la flexibilité managériale. Elle est particulièrement pertinente pour les projets phasés (exploration pétrolière, R&amp;D pharmaceutique, investissements dans des marchés émergents).</p>
+<h3 id="52-ajustement-de-la-van-pour-le-financement-apv">5.2 Ajustement de la VAN pour le financement (APV)</h3>
+<p>La méthode <strong>APV</strong> (Adjusted Present Value), développée par Myers (1974), décompose la valeur d'un projet en deux composantes :</p>
+<pre><code>APV = VAN de base (projet entièrement financé par fonds propres)
+    + PV(Bouclier fiscal de la dette liée au projet)
+    + PV(Coûts de détresse financière liée à la dette)
+</code></pre>
+<p>Cette méthode est particulièrement adaptée lorsque la structure de financement change au cours du projet (LBO, projets en partenariat public-privé), car le WACC suppose une structure de capital stable.</p>
+<p><strong>Comparaison APV vs. VAN/WACC</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>VAN/WACC</th>
+<th>APV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Structure financière stable</td>
+<td>Adapté</td>
+<td>Adapté</td>
+</tr>
+<tr>
+<td>Structure financière variable</td>
+<td>Difficile</td>
+<td>Idéal</td>
+</tr>
+<tr>
+<td>LBO</td>
+<td>Difficile</td>
+<td>Standard</td>
+</tr>
+<tr>
+<td>Projets phasés</td>
+<td>Complexe</td>
+<td>Recommandé</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-erreurs-frequentes-et-pieges">6. Erreurs fréquentes et pièges</h2>
+<p><strong>1. Oublier les coûts d'opportunité</strong>
+Un terrain appartenant à l'entreprise n'est pas "gratuit". Si le projet l'utilise, on doit intégrer en coût d'opportunité sa valeur locative de marché (ou le prix auquel il aurait pu être cédé).</p>
+<p><strong>2. Inclure les frais d'études déjà engagés</strong>
+Les études de faisabilité réalisées avant la décision d'investissement sont des sunk costs. Les intégrer dans les flux du projet revient à biaiser la décision : ces dépenses sont perdues quoi qu'il arrive.</p>
+<p><strong>3. Oublier l'impact fiscal des amortissements</strong>
+Le bouclier fiscal (Amortissements × t) réduit significativement le coût réel de l'investissement. Un amortissement annuel de 100 k€ avec IS à 25 % génère 25 k€ d'économie fiscale réelle chaque année.</p>
+<p><strong>4. Négliger la variation du BFR</strong>
+Sur un projet de développement, l'accroissement du BFR peut représenter 10 à 20 % du CA supplémentaire. L'oublier conduit à surestimer les flux nets de trésorerie.</p>
+<p><strong>5. Confondre résultat comptable et flux de trésorerie</strong>
+La VAN se calcule sur des flux de trésorerie, non des résultats comptables. Les amortissements sont une charge non décaissée : ils n'apparaissent dans le calcul des flux qu'au travers du bouclier fiscal.</p>
+<hr />
+<h2 id="7-exemples-numeriques-supplementaires">7. Exemples numériques supplémentaires</h2>
+<h3 id="exemple-a-projet-avec-variation-de-bfr-et-valeur-residuelle">Exemple A — Projet avec variation de BFR et valeur résiduelle</h3>
+<p><strong>Données</strong> :
+- Investissement en équipement : 500 k€ (amortissement linéaire sur 5 ans)
+- Valeur résiduelle à l'issue : 50 k€ (VNC = 0 après amortissement complet)
+- Augmentation du CA : 250 k€/an
+- Charges variables supplémentaires : 120 k€/an
+- Augmentation du BFR : 40 k€ au démarrage, récupéré en année 5
+- Taux d'IS : 25 %
+- WACC : 9 %</p>
+<p><strong>Construction des flux</strong> :</p>
+<pre><code>Amortissement annuel = 500 / 5 = 100 k€
+Bouclier fiscal = 100 × 25 % = 25 k€/an
+
+Flux opérationnel annuel (années 1 à 5) :
+= (250 - 120) × (1 - 0,25) + 25
+= 130 × 0,75 + 25
+= 97,5 + 25 = 122,5 k€
+
+Année 0 : -500 - 40 = -540 k€
+Années 1 à 4 : +122,5 k€
+Année 5 : +122,5 + 50 × (1 - 0,25) + 40 = 122,5 + 37,5 + 40 = 200 k€
+</code></pre>
+<p>Note : la cession à 50 k€ génère une plus-value de 50 k€ (VNC = 0), imposée à 25 % → produit net = 37,5 k€.</p>
+<p><strong>Calcul de la VAN</strong> :</p>
+<pre><code>Facteur d'actualisation à 9 % :
+Année 1 : 1/1,09 = 0,917
+Année 2 : 0,842
+Année 3 : 0,772
+Année 4 : 0,708
+Année 5 : 0,650
+
+VAN = -540 + 122,5 × (0,917 + 0,842 + 0,772 + 0,708) + 200 × 0,650
+    = -540 + 122,5 × 3,239 + 130
+    = -540 + 396,8 + 130
+    = -13,2 k€
+</code></pre>
+<p><strong>Conclusion</strong> : VAN légèrement négative → <strong>projet à rejeter</strong> au WACC de 9 %. Cependant, la sensibilité est élevée : une baisse du WACC à 8 % ou une légère hausse de marge inverserait la décision.</p>
+<hr />
+<h3 id="exemple-b-comparaison-de-projets-de-durees-differentes">Exemple B — Comparaison de projets de durées différentes</h3>
+<p>Deux machines mutuellement exclusives :
+- Machine A : coût 200 k€, durée de vie 3 ans, flux annuels 90 k€
+- Machine B : coût 300 k€, durée de vie 5 ans, flux annuels 85 k€
+- WACC : 8 %</p>
+<p>La comparaison directe des VAN est biaisée par les durées différentes. On utilise l'<strong>Annuité Équivalente</strong> (AE ou EAC — Equivalent Annual Cost) :</p>
+<pre><code>VAN_A = -200 + 90 × [1 - 1,08^(-3)] / 0,08 = -200 + 90 × 2,577 = +31,9 k€
+AE_A = 31,9 / 2,577 = +12,4 k€/an
+
+VAN_B = -300 + 85 × [1 - 1,08^(-5)] / 0,08 = -300 + 85 × 3,993 = +39,4 k€
+AE_B = 39,4 / 3,993 = +9,9 k€/an
+</code></pre>
+<p>La machine A crée davantage de valeur par an → <strong>choisir A</strong> malgré une VAN totale inférieure.</p>
+<hr />
+<h2 id="8-exercices">8. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>Un projet nécessite 200 k€ d'investissement. Les flux opérationnels annuels après IS sont de 60 k€ pendant 4 ans. La valeur résiduelle est nulle. Le WACC est 8 %. Calculez la VAN et le TRI. Concluez.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VAN = -200 + 60 × [1 - (1,08)^(-4)] / 0,08
+VAN = -200 + 60 × 3,312 = -200 + 198,7 = <strong>-1,3 k€</strong> → projet à <strong>refuser</strong> (très légèrement négatif)</p>
+<p>Pour le TRI, chercher le taux tel que VAN = 0 :
+À 7,9 % : VAN ≈ 0 → <strong>TRI ≈ 7,9 %</strong> &lt; 8 % (WACC) → confirme le refus.</p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Deux projets mutuellement exclusifs A et B :
+- A : investissement 100, VAN = 30, IP = 0,30
+- B : investissement 400, VAN = 80, IP = 0,20</p>
+<p>Lequel choisir si le capital est limité à 150 k€ ? Si le capital est illimité ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+- Capital limité : IP de A (0,30) &gt; IP de B (0,20) → <strong>choisir A</strong> (meilleure création de valeur par euro investi).
+- Capital illimité : VAN de B (80) &gt; VAN de A (30) → <strong>choisir B</strong> (valeur absolue créée plus élevée).</p>
+</blockquote>
+<h3 id="exercice-3-calcul-complet-avec-bouclier-fiscal-et-bfr">Exercice 3 — Calcul complet avec bouclier fiscal et BFR</h3>
+<p>Une entreprise envisage un projet d'expansion :
+- Investissement machine : 300 k€, amortissable sur 4 ans en linéaire, valeur résiduelle 60 k€ (VNC à 4 ans = 0)
+- Hausse du CA : 200 k€/an
+- Charges variables additionnelles : 80 k€/an
+- Hausse du BFR à l'ouverture : 30 k€ (récupération totale à la fin)
+- Taux IS : 25 %
+- WACC : 10 %</p>
+<p>Calculez la VAN et concluez.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>Amortissement annuel = 300 / 4 = 75 k€
+Bouclier fiscal annuel = 75 × 0,25 = 18,75 k€</p>
+<p>Flux opérationnel annuel = (200 - 80) × 0,75 + 18,75 = 90 + 18,75 = <strong>108,75 k€</strong></p>
+<p>Valeur résiduelle nette = 60 × (1 - 0,25) = 45 k€ (plus-value totale car VNC = 0)</p>
+<p>Flux :
+- Année 0 : -300 - 30 = <strong>-330 k€</strong>
+- Années 1 à 3 : <strong>+108,75 k€</strong>
+- Année 4 : 108,75 + 45 + 30 = <strong>+183,75 k€</strong></p>
+<p>Facteur annuité 10 %, 4 ans = 3,170</p>
+<p>VAN ≈ -330 + 108,75 × (3,170 - 0,683) + 183,75 × 0,683</p>
+<p>Note : on sépare les flux homogènes :
+VAN = -330 + 108,75 × 3,170 - (183,75 - 108,75) × 0,683 + 183,75 × 0,683
+Calcul direct :
+An 1 : 108,75 / 1,10 = 98,86
+An 2 : 108,75 / 1,21 = 89,88
+An 3 : 108,75 / 1,331 = 81,70
+An 4 : 183,75 / 1,4641 = 125,51
+VAN = -330 + 98,86 + 89,88 + 81,70 + 125,51 = <strong>+65,95 k€</strong> → <strong>projet à retenir</strong></p>
+</blockquote>
+<h3 id="exercice-4-analyse-de-sensibilite">Exercice 4 — Analyse de sensibilité</h3>
+<p>Reprenez les données de l'exercice 3. La direction commerciale n'est pas certaine de l'hypothèse de croissance de CA à 200 k€/an. Calculez la VAN si le CA n'augmente que de 150 k€/an. Quel est le seuil de CA supplémentaire pour que la VAN soit nulle ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>Avec ΔCAS = 150 k€ :
+Flux opérationnel = (150 - 80) × 0,75 + 18,75 = 52,5 + 18,75 = 71,25 k€</p>
+<p>An 1 : 71,25 / 1,10 = 64,77
+An 2 : 71,25 / 1,21 = 58,88
+An 3 : 71,25 / 1,331 = 53,53
+An 4 : (71,25 + 45 + 30) / 1,4641 = 146,25 / 1,4641 = 99,89
+VAN = -330 + 64,77 + 58,88 + 53,53 + 99,89 = <strong>-52,9 k€</strong> → projet à rejeter</p>
+<p>La VAN passe de +65,95 k€ à -52,9 k€ pour une baisse de 50 k€ de CA → très sensible.</p>
+<p>Seuil de rentabilité en CA : par interpolation linéaire, la VAN = 0 pour ΔCAS ≈ 174 k€/an (soit une marge de sécurité de 13 % par rapport aux 200 k€ prévus).</p>
+</blockquote>
+<h3 id="exercice-5-trim">Exercice 5 — TRIM</h3>
+<p>Un projet génère les flux suivants : CF₀ = -1 000 k€, CF₁ = +400 k€, CF₂ = -200 k€ (remise à niveau), CF₃ = +700 k€, CF₄ = +600 k€. Le TRI conventionnel donne plusieurs solutions. Calculez le TRIM avec un taux de réinvestissement de 8 % et un taux de financement de 6 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>Valeur future des flux positifs réinvestis à 8 % en fin d'année 4 :
+CF₁ réinvesti = 400 × (1,08)³ = 400 × 1,2597 = 503,9 k€
+CF₃ réinvesti = 700 × (1,08)¹ = 756 k€
+CF₄ = 600 k€ (déjà en fin de période)
+FV totale = 503,9 + 756 + 600 = <strong>1 859,9 k€</strong></p>
+<p>Valeur actuelle des flux négatifs financés à 6 % en début :
+CF₀ = -1 000 k€
+CF₂ actualisé = -200 / (1,06)² = -177,9 k€
+PV totale = 1 000 + 177,9 = <strong>1 177,9 k€</strong></p>
+<p>TRIM = (1 859,9 / 1 177,9)^(1/4) - 1 = (1,579)^0,25 - 1 ≈ <strong>12,1 %</strong></p>
+<p>Si le WACC est inférieur à 12,1 %, le projet est accepté.</p>
+</blockquote>
+<hr />
+<h2 id="9-applications-professionnelles">9. Applications professionnelles</h2>
+<h3 id="en-direction-financiere-dentreprise">En direction financière d'entreprise</h3>
+<p>Le service de contrôle de gestion et la direction financière utilisent les outils de ce chapitre dans les <strong>comités d'investissement</strong> (Capex committees). Typiquement :
+- Tout projet &gt; 500 k€ fait l'objet d'un business case formalisé avec VAN, TRI, payback et analyse de sensibilité.
+- Les hypothèses (croissance CA, marges) sont challengées par la direction générale et les opérationnels.
+- Un <strong>post-audit</strong> est réalisé 1 à 2 ans après la mise en service pour comparer les flux réels aux prévisions.</p>
+<h3 id="en-banque-dinvestissement-ma">En banque d'investissement (M&amp;A)</h3>
+<p>Dans le cadre d'une acquisition, le <strong>business case</strong> de l'acquéreur intègre systématiquement :
+- Les flux incrémentaux liés aux synergies (coûts et revenus).
+- Le coût d'intégration (restructurations, IT, rebranding) comme flux négatif.
+- Une analyse d'accrétivité/dilution sur le BPA.</p>
+<h3 id="en-private-equity">En Private Equity</h3>
+<p>Les fonds de PE modélisent la <strong>sortie</strong> dès l'entrée : ils projettent les flux de l'entreprise cible sur 5 ans, estiment la valeur de sortie (multiple d'EBITDA), et calculent le TRI sur la mise de fonds propres après remboursement de la dette.</p>
+<hr />
+<h2 id="10-points-de-vigilance-et-nuances-importantes">10. Points de vigilance et nuances importantes</h2>
+<ul>
+<li>
+<p><strong>L'inflation</strong> : les flux nominaux doivent être actualisés à un taux nominal ; les flux réels à un taux réel. Mélanger les deux est une erreur grave. Relation de Fisher : (1 + r_nominal) = (1 + r_réel) × (1 + inflation).</p>
+</li>
+<li>
+<p><strong>La durée du projet</strong> : rallonger artificiellement la durée d'un projet pour améliorer sa VAN est trompeur. Les flux lointains sont fortement actualisés ; une VAN positive sur 20 ans peut reposer sur des hypothèses fragiles.</p>
+</li>
+<li>
+<p><strong>Les projets corrélés</strong> : dans un portefeuille de projets, les effets de corrélation (cannibalisation, complémentarité) doivent être pris en compte. Un projet peut détruire la VAN d'un projet existant.</p>
+</li>
+<li>
+<p><strong>Les options réelles</strong> : la VAN classique sous-estime la valeur des projets flexibles (possibilité d'expansion, d'abandon). Dans les secteurs à forte incertitude (tech, pharma, énergie), la VAN étendue est plus pertinente.</p>
+</li>
+</ul>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>Seuls les flux incrémentaux entrent dans le calcul : oublier les sunk costs, intégrer les coûts d'opportunité.</li>
+<li>La VAN est le critère principal ; le TRI est un indicateur complémentaire mais à utiliser avec précaution.</li>
+<li>Le WACC est le taux d'actualisation approprié pour les projets à risque moyen de l'entreprise.</li>
+<li>En cas de rationnement du capital, classer par indice de profitabilité.</li>
+<li>Le TRIM corrige les biais du TRI en distinguant taux de réinvestissement et taux de financement.</li>
+<li>Les options réelles (expansion, abandon, report) enrichissent la VAN classique dans les environnements incertains.</li>
+</ul>
+<hr />
+<h1 id="chapitre-2-evaluation-dentreprise-valuation">Chapitre 2 — Évaluation d'entreprise (Valuation)</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>L'évaluation d'entreprise est au centre des opérations de M&amp;A, d'introduction en bourse, de LBO et de cession. Elle repose sur plusieurs méthodes complémentaires, regroupées en deux grandes familles :</p>
+<ol>
+<li><strong>Approches intrinsèques</strong> : valorisation des flux futurs (DCF).</li>
+<li><strong>Approches relatives</strong> : comparaison avec des entreprises ou des transactions similaires.</li>
+</ol>
+<hr />
+<h2 id="1-valeur-dentreprise-vs-valeur-des-capitaux-propres">1. Valeur d'entreprise vs. valeur des capitaux propres</h2>
+<pre><code>Valeur d'entreprise (EV) = Valeur des capitaux propres + Dettes financières nettes
+                         - Actifs non opérationnels (trésorerie excédentaire, participations)
+
+Valeur des capitaux propres = EV - Dettes financières nettes + Actifs non opérationnels
+</code></pre>
+<p>La distinction est fondamentale :
+- L'<strong>EV</strong> (Enterprise Value) reflète la valeur totale des actifs opérationnels.
+- La <strong>Valeur des capitaux propres</strong> (Equity Value) est ce qui revient aux actionnaires.</p>
+<hr />
+<h2 id="2-methode-dcf-discounted-cash-flow">2. Méthode DCF (Discounted Cash Flow)</h2>
+<h3 id="21-principe">2.1 Principe</h3>
+<p>On projette les <strong>FCFF</strong> sur un horizon explicite (5–10 ans), puis on calcule une <strong>valeur terminale</strong> qui capte la création de valeur au-delà.</p>
+<pre><code>EV = Σ [FCFF_t / (1 + WACC)^t] + VT / (1 + WACC)^n
+</code></pre>
+<h3 id="22-estimation-du-fcff">2.2 Estimation du FCFF</h3>
+<pre><code>FCFF = EBIT × (1 - t) + Amortissements - CAPEX - ΔBFR
+     = NOPAT + Amortissements - CAPEX - ΔBFR
+</code></pre>
+<ul>
+<li><strong>NOPAT</strong> = Net Operating Profit After Tax = EBIT × (1 - t)</li>
+</ul>
+<h3 id="23-valeur-terminale-terminal-value">2.3 Valeur terminale (Terminal Value)</h3>
+<p>Deux méthodes :</p>
+<p><strong>Gordon-Shapiro (croissance perpétuelle)</strong> :</p>
+<pre><code>VT = FCFF_(n+1) / (WACC - g)
+</code></pre>
+<ul>
+<li><code>g</code> : taux de croissance à l'infini (souvent ≈ croissance PIB nominal, 1,5–3 %)</li>
+</ul>
+<p><strong>Multiple de sortie</strong> :</p>
+<pre><code>VT = EBITDA_n × Multiple_sortie
+</code></pre>
+<h3 id="24-exemple-dcf">2.4 Exemple DCF</h3>
+<p><strong>Hypothèses</strong> :
+- EBIT année 1 : 100 M€, croissance 8 %/an pendant 5 ans, puis g = 2 %
+- Amortissements = CAPEX (régime stable)
+- ΔBFR = 5 M€/an
+- t = 25 %, WACC = 9 %</p>
+<p><strong>FCFF annuels</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>EBIT</th>
+<th>NOPAT</th>
+<th>FCFF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>100</td>
+<td>75</td>
+<td>70</td>
+</tr>
+<tr>
+<td>2</td>
+<td>108</td>
+<td>81</td>
+<td>76</td>
+</tr>
+<tr>
+<td>3</td>
+<td>116,6</td>
+<td>87,5</td>
+<td>82,5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>125,9</td>
+<td>94,4</td>
+<td>89,4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>136</td>
+<td>102</td>
+<td>97</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Valeur terminale</strong> (Gordon, fin année 5) :</p>
+<pre><code>FCFF_6 = 97 × 1,02 = 98,9 M€
+VT = 98,9 / (0,09 - 0,02) = 98,9 / 0,07 = 1 413 M€
+</code></pre>
+<p><strong>Actualisation</strong> :</p>
+<pre><code>EV = 70/1,09 + 76/1,09² + 82,5/1,09³ + 89,4/1,09⁴ + 97/1,09⁵ + 1 413/1,09⁵
+EV = 64,2 + 64,0 + 63,7 + 63,3 + 63,0 + 918 = 1 236 M€
+</code></pre>
+<hr />
+<h2 id="3-methode-des-comparables-boursiers">3. Méthode des comparables boursiers</h2>
+<h3 id="principe">Principe</h3>
+<p>On valorise l'entreprise cible par analogie avec des sociétés cotées comparables, en appliquant leurs multiples à la cible.</p>
+<h3 id="multiples-usuels">Multiples usuels</h3>
+<table>
+<thead>
+<tr>
+<th>Multiple</th>
+<th>Formule</th>
+<th>Avantage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>EV/EBITDA</strong></td>
+<td>EV / EBITDA</td>
+<td>Indépendant de la structure financière et de l'amortissement</td>
+</tr>
+<tr>
+<td><strong>EV/EBIT</strong></td>
+<td>EV / EBIT</td>
+<td>Intègre les amortissements (utile si CAPEX très différents)</td>
+</tr>
+<tr>
+<td><strong>EV/CA</strong></td>
+<td>EV / CA</td>
+<td>Utile si les marges sont négatives (start-ups, croissance)</td>
+</tr>
+<tr>
+<td><strong>PER</strong></td>
+<td>Cours / BPA</td>
+<td>Simple mais dépend de la structure financière</td>
+</tr>
+<tr>
+<td><strong>P/B</strong></td>
+<td>Cours / Actif net par action</td>
+<td>Pertinent pour banques et assurances</td>
+</tr>
+</tbody>
+</table>
+<h3 id="application">Application</h3>
+<ol>
+<li>Identifier un <strong>panel</strong> de 5–10 sociétés comparables cotées.</li>
+<li>Calculer leurs multiples sur 12 mois glissants et les projections (NTM — Next Twelve Months).</li>
+<li>Appliquer la médiane ou la moyenne pondérée à la cible.</li>
+</ol>
+<p><strong>Exemple</strong> :
+- Panel : médiane EV/EBITDA = 8×
+- EBITDA cible = 50 M€
+- EV cible = 8 × 50 = <strong>400 M€</strong></p>
+<h3 id="ajustements">Ajustements</h3>
+<ul>
+<li><strong>Discount de liquidité</strong> : -20 à -30 % pour une société non cotée.</li>
+<li><strong>Prime de contrôle</strong> : +20 à +40 % si acquisition d'une participation majoritaire.</li>
+</ul>
+<hr />
+<h2 id="4-methode-des-transactions-comparables">4. Méthode des transactions comparables</h2>
+<p>Analogue aux comparables boursiers, mais on se réfère à des <strong>transactions M&amp;A passées</strong> (primes de contrôle incluses).</p>
+<p>Multiples typiquement plus élevés car :
+- Prime de contrôle incorporée.
+- Synergies anticipées.</p>
+<p>Sources : Bloomberg M&amp;A, Mergermarket, Capital IQ, Refinitiv.</p>
+<hr />
+<h2 id="5-methode-patrimoniale-actif-net-reevalue-anr">5. Méthode patrimoniale (Actif Net Réévalué — ANR)</h2>
+<pre><code>ANR = Actif total réévalué à la valeur de marché - Dettes
+</code></pre>
+<ul>
+<li>Pertinent pour les <strong>holdings</strong>, <strong>foncières</strong>, <strong>banques</strong> et sociétés à fort bilan.</li>
+<li>Peu pertinent pour les entreprises de services ou à fort capital humain.</li>
+</ul>
+<p><strong>Goodwill</strong> :</p>
+<pre><code>Goodwill = Prix payé - ANR
+         = Prime pour la rentabilité future (survaleur)
+</code></pre>
+<hr />
+<h2 id="6-football-field-synthese-des-methodes">6. Football field (synthèse des méthodes)</h2>
+<p>Le <strong>football field</strong> est le tableau de synthèse des fourchettes de valorisation par méthode :</p>
+<pre><code>Méthode              Valeur basse    Valeur haute
+───────────────────  ─────────────  ─────────────
+DCF                  1 050 M€       1 400 M€
+Comparables boursiers 850 M€        1 150 M€
+Transactions comp.   1 100 M€       1 500 M€
+ANR                   700 M€         900 M€
+</code></pre>
+<p>La fourchette de négociation ressort en croisant les méthodes.</p>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Une entreprise dégage un FCFF annuel stable de 20 M€. Le WACC est 8 %. Le taux de croissance à long terme est 2 %. Calculez l'EV.</p>
+<blockquote>
+<p><strong>Correction</strong> : EV = 20 × (1,02) / (0,08 - 0,02) = 20,4 / 0,06 = <strong>340 M€</strong></p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>L'entreprise BETA a un EBITDA de 30 M€, une dette nette de 80 M€ et 10 M d'actions en circulation. Le multiple EV/EBITDA du secteur est 7×. Quel est le prix par action ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+EV = 7 × 30 = 210 M€
+Equity Value = 210 - 80 = 130 M€
+Prix par action = 130 / 10 = <strong>13 €</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>EV ≠ valeur des capitaux propres : toujours distinguer les deux niveaux.</li>
+<li>Le DCF est la méthode de référence théorique ; la valeur terminale représente souvent 60–80 % de l'EV.</li>
+<li>Les multiples sont des outils de marché : ils reflètent les prix payés, pas nécessairement la valeur intrinsèque.</li>
+<li>Le football field permet de réconcilier plusieurs approches et de fonder une fourchette de négociation.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="sensibilite-du-dcf-et-analyse-de-monte-carlo">Sensibilité du DCF et analyse de Monte Carlo</h3>
+<p>La valeur terminale (VT) représente souvent <strong>60–80 % de l'EV</strong> dans un DCF → la sensibilité aux hypothèses de WACC et de g est critique.</p>
+<p><strong>Analyse de sensibilité bidimensionnelle (table WACC × g)</strong> :</p>
+<pre><code>EV (M€) pour FCFF_6 = 100 M€
+
+          g = 1 %    g = 2 %    g = 3 %
+WACC=8%    1 250      1 667      2 500
+WACC=9%    1 000      1 250      1 667
+WACC=10%    833       1 000      1 250
+</code></pre>
+<p>Formule de la VT : VT = FCFF_6 / (WACC - g)
+Les extrêmes (WACC=8%, g=3% vs WACC=10%, g=1%) divergent d'un facteur 3 → le DCF est un outil puissant mais très sensible aux hypothèses terminales.</p>
+<p><strong>Simulation de Monte Carlo sur le DCF</strong> :
+Distribuer les hypothèses clés (WACC, g, marges) selon des distributions de probabilité → obtenir une distribution de l'EV plutôt qu'une valeur ponctuelle.</p>
+<pre><code>WACC ~ Uniforme [8 %, 10 %]
+g ~ Normale (μ=2 %, σ=0,5 %)
+Marge EBIT ~ Triangulaire (min=12 %, mode=15 %, max=18 %)
+→ Distribution de l'EV : P10 = 900 M€, médiane = 1 200 M€, P90 = 1 600 M€
+</code></pre>
+<h3 id="la-methode-des-excess-returns-economic-value-added-eva">La méthode des Excess Returns (Economic Value Added — EVA)</h3>
+<p><strong>Stewart (1991)</strong> propose de valoriser l'entreprise à partir de la richesse économique créée :</p>
+<pre><code>EVA_t = NOPAT_t - WACC × Capital_investi_t
+      = (ROCE_t - WACC) × Capital_investi_t
+</code></pre>
+<p><strong>Valeur de l'entreprise = Capital investi + PV(EVAs futures)</strong></p>
+<p>Si ROCE = WACC : EVA = 0 → l'entreprise vaut exactement son capital investi (pas de survaleur).
+Si ROCE &gt; WACC : EVA &gt; 0 → création de valeur → prime sur le capital investi.</p>
+<p><strong>Relation avec le DCF</strong> : la méthode EVA et le DCF donnent la même EV si les mêmes hypothèses sont utilisées (c'est une reformulation comptable équivalente).</p>
+<h3 id="apv-adjusted-present-value-methode-de-myers">APV (Adjusted Present Value) — Méthode de Myers</h3>
+<p>L'<strong>APV</strong> décompose la valeur en deux composantes séparées :</p>
+<pre><code>EV = VU + PV(Bouclier fiscal)
+</code></pre>
+<ul>
+<li><strong>VU</strong> : valeur de l'entreprise non endettée (actualisation des FCFF au coût des capitaux propres non endetté kU)</li>
+<li><strong>PV(Bouclier fiscal)</strong> : valeur des économies d'IS sur les intérêts = t × D (si dette permanente)</li>
+</ul>
+<p><strong>Avantage</strong> : particulièrement utile en LBO (structure de capital variable → WACC change chaque année ; l'APV traite chaque source de valeur séparément).</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-dcf-avec-sensibilite">Exemple 1 — DCF avec sensibilité</h3>
+<p><strong>Entreprise EPSILON</strong> : FCFF = 50 M€ en régime stable (sans croissance à long terme). WACC = 9 %, g = 2 %.</p>
+<pre><code>EV (Gordon) = 50 × (1,02) / (0,09 - 0,02) = 51 / 0,07 = 728,6 M€
+
+Sensibilité à g :
+g = 1 % : EV = 50,5 / 0,08 = 631 M€
+g = 2 % : EV = 51 / 0,07 = 729 M€
+g = 3 % : EV = 51,5 / 0,06 = 858 M€ (+18 % vs g=2 %)
+
+Sensibilité au WACC :
+WACC = 8 % : EV = 51 / 0,06 = 850 M€
+WACC = 9 % : EV = 51 / 0,07 = 729 M€
+WACC = 10 % : EV = 51 / 0,08 = 638 M€ (-12 % vs WACC=9 %)
+</code></pre>
+<h3 id="exemple-2-comparable-boursier-avec-ajustements">Exemple 2 — Comparable boursier avec ajustements</h3>
+<p>Secteur des logiciels B2B. Panel de comparables :</p>
+<table>
+<thead>
+<tr>
+<th>Société</th>
+<th>EV (M€)</th>
+<th>EBITDA NTM</th>
+<th>EV/EBITDA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SAP</td>
+<td>180 000</td>
+<td>11 000</td>
+<td>16,4×</td>
+</tr>
+<tr>
+<td>Dassault Systèmes</td>
+<td>42 000</td>
+<td>1 900</td>
+<td>22,1×</td>
+</tr>
+<tr>
+<td>Sage</td>
+<td>12 000</td>
+<td>650</td>
+<td>18,5×</td>
+</tr>
+<tr>
+<td>Médiocre SaaS</td>
+<td>500</td>
+<td>40</td>
+<td>12,5×</td>
+</tr>
+</tbody>
+</table>
+<p>Médiane EV/EBITDA = <strong>17,5×</strong></p>
+<p><strong>Cible Z</strong> : EBITDA = 80 M€, croissance 25 %/an (vs. médiane panel 12 %/an), dette nette = 50 M€, 20 M actions.</p>
+<pre><code>EV (médiane) = 80 × 17,5 = 1 400 M€
+Ajustement pour croissance supérieure (+2×) : EV = 80 × 19 = 1 520 M€
+Equity Value = 1 520 - 50 = 1 470 M€
+Prix par action = 1 470 / 20 = 73,50 €
+</code></pre>
+<h3 id="exemple-3-methode-apv">Exemple 3 — Méthode APV</h3>
+<p><strong>Entreprise LBO</strong> : VU = 500 M€ (valeur sans dette, actualisée à kU = 10 %)
+Dette initiale : 200 M€ à 6 %, remboursable sur 5 ans (40 M€/an)
+IS = 25 %</p>
+<pre><code>Bouclier fiscal année par année :
+An 1 : Intérêts = 200 × 6 % = 12 M€ → IS sauvé = 3 M€
+An 2 : Intérêts = 160 × 6 % = 9,6 M€ → IS sauvé = 2,4 M€
+An 3 : 120 × 6 % = 7,2 → 1,8 M€
+An 4 : 80 × 6 % = 4,8 → 1,2 M€
+An 5 : 40 × 6 % = 2,4 → 0,6 M€
+
+PV(Bouclier fiscal) actualisé au taux kD = 6 % :
+= 3/1,06 + 2,4/1,06² + 1,8/1,06³ + 1,2/1,06⁴ + 0,6/1,06⁵
+= 2,83 + 2,14 + 1,51 + 0,95 + 0,45 = 7,88 M€
+
+EV APV = 500 + 7,88 = 507,88 M€
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="banque-dinvestissement-desk-equity-capital-markets-ecm">Banque d'investissement : desk Equity Capital Markets (ECM)</h3>
+<p>Lors d'une <strong>IPO</strong>, la banque arrangeur valorise l'entreprise pour fixer la fourchette de prix :</p>
+<p><strong>Processus de valorisation ECM</strong> :
+1. Construction du modèle DCF (3–5 ans, VT).
+2. Sélection du panel de comparables cotés (10–15 sociétés).
+3. Analyse des transactions IPO récentes dans le secteur.
+4. Construction du football field.
+5. <strong>Book building</strong> : sondage des intentions des investisseurs institutionnels pour tester la demande à différents prix.</p>
+<p><strong>Prime d'IPO</strong> : traditionnellement, les IPO sont légèrement décotées (10–15 %) par rapport à la valeur fair par rapport aux comparables cotés — pour assurer un "pop" le premier jour et fidéliser les investisseurs participants.</p>
+<h3 id="asset-management-analyse-fondamentale-bottom-up">Asset Management : analyse fondamentale bottom-up</h3>
+<p>Un analyste sell-side (banque) ou buy-side (fonds) construit un <strong>modèle financier 3-statement</strong> :
+1. Compte de résultat prévisionnel (CA → EBIT → résultat net).
+2. Bilan prévisionnel (actifs immobilisés, BFR, dette).
+3. Tableau de flux de trésorerie (FCFF à partir du résultat).
+4. DCF → target price.
+5. <strong>Recommandation</strong> : Acheter / Conserver / Vendre avec catalyseurs identifiés.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Valeur terminale trop optimiste</strong></td>
+<td>Un g trop proche du WACC explose la VT</td>
+<td>Utiliser g ≈ PIB nominal long terme (1,5–2,5 %)</td>
+</tr>
+<tr>
+<td><strong>WACC trop faible par biais optimiste</strong></td>
+<td>Sous-estimer le risque → surévaluer l'entreprise</td>
+<td>Vérifier la prime de risque de marché avec le consensus (Damodaran)</td>
+</tr>
+<tr>
+<td><strong>Comparables mal sélectionnés</strong></td>
+<td>Utiliser des sociétés de taille/secteur différents</td>
+<td>Critères : même secteur, marché géographique, niveau de croissance et de marge</td>
+</tr>
+<tr>
+<td><strong>Ignorer les synergies dans les transactions comparables</strong></td>
+<td>Les multiples de transactions incluent la prime de contrôle + synergies</td>
+<td>Bien distinguer "comparable boursier" (pas de prime) vs "transaction comparable" (prime incluse)</td>
+</tr>
+<tr>
+<td><strong>Oublier la dette nette dans le bridge EV → Equity</strong></td>
+<td>L'EV est la valeur des actifs ; les actionnaires ont droit à EV - dette nette</td>
+<td>Toujours ajuster pour la dette nette, les minoritaires, les participations</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Calculez l'EV d'une entreprise avec : FCFF = 30 M€ (stable, sans croissance à LT), WACC = 8 %, g = 1,5 %. Puis calculez le prix par action si dette nette = 50 M€ et 10 M actions.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VT (perpétuité croissante) = 30 × (1,015) / (0,08 - 0,015) = 30,45 / 0,065 = <strong>468,5 M€</strong>
+Equity Value = 468,5 - 50 = <strong>418,5 M€</strong>
+Prix/action = 418,5 / 10 = <strong>41,85 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Un analyste valorise une société par les comparables. Le panel donne une médiane EV/EBITDA de 9× et EV/EBIT de 12×. La cible a : EBITDA = 40 M€, EBIT = 28 M€, dette nette = 80 M€, 5 M actions. Calculez deux fourchettes d'EV et de prix par action.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+<strong>Via EV/EBITDA</strong> : EV = 9 × 40 = 360 M€ → Equity = 360 - 80 = 280 M€ → Prix = <strong>56 €/action</strong>
+<strong>Via EV/EBIT</strong> : EV = 12 × 28 = 336 M€ → Equity = 336 - 80 = 256 M€ → Prix = <strong>51,2 €/action</strong>
+Fourchette de valorisation : <strong>51–56 €/action</strong></p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Construisez un mini football field avec les résultats suivants pour l'entreprise F :
+- DCF : 400–550 M€
+- Comparables boursiers : 380–480 M€
+- Transactions comparables : 500–650 M€
+- ANR : 300–350 M€</p>
+<p>Quelle fourchette de négociation recommandez-vous ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Fourchette de recoupement des méthodes : les méthodes intrinsèques (DCF : 400–550 M€) et les comparables boursiers (380–480 M€) convergent autour de <strong>400–500 M€</strong>.
+Les transactions comparables (500–650 M€) incluent la prime de contrôle → pertinent pour une opération M&amp;A.
+L'ANR (300–350 M€) reflète une valeur plancher (liquidation).</p>
+<p><strong>Fourchette de négociation en M&amp;A</strong> : 480–580 M€ (entre les comparables boursiers élevés et les transactions comparables bas), soit une prime implicite de 20–45 % sur les comparables boursiers.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-3-structure-du-capital-et-theoremes-de-modigliani-miller">Chapitre 3 — Structure du capital et théorèmes de Modigliani-Miller</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>La structure du capital désigne la combinaison de fonds propres et de dettes utilisée pour financer les actifs d'une entreprise. La question centrale est : <strong>existe-t-il une structure optimale qui maximise la valeur de l'entreprise ?</strong></p>
+<hr />
+<h2 id="1-les-theoremes-de-modigliani-miller-19581963">1. Les théorèmes de Modigliani-Miller (1958–1963)</h2>
+<h3 id="11-proposition-i-sans-impot-1958">1.1 Proposition I — sans impôt (1958)</h3>
+<blockquote>
+<p>En l'absence d'impôts, de coûts de transaction et d'asymétrie d'information, <strong>la valeur d'une entreprise est indépendante de sa structure financière.</strong></p>
+</blockquote>
+<pre><code>V_L = V_U
+</code></pre>
+<ul>
+<li>V_L : valeur de l'entreprise endettée (Levered)</li>
+<li>V_U : valeur de l'entreprise non endettée (Unlevered)</li>
+</ul>
+<p><strong>Intuition</strong> : la structure financière découpe simplement le gâteau différemment (entre créanciers et actionnaires), mais ne change pas la taille du gâteau.</p>
+<h3 id="12-proposition-ii-sans-impot">1.2 Proposition II — sans impôt</h3>
+<p>Le coût des capitaux propres d'une entreprise endettée est supérieur au WACC car les actionnaires portent le risque financier en plus du risque opérationnel :</p>
+<pre><code>kE = kU + (kU - kD) × D/E
+</code></pre>
+<ul>
+<li>kU : coût des capitaux propres sans dette</li>
+<li>kD : coût de la dette</li>
+<li>D/E : ratio d'endettement</li>
+</ul>
+<p>Le WACC reste constant (indépendant de la structure financière).</p>
+<h3 id="13-proposition-i-avec-impot-1963">1.3 Proposition I — avec impôt (1963)</h3>
+<p>En présence de l'impôt sur les sociétés, les <strong>intérêts sont déductibles</strong> → <strong>avantage fiscal de la dette</strong> (tax shield) :</p>
+<pre><code>V_L = V_U + t × D
+</code></pre>
+<ul>
+<li><code>t × D</code> : valeur actuelle du bouclier fiscal = taux d'IS × montant de la dette</li>
+</ul>
+<p><strong>Conséquence</strong> : plus la dette est élevée, plus l'entreprise vaut. La structure optimale serait 100 % dette — mais des facteurs réels (coûts de détresse financière) contrebalancent cet avantage.</p>
+<hr />
+<h2 id="2-la-theorie-du-compromis-trade-off-theory">2. La théorie du compromis (Trade-off Theory)</h2>
+<h3 id="principe_1">Principe</h3>
+<p>La valeur de l'entreprise endettée est :</p>
+<pre><code>V_L = V_U + PV(Bouclier fiscal) - PV(Coûts de détresse financière)
+</code></pre>
+<p><strong>Coûts de détresse financière</strong> :
+- <strong>Directs</strong> : frais juridiques de faillite, administrateurs judiciaires.
+- <strong>Indirects</strong> : perte de clients (doutes sur la pérennité), départ de talents, renégociation des contrats.</p>
+<h3 id="structure-optimale">Structure optimale</h3>
+<pre><code>Valeur
+  │            *  ← optimum
+  │          /  \
+  │         /    \___
+  │        /
+  │_______/
+  └──────────────────── D/E
+</code></pre>
+<p>L'optimum est atteint quand la valeur marginale du bouclier fiscal = coût marginal de la détresse financière.</p>
+<hr />
+<h2 id="3-la-theorie-du-financement-hierarchique-pecking-order">3. La théorie du financement hiérarchique (Pecking Order)</h2>
+<p><strong>Myers &amp; Majluf (1984)</strong> : en présence d'asymétrie d'information, les entreprises préfèrent les sources de financement dans l'ordre suivant :</p>
+<pre><code>1. Autofinancement (CAF) — pas de signal au marché
+2. Dette (émission d'obligations) — signal neutre
+3. Capitaux propres (émission d'actions) — signal négatif : le marché y voit une indication que l'action est surévaluée
+</code></pre>
+<p><strong>Implication</strong> : il n'y a pas de structure cible fixe ; la structure financière évolue au fil des besoins de financement.</p>
+<hr />
+<h2 id="4-ratios-et-indicateurs-de-structure-financiere">4. Ratios et indicateurs de structure financière</h2>
+<h3 id="41-gearing">4.1 Gearing</h3>
+<pre><code>Gearing = Dette nette / Capitaux propres
+</code></pre>
+<h3 id="42-ratio-dette-nette-ebitda">4.2 Ratio dette nette / EBITDA</h3>
+<pre><code>Levier = Dette nette / EBITDA
+</code></pre>
+<p>Niveaux de référence :
+- Investment grade : &lt; 3×
+- LBO typique : 4–6×
+- Stress financier : &gt; 6×</p>
+<h3 id="43-couverture-des-charges-financieres-icr">4.3 Couverture des charges financières (ICR)</h3>
+<pre><code>ICR = EBIT / Charges financières
+</code></pre>
+<p>Référence banques : &gt; 3×</p>
+<hr />
+<h2 id="5-ajustement-du-beta-pour-leffet-de-levier">5. Ajustement du bêta pour l'effet de levier</h2>
+<h3 id="beta-desendette-asset-beta">Bêta désendetté (Asset Beta)</h3>
+<p>Pour évaluer le risque opérationnel pur (hors structure financière) :</p>
+<pre><code>βA = βE / [1 + (1 - t) × D/E]
+</code></pre>
+<ul>
+<li>βE : bêta des capitaux propres (observable en bourse)</li>
+<li>βA : bêta de l'actif économique (bêta désendetté)</li>
+</ul>
+<h3 id="reendettement-releveraging">Réendettement (releveraging)</h3>
+<p>Pour une nouvelle structure de capital D'/E' :</p>
+<pre><code>βE' = βA × [1 + (1 - t) × D'/E']
+</code></pre>
+<p><strong>Application</strong> : lors d'un DCF d'une entreprise non cotée, on :
+1. Collecte les βE de comparables cotés
+2. Désendette ces βE au niveau de structure de chaque comparable
+3. Fait la moyenne des βA
+4. Réendette au niveau de structure cible de la cible</p>
+<hr />
+<h2 id="6-covenants-et-clauses-de-dette">6. Covenants et clauses de dette</h2>
+<h3 id="covenants-financiers-maintenance">Covenants financiers (maintenance)</h3>
+<table>
+<thead>
+<tr>
+<th>Covenant</th>
+<th>Formule</th>
+<th>Exemple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gearing maximum</td>
+<td>D nette / CP ≤ X</td>
+<td>≤ 2×</td>
+</tr>
+<tr>
+<td>Levier maximum</td>
+<td>D nette / EBITDA ≤ X</td>
+<td>≤ 4×</td>
+</tr>
+<tr>
+<td>Couverture minimum</td>
+<td>EBITDA / Charges financières ≥ X</td>
+<td>≥ 3×</td>
+</tr>
+</tbody>
+</table>
+<h3 id="autres-protections">Autres protections</h3>
+<ul>
+<li><strong>Clause de pari passu</strong> : égalité de rang entre créanciers.</li>
+<li><strong>Negative pledge</strong> : interdiction de nantir des actifs sans accord du prêteur.</li>
+<li><strong>Change of control</strong> : remboursement anticipé en cas de changement de contrôle.</li>
+</ul>
+<hr />
+<h2 id="7-exercices_1">7. Exercices</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Une entreprise non endettée vaut 500 M€ et son taux d'IS est 25 %. Elle s'endette à hauteur de 200 M€. Quelle est sa nouvelle valeur selon MM avec impôt ?</p>
+<blockquote>
+<p><strong>Correction</strong> : V_L = V_U + t × D = 500 + 0,25 × 200 = 500 + 50 = <strong>550 M€</strong></p>
+</blockquote>
+<h3 id="exercice-2_3">Exercice 2</h3>
+<p>Une entreprise a un bêta d'actif de 0,9, D/E = 1, t = 25 %. Calculez son bêta des capitaux propres.</p>
+<blockquote>
+<p><strong>Correction</strong> : βE = βA × [1 + (1 - 0,25) × 1] = 0,9 × 1,75 = <strong>1,575</strong></p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>L'entreprise GAMMA a : EBIT = 80 M€, charges financières = 20 M€, dette nette = 200 M€, capitaux propres = 150 M€. Calculez le gearing, le levier (EBITDA = 100 M€) et l'ICR. Interprétez.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Gearing = 200 / 150 = <strong>1,33×</strong> (acceptable mais significatif)
+Levier = 200 / 100 = <strong>2×</strong> (confortable, investment grade)
+ICR = 80 / 20 = <strong>4×</strong> (couverture suffisante, &gt; 3×)
+Diagnostic : structure financière dans les limites raisonnables.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>MM sans impôt : structure financière neutre sur la valeur.</li>
+<li>MM avec impôt : la dette crée de la valeur via le bouclier fiscal.</li>
+<li>Le trade-off équilibre bouclier fiscal et coûts de détresse : il existe un optimum.</li>
+<li>La pecking order explique le comportement empirique des entreprises : autofinancement d'abord.</li>
+<li>Pour valoriser une cible, on désendette/réendette le bêta selon la structure financière cible.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_1">Approfondissement théorique</h2>
+<h3 id="market-timing-et-la-theorie-de-lopportunite-de-marche">Market Timing et la théorie de l'opportunité de marché</h3>
+<p><strong>Baker &amp; Wurgler (2002)</strong> proposent la <strong>Market Timing Theory</strong> : les entreprises émettent des actions quand elles sont surévaluées (cours élevé) et rachètent leurs actions quand elles sont sous-évaluées. La structure financière serait donc le résultat cumulatif des décisions de market timing passées, non une cible optimale.</p>
+<p><strong>Implication</strong> : les entreprises ayant émis beaucoup d'actions en période de hautes valorisations ont tendance à avoir des ratios dettes/capitaux propres durablement bas.</p>
+<p><strong>Evidence</strong> : le ratio M/B (Market-to-Book) historique prédit la structure financière actuelle → preuve empirique du market timing.</p>
+<h3 id="la-theorie-des-signaux-signaling-theory">La théorie des signaux (Signaling Theory)</h3>
+<p><strong>Ross (1977)</strong> modélise la dette comme un <strong>signal de qualité</strong> : un dirigeant qui sait que son entreprise est solide s'endette davantage (il sait qu'elle peut honorer ses dettes). Une entreprise fragile ne peut pas imiter ce signal (trop coûteux).</p>
+<p>→ Annonces d'émission d'obligations → signal positif (confiance dans les cash-flows futurs)
+→ Annonces d'augmentation de capital → signal négatif (le management pense l'action surévaluée)</p>
+<p>Ce raisonnement renforce la <strong>Pecking Order</strong> : l'émission d'actions est toujours interprétée négativement.</p>
+<p><strong>Myers (1984)</strong> introduit le concept de "<strong>debt overhang</strong>" : si une entreprise très endettée souhaite lever des capitaux pour investir, les nouveaux actionnaires craignent que la valeur revienne principalement aux créanciers → sous-investissement.</p>
+<h3 id="les-couts-de-detresse-financiere-evidence-empirique">Les coûts de détresse financière : évidence empirique</h3>
+<p><strong>Andrade &amp; Kaplan (1998)</strong> étudient les LBO des années 1980 tombés en détresse financière. Ils estiment les <strong>coûts indirects</strong> de la détresse à 10–20 % de la valeur de l'entreprise (perte de clients, fournisseurs exigeant paiement comptant, départs de talents).</p>
+<p><strong>Coûts directs</strong> (faillite légale) : 3–5 % de la valeur des actifs (honoraires avocats, administrateurs judiciaires).</p>
+<p>→ Total coûts de détresse : <strong>15–25 %</strong> de la valeur de l'entreprise en cas de faillite.</p>
+<p>Cela tempère significativement le gain du bouclier fiscal dans la trade-off theory.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_1">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-trade-off-theory-structure-optimale">Exemple 1 — Trade-off Theory : structure optimale</h3>
+<p><strong>Entreprise ZETA</strong> non endettée vaut 1 000 M€. IS = 25 %, coût de la dette = 5 %.
+Coûts de détresse financière :</p>
+<table>
+<thead>
+<tr>
+<th>Niveau dette (D)</th>
+<th>Bouclier fiscal (t×D)</th>
+<th>Coûts détresse estimés</th>
+<th>VL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1 000</td>
+</tr>
+<tr>
+<td>100</td>
+<td>25</td>
+<td>5</td>
+<td>1 020</td>
+</tr>
+<tr>
+<td>200</td>
+<td>50</td>
+<td>15</td>
+<td>1 035</td>
+</tr>
+<tr>
+<td>300</td>
+<td>75</td>
+<td>35</td>
+<td>1 040</td>
+</tr>
+<tr>
+<td>400</td>
+<td>100</td>
+<td>75</td>
+<td>1 025</td>
+</tr>
+<tr>
+<td>500</td>
+<td>125</td>
+<td>150</td>
+<td>975</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Optimum</strong> : D = 300 M€ → VL = 1 040 M€. Au-delà, les coûts de détresse augmentent plus vite que le bouclier fiscal.</p>
+<h3 id="exemple-2-desendettementre-endettement-du-beta-en-ma">Exemple 2 — Désendettement/ré-endettement du bêta en M&amp;A</h3>
+<p><strong>Contexte</strong> : valorisation d'une cible non cotée dans le secteur agroalimentaire.</p>
+<p><strong>Comparables cotés</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Comparable</th>
+<th>βE</th>
+<th>D/CP</th>
+<th>t</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Danone</td>
+<td>0,70</td>
+<td>0,60</td>
+<td>25 %</td>
+</tr>
+<tr>
+<td>Nestlé</td>
+<td>0,65</td>
+<td>0,50</td>
+<td>20 %</td>
+</tr>
+<tr>
+<td>Unilever</td>
+<td>0,80</td>
+<td>0,80</td>
+<td>25 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Désendettement</strong> :</p>
+<pre><code>Danone : βA = 0,70 / (1 + 0,75 × 0,60) = 0,70 / 1,45 = 0,483
+Nestlé : βA = 0,65 / (1 + 0,80 × 0,50) = 0,65 / 1,40 = 0,464
+Unilever : βA = 0,80 / (1 + 0,75 × 0,80) = 0,80 / 1,60 = 0,500
+
+βA moyen = (0,483 + 0,464 + 0,500) / 3 = 0,482
+</code></pre>
+<p><strong>Ré-endettement pour la cible</strong> (D/CP cible = 1,0, t = 25 %) :</p>
+<pre><code>βE cible = 0,482 × (1 + 0,75 × 1,0) = 0,482 × 1,75 = 0,844
+
+WACC cible : rf = 2,5 %, prime marché = 5 %
+kE = 2,5 % + 0,844 × 5 % = 2,5 % + 4,22 % = 6,72 %
+kD après IS = 5 % × (1 - 25 %) = 3,75 %
+WACC = 6,72 % × 0,5 + 3,75 % × 0,5 = 5,24 %
+</code></pre>
+<h3 id="exemple-3-effet-de-levier-sur-le-roe">Exemple 3 — Effet de levier sur le ROE</h3>
+<p><strong>Entreprise THETA</strong> : ROCE = 14 %, IS = 25 %, trois scénarios d'endettement :</p>
+<table>
+<thead>
+<tr>
+<th>Scénario</th>
+<th>D/CP</th>
+<th>Coût dette brut</th>
+<th>Effet levier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Zéro dette</td>
+<td>0</td>
+<td>—</td>
+<td>ROE = ROCE = 14 %</td>
+</tr>
+<tr>
+<td>Modéré</td>
+<td>0,5</td>
+<td>6 %</td>
+<td>ROE = 14 % + (14 % - 4,5 %) × 0,5 = <strong>18,75 %</strong></td>
+</tr>
+<tr>
+<td>Élevé</td>
+<td>2,0</td>
+<td>8 %</td>
+<td>ROE = 14 % + (14 % - 6 %) × 2 = <strong>30 %</strong></td>
+</tr>
+<tr>
+<td>Stress (ROCE &lt; kD)</td>
+<td>2,0</td>
+<td>8 % (ROCE=7 %)</td>
+<td>ROE = 7 % + (7 % - 6 %) × 2 = <strong>9 %</strong> → dégradé</td>
+</tr>
+</tbody>
+</table>
+<p><em>Coût dette après IS = 6 % × 0,75 = 4,5 % ; 8 % × 0,75 = 6 %</em></p>
+<hr />
+<h2 id="applications-professionnelles_1">Applications professionnelles</h2>
+<h3 id="corporate-treasury-gestion-de-la-structure-de-capital">Corporate Treasury : gestion de la structure de capital</h3>
+<p>Le département Trésorerie/Finance d'un groupe (ex. Airbus, LVMH) gère en permanence :</p>
+<p><strong>1. Politique de financement</strong> :
+- Définir le levier cible (ex. : "Nous visons un ratio Dette nette/EBITDA de 1,5–2,0×").
+- Diversifier les sources de financement : syndicated loans, obligations corporate, commercial paper, NEU-CP (France).
+- Gérer la maturité de la dette : étaler les remboursements ("maturity wall" à éviter).</p>
+<p><strong>2. Note de crédit</strong> :
+Les émetteurs investment grade (BBB- à AAA) bénéficient de coûts de financement bien inférieurs aux high yield. La différence de spread peut être 100–300 bp → impact significatif sur le résultat financier.</p>
+<pre><code>Emprunt de 1 Md€ sur 7 ans :
+IG (BBB+) → taux = 3,5 % → intérêts annuels = 35 M€
+HY (BB+) → taux = 6,0 % → intérêts annuels = 60 M€
+Différentiel = 25 M€/an × 7 ans = 175 M€ d'économie sur la durée de vie
+</code></pre>
+<p><strong>3. Rachats d'actions (buybacks)</strong> :
+Quand ROCE &gt; kD et que les opportunités d'investissement sont limitées, distribuer aux actionnaires via rachat d'actions est préférable au thésaurisation.</p>
+<h3 id="agences-de-notation-processus-devaluation">Agences de notation : processus d'évaluation</h3>
+<p>Moody's/S&amp;P analysent la structure du capital selon plusieurs axes :</p>
+<ul>
+<li><strong>Profil de l'activité</strong> : secteur, position concurrentielle, diversification.</li>
+<li><strong>Profil financier</strong> : ratio de levier (Dette/EBITDA), couverture (EBITDA/intérêts), liquidité.</li>
+<li><strong>Facteurs qualitatifs</strong> : gouvernance, management, stratégie.</li>
+</ul>
+<p>Exemple de grille Moody's (simplifiée) :
+| Dette/EBITDA | Couverture intérêts | Rating implicite |
+|-------------|---------------------|-----------------|
+| &lt; 1× | &gt; 8× | Aaa–Aa |
+| 1–2× | 5–8× | A |
+| 2–3× | 3–5× | Baa (IG) |
+| 3–5× | 1,5–3× | Ba–B (HY) |
+| &gt; 5× | &lt; 1,5× | Caa+ (distressed) |</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_1">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Croire que plus de dette = toujours mieux</strong></td>
+<td>Le bouclier fiscal est limité par les coûts de détresse et les risques de covenant breach</td>
+<td>Optimiser autour de la structure cible, pas à 100 % dette</td>
+</tr>
+<tr>
+<td><strong>Ignorer la note de crédit dans le coût de la dette</strong></td>
+<td>Plus d'endettement → downgrade → hausse du coût de la dette → coûts de détresse financière plus tôt</td>
+<td>Modéliser l'impact des ratios de crédit sur le spread</td>
+</tr>
+<tr>
+<td><strong>Confondre gearing comptable et levier économique</strong></td>
+<td>La dette nette (dettes - cash) diffère de l'endettement brut</td>
+<td>Toujours calculer la dette nette (netting du cash)</td>
+</tr>
+<tr>
+<td><strong>Ne pas désendetter le bêta</strong></td>
+<td>Comparer des bêtas d'entreprises avec des structures financières différentes</td>
+<td>Désendetter systématiquement avant toute comparaison de risque opérationnel</td>
+</tr>
+<tr>
+<td><strong>Oublier les provisions et engagements dans la "dette"</strong></td>
+<td>Provisions retraites, engagements de lease → dette économique hors bilan</td>
+<td>Intégrer dans la dette nette ajustée</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_1">Exercices supplémentaires</h2>
+<h3 id="exercice-1_4">Exercice 1</h3>
+<p>Une entreprise non endettée vaut 800 M€ (t = 25 %). Elle s'endette à 300 M€ (dette perpétuelle). (a) Quelle est sa nouvelle valeur selon MM avec impôt ? (b) Si les coûts de détresse sont estimés à 40 M€ (présents), quelle est la valeur réelle ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+(a) V_L = 800 + 0,25 × 300 = <strong>875 M€</strong>
+(b) V_L ajustée = 875 - 40 = <strong>835 M€</strong> (supérieure à V_U = 800 M€ mais moins qu'en MM pur)</p>
+</blockquote>
+<h3 id="exercice-2_4">Exercice 2</h3>
+<p>Une entreprise a ROCE = 16 %, coût de la dette avant IS = 7 %, IS = 25 %, D/CP = 1,5. Calculez le ROE. L'endettement est-il favorable ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Coût dette après IS = 7 % × (1 - 25 %) = 5,25 %
+ROE = ROCE + (ROCE - kD après IS) × D/CP
+    = 16 % + (16 % - 5,25 %) × 1,5 = 16 % + 10,75 % × 1,5 = 16 % + <strong>16,1 % = 32,1 %</strong>
+ROCE (16 %) &gt; coût dette après IS (5,25 %) → effet de levier positif ✓</p>
+</blockquote>
+<h3 id="exercice-3_2">Exercice 3</h3>
+<p>Trois comparables du secteur retail ont des bêtas capitaux propres et structures financières suivantes : A (βE=1,2, D/CP=0,8, t=25 %), B (βE=1,0, D/CP=0,5, t=25 %), C (βE=1,4, D/CP=1,2, t=25 %). La cible X visée aura D/CP = 0,6, t = 25 %. Calculez le WACC de X (rf = 2 %, prime marché = 5 %, coût dette brut = 4,5 %).</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Désendettement des comparables :
+βA_A = 1,2 / (1 + 0,75 × 0,8) = 1,2 / 1,60 = 0,750
+βA_B = 1,0 / (1 + 0,75 × 0,5) = 1,0 / 1,375 = 0,727
+βA_C = 1,4 / (1 + 0,75 × 1,2) = 1,4 / 1,90 = 0,737
+βA moyen = (0,750 + 0,727 + 0,737) / 3 = <strong>0,738</strong></p>
+<p>Ré-endettement de X (D/CP = 0,6) :
+βE_X = 0,738 × (1 + 0,75 × 0,6) = 0,738 × 1,45 = <strong>1,070</strong></p>
+<p>WACC de X :
+kE = 2 % + 1,070 × 5 % = <strong>7,35 %</strong>
+kD après IS = 4,5 % × 0,75 = 3,375 %
+Poids : E/(D+E) = 1/1,6 = 62,5 %, D/(D+E) = 37,5 %
+WACC = 7,35 % × 62,5 % + 3,375 % × 37,5 % = 4,594 % + 1,266 % = <strong>5,86 %</strong></p>
+</blockquote>
+<hr />
+<h1 id="chapitre-4-politique-de-dividendes">Chapitre 4 — Politique de dividendes</h1>
+<h2 id="introduction_3">Introduction</h2>
+<p>La politique de dividendes répond à la question : <strong>quelle part des bénéfices distribuer aux actionnaires, et sous quelle forme ?</strong> Elle illustre le conflit entre rémunération immédiate et réinvestissement pour la croissance future.</p>
+<hr />
+<h2 id="1-les-formes-de-remuneration-de-lactionnaire">1. Les formes de rémunération de l'actionnaire</h2>
+<h3 id="11-dividende-ordinaire">1.1 Dividende ordinaire</h3>
+<ul>
+<li>Versé annuellement (souvent au 2e trimestre après la clôture).</li>
+<li>Prélevé sur le résultat distribuable.</li>
+<li>Décidé par l'Assemblée Générale Ordinaire (AGO).</li>
+</ul>
+<h3 id="12-dividende-exceptionnel-special-dividend">1.2 Dividende exceptionnel (special dividend)</h3>
+<p>Versement ponctuel, souvent lors d'une cession d'actif ou d'une accumulation exceptionnelle de trésorerie.</p>
+<h3 id="13-rachat-dactions-buyback">1.3 Rachat d'actions (buyback)</h3>
+<p>L'entreprise rachète ses propres actions sur le marché. Effets :
+- Réduit le nombre d'actions en circulation → augmente le BPA (Bénéfice Par Action).
+- Signal positif (management pense l'action sous-évaluée).
+- Plus flexible fiscalement pour l'actionnaire (plus-value vs. revenu).</p>
+<h3 id="14-comparaison-dividende-vs-rachat-dactions">1.4 Comparaison dividende vs. rachat d'actions</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Dividende</th>
+<th>Rachat d'actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Régularité</td>
+<td>Signal d'engagement fort</td>
+<td>Plus flexible</td>
+</tr>
+<tr>
+<td>Fiscalité (France)</td>
+<td>PFU 30 %</td>
+<td>Plus-value : PFU 30 % mais différable</td>
+</tr>
+<tr>
+<td>Signal</td>
+<td>Confiance dans la récurrence</td>
+<td>Signal de sous-évaluation</td>
+</tr>
+<tr>
+<td>Impact BPA</td>
+<td>Neutre</td>
+<td>Augmentation mécanique</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-la-theorie-de-la-neutralite-de-miller-et-modigliani-1961">2. La théorie de la neutralité de Miller et Modigliani (1961)</h2>
+<h3 id="theoreme">Théorème</h3>
+<p>En l'absence d'impôts, de coûts de transaction et d'asymétrie d'information, <strong>la politique de dividendes est neutre sur la valeur de l'entreprise.</strong></p>
+<p><strong>Intuition</strong> : si l'entreprise verse 1 € de dividende, elle doit lever 1 € de capital extérieur pour financer ses projets → la valeur de l'action baisse de 1 € → l'actionnaire est indifférent.</p>
+<h3 id="limites-de-la-neutralite">Limites de la neutralité</h3>
+<p>En pratique, la politique de dividendes n'est pas neutre pour plusieurs raisons :
+1. <strong>Effet fiscal</strong> : dividendes et plus-values ne sont pas taxés identiquement.
+2. <strong>Effet de signal</strong> (Information asymmetry) : une augmentation du dividende est interprétée comme un signal positif sur les perspectives futures.
+3. <strong>Effet de clientèle</strong> : certains investisseurs préfèrent le revenu régulier (fonds de pension, retraités), d'autres la plus-value.
+4. <strong>Coûts d'agence</strong> : les dividendes réduisent le cash disponible pour les dirigeants, limitant les investissements à VAN négative (effet disciplinant).</p>
+<hr />
+<h2 id="3-modeles-de-politique-de-dividendes">3. Modèles de politique de dividendes</h2>
+<h3 id="31-le-modele-de-lintner-1956">3.1 Le modèle de Lintner (1956)</h3>
+<p>Les entreprises ajustent progressivement leurs dividendes vers un niveau cible (taux de distribution cible) :</p>
+<pre><code>ΔDiv = α × (Div_cible - Div_{t-1})
+</code></pre>
+<ul>
+<li><code>α</code> : vitesse d'ajustement (0 &lt; α &lt; 1)</li>
+<li><code>Div_cible = p × BPA</code> (p = taux de distribution cible)</li>
+</ul>
+<p><strong>Implication</strong> : les dividendes sont "lisses" et lissés ; les entreprises évitent les coupures de dividende (signal très négatif).</p>
+<h3 id="32-taux-de-distribution-payout-ratio">3.2 Taux de distribution (Payout Ratio)</h3>
+<pre><code>Payout Ratio = Dividendes versés / Résultat net
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Secteur</th>
+<th>Payout typique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Services publics / Utilities</td>
+<td>60–80 %</td>
+</tr>
+<tr>
+<td>Grandes entreprises matures (CAC 40)</td>
+<td>40–60 %</td>
+</tr>
+<tr>
+<td>Croissance technologique</td>
+<td>0–20 %</td>
+</tr>
+<tr>
+<td>Start-ups</td>
+<td>0 %</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-taux-de-retention-et-croissance-soutenable">3.3 Taux de rétention et croissance soutenable</h3>
+<pre><code>Taux de rétention = 1 - Payout Ratio
+Taux de croissance soutenable = ROE × Taux de rétention
+</code></pre>
+<p><strong>Exemple</strong> : ROE = 15 %, Payout = 40 %</p>
+<pre><code>Croissance soutenable = 15 % × 60 % = 9 %
+</code></pre>
+<hr />
+<h2 id="4-signal-et-politique-de-dividendes">4. Signal et politique de dividendes</h2>
+<h3 id="41-theorie-du-signal">4.1 Théorie du signal</h3>
+<p>Selon <strong>Bhattacharya (1979)</strong> et <strong>Miller &amp; Rock (1985)</strong>, le dividende est un signal coûteux de la qualité de l'entreprise (une mauvaise entreprise ne peut pas soutenir un dividende élevé durablement).</p>
+<h3 id="42-reactions-du-marche">4.2 Réactions du marché</h3>
+<table>
+<thead>
+<tr>
+<th>Événement</th>
+<th>Réaction typique du cours</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Augmentation du dividende</td>
+<td>+2 à +4 %</td>
+</tr>
+<tr>
+<td>Maintien du dividende (expectations not met)</td>
+<td>-2 à -5 %</td>
+</tr>
+<tr>
+<td>Coupure du dividende</td>
+<td>-15 à -25 %</td>
+</tr>
+<tr>
+<td>Initiation du dividende (1ère fois)</td>
+<td>+3 à +6 %</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-la-politique-de-dividendes-en-pratique">5. La politique de dividendes en pratique</h2>
+<h3 id="51-contraintes-legales-droit-francais">5.1 Contraintes légales (droit français)</h3>
+<ul>
+<li>Réserve légale : 5 % des bénéfices jusqu'à 10 % du capital.</li>
+<li>Distribution limitée au bénéfice distribuable : résultat + reports à nouveau - pertes antérieures - réserves statutaires.</li>
+</ul>
+<h3 id="52-indicateurs-boursiers">5.2 Indicateurs boursiers</h3>
+<pre><code>Dividend Yield = DPA / Cours de l'action
+Couverture du dividende = BPA / DPA = 1 / Payout Ratio
+</code></pre>
+<p><strong>Exemple</strong> :
+- Cours = 50 €, DPA = 2 €, BPA = 4 €
+- Dividend Yield = 2 / 50 = <strong>4 %</strong>
+- Couverture = 4 / 2 = <strong>2×</strong> (confortable)</p>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_5">Exercice 1</h3>
+<p>Une entreprise a un ROE de 18 % et un taux de distribution de 50 %. Quel est son taux de croissance soutenable ?</p>
+<blockquote>
+<p><strong>Correction</strong> : g = 18 % × (1 - 0,50) = 18 % × 0,50 = <strong>9 %</strong></p>
+</blockquote>
+<h3 id="exercice-2_5">Exercice 2</h3>
+<p>L'entreprise DELTA verse un dividende de 3 € par action. Elle souhaite atteindre un dividende cible de 4 €. Sa vitesse d'ajustement est 30 %. Quel dividende versera-t-elle l'année prochaine ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+ΔDiv = 0,30 × (4 - 3) = 0,30 €
+Div_{t+1} = 3 + 0,30 = <strong>3,30 €</strong></p>
+</blockquote>
+<h3 id="exercice-3_3">Exercice 3</h3>
+<p>Comparez l'impact d'un dividende de 500 k€ et d'un rachat d'actions de 500 k€ sur le BPA (100 000 actions en circulation, cours = 50 €, résultat net = 1 000 k€).</p>
+<blockquote>
+<p><strong>Correction</strong> :
+BPA initial = 1 000 000 / 100 000 = <strong>10 €</strong></p>
+<p><strong>Dividende</strong> : résultat net inchangé, actions inchangées → BPA = 10 € (identique, mais trésorerie réduite)</p>
+<p><strong>Rachat</strong> : 500 000 / 50 = 10 000 actions rachetées
+Nouvelles actions = 100 000 - 10 000 = 90 000
+BPA = 1 000 000 / 90 000 = <strong>11,11 €</strong> (augmentation de 11,1 %)</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_3">Points clés à retenir</h2>
+<ul>
+<li>MM : la politique de dividendes est neutre en marchés parfaits — mais les marchés sont imparfaits (fiscalité, signal, clientèle).</li>
+<li>Le modèle de Lintner explique le lissage des dividendes : les entreprises ajustent progressivement vers un cible.</li>
+<li>Une coupure de dividende est un signal très négatif à éviter.</li>
+<li>Le rachat d'actions améliore le BPA et offre plus de flexibilité que le dividende.</li>
+<li>Croissance soutenable = ROE × taux de rétention.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_2">Approfondissement théorique</h2>
+<h3 id="a-theorie-de-la-clientele-fiscale-tax-clientele-effect">A. Théorie de la clientèle fiscale (Tax Clientele Effect)</h3>
+<p>La théorie de la clientèle fiscale, développée par <strong>Miller et Modigliani (1961)</strong> et formalisée par <strong>Elton et Gruber (1970)</strong>, postule que la composition de l'actionnariat d'une entreprise s'auto-sélectionne en fonction de sa politique de dividendes. En effet, différentes catégories d'investisseurs font face à des taux d'imposition marginaux distincts sur les dividendes et les plus-values, ce qui les conduit à des préférences radicalement différentes.</p>
+<p><strong>Mécanisme de segmentation</strong> :</p>
+<ul>
+<li><strong>Investisseurs à fort taux marginal d'imposition</strong> (particuliers aisés) : préfèrent les plus-values, différables et souvent taxées à un taux inférieur. Ils favorisent les entreprises à faible payout ratio.</li>
+<li><strong>Investisseurs institutionnels exonérés</strong> (fonds de pension, fondations, comptes d'épargne retraite) : indifférents à la forme de rémunération, mais apprécient la régularité des dividendes pour leur gestion de trésorerie.</li>
+<li><strong>Retraités et fonds de revenu</strong> : préfèrent les dividendes élevés et réguliers pour financer leurs besoins de consommation sans avoir à vendre des actions.</li>
+</ul>
+<p><strong>Implication pour la valorisation</strong> : dans un marché à l'équilibre avec plusieurs clientèles fiscales, chaque politique de dividendes attire une clientèle spécifique. Les entreprises qui modifient abruptement leur politique de dividendes imposent à leurs actionnaires existants un coût de réajustement de portefeuille. Ce coût explique pourquoi les directions font preuve d'une grande stabilité dans leurs politiques de distribution.</p>
+<p><strong>Test empirique d'Elton et Gruber</strong> : en observant le comportement du cours le jour de détachement du coupon (ex-dividend day), on peut inférer le taux d'imposition marginal moyen de la clientèle. Si le cours chute d'exactement 1 € pour 1 € de dividende, la clientèle est indifférente ; si la chute est inférieure à 1 €, la clientèle est imposée plus fortement sur les dividendes que sur les plus-values.</p>
+<pre><code>Ratio de détachement = ΔP / DPA
+
+Où ΔP = P_cum_dividende - P_ex_dividende
+
+Si ΔP/DPA &lt; 1 → clientèle préfère les plus-values (taux dividende &gt; taux PV)
+Si ΔP/DPA &gt; 1 → clientèle préfère les dividendes (taux dividende &lt; taux PV)
+Si ΔP/DPA = 1 → clientèle indifférente (taux égaux ou exonérée)
+</code></pre>
+<h3 id="b-theorie-du-signal-signaling-theory">B. Théorie du signal (Signaling Theory)</h3>
+<p>La théorie du signal en matière de dividendes repose sur l'<strong>asymétrie d'information</strong> entre le management et les actionnaires externes. Les dirigeants disposent d'une information privée supérieure sur les flux de trésorerie futurs de l'entreprise, que les investisseurs ne peuvent pas observer directement.</p>
+<p><strong>Fondements théoriques</strong> :</p>
+<ul>
+<li><strong>Bhattacharya (1979)</strong> : premier modèle formel où le dividende est un signal coûteux. Une entreprise de mauvaise qualité qui imite une bonne entreprise en versant un dividende élevé devra recourir à un financement externe coûteux — ce coût rend l'imitation non rentable, et le signal crédible.</li>
+<li><strong>John et Williams (1985)</strong> : modèle où les actionnaires ont des besoins de liquidité hétérogènes. Les entreprises signalent leur qualité par le dividende pour permettre aux investisseurs de vendre leurs actions à un prix juste.</li>
+<li><strong>Miller et Rock (1985)</strong> : le dividende signale le cash-flow courant — toute déviation par rapport aux attentes révèle de l'information sur la profitabilité réelle de l'entreprise.</li>
+</ul>
+<p><strong>Propriétés d'un signal crédible</strong> :
+1. Il doit être coûteux à imiter pour une entreprise de mauvaise qualité.
+2. Il doit être corrélé positivement avec la vraie valeur de l'entreprise.
+3. L'équilibre doit être séparateur : les bonnes et mauvaises entreprises font des choix différents.</p>
+<p><strong>Critiques</strong> : le modèle du signal prédit que les entreprises devraient préférer le dividende au rachat d'actions (moins visible). Or, depuis les années 1990, les rachats d'actions ont largement supplanté les dividendes, particulièrement aux États-Unis. Des chercheurs comme <strong>Grullon et Michaely (2002)</strong> ont montré que les rachats d'actions sont aussi des signaux efficaces, ce qui fragilise l'exclusivité du signal dividende.</p>
+<h3 id="c-theorie-de-lagence-agency-theory">C. Théorie de l'agence (Agency Theory)</h3>
+<p><strong>Jensen (1986)</strong> formalise l'argument selon lequel les dividendes réduisent le <strong>free cash flow</strong> disponible pour les dirigeants, limitant ainsi leur capacité à surinvestir dans des projets à VAN négative. Ce mécanisme est particulièrement pertinent dans les entreprises matures générant des flux de trésorerie abondants mais disposant de peu d'opportunités d'investissement rentables.</p>
+<p><strong>Problème de surflux de trésorerie (Free Cash Flow Problem)</strong> :</p>
+<p>En présence de free cash flow élevé, les dirigeants sont tentés de :
+- Réaliser des acquisitions surpayées pour augmenter la taille de l'empire (empire building).
+- Conserver la trésorerie pour bénéficier d'une plus grande flexibilité et sécurité de l'emploi.
+- Dépenser en avantages en nature (perquisites) ou en investissements qui renforcent leur position.</p>
+<p><strong>Le dividende comme mécanisme disciplinant</strong> :</p>
+<p>En versant des dividendes (ou en procédant à des rachats d'actions), l'entreprise :
+1. Réduit le cash disponible pour les investissements non créateurs de valeur.
+2. Force potentiellement un retour sur les marchés de capitaux pour ses futurs besoins de financement, avec le regard scrutateur des analystes et des investisseurs institutionnels.
+3. Aligne les intérêts des dirigeants sur ceux des actionnaires en réduisant l'espace discrétionnaire.</p>
+<p><strong>Coûts d'agence résiduels</strong> : à l'inverse, une politique de dividendes trop généreuse peut forcer l'entreprise à sous-investir dans des projets rentables (underinvestment problem), créant un coût d'agence de signe opposé. L'optimum est un compromis entre ces deux types de coûts d'agence.</p>
+<pre><code>Valeur entreprise = VAN des projets rentables
+                  + Réduction des coûts d'agence (via dividendes)
+                  - Coûts de sous-investissement
+</code></pre>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_2">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-modele-de-gordon-shapiro-avec-politique-de-dividendes-variable">Exemple 1 : Modèle de Gordon-Shapiro avec politique de dividendes variable</h3>
+<p>Soit la société MERIDIAN avec les données suivantes :
+- BPA actuel : 8 €
+- Taux de distribution actuel : 50 % (DPA = 4 €)
+- ROE : 16 %
+- Coût des fonds propres (ke) : 10 %</p>
+<p><strong>Phase 1 : calcul du taux de croissance soutenable</strong></p>
+<pre><code>g = ROE × (1 - Payout) = 16 % × 50 % = 8 %
+</code></pre>
+<p><strong>Phase 2 : valorisation par le modèle de Gordon-Shapiro</strong></p>
+<pre><code>P0 = DPA1 / (ke - g) = DPA0 × (1 + g) / (ke - g)
+P0 = 4 × 1,08 / (0,10 - 0,08)
+P0 = 4,32 / 0,02
+P0 = 216 €
+</code></pre>
+<p><strong>Phase 3 : simulation d'un changement de politique</strong></p>
+<p>La direction envisage d'augmenter le payout à 75 % (DPA = 6 €) :</p>
+<pre><code>g' = 16 % × (1 - 0,75) = 16 % × 25 % = 4 %
+DPA1' = 6 × 1,04 = 6,24 €
+P0' = 6,24 / (0,10 - 0,04) = 6,24 / 0,06 = 104 €
+</code></pre>
+<p><strong>Conclusion</strong> : Bien que le dividende immédiat soit plus élevé (6 € vs 4 €), la réduction du taux de réinvestissement comprime le taux de croissance futur et <strong>fait chuter la valeur de l'action de 216 € à 104 €</strong>. Cet exemple illustre la tension fondamentale entre distribution et croissance.</p>
+<hr />
+<h3 id="exemple-2-analyse-de-la-politique-de-dividendes-selon-la-theorie-de-la-clientele">Exemple 2 : Analyse de la politique de dividendes selon la théorie de la clientèle</h3>
+<p>La société ATLAS a 1 000 000 d'actionnaires répartis en trois catégories :</p>
+<table>
+<thead>
+<tr>
+<th>Catégorie</th>
+<th>Nombre</th>
+<th>Taux d'imposition dividendes</th>
+<th>Taux d'imposition plus-values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fonds de pension</td>
+<td>400 000</td>
+<td>0 %</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td>Particuliers aisés</td>
+<td>350 000</td>
+<td>30 %</td>
+<td>17,2 % (PFU réduit)</td>
+</tr>
+<tr>
+<td>Retraités</td>
+<td>250 000</td>
+<td>12 %</td>
+<td>30 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Bénéfice net total</strong> : 10 000 000 €
+<strong>Option A</strong> : Payout 80 % → Dividende = 8 000 000 €, Rétention = 2 000 000 €
+<strong>Option B</strong> : Payout 20 % → Dividende = 2 000 000 €, Rachat = 6 000 000 €</p>
+<p><strong>Calcul du coût fiscal net par option</strong> (sur 1 € de distribution) :</p>
+<p>Option A (dividende) :</p>
+<pre><code>Fonds de pension : 0,40 × 0 % = 0,000 €
+Particuliers aisés : 0,35 × 30 % = 0,105 €
+Retraités : 0,25 × 12 % = 0,030 €
+Coût fiscal moyen = 0,135 € par euro distribué
+</code></pre>
+<p>Option B (rachat d'actions / plus-value) :</p>
+<pre><code>Fonds de pension : 0,40 × 0 % = 0,000 €
+Particuliers aisés : 0,35 × 17,2 % = 0,060 €
+Retraités : 0,25 × 30 % = 0,075 €
+Coût fiscal moyen = 0,135 € par euro distribué
+</code></pre>
+<p><strong>Résultat</strong> : dans cet exemple construit, les deux options sont équivalentes en termes de coût fiscal agrégé. En pratique, la composition de l'actionnariat détermine quelle politique est fiscalement optimale. Une structure avec davantage de particuliers aisés orientera vers les rachats d'actions.</p>
+<hr />
+<h3 id="exemple-3-detection-dun-signal-via-le-modele-de-lintner-et-reaction-du-marche">Exemple 3 : Détection d'un signal via le modèle de Lintner et réaction du marché</h3>
+<p>La société EPSILON présente l'historique de dividendes suivant :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>BPA (€)</th>
+<th>Dividende versé (€)</th>
+<th>Dividende prévu (modèle Lintner)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N-3</td>
+<td>5,00</td>
+<td>2,00</td>
+<td>—</td>
+</tr>
+<tr>
+<td>N-2</td>
+<td>5,50</td>
+<td>2,15</td>
+<td>2,15</td>
+</tr>
+<tr>
+<td>N-1</td>
+<td>6,00</td>
+<td>2,35</td>
+<td>2,35</td>
+</tr>
+<tr>
+<td>N</td>
+<td>6,20</td>
+<td>2,80</td>
+<td>?</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Paramètres Lintner estimés</strong> : α = 0,30, p (payout cible) = 45 %</p>
+<p><strong>Calcul du dividende prévu en année N</strong> :</p>
+<pre><code>Div_cible_N = 0,45 × 6,20 = 2,79 €
+ΔDiv_prévu = 0,30 × (2,79 - 2,35) = 0,30 × 0,44 = 0,132 €
+Div_prévu_N = 2,35 + 0,132 = 2,482 € ≈ 2,48 €
+</code></pre>
+<p><strong>Dividende annoncé</strong> : 2,80 €</p>
+<p><strong>Surprise positive</strong> : 2,80 - 2,48 = <strong>+0,32 €</strong> par rapport au modèle Lintner</p>
+<p><strong>Interprétation</strong> : l'annonce d'un dividende supérieur aux prédictions du modèle Lintner constitue une surprise positive. Selon la théorie du signal, le marché devrait réagir positivement. Si la réaction observée est de +3,5 %, et si le Beta d'EPSILON est 0,9 avec un rendement de marché de 0,2 % ce jour, l'abnormal return est :</p>
+<pre><code>Rendement attendu = 0 + 0,9 × 0,2 % = 0,18 %
+Abnormal Return = 3,5 % - 0,18 % = +3,32 %
+</code></pre>
+<p>Ce rendement anormal positif confirme l'hypothèse du signal : le marché interprète le dividende supérieur aux attentes comme une information positive sur les cash-flows futurs.</p>
+<hr />
+<h2 id="applications-professionnelles_2">Applications professionnelles</h2>
+<h3 id="a-en-banque-dinvestissement">A. En banque d'investissement</h3>
+<p>Les équipes ECM (Equity Capital Markets) et les analystes sell-side intègrent la politique de dividendes dans leurs modèles de valorisation (DCF, DDM) et dans leurs recommandations d'investissement.</p>
+<p><strong>Dividend Discount Model (DDM)</strong> dans les pitchbooks :</p>
+<pre><code>P0 = Σ [DPA_t / (1 + ke)^t]   pour t = 1 à ∞
+
+En croissance stable :
+P0 = DPA1 / (ke - g)
+</code></pre>
+<p>Les banquiers d'affaires conseillent les entreprises lors de changements stratégiques de politique de dividendes (initiation, augmentation significative, transformation du dividende en rachat d'actions). Chaque décision nécessite une analyse approfondie de l'impact sur la base d'actionnaires, notamment lors de transactions impliquant des spin-offs ou des restructurations capitalistiques.</p>
+<p><strong>Event studies</strong> : les équipes de recherche publient des études sur l'impact des annonces de dividendes sur les cours boursiers, alimentant les stratégies des desk de trading.</p>
+<h3 id="b-en-gestion-dactifs">B. En gestion d'actifs</h3>
+<p><strong>Stratégies orientées dividendes</strong> :</p>
+<ol>
+<li>
+<p><strong>Stratégies High Yield</strong> : les gérants de fonds obligataires et actions se concentrent sur les entreprises à fort rendement du dividende (Dividend Yield &gt; 4-5 %). Ces stratégies sont populaires en environnement de taux bas car elles offrent un substitut partiel aux obligations.</p>
+</li>
+<li>
+<p><strong>Stratégies Dividend Growth</strong> : plutôt que de maximiser le yield actuel, ces stratégies sélectionnent les entreprises à forte croissance du dividende dans le temps (ex : les "Dividend Aristocrats" américains, qui ont augmenté leur dividende pendant 25+ années consécutives). L'hypothèse est que la croissance soutenue du dividende reflète la qualité du business model.</p>
+</li>
+<li>
+<p><strong>Analyse du payout ratio dans le credit analysis</strong> : les analystes crédit surveillent le payout ratio des émetteurs obligataires. Un payout trop élevé signale que l'entreprise privilégie les actionnaires au détriment des créanciers (dividende financé par de la dette). Cela détériore la couverture des intérêts et le profil de crédit.</p>
+</li>
+</ol>
+<p><strong>Indicateurs de suivi</strong> :</p>
+<pre><code>Dividend Coverage Ratio = Free Cash Flow / Dividendes totaux versés
+(Ratio sain &gt; 1,5×)
+
+Dividend Sustainability Score = (FCF yield - Dividend yield) / Dividend yield
+(Positif = dividende couvert par les flux; négatif = risque de coupure)
+</code></pre>
+<h3 id="c-en-tresorerie-dentreprise">C. En trésorerie d'entreprise</h3>
+<p>Le directeur financier (CFO) et le trésorier d'entreprise gèrent la politique de distribution en coordination avec :</p>
+<p><strong>1. Planification de la trésorerie</strong> : le calendrier des versements de dividendes (date de détachement, date de paiement) doit être anticipé dans la gestion du cash pool. Une entreprise multinationale avec des filiales dans plusieurs pays doit optimiser les remontées de dividendes interco en tenant compte des retenues à la source (withholding taxes) et des conventions fiscales bilatérales.</p>
+<p><strong>2. Programme de rachat d'actions</strong> :
+- Définition d'un mandat de rachat approuvé par l'AGO (durée, prix maximum, volume).
+- Coordination avec les fenêtres de trading autorisées (blackout periods avant les publications de résultats).
+- Arbitrage entre rachat en bourse (discret, flexible) et offre de rachat formelle (OPA de l'émetteur sur ses propres titres, plus visible mais plus rapide).</p>
+<p><strong>3. Communication financière</strong> : le trésorier travaille avec le Directeur des Relations Investisseurs (DRI) pour préparer la communication autour des décisions de dividendes. Le message doit être cohérent avec les perspectives financières publiées et ne pas créer de signal ambigu susceptible de déstabiliser le cours.</p>
+<p><strong>4. Optimisation fiscale intragroupe</strong> : dans un groupe multinational, la politique de dividendes des filiales vers la maison mère doit tenir compte des régimes d'exonération (participation-exemption en France : 95 % d'exonération pour les dividendes intragroupe sous conditions), réduisant la friction fiscale dans les remontées de cash.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_2">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-confondre-le-dividend-yield-avec-la-creation-de-valeur">Erreur 1 : Confondre le dividend yield avec la création de valeur</h3>
+<p>Un dividend yield élevé (ex : 8 %) est souvent interprété comme une opportunité attractive. C'est une erreur fréquente. Un rendement élevé peut résulter d'une <strong>baisse du cours boursier</strong> (signe d'une détresse financière) plutôt que d'un dividende élevé. C'est le "yield trap" : l'entreprise peut ensuite couper son dividende, combinant ainsi une perte en capital et une chute du revenu.</p>
+<p><strong>Diagnostic</strong> : toujours vérifier le dividend coverage ratio (FCF / dividendes) avant de conclure à l'attractivité d'un rendement élevé. Un ratio inférieur à 1 est un signal d'alarme.</p>
+<h3 id="erreur-2-ignorer-leffet-de-dilution-dans-les-modeles-de-gordon-shapiro">Erreur 2 : Ignorer l'effet de dilution dans les modèles de Gordon-Shapiro</h3>
+<p>Lors de la valorisation par le DDM, les étudiants oublient fréquemment que si l'entreprise distribue tout son bénéfice (payout = 100 %), la croissance g est nulle seulement en l'absence de financement externe. Si l'entreprise émet des actions pour financer sa croissance, cela dilue les actionnaires existants. Le DDM standard suppose implicitement un financement de la croissance uniquement par les profits retenus.</p>
+<pre><code>Erreur : P0 = DPA / ke  (en supposant g=0 car tout est distribué)
+Correct : Si financement externe, g ≠ 0 mais les actionnaires subissent une dilution
+</code></pre>
+<h3 id="erreur-3-traiter-le-rachat-dactions-comme-une-creation-de-valeur-ex-nihilo">Erreur 3 : Traiter le rachat d'actions comme une création de valeur ex nihilo</h3>
+<p>Le rachat d'actions augmente mécaniquement le BPA (moins d'actions pour le même résultat), mais <strong>n'est pas intrinsèquement créateur de valeur</strong> si le rachat se fait au prix de marché. C'est une erreur classique dans les présentations aux conseils d'administration. La valeur n'est créée que si les actions sont rachetées en dessous de leur valeur intrinsèque, ou si le signal positif du rachat est correctement interprété par le marché.</p>
+<p><strong>Calcul correct</strong> : un rachat à prix équitable est une substitution parfaite entre trésorerie et capital — la valeur totale de l'entreprise (dette + capitaux propres + trésorerie) reste inchangée.</p>
+<h3 id="erreur-4-meconnaitre-la-reglementation-sur-les-rachats-dactions-abus-de-marche">Erreur 4 : Méconnaître la réglementation sur les rachats d'actions (abus de marché)</h3>
+<p>En Europe, les rachats d'actions sont encadrés par le Règlement MAR (Market Abuse Regulation) et la directive sur les rachats (Safe Harbour). Les programmes de rachat doivent respecter des règles strictes sur les volumes journaliers (max 25 % du volume quotidien moyen sur 20 jours), les plages horaires, et les périodes d'interdiction (autour des publications de résultats). Ignorer ces contraintes réglementaires expose l'entreprise à des sanctions pour manipulation de marché.</p>
+<h3 id="erreur-5-appliquer-le-modele-de-lintner-sans-tester-la-stationnarite">Erreur 5 : Appliquer le modèle de Lintner sans tester la stationnarité</h3>
+<p>Le modèle de Lintner suppose que l'entreprise converge vers un payout ratio cible stable. Cette hypothèse est violée lors de ruptures structurelles (changement de stratégie, acquisition majeure, crise financière). Appliquer mécaniquement le modèle à des données historiques incluant de telles ruptures produit des prévisions de dividendes erronées. Il convient de segmenter l'échantillon temporel ou d'utiliser des modèles à changement de régime.</p>
+<hr />
+<h2 id="exercices-supplementaires_2">Exercices supplémentaires</h2>
+<h3 id="exercice-4-niveau-intermediaire-ddm-a-deux-phases">Exercice 4 — Niveau intermédiaire : DDM à deux phases</h3>
+<p>La société NEXUS présente les caractéristiques suivantes :
+- BPA actuel (N) : 6 €
+- Payout ratio actuel : 30 % (phase de croissance)
+- Taux de croissance des bénéfices : 12 % par an pendant 5 ans, puis 4 % à l'infini
+- Payout ratio en phase stable (après 5 ans) : 60 %
+- Coût des fonds propres : 9 %</p>
+<p>Calculez la valeur théorique de l'action.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Étape 1 : Calcul des dividendes en phase de croissance (années 1 à 5)</strong></p>
+<p>```
+BPA_0 = 6 €, g = 12 %, payout = 30 %</p>
+<p>Année 1 : BPA_1 = 6 × 1,12 = 6,72 €  →  DPA_1 = 6,72 × 0,30 = 2,016 €
+Année 2 : BPA_2 = 6,72 × 1,12 = 7,53 €  →  DPA_2 = 7,53 × 0,30 = 2,258 €
+Année 3 : BPA_3 = 7,53 × 1,12 = 8,43 €  →  DPA_3 = 8,43 × 0,30 = 2,529 €
+Année 4 : BPA_4 = 8,43 × 1,12 = 9,44 €  →  DPA_4 = 9,44 × 0,30 = 2,833 €
+Année 5 : BPA_5 = 9,44 × 1,12 = 10,58 €  →  DPA_5 = 10,58 × 0,30 = 3,173 €
+```</p>
+<p><strong>Étape 2 : Valeur terminale à la fin de l'année 5</strong></p>
+<p>```
+DPA_6 = BPA_5 × (1 + g_stable) × payout_stable
+      = 10,58 × 1,04 × 0,60
+      = 6,602 €</p>
+<p>P_5 = DPA_6 / (ke - g_stable) = 6,602 / (0,09 - 0,04) = 6,602 / 0,05 = 132,04 €
+```</p>
+<p><strong>Étape 3 : Actualisation de tous les flux</strong></p>
+<p>```
+P_0 = 2,016/1,09 + 2,258/1,09² + 2,529/1,09³ + 2,833/1,09⁴ + (3,173 + 132,04)/1,09⁵</p>
+<pre><code>= 1,850 + 1,902 + 1,953 + 2,006 + 135,213/1,5386
+= 1,850 + 1,902 + 1,953 + 2,006 + 87,88
+</code></pre>
+<p>P_0 ≈ 95,59 €
+```</p>
+<p><strong>Commentaire</strong> : la valeur terminale représente 92 % de la valeur totale (87,88 / 95,59), illustrant la sensibilité extrême du DDM aux hypothèses de la phase stable. Une variation de 1 point de pourcentage sur ke ou g peut modifier la valorisation de 20 à 30 %.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-5-niveau-intermediaire-analyse-lintner-et-signaling">Exercice 5 — Niveau intermédiaire : Analyse Lintner et signaling</h3>
+<p>La société PRIMA a les données suivantes :
+- Dividende versé en N-1 : 1,80 €
+- BPA estimé en N : 5,50 €
+- Payout ratio cible estimé : 40 %
+- Vitesse d'ajustement α estimée à partir de données historiques : 25 %
+- Dividende annoncé en N : 2,50 €</p>
+<p>a) Quel dividende le modèle de Lintner prédit-il pour l'année N ?
+b) Calculez la surprise de dividende.
+c) En supposant un Beta de 1,1 et un rendement de marché le jour de l'annonce de +0,5 %, et une réaction du cours de +4,2 %, calculez l'abnormal return et commentez.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) Prédiction du modèle de Lintner</strong>
+<code>Div_cible_N = 0,40 × 5,50 = 2,20 €
+ΔDiv_prévu = 0,25 × (2,20 - 1,80) = 0,25 × 0,40 = 0,10 €
+Div_prévu_N = 1,80 + 0,10 = 1,90 €</code></p>
+<p><strong>b) Surprise de dividende</strong>
+<code>Surprise = Div_annoncé - Div_prévu = 2,50 - 1,90 = +0,60 €
+Surprise en % = 0,60 / 1,90 = +31,6 %</code>
+Il s'agit d'une surprise très positive : la direction a annoncé un dividende 31,6 % supérieur au niveau prédit par le comportement historique d'ajustement.</p>
+<p><strong>c) Abnormal Return</strong>
+```
+Rendement attendu (CAPM) = rf + β × (rm - rf)
+En supposant rf ≈ 0 pour la journée :
+Rendement attendu ≈ 1,1 × 0,5 % = 0,55 %</p>
+<p>Abnormal Return = 4,2 % - 0,55 % = +3,65 %
+```
+Un abnormal return de +3,65 % est statistiquement et économiquement significatif. Cela valide la théorie du signal : le dividende surprise est interprété par le marché comme une information positive sur les flux de trésorerie futurs de PRIMA. La magnitude de l'abnormal return est cohérente avec les résultats empiriques de la littérature académique (Aharony et Swary, 1980 ; Grullon, Michaely et Swaminathan, 2002).</p>
+</blockquote>
+<hr />
+<h3 id="exercice-6-niveau-avance-optimisation-de-la-politique-de-distribution-et-couts-dagence">Exercice 6 — Niveau avancé : Optimisation de la politique de distribution et coûts d'agence</h3>
+<p>La société OMEGA est une entreprise mature dans le secteur des utilities. Elle dispose d'un free cash flow annuel de 50 M€ et n'a pratiquement aucune opportunité d'investissement rentable (ROIC sur nouveaux investissements = 7 %, inférieur au WACC de 9 %).</p>
+<p>Données complémentaires :
+- Valeur de marché des capitaux propres : 400 M€
+- Nombre d'actions : 20 millions
+- BPA : 3 € ; FCF par action : 2,50 €
+- Payout actuel : 40 % (dividende = 1,20 €/action)
+- Taux d'actualisation des coûts d'agence estimés : 10 % des FCF non distribués</p>
+<p>a) Calculez le coût d'agence annuel lié au free cash flow non distribué.
+b) Proposez une politique de distribution optimale et calculez la création de valeur associée.
+c) Analysez l'impact sur le cours de bourse.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) Coût d'agence du free cash flow non distribué</strong>
+```
+FCF total = 50 M€
+Dividendes versés = 1,20 € × 20 M actions = 24 M€
+FCF non distribué = 50 - 24 = 26 M€</p>
+<p>Coût d'agence annuel estimé = 10 % × 26 M€ = 2,6 M€
+(représente la perte de valeur annuelle due au surinvestissement / inefficiences)
+```</p>
+<p><strong>b) Politique de distribution optimale</strong></p>
+<p>Puisque le ROIC sur nouveaux projets (7 %) est inférieur au WACC (9 %), tout réinvestissement détruit de la valeur. La politique optimale est de distribuer l'intégralité du FCF :
+```
+FCF par action = 2,50 €
+Politique optimale : DPA = 2,50 € (payout FCF = 100 %)</p>
+<p>Économie sur les coûts d'agence si FCF entièrement distribué :
+Coûts d'agence évités = 2,6 M€ / an
+Valeur actualisée (perpétuité) = 2,6 M€ / 9 % = 28,9 M€
+```</p>
+<p><strong>c) Impact sur le cours de bourse</strong>
+```
+Cours actuel implicite = 400 M€ / 20 M = 20 €</p>
+<p>Avec distribution optimale du FCF :
+Valeur ajoutée = 28,9 M€
+Nouvelle valeur de marché des CP = 400 + 28,9 = 428,9 M€
+Nouveau cours théorique = 428,9 / 20 = 21,45 €</p>
+<p>Hausse théorique = (21,45 - 20) / 20 = +7,2 %
+```</p>
+<p><strong>Commentaire</strong> : Dans les entreprises matures à faible ROIC, la politique de distribution est un levier de création de valeur direct. La hausse potentielle de +7,2 % illustre que la décision de distribuer davantage ne détruit pas de valeur (contrairement à ce que craignent parfois les dirigeants attachés à leurs réserves de cash), mais en crée au contraire en eliminant les coûts d'agence du free cash flow.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-7-niveau-avance-arbitrage-fiscal-clientele">Exercice 7 — Niveau avancé : Arbitrage fiscal clientèle</h3>
+<p>Un investisseur particulier imposé au PFU de 30 % sur les dividendes et à 17,2 % sur les plus-values (abattement pour durée de détention) compare deux entreprises identiques sauf pour leur politique de distribution :</p>
+<ul>
+<li><strong>Société A</strong> : payout 80 %, cours = 100 €, dividende annuel = 8 €</li>
+<li><strong>Société B</strong> : payout 10 %, cours = 100 €, dividende annuel = 1 €</li>
+</ul>
+<p>Les deux entreprises ont le même BPA de 10 € et le même taux de croissance de 5 %. L'horizon d'investissement est 1 an.</p>
+<p>a) Calculez le rendement net d'impôt pour chaque société.
+b) Quelle société cet investisseur devrait-il choisir ?
+c) Comment cela illustre-t-il la théorie de la clientèle ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) Calcul du rendement net d'impôt</strong></p>
+<p>Pour chaque société, le cours dans un an = 100 × 1,05 = 105 € (avant dividende)</p>
+<p><strong>Société A (payout 80 %)</strong> :
+```
+Dividende brut = 8 €
+Impôt dividende = 8 × 30 % = 2,40 €
+Dividende net = 5,60 €</p>
+<p>Cours ex-dividende théorique = 105 - 8 = 97 €
+Plus-value = 97 - 100 = -3 €  → pas de plus-value imposable</p>
+<p>Gain total net = 5,60 + (97 - 100) = 5,60 - 3 = 2,60 €
+Rendement net = 2,60 / 100 = 2,60 %
+```</p>
+<p><strong>Société B (payout 10 %)</strong> :
+```
+Dividende brut = 1 €
+Impôt dividende = 1 × 30 % = 0,30 €
+Dividende net = 0,70 €</p>
+<p>Cours ex-dividende théorique = 105 - 1 = 104 €
+Plus-value brute = 104 - 100 = 4 €
+Impôt plus-value = 4 × 17,2 % = 0,69 €
+Plus-value nette = 3,31 €</p>
+<p>Gain total net = 0,70 + 3,31 = 4,01 €
+Rendement net = 4,01 / 100 = 4,01 %
+```</p>
+<p><strong>b) Choix optimal</strong> : la Société B offre un rendement net supérieur (4,01 % vs 2,60 %) pour cet investisseur car les plus-values sont taxées à un taux plus faible (17,2 %) que les dividendes (30 %).</p>
+<p><strong>c) Illustration de la théorie de la clientèle</strong> : un investisseur exonéré d'impôts (fonds de pension) serait parfaitement indifférent entre A et B (rendement identique avant impôt). Un retraité dont le taux marginal d'imposition sur les dividendes est faible (12 %) pourrait préférer la Société A. Ce résultat montre que chaque politique de dividendes attire une clientèle fiscale spécifique, et que les entreprises ont intérêt à maintenir une politique stable pour ne pas perturber leur base d'actionnaires.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-5-fusions-et-acquisitions-ma">Chapitre 5 — Fusions et acquisitions (M&amp;A)</h1>
+<h2 id="introduction_4">Introduction</h2>
+<p>Le marché des fusions et acquisitions (M&amp;A — Mergers &amp; Acquisitions) est l'un des marchés les plus actifs en finance d'entreprise. Il permet aux entreprises de croître plus rapidement que par voie organique, d'acquérir des technologies, de consolider des marchés ou de réaliser des synergies.</p>
+<hr />
+<h2 id="1-terminologie-et-formes-juridiques">1. Terminologie et formes juridiques</h2>
+<h3 id="11-fusion-vs-acquisition">1.1 Fusion vs. Acquisition</h3>
+<table>
+<thead>
+<tr>
+<th>Forme</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fusion</strong></td>
+<td>Deux sociétés se combinent pour former une nouvelle entité (fusion pure ou fusion-absorption)</td>
+</tr>
+<tr>
+<td><strong>Acquisition</strong></td>
+<td>Une société achète une participation de contrôle dans une autre</td>
+</tr>
+<tr>
+<td><strong>OPA</strong> (Offre Publique d'Achat)</td>
+<td>Offre d'acquisition sur les actions d'une société cotée, en numéraire</td>
+</tr>
+<tr>
+<td><strong>OPE</strong> (Offre Publique d'Échange)</td>
+<td>Offre d'acquisition avec paiement en actions de l'acquéreur</td>
+</tr>
+<tr>
+<td><strong>LBO</strong> (Leveraged Buyout)</td>
+<td>Acquisition financée principalement par de la dette</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-acquisitions-amicales-vs-hostiles">1.2 Acquisitions amicales vs. hostiles</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Caractéristiques</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Amicale</strong></td>
+<td>Accord préalable du conseil d'administration cible</td>
+</tr>
+<tr>
+<td><strong>Hostile</strong></td>
+<td>OPA directe aux actionnaires, sans accord du management cible</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-les-motivations-des-operations-de-ma">2. Les motivations des opérations de M&amp;A</h2>
+<h3 id="21-synergies">2.1 Synergies</h3>
+<p>La valeur créée dans une opération de M&amp;A est principalement liée aux <strong>synergies</strong> :</p>
+<pre><code>Valeur de l'opération = V(A+B) - V(A) - V(B) + Synergies - Prime payée
+</code></pre>
+<p><strong>Types de synergies</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Synergie</th>
+<th>Description</th>
+<th>Délai de réalisation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Synergies de revenus</strong></td>
+<td>Ventes croisées, accès nouveaux marchés</td>
+<td>Long terme (2–5 ans)</td>
+</tr>
+<tr>
+<td><strong>Synergies de coûts</strong></td>
+<td>Élimination de doublons (fonctions support), économies d'échelle</td>
+<td>Court terme (1–2 ans)</td>
+</tr>
+<tr>
+<td><strong>Synergies financières</strong></td>
+<td>Meilleure notation, diversification des risques</td>
+<td>Moyen terme</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-autres-motivations">2.2 Autres motivations</h3>
+<ul>
+<li><strong>Croissance externe</strong> rapide vs. croissance organique.</li>
+<li><strong>Acquisition de technologie</strong> ou de talents (acqui-hire).</li>
+<li><strong>Consolidation sectorielle</strong> : augmenter les parts de marché.</li>
+<li><strong>Diversification</strong> (souvent peu créatrice de valeur selon la recherche).</li>
+<li><strong>Motivations managériales</strong> : hubris du dirigeant (surconfiance).</li>
+</ul>
+<hr />
+<h2 id="3-le-processus-ma">3. Le processus M&amp;A</h2>
+<h3 id="31-du-cote-de-lacheteur">3.1 Du côté de l'acheteur</h3>
+<pre><code>1. Stratégie d'acquisition
+   (définition des critères : secteur, taille, géographie)
+         ↓
+2. Identification des cibles
+         ↓
+3. Approche et lettre d'intention (LOI — Letter of Intent)
+         ↓
+4. Due diligence (audit d'acquisition)
+   - Financière  - Juridique  - Fiscale  - Opérationnelle
+         ↓
+5. Négociation et structuration
+         ↓
+6. Signing (signature du SPA — Share Purchase Agreement)
+         ↓
+7. Closing (réalisation : paiement + transfert de propriété)
+         ↓
+8. Intégration post-acquisition (PMI — Post-Merger Integration)
+</code></pre>
+<h3 id="32-due-diligence-financiere">3.2 Due diligence financière</h3>
+<p>La due diligence financière vérifie :
+- Qualité des états financiers historiques (retraitements).
+- <strong>Qualité de l'EBITDA</strong> : récurrence, éléments non-récurrents à exclure (normalisation).
+- Évolution du BFR et de la dette nette.
+- Passifs cachés (provisions insuffisantes, litiges, engagements hors-bilan).
+- <strong>Adjusted Net Debt</strong> (dette nette ajustée pour les earn-outs, pensions, leases).</p>
+<hr />
+<h2 id="4-evaluation-dans-le-contexte-ma">4. Évaluation dans le contexte M&amp;A</h2>
+<h3 id="41-la-prime-dacquisition">4.1 La prime d'acquisition</h3>
+<pre><code>Prime = (Prix offert - Cours avant annonce) / Cours avant annonce
+</code></pre>
+<ul>
+<li>Moyenne historique : 25–35 % pour les grandes sociétés cotées.</li>
+</ul>
+<h3 id="42-analyse-daccretiondilution">4.2 Analyse d'accrétion/dilution</h3>
+<p>L'<strong>accrétivité</strong> mesure l'impact de l'acquisition sur le BPA de l'acquéreur :</p>
+<pre><code>BPA post-opération = (Résultat net acquéreur + Résultat net cible + Synergies - Coûts d'intégration - Intérêts sur la dette d'acquisition) / Nouvelles actions
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Résultat</th>
+<th>Interprétation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BPA post &gt; BPA pré</td>
+<td><strong>Accrétion</strong> (positif pour l'actionnaire)</td>
+</tr>
+<tr>
+<td>BPA post &lt; BPA pré</td>
+<td><strong>Dilution</strong> (négatif)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-structure-du-prix">4.3 Structure du prix</h3>
+<ul>
+<li><strong>Numéraire</strong> : paiement immédiat, certitude pour le vendeur, charge de dette pour l'acheteur.</li>
+<li><strong>Actions</strong> : le vendeur partage le risque de l'intégration.</li>
+<li><strong>Earn-out</strong> : partie du prix conditionnelle à des objectifs futurs (résoudre les divergences d'évaluation).</li>
+</ul>
+<hr />
+<h2 id="5-la-structure-lbo">5. La structure LBO</h2>
+<h3 id="51-principe">5.1 Principe</h3>
+<p>Un <strong>LBO</strong> (Leveraged Buyout) est l'acquisition d'une entreprise principalement financée par de la dette (70–80 % du prix), les capitaux propres étant apportés par un fonds de Private Equity (PE).</p>
+<pre><code>Prix d'acquisition
+├── Dette senior (60–70 %) : rémunérée à taux variable (Euribor + marge), prioritaire
+├── Dette mezzanine (10–15 %) : subordonnée, OCA, PIK
+└── Capitaux propres (20–30 %) : fonds PE + management (management package)
+</code></pre>
+<h3 id="52-creation-de-valeur-en-lbo">5.2 Création de valeur en LBO</h3>
+<pre><code>Retour sur investissement (TRI) = f (
+  Croissance de l'EBITDA,
+  Amélioration des marges,
+  Désendettement (amortissement de la dette),
+  Expansion des multiples (multiple arbitrage)
+)
+</code></pre>
+<h3 id="53-metriques-lbo">5.3 Métriques LBO</h3>
+<table>
+<thead>
+<tr>
+<th>Métrique</th>
+<th>Formule</th>
+<th>Référence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Levier entrée</td>
+<td>Dette / EBITDA</td>
+<td>4–6×</td>
+</tr>
+<tr>
+<td>Multiple d'entrée</td>
+<td>EV / EBITDA</td>
+<td>7–12×</td>
+</tr>
+<tr>
+<td>TRI attendu</td>
+<td>IRR sur la mise de fonds</td>
+<td>20–30 %</td>
+</tr>
+<tr>
+<td>Multiple sur mise (MOIC)</td>
+<td>Produit de cession / Mise initiale</td>
+<td>2–3× sur 5 ans</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-echecs-des-operations-de-ma">6. Échecs des opérations de M&amp;A</h2>
+<p>La recherche montre que <strong>50–70 % des acquisitions détruisent de la valeur</strong> pour l'acquéreur. Causes principales :</p>
+<ol>
+<li><strong>Surpaiement</strong> : prime trop élevée, synergies surestimées.</li>
+<li><strong>Problèmes d'intégration</strong> : cultures incompatibles, départ de talents.</li>
+<li><strong>Due diligence insuffisante</strong> : passifs cachés découverts après le closing.</li>
+<li><strong>Hubris managérial</strong> : biais de confiance excessive.</li>
+</ol>
+<hr />
+<h2 id="7-exercices_2">7. Exercices</h2>
+<h3 id="exercice-1_6">Exercice 1</h3>
+<p>L'entreprise A (EBITDA = 100 M€) acquiert l'entreprise B (EBITDA = 40 M€) pour 400 M€ (multiple 10×). Les synergies de coûts annuelles sont estimées à 15 M€ (EBITDA combiné = 155 M€). Le multiple du secteur est 10×. La valeur combinée crée-t-elle de la valeur ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Valeur A seule = 100 × 10 = 1 000 M€
+Valeur B seule = 40 × 10 = 400 M€ (= prix payé, sans prime)
+Valeur synergies = 15 × 10 = 150 M€
+Valeur totale = 1 000 + 400 + 150 = <strong>1 550 M€</strong>
+Valeur combinée = (100 + 40 + 15) × 10 = 155 × 10 = <strong>1 550 M€</strong> → opération neutre sur la valeur si le prix reflète exactement les synergies.</p>
+</blockquote>
+<h3 id="exercice-2_6">Exercice 2</h3>
+<p>Calculez la prime d'acquisition si le cours avant annonce est 25 € et le prix offert est 33 €.</p>
+<blockquote>
+<p><strong>Correction</strong> : Prime = (33 - 25) / 25 = <strong>32 %</strong> (dans la fourchette habituelle de 25–35 %)</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_4">Points clés à retenir</h2>
+<ul>
+<li>La création de valeur en M&amp;A repose sur des synergies réelles et une intégration réussie.</li>
+<li>La prime d'acquisition représente en moyenne 25–35 % du cours pré-annonce.</li>
+<li>La due diligence financière vise à normaliser l'EBITDA et identifier la dette nette réelle.</li>
+<li>Le LBO crée de la valeur via la croissance opérationnelle, le désendettement et l'arbitrage de multiple.</li>
+<li>La majorité des acquisitions détruisent de la valeur : vigilance sur le surpaiement et l'intégration.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_3">Approfondissement théorique</h2>
+<h3 id="la-theorie-des-synergies-et-le-paradoxe-de-varadarajan">La théorie des synergies et le paradoxe de Varadarajan</h3>
+<p>La littérature académique est sceptique sur les synergies annoncées dans les opérations de M&amp;A :</p>
+<p><strong>Jensen &amp; Ruback (1983)</strong> : les actionnaires de la <em>cible</em> capturent la valeur via la prime d'acquisition ; les actionnaires de <em>l'acquéreur</em> voient en moyenne un rendement nul ou légèrement négatif autour de l'annonce.</p>
+<p><strong>Moeller, Schlingemann &amp; Stulz (2005)</strong> : les grandes acquisitions des années 1998–2001 ont détruit 240 Mds USD de valeur actionnaire pour les acquéreurs (principalement en actions overvaluées).</p>
+<p><strong>Raison de la destruction de valeur</strong> :
+- <strong>Malédiction du vainqueur (winner's curse)</strong> : dans une enchère, le gagnant est celui qui a le plus surpayé.
+- <strong>Hubris managérial (Roll, 1986)</strong> : les dirigeants surconfidents surestiment leur capacité à gérer la cible.
+- <strong>Free cash flow problem (Jensen, 1986)</strong> : les managers avec trop de cash disponible font des acquisitions sub-optimales pour "l'empire building".
+- <strong>Asymétrie d'information</strong> : le vendeur connaît mieux la cible → risque d'anti-sélection.</p>
+<h3 id="les-defenses-anti-opa">Les défenses anti-OPA</h3>
+<p>Lorsqu'une offre hostile est lancée, la cible peut activer plusieurs mécanismes de défense :</p>
+<table>
+<thead>
+<tr>
+<th>Défense</th>
+<th>Mécanisme</th>
+<th>Pays typique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Poison pill</strong> (rights plan)</td>
+<td>Emission d'actions à prix réduit pour les actionnaires existants en cas d'OPA</td>
+<td>USA</td>
+</tr>
+<tr>
+<td><strong>Staggered board</strong></td>
+<td>Seul 1/3 du CA renouvelé chaque année → impossibilité de prendre le contrôle rapidement</td>
+<td>USA</td>
+</tr>
+<tr>
+<td><strong>Golden parachute</strong></td>
+<td>Indemnités massives pour les dirigeants si changement de contrôle → rend l'OPA plus coûteuse</td>
+<td>France/USA</td>
+</tr>
+<tr>
+<td><strong>Pacte d'actionnaires</strong></td>
+<td>Clauses de préemption entre actionnaires stables</td>
+<td>France</td>
+</tr>
+<tr>
+<td><strong>Actions à double droit de vote</strong></td>
+<td>Fidélisation des actionnaires de long terme (loi Florange, France)</td>
+<td>France</td>
+</tr>
+<tr>
+<td><strong>White knight</strong></td>
+<td>Recherche d'un acquéreur "ami"</td>
+<td>Universel</td>
+</tr>
+<tr>
+<td><strong>Crown jewel defense</strong></td>
+<td>Cession des actifs les plus attractifs avant l'OPA</td>
+<td>USA</td>
+</tr>
+</tbody>
+</table>
+<h3 id="processus-de-valorisation-en-ma-focus-sur-la-due-diligence-financiere">Processus de valorisation en M&amp;A : focus sur la Due Diligence financière</h3>
+<p>La <strong>due diligence financière</strong> vise à normaliser l'EBITDA ("Quality of Earnings") et identifier la dette nette réelle :</p>
+<p><strong>Normalisation de l'EBITDA</strong> :</p>
+<pre><code>EBITDA comptable
++ Salaires/dividendes excessifs des actionnaires-dirigeants
++ Dépenses personnelles facturées en charges
++ Coûts non récurrents (restructurations, honoraires M&amp;A)
+- Revenus non récurrents (cessions d'actifs, subventions exceptionnelles)
+- Sous-investissement (capex inférieur à l'amortissement économique)
+= EBITDA normalisé (&quot;run rate EBITDA&quot;)
+</code></pre>
+<p><strong>Dette nette ajustée</strong> :</p>
+<pre><code>Dettes financières comptables
++ Engagements de retraites (net d'actifs de couverture)
++ Crédit-bail capitalisé (si non en IFRS)
++ Earn-out futurs
++ Provisions pour litiges
+- Trésorerie disponible (hors trésorerie piégée dans filiales étrangères)
+= Dette nette ajustée
+</code></pre>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_3">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-analyse-daccretiondilution-complete">Exemple 1 — Analyse d'accrétion/dilution complète</h3>
+<p>L'acquéreur A (capitalisation = 1 Mds €, BPA = 2 €, 50 M actions) acquiert la cible B (résultat net = 20 M€) pour 200 M€ payés en actions nouvelles (prix d'émission = 20 €).</p>
+<pre><code>Nouvelles actions émises = 200 M€ / 20 € = 10 M actions
+Total actions post-opération = 50 + 10 = 60 M actions
+
+Résultat net combiné (avant synergies) = 100 + 20 = 120 M€
+BPA post-opération = 120 / 60 = 2,00 €
+
+Accrétion/dilution = (2,00 - 2,00) / 2,00 = 0 % (neutre)
+</code></pre>
+<p>Avec synergies de 10 M€/an :</p>
+<pre><code>Résultat net ajusté = 130 M€
+BPA avec synergies = 130 / 60 = 2,17 €
+Accrétion = (2,17 - 2,00) / 2,00 = +8,5 % → accrétion significative
+</code></pre>
+<h3 id="exemple-2-analyse-des-offres-concurrentes">Exemple 2 — Analyse des offres concurrentes</h3>
+<p>Lors d'une OPA, deux acquéreurs se présentent. Quel est le prix maximum que chacun peut payer ?</p>
+<p><strong>Cible C</strong> : EBITDA = 50 M€, dette nette = 100 M€</p>
+<p><strong>Acquéreur X</strong> (stratégique, synergies = 20 M€/an) :</p>
+<pre><code>Valeur standalong = 50 × 8 = 400 M€ (multiple sectoriel 8×)
+Valeur synergies = 20 × 8 = 160 M€
+Valeur totale = 560 M€
+Prix max equity = 560 - 100 = 460 M€
+</code></pre>
+<p><strong>Acquéreur Y (fonds PE, pas de synergies)</strong> :</p>
+<pre><code>Valeur = 50 × 7 = 350 M€ (multiple LBO plus prudent)
+Prix max equity = 350 - 100 = 250 M€
+</code></pre>
+<p>L'acquéreur stratégique X peut systématiquement surenchérir le fonds PE grâce aux synergies → les fonds PE perdent souvent les enchères contre les stratégiques en période de forte activité M&amp;A.</p>
+<h3 id="exemple-3-earn-out-resolution-dune-divergence-de-valorisation">Exemple 3 — Earn-out : résolution d'une divergence de valorisation</h3>
+<p>Le vendeur valorise sa société 100 M€ (EBITDA projeté = 15 M€, multiple 7× = 105 M€ - dette 5 M€ = 100 M€). L'acheteur valorise 70 M€ (EBITDA prudent = 10 M€, multiple 7×).</p>
+<p><strong>Structure earn-out</strong> :</p>
+<pre><code>Prix fixe au closing : 70 M€
+Earn-out conditionnel : 
+  + 15 M€ si EBITDA ≥ 13 M€ en année 1
+  + 15 M€ si EBITDA ≥ 15 M€ en année 2
+Prix maximum = 70 + 15 + 15 = 100 M€
+</code></pre>
+<p>L'earn-out résout la divergence de valorisation en faisant porter le risque de performance sur le vendeur.</p>
+<hr />
+<h2 id="applications-professionnelles_3">Applications professionnelles</h2>
+<h3 id="banque-dinvestissement-le-mandat-ma">Banque d'investissement : le mandat M&amp;A</h3>
+<p><strong>Côté sell-side (vente de la cible)</strong> :
+1. <strong>Préparation</strong> : information memorandum (IM) décrivant la société, ses perspectives et sa valorisation.
+2. <strong>Process</strong> : envoi des IM à 5–20 acquéreurs potentiels présélectionnés.
+3. <strong>Offres indicatives</strong> : réception des LOI (Letter of Intent) → sélection de 3–5 acquéreurs pour la due diligence.
+4. <strong>Data room</strong> : accès aux informations confidentielles (financières, juridiques, commerciales).
+5. <strong>Offres fermes</strong> : réception → négociation → signing → closing.</p>
+<p><strong>Structure de la rémunération (success fee)</strong> :</p>
+<pre><code>Fee = Taux × EV transaction
+Taux dégressif : 2 % sur les premiers 100 M€, 1 % sur les 100–500 M€, 0,5 % au-delà
+Exemples : Deal à 200 M€ → fee = 2 M€ + 1 M€ = 3 M€
+</code></pre>
+<h3 id="private-equity-ma-comme-outil-de-creation-de-valeur">Private Equity : M&amp;A comme outil de création de valeur</h3>
+<p><strong>Buy-and-build</strong> : acquisition d'une plateforme LBO suivie d'acquisitions add-on pour consolider un secteur fragmenté.</p>
+<p>Logique économique :
+- La plateforme est achetée à 8× EBITDA (taille petite/moyenne)
+- Chaque add-on est acheté à 5–6× EBITDA (primes de taille plus faibles)
+- La plateforme consolidée est revendue à 10–12× EBITDA (prime de taille)
+- <strong>Multiple arbitrage</strong> : achat à 6× / vente à 11× → création de valeur mécanique</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_3">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Synergies surestimées et trop rapides</strong></td>
+<td>Les synergies prennent 2–3 ans (restructurations, intégration IT)</td>
+<td>Haircut de 20–30 % et délai de réalisation réaliste</td>
+</tr>
+<tr>
+<td><strong>Ignorer les "coûts de synergie"</strong></td>
+<td>Réaliser les synergies coûte (licenciements, systèmes IT)</td>
+<td>Modéliser les "one-time costs" de l'intégration</td>
+</tr>
+<tr>
+<td><strong>Mal calculer la prime de contrôle</strong></td>
+<td>La prime se mesure vs. le VWAP avant annonce, pas le cours du jour</td>
+<td>Utiliser le cours 30 ou 60 jours avant la rumeur</td>
+</tr>
+<tr>
+<td><strong>Due diligence trop rapide</strong></td>
+<td>Pression de timing → passifs cachés non détectés</td>
+<td>Clause de garantie d'actif et de passif (GAP) dans le SPA</td>
+</tr>
+<tr>
+<td><strong>Intégration post-acquisition négligée</strong></td>
+<td>Le "closing" n'est pas la fin — l'intégration est 70 % du travail</td>
+<td>Désigner un PMI manager dès la phase de due diligence</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_3">Exercices supplémentaires</h2>
+<h3 id="exercice-1_7">Exercice 1</h3>
+<p>L'entreprise A (résultat net = 80 M€, 40 M actions) acquiert B (résultat net = 30 M€) pour 400 M€, dont 200 M€ en cash (financement à 5 %) et 200 M€ en actions émises à 25 €. Calculez le BPA post-acquisition et l'accrétion/dilution (IS = 25 %).</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Nouvelles actions = 200 / 25 = 8 M actions → total = 48 M actions
+Intérêts sur la dette = 200 × 5 % = 10 M€ → après IS = 10 × (1 - 0,25) = 7,5 M€
+Résultat combiné = 80 + 30 - 7,5 = <strong>102,5 M€</strong>
+BPA post = 102,5 / 48 = <strong>2,135 €</strong>
+BPA avant = 80 / 40 = 2,00 €
+Accrétion = (2,135 - 2,00) / 2,00 = <strong>+6,8 %</strong> → opération accréticive</p>
+</blockquote>
+<h3 id="exercice-2_7">Exercice 2</h3>
+<p>Évaluez les synergies nécessaires pour justifier une prime de 40 % dans l'acquisition d'une cible (CA = 500 M€, EBITDA = 50 M€, cours pré-annonce = 20 €, capitalisation = 200 M€, dette nette = 100 M€). Multiple sectoriel = 8×.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+EV standalone = 8 × 50 = 400 M€ (ou capitalisation + dette = 200 + 100 = 300 M€)
+Prix offert = 200 × 1,40 = 280 M€ equity → EV offerte = 280 + 100 = 380 M€
+Prime vs. DCF/multiples = 380 - 400 = -20 M€ → en ligne avec la valeur standalong
+Avec une prime de 40 % sur le cours : EV = 380 M€
+Valeur synergies implicites = max(0, 380 - 400) = 0 M€
+→ la prime de 40 % sur le cours est déjà "payée" par la valeur fondamentale.
+Exercice de sensibilité : si le multiple standalong était 7× (EV = 350 M€), les synergies implicites = 380 - 350 = <strong>30 M€/an</strong> à créer (soit 3 M€ × 10 = 30 M€ actualisés à 10×).</p>
+</blockquote>
+<h3 id="exercice-3_4">Exercice 3</h3>
+<p>Construisez une table de comparaison de 3 offres pour l'acquisition d'une cible avec EBITDA = 40 M€, dette nette = 60 M€, 5 M actions en circulation.</p>
+<table>
+<thead>
+<tr>
+<th>Offre</th>
+<th>Multiple EV/EBITDA</th>
+<th>Forme paiement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A (stratégique)</td>
+<td>9×</td>
+<td>100 % cash</td>
+</tr>
+<tr>
+<td>B (fonds PE)</td>
+<td>8×</td>
+<td>100 % cash</td>
+</tr>
+<tr>
+<td>C (stratégique)</td>
+<td>10×</td>
+<td>50 % cash / 50 % actions</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :
+| Offre | EV | Equity (EV - dette) | Prix/action |
+|-------|-----|--------------------|----|
+| A | 360 M€ | 300 M€ | 60 €/action |
+| B | 320 M€ | 260 M€ | 52 €/action |
+| C | 400 M€ | 340 M€ | 68 €/action |</p>
+<p>L'offre C est la plus élevée en valeur nominale, mais 50 % en actions → le vendeur porte le risque de cours de C. Si les actionnaires vendeurs veulent la certitude, l'offre A est préférable (100 % cash, EV plus faible mais aucun risque de cours).</p>
+</blockquote>
+<hr />
+</body>
+</html>

@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>07 Private Equity</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-7-private-equity-venture-capital">Module 7 — Private Equity &amp; Venture Capital</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Comprendre l'écosystème du capital-investissement, maîtriser les mécanismes du LBO (Leveraged Buyout) et du Venture Capital, savoir mesurer la performance des fonds et analyser les enjeux d'une opération de capital-investissement.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-ecosysteme-pe.md">Écosystème du capital-investissement</a></li>
+<li><a href="./chapitre-02-lbo.md">Le Leveraged Buyout (LBO)</a></li>
+<li><a href="./chapitre-03-venture-capital.md">Venture Capital et financement des start-ups</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>12 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Modélisation d'un LBO simple</li>
+<li>Étude de cas : analyse d'un investissement Venture Capital</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-ecosysteme-du-capital-investissement">Chapitre 1 — Écosystème du capital-investissement</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Le <strong>capital-investissement</strong> (Private Equity — PE) désigne les investissements en capital dans des sociétés <strong>non cotées</strong>. C'est une classe d'actifs à part entière, avec des caractéristiques spécifiques de risque, rendement et liquidité.</p>
+<hr />
+<h2 id="1-le-marche-du-private-equity">1. Le marché du Private Equity</h2>
+<h3 id="11-taille-et-croissance">1.1 Taille et croissance</h3>
+<p>Le marché mondial du PE gère plus de <strong>10 000 Mds $ d'actifs</strong> (2023, Preqin). Les principaux marchés sont les USA (60 %), l'Europe (25 %) et l'Asie (15 %).</p>
+<h3 id="12-segments-par-stade-de-developpement">1.2 Segments par stade de développement</h3>
+<pre><code>Amorçage    Création    Développement    Croissance    Maturité    Cession
+   │             │              │               │             │          │
+Seed/     Venture       Growth        Growth       Buyout      Exit
+Pre-seed   Capital      Capital        Equity       (LBO)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Stade</th>
+<th>Instrument</th>
+<th>Taille typique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Amorçage / Seed</strong></td>
+<td>Business angels, seed funds</td>
+<td>50 k€ – 500 k€</td>
+</tr>
+<tr>
+<td><strong>Venture Capital</strong></td>
+<td>Fonds VC</td>
+<td>500 k€ – 20 M€</td>
+</tr>
+<tr>
+<td><strong>Growth Equity</strong></td>
+<td>Fonds growth</td>
+<td>20 M€ – 200 M€</td>
+</tr>
+<tr>
+<td><strong>Buyout (LBO)</strong></td>
+<td>Fonds PE</td>
+<td>100 M€ – plusieurs Mds€</td>
+</tr>
+<tr>
+<td><strong>Situation spéciale</strong></td>
+<td>Fonds distressed, mezzanine</td>
+<td>Variable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-structure-dun-fonds-de-private-equity">2. Structure d'un fonds de Private Equity</h2>
+<h3 id="21-la-structure-lpgp">2.1 La structure LP/GP</h3>
+<pre><code>Investisseurs (Limited Partners — LP)
+  │
+  │ Engagement capital (commitments)
+  ▼
+Fonds PE (Limited Partnership)
+  │
+  │ Gestion
+  ▼
+Société de gestion (General Partner — GP)
+</code></pre>
+<ul>
+<li><strong>LP</strong> (Limited Partners) : investisseurs institutionnels (fonds de pension, assureurs, fonds souverains, family offices, endowments). Responsabilité limitée à leur mise.</li>
+<li><strong>GP</strong> (General Partner) : société de gestion du fonds. Responsabilité illimitée mais apport symbolique (1–2 %).</li>
+</ul>
+<h3 id="22-cycle-de-vie-dun-fonds">2.2 Cycle de vie d'un fonds</h3>
+<pre><code>Année 0          Années 1–5            Années 5–10
+─────────        ──────────────         ──────────────────
+Levée de fonds   Période               Période de cession
+(fundraising)    d'investissement       (harvesting)
+                 (deployment)
+</code></pre>
+<p><strong>Durée typique</strong> : 10 ans (+ extensions de 1–2 ans).
+<strong>Taille des fonds</strong> : de quelques dizaines de M€ (mid-market) à plusieurs dizaines de Mds$ (Blackstone, KKR, Apollo).</p>
+<h3 id="23-appels-de-fonds-capital-calls">2.3 Appels de fonds (capital calls)</h3>
+<p>Les LP ne versent pas leur capital d'un coup : le GP fait des <strong>appels de fonds</strong> au fur et à mesure des investissements. L'argent non appelé reste chez le LP.</p>
+<hr />
+<h2 id="3-remuneration-du-gp">3. Rémunération du GP</h2>
+<h3 id="31-management-fees">3.1 Management fees</h3>
+<p>Frais de gestion annuels, typiquement <strong>2 % des engagements</strong> pendant la période d'investissement, puis 2 % du capital investi.</p>
+<h3 id="32-carried-interest-carry">3.2 Carried interest (carry)</h3>
+<p>Part des <strong>profits</strong> revenant au GP après restitution du capital aux LP et d'un rendement préférentiel (hurdle rate).</p>
+<pre><code>Schéma de distribution (&quot;waterfall&quot;) :
+1. Remboursement du capital initial aux LP
+2. Hurdle rate (rendement préférentiel) aux LP (ex : 8 %/an)
+3. Catch-up du GP (jusqu'à 20 % du gain total)
+4. Profits restants : 80 % LP / 20 % GP (carry)
+</code></pre>
+<p><strong>Exemple</strong> :
+- Fonds 100 M€ cédé à 200 M€ (profit = 100 M€)
+- Hurdle 8 % sur 5 ans : LP reçoit 100 M€ × 1,08⁵ = 147 M€ (sans carry)
+- Carry = 20 % × (200 - 147 M€) = 20 % × 53 M€ = <strong>10,6 M€</strong></p>
+<hr />
+<h2 id="4-mesures-de-performance">4. Mesures de performance</h2>
+<h3 id="41-multiple-sur-mise-moic-tvpi">4.1 Multiple sur mise (MOIC / TVPI)</h3>
+<pre><code>MOIC = (Distributions + Valeur résiduelle) / Capital appelé
+</code></pre>
+<p><strong>Références</strong> :
+- Fonds médian : 1,5–1,8×
+- Top quartile : &gt; 2,5×</p>
+<h3 id="42-taux-de-rendement-interne-tri-irr">4.2 Taux de Rendement Interne (TRI / IRR)</h3>
+<p>Le TRI annualise les flux du fonds :</p>
+<pre><code>0 = Σ [-Appels de fonds_t + Distributions_t] / (1 + TRI)^t
+</code></pre>
+<p><strong>Références</strong> :
+- Fonds médian : 10–15 %
+- Top quartile : &gt; 20 %</p>
+<h3 id="43-dpi-rvpi-tvpi">4.3 DPI / RVPI / TVPI</h3>
+<table>
+<thead>
+<tr>
+<th>Métrique</th>
+<th>Formule</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DPI</strong> (Distribution to Paid In)</td>
+<td>Distributions / Capital appelé</td>
+<td>Cash effectivement restitué aux LP</td>
+</tr>
+<tr>
+<td><strong>RVPI</strong> (Residual Value to Paid In)</td>
+<td>Valeur résiduelle / Capital appelé</td>
+<td>Valeur encore dans le fonds</td>
+</tr>
+<tr>
+<td><strong>TVPI</strong></td>
+<td>DPI + RVPI</td>
+<td>Performance totale (= MOIC)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-j-curve">4.4 J-curve</h3>
+<p>Les fonds PE affichent typiquement un <strong>retour négatif les premières années</strong> (management fees + investissements non encore créateurs de valeur), suivi d'une remontée lors des cessions.</p>
+<pre><code>Rendement
+  |                          /──
+  |                        /
+  |                      /
+──|────────────────────/───────────── Temps
+  |    \            /
+  |     \          /
+  |      \________/
+  |        J-curve
+</code></pre>
+<hr />
+<h2 id="5-exercices">5. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>Un fonds de 200 M€ investit tout son capital. Après 7 ans, il cède ses participations pour 480 M€. Le hurdle rate est 8 %/an. Calculez le MOIC, l'IRR approximatif et le carry à 20 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+MOIC = 480 / 200 = <strong>2,4×</strong></p>
+<p>IRR approximatif : 200 × (1 + IRR)⁷ = 480
+(1 + IRR)⁷ = 2,4
+IRR = 2,4^(1/7) - 1 = <strong>13,4 %</strong></p>
+<p>Capital minimum LP (hurdle 8 %) = 200 × 1,08⁷ = 342,6 M€
+Profit au-delà du hurdle = 480 - 342,6 = 137,4 M€
+Carry = 20 % × 137,4 = <strong>27,5 M€</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>Le PE investit dans des sociétés non cotées, sur un horizon de 5–10 ans.</li>
+<li>La structure LP/GP sépare les investisseurs (LP) et les gestionnaires (GP).</li>
+<li>Les deux rémunérations du GP : management fees (2 %) et carried interest (20 % des profits au-delà du hurdle).</li>
+<li>TRI et MOIC sont les métriques clés de performance.</li>
+<li>La J-curve caractérise le profil de rendement dans le temps des fonds PE.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="61-theorie-de-lagence-dans-la-relation-lpgp">6.1 Théorie de l'agence dans la relation LP/GP</h3>
+<p>La relation entre Limited Partners et General Partners constitue un cas paradigmatique de <strong>problème principal-agent</strong> au sens de Jensen &amp; Meckling (1976). Plusieurs asymétries d'information structurelles caractérisent cette relation.</p>
+<p><strong>Asymétries d'information fondamentales :</strong></p>
+<ul>
+<li>
+<p><strong>Sélection adverse (adverse selection)</strong> : avant la levée de fonds, le LP ne peut distinguer les GP talentueux des GP médiocres. Les fonds de première génération (first-time funds) souffrent particulièrement de ce problème. La solution partielle réside dans les signaux de réputation et les track records, mais ceux-ci sont difficiles à interpréter en raison des effets de cycle économique.</p>
+</li>
+<li>
+<p><strong>Aléa moral (moral hazard)</strong> : une fois le capital engagé, le GP peut adopter des comportements qui maximisent son propre intérêt au détriment des LP. On distingue notamment :</p>
+</li>
+<li><strong>L'empire building</strong> : chercher à lever des fonds toujours plus grands pour augmenter les management fees, même si la performance marginale décroît.</li>
+<li><strong>Le window dressing</strong> : sur-évaluer le portefeuille résiduel (RVPI) pour faciliter la levée d'un fonds suivant.</li>
+<li><strong>Le timing des sorties</strong> : liquider prématurément des investissements pour afficher un DPI élevé lors de la prochaine levée.</li>
+</ul>
+<p><strong>Mécanismes d'alignement d'intérêts :</strong></p>
+<p>Le contrat LP/GP (Limited Partnership Agreement — LPA) intègre des clauses destinées à atténuer ces problèmes :</p>
+<pre><code>Mécanismes contractuels d'alignement :
+
+1. Co-investissement obligatoire du GP (1–3 % de la taille du fonds)
+   → Skin in the game : le GP perd si les LP perdent
+
+2. Carried interest avec clawback
+   → Si le GP reçoit du carry sur des sorties précoces
+     et que le portefeuille global sous-performe,
+     il doit restituer l'excédent aux LP
+
+3. Key-man clause
+   → Le fonds peut être suspendu si des associés clés
+     quittent la société de gestion
+
+4. Hurdle rate (taux de rendement préférentiel)
+   → Le GP n'est intéressé aux profits qu'au-delà
+     d'un seuil de performance minimal pour les LP
+
+5. Management fee offset
+   → Les fees perçues sur les sociétés du portefeuille
+     (board fees, monitoring fees) réduisent les
+     management fees dus par les LP
+</code></pre>
+<p><strong>Le problème des GP committees et LPAC :</strong></p>
+<p>Les fonds modernes intègrent un <strong>LP Advisory Committee (LPAC)</strong>, organe consultatif composé de représentants des LP qui valide les conflits d'intérêts potentiels (investissements entre fonds du même GP, évaluation des actifs, extensions de durée). Cet organe ne possède pas de pouvoir décisionnel contraignant, ce qui limite son efficacité.</p>
+<h3 id="62-modeles-devaluation-de-la-performance-ajustee-du-risque-des-pme-non-cotees">6.2 Modèles d'évaluation de la performance ajustée du risque des PME non cotées</h3>
+<p>L'évaluation de la performance des fonds PE pose un défi méthodologique majeur : l'absence de valorisation de marché continue et la nature illiquide des investissements rendent les métriques classiques (alpha de Jensen, ratio de Sharpe) directement inapplicables.</p>
+<p><strong>La méthode PME (Public Market Equivalent) :</strong></p>
+<p>Le PME, introduit par Long &amp; Nickels (1996) et formalisé par Kaplan &amp; Schoar (2005), simule ce qu'aurait produit le même calendrier de flux investis dans un indice boursier public :</p>
+<pre><code>Calcul du PME (Kaplan-Schoar) :
+
+                  Σ [Distributions_t / Index_t]
+PME = ─────────────────────────────────────────────────────
+      Σ [Appels de fonds_t / Index_t]
+
+où Index_t = valeur de l'indice de marché à la date t
+
+Interprétation :
+  PME &gt; 1 : surperformance vs marché public
+  PME &lt; 1 : sous-performance vs marché public
+  PME = 1,2 → performance équivalente à 20% de plus
+              que le marché sur la même période
+</code></pre>
+<p><strong>Limites du PME et alternatives :</strong></p>
+<p>Le PME de Kaplan-Schoar présente un biais : il ne tient pas compte du risque différentiel (beta) entre PE et marchés publics. Les approches alternatives incluent :</p>
+<ul>
+<li><strong>PME+ (Rouvinez, 2003)</strong> : ajuste le multiple de distributions pour que la valeur résiduelle soit nulle, permettant le calcul d'un alpha pur.</li>
+<li><strong>mPME (Cambridge Associates)</strong> : pondère les distributions par les variations de l'indice de référence pour tenir compte du timing.</li>
+<li><strong>Direct Alpha (Gredil, Griffiths &amp; Stücke, 2014)</strong> : estime l'alpha en actualisant les flux au taux sans risque, puis compare à l'évolution de l'indice.</li>
+</ul>
+<pre><code>Direct Alpha :
+  1. Actualiser tous les flux (appels et distributions) au taux sans risque
+  2. Calculer le rapport NAV_finale / NAV_initiale
+  3. L'alpha annualisé résout :
+     NAV_finale = NAV_initiale × (1 + Index_return) × e^(alpha × T)
+</code></pre>
+<p><strong>Le CAPM illiquide et la prime d'illiquidité :</strong></p>
+<p>Des travaux récents (Ang, Papanikolaou &amp; Westerfield, 2014) proposent d'estimer le beta des investissements PE à partir de la corrélation des valorisations du portefeuille avec les indices publics, tout en incorporant une <strong>prime d'illiquidité</strong> :</p>
+<pre><code>E[r_PE] = r_f + β_PE × (E[r_m] - r_f) + Prime_illiquidité
+
+Prime d'illiquidité estimée empiriquement : 2–4 %/an
+(sur horizon 10 ans, vs actions cotées comparables)
+</code></pre>
+<h3 id="63-les-standards-gips-pour-le-private-equity">6.3 Les standards GIPS pour le Private Equity</h3>
+<p>Les <strong>Global Investment Performance Standards (GIPS)</strong>, publiés par le CFA Institute, fournissent un cadre normatif pour la présentation des performances des fonds d'investissement. Les dispositions spécifiques au PE ont été substantiellement révisées dans la version 2020.</p>
+<p><strong>Exigences GIPS PE (version 2020) :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Exigence</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Composite</td>
+<td>Le GP doit créer des composites regroupant des fonds aux stratégies similaires</td>
+</tr>
+<tr>
+<td>Valorisation</td>
+<td>Utilisation des Fair Value Guidelines de l'IPEV (International Private Equity Valuation)</td>
+</tr>
+<tr>
+<td>Métriques obligatoires</td>
+<td>SI-IRR (Since Inception IRR), TVPI, DPI, RVPI</td>
+</tr>
+<tr>
+<td>Benchmark</td>
+<td>Comparaison contre un benchmark de marché public approprié</td>
+</tr>
+<tr>
+<td>Période minimale</td>
+<td>5 ans de track record, ou depuis création si inférieur</td>
+</tr>
+</tbody>
+</table>
+<p><strong>La méthode SI-IRR (Since Inception IRR) :</strong></p>
+<p>Le SI-IRR constitue la métrique de rendement centrale sous GIPS pour le PE. Il diffère du TRI classique car il est calculé depuis la date de premier appel de fonds, intégrant l'intégralité des flux et la valeur résiduelle courante comme flux terminal positif.</p>
+<pre><code>SI-IRR :
+  0 = Σ [CF_t / (1 + SI-IRR)^t]  pour t = 0 à T
+
+où CF_t inclut :
+  - Appels de fonds (flux négatifs)
+  - Distributions (flux positifs)
+  - NAV finale (flux positif terminal au moment du calcul)
+</code></pre>
+<p><strong>Valorisation selon les principes IPEV :</strong></p>
+<p>L'IPEV recommande une hiérarchie de méthodes d'évaluation pour les participations non cotées :</p>
+<ol>
+<li><strong>Prix d'une transaction récente</strong> (marché) — méthode préférentielle</li>
+<li><strong>Multiples de marché</strong> (EV/EBITDA, EV/Sales de comparables cotés avec décote d'illiquidité)</li>
+<li><strong>Actualisation des flux futurs</strong> (DCF)</li>
+<li><strong>Actif net</strong> (pour les sociétés holding ou en difficulté)</li>
+</ol>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-2-construction-dun-waterfall-complet-de-fonds-pe">Exemple 2 — Construction d'un waterfall complet de fonds PE</h3>
+<p><strong>Données :</strong>
+- Taille du fonds : 500 M€
+- Durée : 10 ans
+- Management fees : 2 % sur engagements pendant 5 ans, puis 1,5 % sur capital investi
+- Hurdle rate : 8 % (European waterfall — tout le capital et le hurdle avant tout carry)
+- Carry : 20 %
+- Catch-up : 100 % GP jusqu'à atteindre 20 % du profit total</p>
+<p><strong>Flux simulés :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>Appel de fonds</th>
+<th>Distribution</th>
+<th>Valeur résiduelle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>100 M€</td>
+<td>0</td>
+<td>90 M€</td>
+</tr>
+<tr>
+<td>2</td>
+<td>120 M€</td>
+<td>0</td>
+<td>200 M€</td>
+</tr>
+<tr>
+<td>3</td>
+<td>150 M€</td>
+<td>0</td>
+<td>380 M€</td>
+</tr>
+<tr>
+<td>4</td>
+<td>80 M€</td>
+<td>50 M€</td>
+<td>520 M€</td>
+</tr>
+<tr>
+<td>5</td>
+<td>50 M€</td>
+<td>120 M€</td>
+<td>620 M€</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0</td>
+<td>180 M€</td>
+<td>550 M€</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>210 M€</td>
+<td>420 M€</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>250 M€</td>
+<td>280 M€</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0</td>
+<td>300 M€</td>
+<td>100 M€</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0</td>
+<td>120 M€</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Total appels :</strong> 500 M€<br />
+<strong>Total distributions :</strong> 1 230 M€<br />
+<strong>TVPI brut :</strong> 1 230 / 500 = <strong>2,46×</strong></p>
+<pre><code>Calcul du waterfall (European model) :
+
+Étape 1 : Remboursement du capital
+  Capital appelé total = 500 M€
+  → LP reçoit 500 M€ en premier
+
+Étape 2 : Hurdle rate à 8 %/an (sur 7 ans en moyenne pondérée)
+  Durée moyenne pondérée des appels ≈ 3 ans
+  Hurdle sur 100 M€ (appel an 1, 7 ans) = 100 × 1,08^7 = 171,4 M€
+  Hurdle sur 120 M€ (appel an 2, 6 ans) = 120 × 1,08^6 = 190,4 M€
+  Hurdle sur 150 M€ (appel an 3, 5 ans) = 150 × 1,08^5 = 220,4 M€
+  Hurdle sur  80 M€ (appel an 4, 4 ans) =  80 × 1,08^4 = 108,8 M€
+  Hurdle sur  50 M€ (appel an 5, 3 ans) =  50 × 1,08^3 =  63,0 M€
+  ─────────────────────────────────────────────────────────────────
+  Total hurdle (capital + intérêts) = 754 M€
+  Intérêts de hurdle = 754 - 500 = 254 M€
+
+Étape 3 : Profit brut total
+  Total distributions = 1 230 M€
+  Profit total = 1 230 - 500 = 730 M€
+
+Étape 4 : Catch-up GP
+  Profit après hurdle = 1 230 - 754 = 476 M€
+  Catch-up = jusqu'à ce que GP = 20% des profits totaux
+  Profit total si carry = 20% → GP doit toucher 20% × 730 = 146 M€
+  Catch-up = 146 M€
+
+Étape 5 : Partage résiduel (80/20)
+  Restant après catch-up = 476 - 146 = 330 M€
+  → LP reçoit : 80% × 330 = 264 M€
+  → GP reçoit : 20% × 330 =  66 M€ (carry additionnel)
+
+Récapitulatif :
+  LP total = 500 (capital) + 254 (hurdle) + 264 (résiduel) = 1 018 M€  [82,8%]
+  GP carry = 146 (catch-up) + 66 (résiduel) =                 212 M€  [17,2%]
+  ─────────────────────────────────────────────────────────────────────
+  Total distribué =                                          1 230 M€
+
+Vérification : GP carry = 212 M€ ≈ 29% × 730 M€ (profit total)
+  Correction : 20% × 730 = 146 M€ de carry pur, le reste est intérêts
+  → GP carry effectif sur profit = 146 / 730 = 20% ✓
+</code></pre>
+<p><strong>Management fees sur la durée du fonds :</strong></p>
+<pre><code>Années 1-5 : 2% × 500 M€ × 5 = 50 M€
+Années 6-10: 1,5% × 500 M€ × 5 = 37,5 M€
+Total fees = 87,5 M€
+
+Performance nette LP :
+  Distributions nettes = 1 018 - 87,5 (fees imputées) = 930,5 M€
+  Capital net investi = 500 M€
+  MOIC net LP = 930,5 / 500 = 1,86×
+</code></pre>
+<hr />
+<h3 id="exemple-3-comparaison-pme-entre-deux-fonds-de-generations-differentes">Exemple 3 — Comparaison PME entre deux fonds de générations différentes</h3>
+<p><strong>Contexte :</strong> Deux fonds de buyout mid-market, même taille (300 M€), évalués face au MSCI Europe.</p>
+<table>
+<thead>
+<tr>
+<th>Fonds</th>
+<th>Millésime</th>
+<th>SI-IRR brut</th>
+<th>TVPI</th>
+<th>PME (Kaplan-Schoar)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alpha PE III</td>
+<td>2008</td>
+<td>18,5 %</td>
+<td>2,3×</td>
+<td>1,12</td>
+</tr>
+<tr>
+<td>Beta Capital V</td>
+<td>2015</td>
+<td>22,1 %</td>
+<td>2,7×</td>
+<td>0,98</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Interprétation :</strong></p>
+<pre><code>Alpha PE III (millésime 2008 — crise financière) :
+  SI-IRR = 18,5%  →  performance brute élevée
+  PME = 1,12      →  surperformance de 12% vs marché public
+                     (après avoir investi pendant la crise,
+                     le marché public a aussi fortement rebondi,
+                     mais Alpha fait mieux)
+
+Beta Capital V (millésime 2015 — marché haussier) :
+  SI-IRR = 22,1%  →  performance brute supérieure
+  PME = 0,98      →  SOUS-PERFORMANCE de 2% vs marché public
+                     (le marché a monté plus vite que le fonds,
+                     malgré un IRR absolu impressionnant)
+
+Conclusion : malgré un IRR supérieur, Beta Capital V crée
+moins de valeur pour ses LP que Alpha PE III, une fois
+le rendement du marché public soustrait.
+</code></pre>
+<hr />
+<h3 id="exemple-4-impact-des-management-fees-sur-le-rendement-net-lp">Exemple 4 — Impact des management fees sur le rendement net LP</h3>
+<p><strong>Données :</strong>
+- Fonds de 400 M€, durée 10 ans, investissement moyen 5 ans
+- Management fees : 2 % sur engagements (standard) vs 1,5 % (fonds "LP-friendly")
+- Performance brute identique : MOIC brut 2,8×, soit 1 120 M€ distribués</p>
+<pre><code>Scénario A : fees standard (2%)
+  Management fees totales = 2% × 400 × 10 = 80 M€
+  (approximation, sans distinguer période d'inv. et de cession)
+  Distributions nettes LP = 1 120 - 80 = 1 040 M€
+  MOIC net = 1 040 / 400 = 2,60×
+
+Scénario B : fees LP-friendly (1,5%)
+  Management fees totales = 1,5% × 400 × 10 = 60 M€
+  Distributions nettes LP = 1 120 - 60 = 1 060 M€
+  MOIC net = 1 060 / 400 = 2,65×
+
+Écart = 20 M€ sur 400 M€ investis
+  → Réduction du MOIC de 0,05× (soit ~2% du rendement net)
+  → Sur un fonds de 2 Mds€, l'écart atteint 100 M€
+
+Règle pratique : 1% de fees sur 10 ans ≈ 0,1× de MOIC net
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="71-le-deal-sourcing-identifier-et-securiser-les-opportunites">7.1 Le deal sourcing : identifier et sécuriser les opportunités</h3>
+<p>Le deal sourcing est la compétence différenciante des meilleures équipes PE. On distingue deux approches :</p>
+<p><strong>Deal sourcing propriétaire (off-market) :</strong></p>
+<p>Les fonds top-quartile génèrent jusqu'à 60–70 % de leurs investissements en dehors de processus compétitifs. Les sources propriétaires incluent :
+- Réseaux de dirigeants et d'entrepreneurs (anciens dirigeants de participations, advisory board)
+- Relations avec experts-comptables, notaires, avocats d'affaires de province
+- Partenariats avec des fonds de capital-développement sur les relais de croissance
+- Coverage sectoriel profond : identification proactive des PME performantes dans des niches industrielles
+- Présence locale (fonds régionaux) et suivi pluriannuel des cibles</p>
+<p><strong>Deal sourcing via intermédiaires (banques d'affaires) :</strong></p>
+<p>Les processus dits "auction" ou "controlled auction" organisés par des M&amp;A boutiques permettent d'accéder à des deals larges et bien structurés, mais génèrent une compétition accrue et des prix plus élevés (prime de 15–25 % estimée).</p>
+<p><strong>Scoring et priorisation des cibles :</strong></p>
+<pre><code>Critères de scoring d'une cible PE mid-market :
+
+  Score financier (40%) :
+    - Croissance CA 3 ans (&gt; 10%/an = max)
+    - Marge EBITDA (&gt; 20% = max)
+    - Conversion cash (FCF/EBITDA &gt; 80% = max)
+    - Levier d'endettement possible (EV/EBITDA &lt; 7× = max)
+
+  Score stratégique (35%) :
+    - Position concurrentielle (part de marché, barrières à l'entrée)
+    - Qualité du management (succès track record, alignement)
+    - Visibilité des revenus (récurrence, contrats LT)
+    - Potentiel de croissance externe (build-up possible)
+
+  Score PE (25%) :
+    - Alignement avec la thèse d'investissement du fonds
+    - Timing d'entrée dans le cycle sectoriel
+    - Liquidité attendue à la sortie (acheteurs potentiels)
+    - Valorisation d'entrée (TRI cible &gt; 20% faisable)
+</code></pre>
+<h3 id="72-la-due-diligence-cartographier-les-risques-avant-linvestissement">7.2 La due diligence : cartographier les risques avant l'investissement</h3>
+<p>La due diligence PE est un processus pluridisciplinaire de 6 à 12 semaines qui mobilise des équipes internes et des experts externes.</p>
+<p><strong>Cartographie des diligences :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Objet</th>
+<th>Acteurs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Financière</strong></td>
+<td>Audit des comptes, normalisation EBITDA, dette nette, BFR</td>
+<td>Expert-comptable externe (big 4)</td>
+</tr>
+<tr>
+<td><strong>Commerciale</strong></td>
+<td>Validation de la thèse de marché, analyse concurrentielle, entretiens clients</td>
+<td>Cabinet de strategy (OC&amp;C, Roland Berger)</td>
+</tr>
+<tr>
+<td><strong>Juridique</strong></td>
+<td>Revue des contrats, litiges, propriété intellectuelle, pacte d'actionnaires</td>
+<td>Cabinet d'avocats M&amp;A</td>
+</tr>
+<tr>
+<td><strong>Fiscale</strong></td>
+<td>Optimisation structuration, risques fiscaux passés</td>
+<td>Avocat fiscaliste</td>
+</tr>
+<tr>
+<td><strong>Sociale / RH</strong></td>
+<td>Passifs sociaux, accords collectifs, plans de retraite</td>
+<td>Cabinet RH ou avocat social</td>
+</tr>
+<tr>
+<td><strong>Environnementale</strong></td>
+<td>Sites pollués, conformité réglementaire, risques ESG</td>
+<td>Bureau d'études environnemental</td>
+</tr>
+<tr>
+<td><strong>Technique / Opérationnelle</strong></td>
+<td>État des actifs, capex de maintenance, IT</td>
+<td>Ingénieurs ou consultants opérationnels</td>
+</tr>
+</tbody>
+</table>
+<p><strong>La normalisation de l'EBITDA :</strong></p>
+<p>L'une des tâches clés de la due diligence financière est la construction d'un EBITDA "ajusté" ou "normalisé", qui élimine les éléments non récurrents pour isoler la capacité bénéficiaire réelle :</p>
+<pre><code>EBITDA comptable (P&amp;L)                          = 8,5 M€
++ Retraitement rémunération dirigeant familial    + 0,8 M€
+  (écart vs salaire marché)
++ Coûts non récurrents (restructuration an N-1)  + 0,6 M€
+- Revenus non récurrents (cession d'actif)       - 0,4 M€
++ Charges sous-normatives (sous-investissement    + 0,3 M€
+  marketing à corriger)
+─────────────────────────────────────────────────────────
+EBITDA normalisé                                 = 9,8 M€
+
+Valorisation à 8× EBITDA normalisé = 78,4 M€ (vs 68 M€ sur EBITDA comptable)
+</code></pre>
+<h3 id="73-le-100-day-plan-creer-de-la-valeur-post-acquisition">7.3 Le 100-day plan : créer de la valeur post-acquisition</h3>
+<p>L'<strong>investissement en PE n'est pas passif</strong> : le GP s'implique activement dans la transformation opérationnelle et stratégique de ses participations. Le 100-day plan est le document de référence de cette démarche.</p>
+<p><strong>Structure type d'un 100-day plan :</strong></p>
+<p><strong>Phase 0 (J-30 à J0 : pré-closing) :</strong>
+- Désignation du partner deal team dédié
+- Sélection et brief du management de transition si besoin
+- Préparation de la séance de kick-off Day 1
+- Communication aux salariés et partenaires</p>
+<p><strong>Phase 1 (J0 à J30 : stabilisation) :</strong>
+- Audit opérationnel approfondi (assessment)
+- Rencontres avec toutes les équipes dirigeantes (one-on-ones)
+- Revue de la situation de trésorerie et mise en place du reporting mensuel
+- Identification des "quick wins" (actions à fort impact et faible effort)
+- Mise en place du board avec représentants LP et indépendants</p>
+<p><strong>Phase 2 (J30 à J60 : structuration) :</strong>
+- Validation ou refonte du business plan à 3–5 ans
+- Lancement des chantiers prioritaires (commercial, opérationnel, RH)
+- Mise en place du management package (cf. chapitre LBO)
+- Structuration de la dette d'acquisition (si post-closing)</p>
+<p><strong>Phase 3 (J60 à J100 : exécution) :</strong>
+- Premiers jalons des chantiers opérationnels
+- Revue mensuelle de performance vs business plan
+- Exploration des premières cibles de croissance externe (build-up)
+- ESG assessment et plan d'action</p>
+<p><strong>KPIs de suivi post-acquisition :</strong></p>
+<pre><code>Tableau de bord mensuel type d'une participation :
+
+  Financier :
+    CA mensuel / CA budget / CA N-1
+    EBITDA mensuel (avec bridge vs budget)
+    Dette nette / EBITDA (covenant tracking)
+    BFR et cash disponible
+
+  Opérationnel :
+    Carnet de commandes (semaines de couverture)
+    Taux d'attrition clients
+    Productivité (CA / ETP)
+    NPS (Net Promoter Score)
+
+  Transactions :
+    Pipeline M&amp;A (cibles build-up identifiées)
+    Avancement dossiers en cours
+</code></pre>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-confondre-tri-et-creation-de-valeur-reelle">Erreur 1 — Confondre TRI et création de valeur réelle</h3>
+<p>Le TRI est sensible au <strong>timing des flux</strong> et peut être manipulé sans créer de valeur économique. Un TRI élevé peut résulter d'une cession rapide (faible durée de détention) même avec un MOIC modeste, ou d'une structure de dividendes recapitalisations (dividend recap) qui extrait du cash de la cible sans création de valeur opérationnelle.</p>
+<p><strong>Règle : toujours analyser TRI ET MOIC ensemble.</strong> Un TRI de 35 % sur 18 mois avec un MOIC de 1,3× est bien moins intéressant économiquement qu'un TRI de 22 % sur 5 ans avec un MOIC de 2,7×.</p>
+<h3 id="erreur-2-negliger-leffet-des-management-fees-sur-le-rendement-net">Erreur 2 — Négliger l'effet des management fees sur le rendement net</h3>
+<p>Les investisseurs débutants se concentrent sur le "gross TRI" présenté par les GP dans leurs documents marketing. Les fees et les frais de monitoring peuvent réduire le TRI net de 3 à 5 points. Sur un fonds de 10 ans, 2 % de fees annuelles représentent jusqu'à 20 % du capital total, soit un impact massif sur le rendement net LP.</p>
+<h3 id="erreur-3-ignorer-la-courbe-en-j-dans-lallocation-pe">Erreur 3 — Ignorer la courbe en J dans l'allocation PE</h3>
+<p>Allouer massivement au PE sur un seul millésime expose l'investisseur à la J-curve complète : plusieurs années de rendement négatif (ou faible) avant la phase de distribution. La bonne pratique consiste à <strong>échelonner les engagements sur 3 à 5 millésimes successifs</strong> (vintage diversification) pour lisser la J-curve au niveau du portefeuille global.</p>
+<h3 id="erreur-4-surevaluer-la-residuelle-rvpi-des-participations-non-cedees">Erreur 4 — Surévaluer la résiduelle (RVPI) des participations non cédées</h3>
+<p>La valeur résiduelle en portefeuille est une estimation comptable sujette à des biais : les GP ont intérêt à maintenir des valorisations élevées (opacité de fair value, multiple d'entrée souvent conservé même si les conditions de marché se sont dégradées). Un TVPI élevé avec un DPI faible en fin de vie de fonds doit alerter.</p>
+<h3 id="erreur-5-sous-estimer-les-risques-de-concentration-et-de-correlation">Erreur 5 — Sous-estimer les risques de concentration et de corrélation</h3>
+<p>Contrairement aux apparences, le PE n'est pas toujours un bon diversificateur : les fonds de buyout ont une corrélation élevée avec les marchés actions (beta estimé à 1,2–1,5 selon Ang et al.) et leur performance est fortement corrélée aux cycles de crédit. En période de crise (2009, 2020), les fonds PE ont subi des dépréciations de portefeuille similaires aux marchés publics, avec en plus l'illiquidité.</p>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-2-comparaison-de-waterfall-american-vs-european">Exercice 2 — Comparaison de waterfall American vs European</h3>
+<p><strong>Données :</strong>
+- Fonds de 300 M€ sur 8 ans
+- Hurdle rate : 8 %/an
+- Carry : 20 %
+- 4 participations cédées successivement :
+  - An 3 : cession A → 80 M€ (investissement initial 40 M€)
+  - An 5 : cession B → 30 M€ (investissement initial 50 M€ — perte partielle)
+  - An 7 : cession C → 150 M€ (investissement initial 60 M€)
+  - An 8 : cession D → 120 M€ (investissement initial 100 M€)
+- Capital total appelé : 250 M€ (50 M€ non appelés)</p>
+<p><strong>Questions :</strong>
+1. Calculez le TVPI brut du fonds.
+2. Sous le modèle European waterfall, quel est le carry total perçu par le GP (sans tenir compte des fees) ?
+3. Sous le modèle American waterfall (deal-by-deal avec clawback), calculez le carry reçu sur chaque cession et le clawback final si applicable.
+4. Quelle différence nette pour les LP entre les deux modèles ?</p>
+<blockquote>
+<p><strong>Correction :</strong></p>
+<p><strong>1. TVPI brut</strong>
+Total distributions = 80 + 30 + 150 + 120 = 380 M€
+TVPI = 380 / 250 = <strong>1,52×</strong></p>
+<p><strong>2. European waterfall</strong>
+Étape 1 — Capital LP : 250 M€
+Étape 2 — Hurdle :
+- 40 M€ × 1,08^5 (an 3, cédé an 3, durée 3 ans) = 58,7 M€ → intérêts 18,7 M€
+- 50 M€ × 1,08^5 (durée 5 ans) = 73,5 M€ → intérêts 23,5 M€
+- 60 M€ × 1,08^7 (durée 7 ans) = 102,8 M€ → intérêts 42,8 M€
+- 100 M€ × 1,08^8 (durée 8 ans) = 185,1 M€ → intérêts 85,1 M€
+Total intérêts de hurdle ≈ 170 M€
+Total minimum LP = 250 + 170 = 420 M€
+Mais distributions totales = 380 M€ &lt; 420 M€
+→ <strong>Pas de carry dans le modèle European</strong> (le hurdle n'est pas atteint)
+→ GP ne perçoit que ses management fees</p>
+<p><strong>3. American waterfall (deal-by-deal)</strong>
+- Cession A (an 3) : 80 M€ pour 40 M€ investi, hurdle 3 ans = 40 × 1,08^3 = 50,4 M€
+  Profit au-delà hurdle = 80 - 50,4 = 29,6 M€ → Carry = 20% × 29,6 = <strong>5,9 M€</strong>
+- Cession B (an 5) : 30 M€ pour 50 M€ → perte, pas de carry
+- Cession C (an 7) : 150 M€ pour 60 M€, hurdle 7 ans = 60 × 1,08^7 = 102,8 M€
+  Profit = 150 - 102,8 = 47,2 M€ → Carry = 20% × 47,2 = <strong>9,4 M€</strong>
+- Cession D (an 8) : 120 M€ pour 100 M€, hurdle 8 ans = 185,1 M€
+  120 &lt; 185,1 → perte par rapport au hurdle, <strong>pas de carry</strong></p>
+<p>Carry total American = 5,9 + 9,4 = <strong>15,3 M€</strong></p>
+<p><strong>Clawback :</strong> Le fonds dans son ensemble a distribué 380 M€ pour 250 M€ investis,
+mais le hurdle global n'est pas atteint (420 M€ requis). Le GP doit restituer
+les 15,3 M€ de carry perçus → <strong>clawback total de 15,3 M€</strong></p>
+<p><strong>4. Différence LP :</strong>
+- European : LP reçoit 380 M€ (aucun carry prélevé)
+- American (sans clawback) : LP reçoit 380 - 15,3 = 364,7 M€
+- American (avec clawback) : LP reçoit 380 M€ (identique à European)
+→ L'European waterfall protège les LP du risque de clawback non recouvré.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-3-calcul-du-pme-et-comparaison-de-performance">Exercice 3 — Calcul du PME et comparaison de performance</h3>
+<p><strong>Données :</strong>
+Fonds Gamma Equity Partners (300 M€, millésime 2012) :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>Appel de fonds</th>
+<th>Distribution</th>
+<th>Indice MSCI Europe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2012</td>
+<td>100 M€</td>
+<td>0</td>
+<td>100</td>
+</tr>
+<tr>
+<td>2013</td>
+<td>80 M€</td>
+<td>0</td>
+<td>115</td>
+</tr>
+<tr>
+<td>2014</td>
+<td>70 M€</td>
+<td>0</td>
+<td>118</td>
+</tr>
+<tr>
+<td>2015</td>
+<td>50 M€</td>
+<td>60 M€</td>
+<td>110</td>
+</tr>
+<tr>
+<td>2016</td>
+<td>0</td>
+<td>90 M€</td>
+<td>125</td>
+</tr>
+<tr>
+<td>2017</td>
+<td>0</td>
+<td>150 M€</td>
+<td>140</td>
+</tr>
+<tr>
+<td>2018</td>
+<td>0</td>
+<td>120 M€</td>
+<td>130</td>
+</tr>
+<tr>
+<td>2019</td>
+<td>0</td>
+<td>100 M€</td>
+<td>155</td>
+</tr>
+<tr>
+<td>2020</td>
+<td>0</td>
+<td>80 M€</td>
+<td>128</td>
+</tr>
+<tr>
+<td>2021</td>
+<td>0</td>
+<td>NAV 50 M€</td>
+<td>170</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Question :</strong> Calculez le TVPI, le SI-IRR approximatif et le PME de Kaplan-Schoar.</p>
+<blockquote>
+<p><strong>Correction :</strong></p>
+<p><strong>TVPI :</strong>
+Total appels = 100 + 80 + 70 + 50 = 300 M€
+Total distributions = 60 + 90 + 150 + 120 + 100 + 80 = 600 M€
+NAV résiduelle = 50 M€ (distribution finale fictive)
+TVPI = (600 + 50) / 300 = <strong>2,17×</strong></p>
+<p><strong>PME Kaplan-Schoar :</strong></p>
+<p>Numérateur — distributions indexées :
+- 60 M€ / 110 = 0,545
+- 90 M€ / 125 = 0,720
+- 150 M€ / 140 = 1,071
+- 120 M€ / 130 = 0,923
+- 100 M€ / 155 = 0,645
+- 80 M€ / 128 = 0,625
+- NAV 50 M€ / 170 = 0,294
+Σ distributions indexées = 4,823</p>
+<p>Dénominateur — appels indexés :
+- 100 M€ / 100 = 1,000
+- 80 M€ / 115 = 0,696
+- 70 M€ / 118 = 0,593
+- 50 M€ / 110 = 0,455
+Σ appels indexés = 2,744</p>
+<p><strong>PME = 4,823 / 2,744 = 1,76</strong>
+→ Le fonds surperforme le MSCI Europe de 76 % en termes de richesse créée.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-4-analyse-critique-dun-track-record-gp">Exercice 4 — Analyse critique d'un track record GP</h3>
+<p><strong>Données :</strong>
+Un GP présente le track record suivant pour lever son fonds IV :</p>
+<table>
+<thead>
+<tr>
+<th>Fonds</th>
+<th>Millésime</th>
+<th>Taille</th>
+<th>SI-IRR brut</th>
+<th>TVPI</th>
+<th>DPI</th>
+<th>PME</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fonds I</td>
+<td>2008</td>
+<td>150 M€</td>
+<td>28%</td>
+<td>3,2×</td>
+<td>3,2×</td>
+<td>1,45</td>
+</tr>
+<tr>
+<td>Fonds II</td>
+<td>2012</td>
+<td>300 M€</td>
+<td>19%</td>
+<td>2,4×</td>
+<td>2,1×</td>
+<td>1,18</td>
+</tr>
+<tr>
+<td>Fonds III</td>
+<td>2016</td>
+<td>450 M€</td>
+<td>12%</td>
+<td>1,8×</td>
+<td>0,4×</td>
+<td>0,95</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Questions :</strong>
+1. Identifiez 3 signaux d'alerte dans ce track record.
+2. Quels seraient vos 5 questions prioritaires au GP en LP meeting ?
+3. Si les management fees sont de 2 % sur 10 ans, estimez le rendement net du Fonds II.</p>
+<blockquote>
+<p><strong>Correction :</strong></p>
+<p><strong>1. Signaux d'alerte :</strong></p>
+<p>a) <strong>Tendance déclinante systématique</strong> : SI-IRR passe de 28% → 19% → 12%, TVPI de 3,2× → 2,4× → 1,8×. La dégradation est trop régulière pour être due uniquement au millésime : elle suggère un problème structurel (dégradation d'équipe, scaling trop rapide, marché plus concurrentiel).</p>
+<p>b) <strong>Fonds III : DPI très faible (0,4×) et PME &lt; 1</strong> : avec un millésime 2016, un fonds de buyout devrait en 2024 avoir distribué davantage (DPI &gt; 1× est attendu). Le PME = 0,95 signifie sous-performance vs marché. Le RVPI implicite de 1,4× (1,8 - 0,4) représente de la valeur non encore réalisée — potentiellement sur-évaluée.</p>
+<p>c) <strong>Effet de taille</strong> : le passage de 150 M€ à 450 M€ en deux fonds représente un triplement. Les meilleurs deals mid-market ne scalent pas : le GP est peut-être sorti de sa zone de compétence.</p>
+<p><strong>2. Questions au LP meeting :</strong>
+- Qui sont les partners clés qui ont réalisé la performance du Fonds I, et sont-ils toujours présents ?
+- Comment expliquez-vous le DPI de 0,4× du Fonds III, qui sont les participations non cédées et quelles sont leurs valorisations actuelles ?
+- Quelle est la dispersion de performance entre les participations (les meilleurs et les mauvais deals) ?
+- Comment adaptez-vous votre stratégie d'investissement à la hausse des multiples d'entrée post-2019 ?
+- Quel est votre processus de gestion des participations en difficulté ?</p>
+<p><strong>3. Rendement net Fonds II :</strong>
+Taille : 300 M€. Management fees = 2% × 300 × 10 = 60 M€
+TVPI brut = 2,4× → distributions brutes = 2,4 × 300 = 720 M€
+Distributions nettes = 720 - 60 = 660 M€
+TVPI net = 660 / 300 = <strong>2,20×</strong>
+SI-IRR net ≈ 19% - 2,5% ≈ <strong>16,5%</strong> (règle approximative : fees ≈ 2-3 pts d'IRR)</p>
+</blockquote>
+<hr />
+<h3 id="exercice-5-structuration-dune-allocation-pe-dans-un-portefeuille-institutionnel">Exercice 5 — Structuration d'une allocation PE dans un portefeuille institutionnel</h3>
+<p><strong>Contexte :</strong>
+Un fonds de pension de 5 Mds€ souhaite allouer 10 % de son actif au PE. Il vise une allocation stable dans le temps (pas de surexposition J-curve un an donné) et une diversification par stratégie.</p>
+<p><strong>Contraintes :</strong>
+- Allocation cible PE : 500 M€ (engagements totaux)
+- Pas plus de 25 % dans un seul millésime
+- Diversification : 40 % buyout, 30 % growth, 20 % VC, 10 % dette privée
+- Horizon de déploiement : 4 ans</p>
+<p><strong>Question :</strong> Proposez un plan d'engagement annuel (€ et stratégie) sur 4 ans, avec justification.</p>
+<blockquote>
+<p><strong>Correction :</strong></p>
+<p><strong>Plan d'engagement annuel :</strong></p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>Buyout</th>
+<th>Growth</th>
+<th>VC</th>
+<th>Dette privée</th>
+<th>Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>An 1</td>
+<td>50 M€</td>
+<td>30 M€</td>
+<td>25 M€</td>
+<td>20 M€</td>
+<td>125 M€</td>
+</tr>
+<tr>
+<td>An 2</td>
+<td>50 M€</td>
+<td>37,5 M€</td>
+<td>25 M€</td>
+<td>12,5 M€</td>
+<td>125 M€</td>
+</tr>
+<tr>
+<td>An 3</td>
+<td>50 M€</td>
+<td>37,5 M€</td>
+<td>25 M€</td>
+<td>12,5 M€</td>
+<td>125 M€</td>
+</tr>
+<tr>
+<td>An 4</td>
+<td>50 M€</td>
+<td>45 M€</td>
+<td>25 M€</td>
+<td>5 M€</td>
+<td>125 M€</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>200 M€</strong></td>
+<td><strong>150 M€</strong></td>
+<td><strong>100 M€</strong></td>
+<td><strong>50 M€</strong></td>
+<td><strong>500 M€</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justification :</strong>
+- Engagement annuel constant à 125 M€ (= 25 % du total) → respect de la contrainte de concentration par millésime
+- Mix cohérent avec les cibles : Buyout 40%, Growth 30%, VC 20%, Dette 10%
+- La dette privée est surpondérée en An 1–2 pour réduire la J-curve globale (le fonds de dette distribue plus rapidement que le buyout)
+- Les engagements VC sont constants car la diversification dans cette stratégie nécessite d'être présent sur chaque millésime
+- L'institution devra par ailleurs gérer les "capital calls" décalés dans le temps : les 500 M€ engagés seront appelés progressivement sur 3–5 ans, maintenant une trésorerie disponible pour honorer ces appels</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-2-le-leveraged-buyout-lbo">Chapitre 2 — Le Leveraged Buyout (LBO)</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>Le <strong>LBO</strong> (Leveraged Buyout) est l'acquisition d'une entreprise en utilisant principalement de la <strong>dette</strong> comme moyen de financement. Les cash-flows de la société acquise servent à rembourser la dette. C'est la stratégie dominante du Private Equity (Buyout).</p>
+<hr />
+<h2 id="1-mecanisme-du-lbo">1. Mécanisme du LBO</h2>
+<h3 id="11-principe">1.1 Principe</h3>
+<pre><code>Fonds PE + Management
+       │
+       │ Capitaux propres (20–30 %)
+       ▼
+  Holding NewCo
+       │
+       │ + Dettes (70–80 %)
+       ▼
+  Acquisition de la Cible
+       │
+       ↑ Cash-flows remontent pour rembourser la dette
+</code></pre>
+<p><strong>L'effet de levier</strong> : en utilisant peu de fonds propres et beaucoup de dette, le fonds amplifie son rendement sur la mise initiale.</p>
+<h3 id="12-exemple-numerique-deffet-de-levier">1.2 Exemple numérique d'effet de levier</h3>
+<table>
+<thead>
+<tr>
+<th>Scénario</th>
+<th>100 % fonds propres</th>
+<th>LBO (30 % FP / 70 % dette)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prix d'achat</td>
+<td>100 M€</td>
+<td>100 M€</td>
+</tr>
+<tr>
+<td>Mise en fonds propres</td>
+<td>100 M€</td>
+<td>30 M€</td>
+</tr>
+<tr>
+<td>Dette</td>
+<td>0</td>
+<td>70 M€</td>
+</tr>
+<tr>
+<td>Prix de cession (5 ans)</td>
+<td>150 M€</td>
+<td>150 M€</td>
+</tr>
+<tr>
+<td>Remboursement dette</td>
+<td>—</td>
+<td>-50 M€ (5 ans de désendettement)</td>
+</tr>
+<tr>
+<td>Produit nets FP</td>
+<td>150 M€</td>
+<td>100 M€</td>
+</tr>
+<tr>
+<td>TRI</td>
+<td>8,4 %</td>
+<td><strong>27,2 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Le TRI passe de 8,4 % à 27,2 % grâce à l'effet de levier.</p>
+<hr />
+<h2 id="2-structure-de-financement">2. Structure de financement</h2>
+<h3 id="21-la-dette-senior">2.1 La dette senior</h3>
+<pre><code>Dette senior = 3–4× EBITDA (historiquement, jusqu'à 6× avant 2008)
+</code></pre>
+<p><strong>Caractéristiques</strong> :
+- Prioritaire dans les remboursements.
+- Taux variable (Euribor + marge 300–500 bp).
+- Amortissement sur 5–7 ans.
+- Sécurisée par des sûretés (nantissement des titres de la cible).</p>
+<h3 id="22-la-dette-mezzanine">2.2 La dette mezzanine</h3>
+<ul>
+<li>Subordonnée à la dette senior.</li>
+<li>Rendement plus élevé (10–15 %).</li>
+<li>Souvent accompagnée de <strong>warrants</strong> (options sur actions de la cible) → participation à la hausse.</li>
+<li><strong>OCA</strong> (Obligations Convertibles en Actions) ou <strong>PIK</strong> (Payment-In-Kind : intérêts capitalisés).</li>
+</ul>
+<h3 id="23-les-capitaux-propres">2.3 Les capitaux propres</h3>
+<ul>
+<li>Apportés par le fonds PE (20–30 % du prix).</li>
+<li><strong>Management Package</strong> : les dirigeants de la cible co-investissent (1–3 %) et reçoivent un intéressement (BSA, BSPCE) pour aligner leurs intérêts sur ceux du fonds.</li>
+</ul>
+<h3 id="24-cascade-de-remboursement-waterfall">2.4 Cascade de remboursement (waterfall)</h3>
+<pre><code>Cash-flows générés par la cible
+            ↓
+1. Service de la dette senior (intérêts + amortissement)
+2. Service de la dette mezzanine
+3. Remontée de dividendes à la Holding
+4. Distribution aux actionnaires (fonds PE + management)
+</code></pre>
+<hr />
+<h2 id="3-criteres-de-selection-dune-cible-lbo">3. Critères de sélection d'une cible LBO</h2>
+<h3 id="31-profil-ideal">3.1 Profil idéal</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cash-flows récurrents et stables</strong></td>
+<td>Permettent le service de la dette</td>
+</tr>
+<tr>
+<td><strong>EBITDA élevé et peu capital-intensif</strong></td>
+<td>Conversion EBITDA → cash élevée</td>
+</tr>
+<tr>
+<td><strong>Faible endettement initial</strong></td>
+<td>Laisse de la capacité de levier</td>
+</tr>
+<tr>
+<td><strong>Position concurrentielle solide</strong></td>
+<td>Protège les cash-flows futurs (barrières à l'entrée)</td>
+</tr>
+<tr>
+<td><strong>Management de qualité</strong></td>
+<td>Exécution du business plan</td>
+</tr>
+<tr>
+<td><strong>Potentiel de création de valeur</strong></td>
+<td>Synergies, add-ons, amélioration opérationnelle</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-secteurs-lbo-friendly">3.2 Secteurs LBO-friendly</h3>
+<ul>
+<li>Services aux entreprises (business services)</li>
+<li>Distribution spécialisée</li>
+<li>Santé (cliniques, laboratoires)</li>
+<li>Logiciels à revenus récurrents (SaaS)</li>
+<li>Industrie de niche</li>
+</ul>
+<hr />
+<h2 id="4-creation-de-valeur-en-lbo">4. Création de valeur en LBO</h2>
+<pre><code>TRI LBO = f(
+  Croissance de l'EBITDA (value creation)
+  + Amélioration des marges (operational improvement)
+  + Désendettement (debt paydown)
+  + Expansion du multiple d'entrée/sortie (multiple arbitrage)
+)
+</code></pre>
+<h3 id="41-decomposition-de-la-creation-de-valeur">4.1 Décomposition de la création de valeur</h3>
+<table>
+<thead>
+<tr>
+<th>Levier</th>
+<th>Part approximative</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Croissance / opérationnel</td>
+<td>40–50 %</td>
+</tr>
+<tr>
+<td>Désendettement</td>
+<td>25–35 %</td>
+</tr>
+<tr>
+<td>Arbitrage de multiple</td>
+<td>15–25 %</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-strategies-de-creation-de-valeur">4.2 Stratégies de création de valeur</h3>
+<ul>
+<li><strong>Buy-and-build</strong> : acquisition de la plateforme + add-ons complémentaires (consolidation sectorielle).</li>
+<li><strong>Amélioration opérationnelle</strong> : réduction de coûts, optimisation de la chaîne d'approvisionnement.</li>
+<li><strong>Croissance organique</strong> : expansion géographique, nouveaux produits.</li>
+<li><strong>Optimisation du BFR</strong> : réduction des délais de recouvrement, gestion des stocks.</li>
+</ul>
+<hr />
+<h2 id="5-modele-lbo-elements-cles">5. Modèle LBO — Éléments clés</h2>
+<h3 id="51-hypotheses-dentree">5.1 Hypothèses d'entrée</h3>
+<pre><code>Prix d'acquisition = Multiple d'entrée × EBITDA
+Structure de financement : % FP, % dette senior, % mezzanine
+</code></pre>
+<h3 id="52-plan-de-financement-business-plan">5.2 Plan de financement / business plan</h3>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>EBITDA</th>
+<th>- CAPEX</th>
+<th>- ΔBF</th>
+<th>- Intérêts</th>
+<th>- Remb.</th>
+<th>= Cash libre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>50</td>
+<td>-10</td>
+<td>-2</td>
+<td>-4,5</td>
+<td>-8</td>
+<td>25,5</td>
+</tr>
+<tr>
+<td>1</td>
+<td>55</td>
+<td>-10</td>
+<td>-2</td>
+<td>-4,0</td>
+<td>-8</td>
+<td>31,0</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-valeur-de-sortie">5.3 Valeur de sortie</h3>
+<pre><code>EV sortie = EBITDA_sortie × Multiple_sortie
+Equity sortie = EV sortie - Dette résiduelle
+TRI = (Equity sortie / Equity entrée)^(1/n) - 1
+</code></pre>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Un fonds achète une société pour 7× EBITDA (EBITDA = 20 M€). La structure est 30 % FP / 70 % dette senior (taux 5 %). Après 5 ans, EBITDA = 28 M€, multiple de sortie = 8×, dette résiduelle = 60 M€ (après amortissement). Calculez le TRI du fonds.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Prix d'achat = 7 × 20 = 140 M€
+FP = 140 × 30 % = 42 M€
+EV sortie = 8 × 28 = 224 M€
+Equity sortie = 224 - 60 = 164 M€
+TRI = (164 / 42)^(1/5) - 1 = 3,90^0,2 - 1 = <strong>31,4 %</strong>
+MOIC = 164 / 42 = <strong>3,90×</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>Le LBO amplifie le rendement via l'effet de levier financier.</li>
+<li>La dette senior (prioritaire, amortissable) + mezzanine (subordonnée, plus chère) financent l'acquisition.</li>
+<li>La création de valeur vient de la croissance opérationnelle, du désendettement et de l'arbitrage de multiple.</li>
+<li>Le profil idéal LBO : cash-flows stables, faible capital-intensivité, forte position concurrentielle.</li>
+<li>Le TRI et le MOIC sont les métriques de retour du fonds.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_1">Approfondissement théorique</h2>
+<h3 id="la-structure-avancee-de-financement-lbo">La structure avancée de financement LBO</h3>
+<p><strong>La dette senior : tranches et covenants</strong></p>
+<p>La dette senior d'un LBO moderne est généralement découpée en <strong>tranches</strong> :</p>
+<pre><code>Term Loan A (TLA) : amortissable sur 5–6 ans, banques
+Term Loan B (TLB) : bullet (remboursement in fine à 7 ans), fonds institutionnels
+Revolving Credit Facility (RCF) : ligne de crédit non tirée pour le BFR
+
+Coût typique (post-2022) :
+TLA : Euribor + 300–350 bp
+TLB : Euribor + 375–450 bp
+</code></pre>
+<p><strong>Covenants financiers</strong> (maintenance covenants) :</p>
+<table>
+<thead>
+<tr>
+<th>Covenant</th>
+<th>Formule</th>
+<th>Niveau typique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Levier max</td>
+<td>Dette senior / EBITDA</td>
+<td>≤ 5×</td>
+</tr>
+<tr>
+<td>Couverture intérêts</td>
+<td>EBITDA / Intérêts</td>
+<td>≥ 2,5×</td>
+</tr>
+<tr>
+<td>Capex maximum</td>
+<td>Investissements / EBITDA</td>
+<td>≤ 15 %</td>
+</tr>
+</tbody>
+</table>
+<p>Un breach (violation d'un covenant) permet aux prêteurs de demander le remboursement anticipé ou de renégocier les conditions → risque crucial à modéliser.</p>
+<p><strong>PIK (Payment-In-Kind)</strong> : mécanisme par lequel les intérêts ne sont pas payés en cash mais capitalisés (s'ajoutent au principal). Utilisé pour des tranches très subordonnées (PIK notes). Exemple :</p>
+<pre><code>Principal initial : 50 M€
+Taux PIK : 10 %
+An 1 : Principal = 50 × 1,10 = 55 M€ (aucun décaissement)
+An 2 : Principal = 55 × 1,10 = 60,5 M€
+An 5 : Principal = 50 × (1,10)⁵ = 80,5 M€ → à rembourser à la sortie
+</code></pre>
+<h3 id="le-management-package-bsa-et-bspce">Le management package : BSA et BSPCE</h3>
+<p>Le <strong>management package</strong> est conçu pour aligner les intérêts des dirigeants sur ceux du fonds PE :</p>
+<p><strong>BSA (Bons de Souscription d'Actions)</strong> : options donnant le droit de souscrire des actions à un prix d'exercice fixé à l'entrée. Si l'EV de sortie est supérieure à l'EV d'entrée × multiple de retour cible, les managers participent à l'upside.</p>
+<p><strong>Mécanisme de ratchet</strong> (escalier de participation) :</p>
+<table>
+<thead>
+<tr>
+<th>TRI du fonds</th>
+<th>% du management</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&lt; 20 %</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td>20–25 %</td>
+<td>5 % du surplus</td>
+</tr>
+<tr>
+<td>25–30 %</td>
+<td>10 % du surplus</td>
+</tr>
+<tr>
+<td>&gt; 30 %</td>
+<td>15 % du surplus</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sweet equity</strong> : les managers investissent une fraction de leurs économies (1–3 % du prix) en equity ordinaire, parfois à des conditions préférentielles (prix d'entrée sur l'equity "à la valeur nominale" vs. fonds PE au prix de marché) → levier interne additionnel.</p>
+<h3 id="la-cascade-de-distribution-waterfall-lbo-avancee">La cascade de distribution (waterfall) LBO avancée</h3>
+<pre><code>1. Remboursement de la dette senior (prioritaire)
+2. Remboursement de la dette mezzanine + PIK
+3. Remboursement du capital investi au fonds PE (return of capital)
+4. Rendement préférentiel (hurdle rate, 8 % par an) au fonds PE
+5. Catch-up du carried interest (20 % au GP)
+6. Partage 80/20 LP/GP sur le surplus restant
+7. Management package (BSA, ratchet)
+</code></pre>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_1">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-modele-lbo-complet">Exemple 1 — Modèle LBO complet</h3>
+<p><strong>Hypothèses</strong> :
+- Prix d'achat : 8× EBITDA, EBITDA année 0 = 30 M€ → EV entrée = 240 M€
+- Structure : 30 % FP (72 M€) + 70 % dette senior (168 M€) à 5 %
+- Business plan : EBITDA croît de 8 %/an pendant 5 ans
+- CAPEX = 5 M€/an, ΔBF = 2 M€/an, IS = 25 %
+- Amortissement de la dette : 20 M€/an
+- Sortie à 5 ans au même multiple (8×)</p>
+<p><strong>Calcul du FCFE (Free Cash Flow to Equity)</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>An</th>
+<th>EBITDA</th>
+<th>-CAPEX</th>
+<th>-ΔBF</th>
+<th>-Intérêts</th>
+<th>-Amort. dette</th>
+<th>-IS (EBIT×25%)</th>
+<th>= FCFE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>32,4</td>
+<td>-5</td>
+<td>-2</td>
+<td>-7,6</td>
+<td>-20</td>
+<td>-4,9</td>
+<td>-7,1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>35,0</td>
+<td>-5</td>
+<td>-2</td>
+<td>-6,6</td>
+<td>-20</td>
+<td>-5,6</td>
+<td>-4,2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>37,8</td>
+<td>-5</td>
+<td>-2</td>
+<td>-5,6</td>
+<td>-20</td>
+<td>-6,3</td>
+<td>-1,1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>40,8</td>
+<td>-5</td>
+<td>-2</td>
+<td>-4,6</td>
+<td>-20</td>
+<td>-7,0</td>
+<td>+2,2</td>
+</tr>
+<tr>
+<td>5</td>
+<td>44,1</td>
+<td>-5</td>
+<td>-2</td>
+<td>-3,6</td>
+<td>-20</td>
+<td>-7,7</td>
+<td>+5,8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Valeur de sortie</strong> :</p>
+<pre><code>EV sortie = 44,1 × 8 = 353 M€
+Dette résiduelle = 168 - 100 = 68 M€
+Equity sortie = 353 - 68 = 285 M€
+TRI = (285 / 72)^(1/5) - 1 = 3,96^0,2 - 1 = 31,8 %
+MOIC = 285 / 72 = 3,96×
+</code></pre>
+<h3 id="exemple-2-analyse-de-sensibilite-tri">Exemple 2 — Analyse de sensibilité TRI</h3>
+<p>Impact des hypothèses de sortie sur le TRI (multiple d'entrée 8×, équité 30 %) :</p>
+<table>
+<thead>
+<tr>
+<th>Multiple sortie</th>
+<th>EBITDA sortie</th>
+<th>EV sortie</th>
+<th>Equity</th>
+<th>TRI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6×</td>
+<td>44,1</td>
+<td>264,6</td>
+<td>196,6</td>
+<td>22,2 %</td>
+</tr>
+<tr>
+<td>7×</td>
+<td>44,1</td>
+<td>308,7</td>
+<td>240,7</td>
+<td>27,3 %</td>
+</tr>
+<tr>
+<td>8×</td>
+<td>44,1</td>
+<td>352,8</td>
+<td>284,8</td>
+<td>31,8 %</td>
+</tr>
+<tr>
+<td>9×</td>
+<td>44,1</td>
+<td>396,9</td>
+<td>328,9</td>
+<td>35,5 %</td>
+</tr>
+<tr>
+<td>10×</td>
+<td>44,1</td>
+<td>441</td>
+<td>373</td>
+<td>38,9 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusion</strong> : l'arbitrage de multiple (sortir à un multiple supérieur à l'entrée) est un des principaux leviers de valeur.</p>
+<h3 id="exemple-3-covenant-breach-et-restructuration">Exemple 3 — Covenant breach et restructuration</h3>
+<p><strong>Scénario</strong> : Un LBO a un covenant "Dette senior / EBITDA ≤ 4,5×". Après une récession, l'EBITDA chute de 30 M€ à 22 M€. La dette senior résiduelle est 90 M€.</p>
+<pre><code>Levier actuel = 90 / 22 = 4,09× → en-dessous du covenant ✓ (pour l'instant)
+
+Si l'EBITDA baisse encore à 19 M€ :
+Levier = 90 / 19 = 4,74× &gt; 4,5× → BREACH
+
+Options :
+1. Waiver (accord des prêteurs) : report du covenant → paiement d'une fee et hausse de marge
+2. Equity cure : le fonds PE injecte du capital pour rembourser la dette → 90 - (90 - 19×4,5) = 90 - 85,5 = 4,5 M€ à rembourser
+3. Renégociation complète (restructuration) si la situation est critique
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles_1">Applications professionnelles</h2>
+<h3 id="processus-dun-lbo-en-pratique-cote-fonds-pe">Processus d'un LBO en pratique (côté fonds PE)</h3>
+<p><strong>Phase 1 — Origination et screening (1–3 mois)</strong> :
+- Analyse sectorielle, identification des cibles via deal flow propriétaire, banquiers M&amp;A, conseils en stratégie.
+- Screening financier : EV/EBITDA, niveau de dette, croissance CA, récurrence des revenus.</p>
+<p><strong>Phase 2 — Due Diligence (2–4 mois)</strong> :
+- Due diligence financière : normalisation de l'EBITDA, analyse du BFR, identification des dettes cachées.
+- Due diligence commerciale : part de marché, dynamiques concurrentielles, NPS clients (souvent confiée à McKinsey/BCG).
+- Due diligence juridique et fiscale : litiges, contrats clés, structure fiscale.
+- Due diligence technique (industrie) : état des actifs, capex de maintenance.</p>
+<p><strong>Phase 3 — Financement et closing (1–2 mois)</strong> :
+- Syndication de la dette : la banque arrangeur vend les tranches à des investisseurs institutionnels (fonds de CLO, compagnies d'assurance).
+- Négociation des covenants et documentation (Facilities Agreement, SHA).
+- Signing + closing : transfert des titres contre paiement.</p>
+<p><strong>Phase 4 — Value creation (3–7 ans)</strong> :
+- 100-day plan : actions immédiates (quick wins opérationnels).
+- Board représentation : 1–2 administrateurs du fonds PE au CA.
+- Reporting mensuel : KPI opérationnels + financiers.
+- Add-on acquisitions : consolidation sectorielle.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_1">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Surestimer la croissance de l'EBITDA</strong></td>
+<td>Les business plans LBO présentent systématiquement des projections optimistes (hockey stick)</td>
+<td>Tester des scénarios de base, conservateur et adverse</td>
+</tr>
+<tr>
+<td><strong>Ignorer le BFR dans les flux</strong></td>
+<td>Oublier la variation du BFR sous-estime les besoins de financement</td>
+<td>Intégrer le BFR dans le modèle LBO ligne par ligne</td>
+</tr>
+<tr>
+<td><strong>Multiple d'entrée = multiple de sortie</strong></td>
+<td>Supposer que le multiple de valorisation reste stable</td>
+<td>Analyse de sensibilité sur le multiple de sortie (±2×)</td>
+</tr>
+<tr>
+<td><strong>Mal modéliser la cascade de cash</strong></td>
+<td>Confondre EBITDA et cash disponible pour rembourser la dette</td>
+<td>EBITDA - CAPEX - ΔBF - IS = cash disponible pour le service de la dette</td>
+</tr>
+<tr>
+<td><strong>Négliger le covenant de levier</strong></td>
+<td>Dépasser un covenant génère un event of default → risque de prise de contrôle par les créanciers</td>
+<td>Calculer la "headroom" (marge sous le covenant) dans tous les scénarios</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_1">Exercices supplémentaires</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Un LBO acquiert une entreprise à 9× EBITDA (EBITDA = 25 M€). Structure : 35 % FP (78,75 M€) + 65 % dette (146,25 M€, taux 6 %). Après 5 ans, EBITDA = 35 M€, dette résiduelle = 100 M€, multiple de sortie = 9,5×. Calculez le TRI et le MOIC.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+EV entrée = 9 × 25 = 225 M€, FP = 78,75 M€
+EV sortie = 9,5 × 35 = 332,5 M€
+Equity sortie = 332,5 - 100 = 232,5 M€
+TRI = (232,5 / 78,75)^(1/5) - 1 = 2,952^0,2 - 1 = <strong>24,1 %</strong>
+MOIC = 232,5 / 78,75 = <strong>2,95×</strong></p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Décomposez les sources de création de valeur de l'Exercice 1. Si le TRI est 24,1 %, quelle part vient du désendettement, de la croissance opérationnelle et de l'arbitrage de multiple ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+EV comparable à EBITDA constant (25 M€) et multiple constant (9×) : 9 × 25 = 225 M€
+Dette résiduelle : 100 M€ vs. 146,25 M€ → désendettement = 46,25 M€</p>
+<p>Décomposition approximative :
+- <strong>Valeur créée totale</strong> = 232,5 - 78,75 = <strong>153,75 M€</strong>
+- <strong>Désendettement</strong> : 46,25 M€ → 30 %
+- <strong>Croissance EBITDA</strong> (25 → 35 M€ à multiple constant 9×) = 90 M€ → 58 %
+- <strong>Arbitrage de multiple</strong> (9 vs 9,5× sur EBITDA final 35 M€) = 17,5 M€ → 12 %</p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Un fonds PE envisage un LBO. Le covenant de levier est Dette/EBITDA ≤ 4,5×. Le levier d'entrée est 4×. Dans quel scénario le covenant est-il violé ? (EBITDA d'entrée = 40 M€, dette = 160 M€)</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Dette constante à 160 M€ (an 1, avant remboursement).
+Covenant violé si : 160 / EBITDA &gt; 4,5 ↔ EBITDA &lt; 160 / 4,5 = <strong>35,6 M€</strong>
+→ Une baisse de l'EBITDA supérieure à <strong>11 %</strong> déclenche le covenant breach.
+Recommandation : vérifier les scénarios de stress avec EBITDA à -10 %, -20 % et -30 %.</p>
+</blockquote>
+<h3 id="exercice-4">Exercice 4</h3>
+<p>Calculez le management package avec ratchet : les managers ont investi 1 M€. Le TRI du fonds est 28 %. Selon la table ci-dessous, quelle est la plus-value des managers si l'equity de sortie est 250 M€ (equity d'entrée = 50 M€) ?</p>
+<table>
+<thead>
+<tr>
+<th>TRI</th>
+<th>% management sur le surplus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&lt; 20 %</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td>20–25 %</td>
+<td>5 %</td>
+</tr>
+<tr>
+<td>&gt; 25 %</td>
+<td>10 %</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :
+Surplus = 250 - 50 = 200 M€
+TRI = 28 % → dans la tranche &gt; 25 % → 10 % du surplus
+Part management = 10 % × 200 = <strong>20 M€</strong>
+Mise initiale = 1 M€ → <strong>MOIC management = 21× (1 M€ → 21 M€)</strong>
+C'est l'effet d'alignement du sweet equity sur l'upside.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-3-venture-capital-et-financement-des-start-ups">Chapitre 3 — Venture Capital et financement des start-ups</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Le <strong>Venture Capital</strong> (capital-risque) finance les entreprises <strong>jeunes et à fort potentiel de croissance</strong> qui ne peuvent pas accéder au financement bancaire classique. C'est le moteur du financement de l'innovation et des start-ups technologiques.</p>
+<hr />
+<h2 id="1-specificites-du-venture-capital">1. Spécificités du Venture Capital</h2>
+<h3 id="11-differences-avec-le-buyout">1.1 Différences avec le Buyout</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Buyout (LBO)</th>
+<th>Venture Capital</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stade de l'entreprise</td>
+<td>Mature, profitable</td>
+<td>Jeune, en perte souvent</td>
+</tr>
+<tr>
+<td>Levier financier</td>
+<td>Élevé (dette)</td>
+<td>Quasi nul (equity pur)</td>
+</tr>
+<tr>
+<td>Business model prouvé</td>
+<td>Oui</td>
+<td>Non (encore en validation)</td>
+</tr>
+<tr>
+<td>Risque</td>
+<td>Modéré</td>
+<td>Très élevé</td>
+</tr>
+<tr>
+<td>Rendement cible</td>
+<td>20–30 %</td>
+<td>&gt; 30 % (pour compenser les échecs)</td>
+</tr>
+<tr>
+<td>Durée d'investissement</td>
+<td>5–7 ans</td>
+<td>7–12 ans</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-la-loi-de-puissance-power-law">1.2 La loi de puissance (Power Law)</h3>
+<p>Dans un fonds VC, la majorité des retours est générée par <strong>1 ou 2 investissements</strong> ("home runs") qui compensent les nombreux échecs.</p>
+<pre><code>Distribution typique d'un fonds VC :
+- 50 % des sociétés font faillite ou sont perdues
+- 30 % retournent 1–2× (faible succès)
+- 15 % retournent 2–5×
+- 5 % retournent &gt; 10× (les &quot;unicorns&quot; → compensent tout)
+</code></pre>
+<p><strong>Implication</strong> : le VC doit construire un portefeuille diversifié et chercher le "grand gagnant".</p>
+<hr />
+<h2 id="2-les-tours-de-financement">2. Les tours de financement</h2>
+<h3 id="21-sequence-de-financement">2.1 Séquence de financement</h3>
+<pre><code>Idée → Amorçage (Seed) → Série A → Série B → Série C → ... → IPO ou Cession
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Tour</th>
+<th>Stade</th>
+<th>Investisseurs</th>
+<th>Montant typique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pre-seed</strong></td>
+<td>Idée, prototype</td>
+<td>Fondateurs, FFF (Friends, Family, Fools)</td>
+<td>&lt; 100 k€</td>
+</tr>
+<tr>
+<td><strong>Seed</strong></td>
+<td>MVP, 1ers clients</td>
+<td>Business angels, seed funds</td>
+<td>200 k€ – 2 M€</td>
+</tr>
+<tr>
+<td><strong>Série A</strong></td>
+<td>Product-market fit</td>
+<td>Fonds VC</td>
+<td>5 – 20 M€</td>
+</tr>
+<tr>
+<td><strong>Série B</strong></td>
+<td>Croissance accélérée</td>
+<td>Fonds VC, growth</td>
+<td>20 – 100 M€</td>
+</tr>
+<tr>
+<td><strong>Série C+</strong></td>
+<td>Scale-up</td>
+<td>Late-stage VC, PE</td>
+<td>100 M€+</td>
+</tr>
+<tr>
+<td><strong>IPO / Exit</strong></td>
+<td>Maturité</td>
+<td>Marchés publics ou acquéreur stratégique</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-la-dilution">2.2 La dilution</h3>
+<p>À chaque tour, les fondateurs émettent de <strong>nouvelles actions</strong> pour les investisseurs → <strong>dilution</strong> du pourcentage détenu.</p>
+<pre><code>Avant Serie A : fondateurs 100 %
+Après Seed (20 % pour les investisseurs) : fondateurs 80 %
+Après Série A (25 % pour les investisseurs) : fondateurs 60 %
+Après Série B (20 % pour les investisseurs) : fondateurs 48 %
+</code></pre>
+<hr />
+<h2 id="3-valorisation-des-start-ups">3. Valorisation des start-ups</h2>
+<h3 id="31-les-methodes-specifiques-au-vc">3.1 Les méthodes spécifiques au VC</h3>
+<p>La valorisation des start-ups à fort potentiel mais sans profit est complexe. Les méthodes traditionnelles (DCF, multiples) s'appliquent difficilement.</p>
+<p><strong>Méthode des multiples de revenus</strong> (SaaS et croissance) :</p>
+<pre><code>Valeur = ARR (Annual Recurring Revenue) × Multiple de revenus
+</code></pre>
+<ul>
+<li>Multiples typiques : 5–20× ARR selon la croissance et les marges.</li>
+</ul>
+<p><strong>Méthode VC (Venture Capital Method)</strong> :</p>
+<pre><code>1. Estimer la valeur à la sortie (exit value) dans n ans
+   Exit Value = EBITDA_n × Multiple_sortie (ou revenus × multiple)
+
+2. Actualiser au TRI cible du fonds
+   Valeur post-money aujourd'hui = Exit Value / (1 + TRI)^n
+
+3. En déduire la participation du fonds
+   Participation VC = Investissement / Valeur post-money
+</code></pre>
+<h3 id="32-pre-money-vs-post-money">3.2 Pre-money vs. Post-money</h3>
+<pre><code>Valeur post-money = Valeur pre-money + Montant de l'investissement
+% VC = Investissement / Valeur post-money
+</code></pre>
+<p><strong>Exemple</strong> :
+- Pre-money = 8 M€, Investissement = 2 M€
+- Post-money = 10 M€
+- % VC = 2 / 10 = <strong>20 %</strong></p>
+<h3 id="33-methode-vc-illustree">3.3 Méthode VC illustrée</h3>
+<ul>
+<li>Start-up SaaS, investissement = 5 M€, horizon = 5 ans.</li>
+<li>Prévision : ARR = 20 M€ dans 5 ans, multiple de sortie = 8×</li>
+<li>Exit Value = 160 M€</li>
+<li>TRI cible = 40 %</li>
+<li>Valeur post-money = 160 / (1,40)⁵ = 160 / 5,378 = <strong>29,75 M€</strong></li>
+<li>% VC = 5 / 29,75 = <strong>16,8 %</strong></li>
+<li>Valeur pre-money = 29,75 - 5 = <strong>24,75 M€</strong></li>
+</ul>
+<hr />
+<h2 id="4-instruments-financiers-du-vc">4. Instruments financiers du VC</h2>
+<h3 id="41-actions-ordinaires-vs-preferentielles">4.1 Actions ordinaires vs. préférentielles</h3>
+<p>Les investisseurs VC reçoivent généralement des <strong>actions préférentielles</strong> (preferred shares) qui leur confèrent :</p>
+<table>
+<thead>
+<tr>
+<th>Droit</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Liquidation preference</strong></td>
+<td>En cas de cession ou liquidation, récupèrent d'abord leur mise (1× ou 2× investissement)</td>
+</tr>
+<tr>
+<td><strong>Anti-dilution</strong></td>
+<td>Protection si un tour futur est réalisé à une valorisation inférieure (down round)</td>
+</tr>
+<tr>
+<td><strong>Droit de vote préférentiel</strong></td>
+<td>Vote sur décisions clés</td>
+</tr>
+<tr>
+<td><strong>Droits d'information</strong></td>
+<td>Accès aux comptes, reporting</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-clauses-contractuelles-term-sheet">4.2 Clauses contractuelles (term sheet)</h3>
+<table>
+<thead>
+<tr>
+<th>Clause</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pro-rata rights</strong></td>
+<td>Droit de participer aux tours suivants pour maintenir sa participation</td>
+</tr>
+<tr>
+<td><strong>Tag-along</strong></td>
+<td>Droit de vendre aux mêmes conditions si les fondateurs vendent</td>
+</tr>
+<tr>
+<td><strong>Drag-along</strong></td>
+<td>Obligation de vendre si la majorité des actionnaires accepte une offre</td>
+</tr>
+<tr>
+<td><strong>Vesting</strong></td>
+<td>Les fondateurs acquièrent progressivement leurs actions (ex : 4 ans avec cliff 1 an)</td>
+</tr>
+<tr>
+<td><strong>BSPCE</strong></td>
+<td>Bons de souscription de parts de créateur d'entreprise (France) — options pour les salariés</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-strategies-de-sortie-exit">5. Stratégies de sortie (exit)</h2>
+<table>
+<thead>
+<tr>
+<th>Type de sortie</th>
+<th>Description</th>
+<th>Fréquence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IPO</strong> (Introduction en Bourse)</td>
+<td>La start-up se cote en bourse</td>
+<td>Rare mais très profitable</td>
+</tr>
+<tr>
+<td><strong>Trade sale</strong></td>
+<td>Cession à un acquéreur stratégique (grande entreprise)</td>
+<td>Le plus fréquent</td>
+</tr>
+<tr>
+<td><strong>Secondary buyout</strong></td>
+<td>Cession à un autre fonds PE</td>
+<td>En croissance</td>
+</tr>
+<tr>
+<td><strong>Recapitalisation</strong></td>
+<td>Distribution de dividendes par endettement</td>
+<td>Partiel</td>
+</tr>
+<tr>
+<td><strong>Liquidation</strong></td>
+<td>Faillite</td>
+<td>Fréquent (50 % des start-ups)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-lecosysteme-start-up-francais">6. L'écosystème start-up français</h2>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Exemples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bpifrance</strong></td>
+<td>Banque publique d'investissement, acteur central du VC français</td>
+</tr>
+<tr>
+<td><strong>Station F</strong></td>
+<td>Premier campus de start-ups mondial (Paris)</td>
+</tr>
+<tr>
+<td><strong>Fonds VC français majeurs</strong></td>
+<td>Eurazeo, Partech, Kima Ventures, Idinvest (Eurazeo Growth)</td>
+</tr>
+<tr>
+<td><strong>French Tech</strong></td>
+<td>Label et réseau des start-ups françaises</td>
+</tr>
+<tr>
+<td><strong>Licornes françaises</strong></td>
+<td>Doctolib, Contentsquare, Mirakl, Ledger, Exotec...</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Un fonds VC investit 4 M€ dans une start-up à une valorisation pre-money de 16 M€. Calculez la participation du fonds et la valorisation post-money.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Post-money = 16 + 4 = <strong>20 M€</strong>
+% Fonds = 4 / 20 = <strong>20 %</strong></p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>La start-up prévoit de réaliser 50 M€ de revenus dans 6 ans, avec un multiple de sortie de 10×. Le TRI cible du fonds est 35 %. Quelle est la valorisation post-money aujourd'hui justifiant un investissement de 5 M€ ? Quelle participation le fonds doit-il exiger ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Exit Value = 50 × 10 = 500 M€
+Post-money = 500 / (1,35)⁶ = 500 / 6,054 = <strong>82,6 M€</strong>
+% Fonds = 5 / 82,6 = <strong>6,1 %</strong>
+Pre-money = 82,6 - 5 = <strong>77,6 M€</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>Le VC finance l'innovation à haut risque en exchange d'une part du capital.</li>
+<li>La loi de puissance : quelques succès paient pour tous les échecs.</li>
+<li>Chaque tour de financement dilue les fondateurs → la structure du cap table est critique.</li>
+<li>La valorisation par la méthode VC actualise la valeur de sortie au TRI cible.</li>
+<li>Les actions préférentielles protègent les investisseurs (liquidation preference, anti-dilution).</li>
+<li>Le vesting aligne les intérêts des fondateurs sur le long terme.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_2">Approfondissement théorique</h2>
+<h3 id="la-table-de-capitalisation-cap-table-et-la-gestion-de-la-dilution">La table de capitalisation (cap table) et la gestion de la dilution</h3>
+<p>La <strong>cap table</strong> (tableau de capitalisation) est le document central qui retrace qui détient quoi dans une start-up :</p>
+<pre><code>Fondateurs : 60 %
+Seed investors : 15 %
+Série A VC : 20 %
+ESOP (Stock Options Pool) : 5 %
+Total : 100 %
+</code></pre>
+<p><strong>Dilution anti-dilutive : la clause full ratchet vs. broad-based weighted average</strong></p>
+<p>En cas de <strong>down round</strong> (levée à une valorisation inférieure au tour précédent), les investisseurs peuvent activer leur protection anti-dilution :</p>
+<p><strong>Full ratchet</strong> : le prix de conversion des preferred shares est ajusté au nouveau prix du down round. Protection maximale pour l'investisseur → dilution massive des fondateurs.</p>
+<p><strong>Broad-based weighted average</strong> (BBWA) : ajustement pondéré par les volumes — plus équitable :</p>
+<pre><code>Prix ajusté = ((A + B) / (A + C)) × Prix ancien
+A = Nb actions avant down round
+B = Argent levé dans le down round / Nouveau prix
+C = Nb nouvelles actions émises
+</code></pre>
+<p><strong>Liquidation preference et participating preferred shares</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Mécanisme</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Non-participating</strong> (1×)</td>
+<td>Investisseur récupère 1× sa mise OU se convertit en ordinaires</td>
+</tr>
+<tr>
+<td><strong>Participating</strong> (1×)</td>
+<td>Investisseur récupère 1× sa mise ET participe au reste pro-rata</td>
+</tr>
+<tr>
+<td><strong>Multiple liquidation preference</strong></td>
+<td>Investisseur récupère 2× (ou 3×) sa mise avant les fondateurs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Exemple participating vs. non-participating</strong> avec investissement de 10 M€, mise totale des fondateurs 2 M€, exit à 30 M€ :</p>
+<pre><code>Non-participating : VC prend max(10, 30 × 80 %) = max(10, 24) = 24 M€ → VC convertit
+Participating : VC prend 10 M€ + (30 - 10) × 80 % = 10 + 16 = 26 M€ → fondateurs 4 M€
+</code></pre>
+<h3 id="le-modele-economique-du-fonds-vc">Le modèle économique du fonds VC</h3>
+<p>Un fonds VC est structuré comme un <strong>Limited Partnership</strong> :
+- <strong>LP (Limited Partners)</strong> : investisseurs institutionnels (fonds de pension, family offices, BPI, universités endowments). Apportent ~99 % du capital.
+- <strong>GP (General Partner)</strong> : l'équipe de gestion VC. Apporte ~1 % du capital.</p>
+<p><strong>Économie du fonds VC</strong> :</p>
+<pre><code>Management fees : 2 % × capital engagé / an pendant la période d'investissement
+Carried interest : 20 % du profit après remboursement du capital aux LP et hurdle rate (8 %)
+</code></pre>
+<p><strong>Exemple</strong> : Fonds de 100 M€, durée 10 ans, rendement de 3× (300 M€ retournés) :</p>
+<pre><code>Management fees = 2 % × 100 M€ × 5 ans = 10 M€ (pendant la période d'investissement)
+Capital remboursé aux LP = 100 M€
+Profit = 300 - 100 = 200 M€
+Hurdle rate 8 % sur 10 ans = 100 × (1,08)^10 = 215 M€ → le GP doit d'abord rembourser 215 M€
+Si retour = 300 M€ :
+  LP reçoivent : 215 M€ (capital + hurdle) + 80 % × (300 - 215) = 215 + 68 = 283 M€
+  GP carried = 20 % × 85 M€ = 17 M€ (en plus des management fees)
+</code></pre>
+<h3 id="la-valorisation-en-pre-revenu-methode-scorecard-et-berkus">La valorisation en pré-revenu : méthode scorecard et Berkus</h3>
+<p>Pour les start-ups à stade très précoce (pré-revenu), des méthodes qualitatives s'appliquent :</p>
+<p><strong>Méthode Berkus (Dave Berkus)</strong> : attribue une valeur à chaque composante de la start-up :</p>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Valeur max (k€)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Idée (résout un vrai problème)</td>
+<td>500</td>
+</tr>
+<tr>
+<td>Prototype fonctionnel</td>
+<td>500</td>
+</tr>
+<tr>
+<td>Qualité de l'équipe</td>
+<td>500</td>
+</tr>
+<tr>
+<td>Relations commerciales / premiers contrats</td>
+<td>500</td>
+</tr>
+<tr>
+<td>Déploiement produit sur le marché</td>
+<td>500</td>
+</tr>
+<tr>
+<td><strong>Valeur pré-money max</strong></td>
+<td><strong>2 500 k€</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Méthode Scorecard (Ohio TechAngels)</strong> : compare la start-up à une start-up "médiane" du secteur.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_2">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-simulation-de-cap-table-sur-3-tours">Exemple 1 — Simulation de cap table sur 3 tours</h3>
+<p><strong>Fondateurs</strong> : 1 M actions ordinaires (100 % au départ)</p>
+<p><strong>Seed (600 k€ à 3 M€ pre-money)</strong> :</p>
+<pre><code>Post-money = 3 + 0,6 = 3,6 M€
+Actions émises pour seed = 0,6/3,6 × 1 M / (1 - 0,6/3,6) = ... 
+Méthode directe : prix/action = 3 M€ / 1 M actions = 3 €
+Nouvelles actions = 600 k€ / 3 € = 200 000 actions
+Total : fondateurs 1 M / 1,2 M = 83,3 %, seed 16,7 %
+</code></pre>
+<p><strong>Série A (5 M€ à 15 M€ pre-money)</strong> :</p>
+<pre><code>Prix/action = 15 M€ / 1,2 M actions = 12,50 €
+Nouvelles actions = 5 M€ / 12,50 = 400 000 actions
+Total = 1,6 M actions
+Fondateurs : 1 M / 1,6 M = 62,5 %, seed : 200 k / 1,6 M = 12,5 %, VC A = 25 %
+</code></pre>
+<p><strong>Série B (10 M€ à 40 M€ pre-money)</strong> :</p>
+<pre><code>Prix/action = 40 M€ / 1,6 M = 25 €
+Nouvelles actions = 10 M€ / 25 = 400 000
+Total = 2 M actions
+Fondateurs : 50 %, Seed : 10 %, VC A : 20 %, VC B : 20 %
+</code></pre>
+<h3 id="exemple-2-exit-et-waterfall">Exemple 2 — Exit et waterfall</h3>
+<p>À la sortie (cession pour 80 M€), avec la cap table ci-dessus et ces liquidation preferences :
+- Seed : 1× non-participating (LP = 600 k€)
+- VC A : 1× non-participating (LP = 5 M€)
+- VC B : 1× non-participating (LP = 10 M€)</p>
+<pre><code>Waterfall :
+1. VC B recouvre 10 M€ → 70 M€ restants
+2. VC A recouvre 5 M€ → 65 M€ restants
+3. Seed recouvre 0,6 M€ → 64,4 M€ restants
+
+Choix conversion ou liquidation preference :
+- VC B : 1× LP = 10 M€ vs. conversion 20 % × 80 = 16 M€ → se CONVERTIT
+- VC A : 1× LP = 5 M€ vs. conversion 20 % × 80 = 16 M€ → se CONVERTIT
+- Seed : 1× LP = 0,6 M€ vs. conversion 10 % × 80 = 8 M€ → se CONVERTIT
+
+Tous se convertissent → distribution pro-rata :
+Fondateurs (50 %) : 40 M€
+Seed (10 %) : 8 M€ → MOIC = 8 / 0,6 = 13,3×
+VC A (20 %) : 16 M€ → MOIC = 16 / 5 = 3,2×
+VC B (20 %) : 16 M€ → MOIC = 16 / 10 = 1,6× (performance faible)
+</code></pre>
+<h3 id="exemple-3-portfolio-construction-et-power-law">Exemple 3 — Portfolio construction et power law</h3>
+<p>Un fonds VC de 100 M€ fait 20 investissements de 5 M€ chacun :</p>
+<table>
+<thead>
+<tr>
+<th>Résultat</th>
+<th>Nb investissements</th>
+<th>Retour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Faillite</td>
+<td>10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1×</td>
+<td>4</td>
+<td>20 M€</td>
+</tr>
+<tr>
+<td>2–3×</td>
+<td>4</td>
+<td>50 M€</td>
+</tr>
+<tr>
+<td>10×</td>
+<td>1</td>
+<td>50 M€</td>
+</tr>
+<tr>
+<td>30× (unicorn)</td>
+<td>1</td>
+<td>150 M€</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>20</strong></td>
+<td><strong>270 M€</strong></td>
+</tr>
+</tbody>
+</table>
+<pre><code>MOIC fonds = 270 / 100 = 2,7× sur l'ensemble du portefeuille
+L'unicorn (1 investissement sur 20) rapporte 150/270 = 55 % du retour total
+</code></pre>
+<p>→ La <strong>loi de puissance</strong> : une start-up génère plus de retour que toutes les autres réunies.</p>
+<hr />
+<h2 id="applications-professionnelles_2">Applications professionnelles</h2>
+<h3 id="structure-organisationnelle-dun-fonds-vc">Structure organisationnelle d'un fonds VC</h3>
+<p><strong>Processus d'investissement</strong> :
+1. <strong>Sourcing</strong> : 1 000+ opportunités/an via réseau, accélérateurs (Y Combinator, Station F), conférences.
+2. <strong>Screening</strong> : 100 dossiers analysés en détail.
+3. <strong>Due diligence</strong> : 10 opportunités en due diligence approfondie.
+4. <strong>Investment Committee</strong> : 3–5 investissements réalisés.
+5. <strong>Post-investissement</strong> : accompagnement mensuel, siège au board, introductions.</p>
+<p><strong>Indicateurs de performance du fonds VC</strong> :
+- <strong>IRR net</strong> (après management fees et carried interest) : cible &gt; 20 %
+- <strong>TVPI (Total Value to Paid-In)</strong> : (valeur portefeuille actuel + distributions) / capital investi
+- <strong>DPI (Distributions to Paid-In)</strong> : cash retourné / capital investi
+- <strong>RVPI (Residual Value to Paid-In)</strong> : valeur portefeuille non réalisé / capital investi</p>
+<h3 id="ecosysteme-vc-mondial">Écosystème VC mondial</h3>
+<table>
+<thead>
+<tr>
+<th>Géographie</th>
+<th>Caractéristiques</th>
+<th>Acteurs majeurs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Silicon Valley</strong></td>
+<td>Epicentre mondial, tickets élevés</td>
+<td>Sequoia, a16z, Benchmark</td>
+</tr>
+<tr>
+<td><strong>New York</strong></td>
+<td>Focus fintech, media, B2B SaaS</td>
+<td>Tiger Global, General Atlantic</td>
+</tr>
+<tr>
+<td><strong>Paris (La French Tech)</strong></td>
+<td>Licornes en hausse, fort soutien BPI</td>
+<td>Partech, Eurazeo, Kima</td>
+</tr>
+<tr>
+<td><strong>Londres</strong></td>
+<td>Hub financier européen post-Brexit</td>
+<td>Index Ventures, Balderton</td>
+</tr>
+<tr>
+<td><strong>Asie</strong></td>
+<td>Croissance rapide, marché immense</td>
+<td>SoftBank, Sequoia Asia</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_2">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Valoriser trop tôt trop haut</strong></td>
+<td>Une valorisation élevée en Seed rend difficile la Série A sans down round</td>
+<td>Lever à la juste valeur, laisser de la marge pour le prochain tour</td>
+</tr>
+<tr>
+<td><strong>Négliger la dilution de l'ESOP</strong></td>
+<td>Le pool de stock options dilue les fondateurs et investisseurs</td>
+<td>Créer le pool avant chaque tour pour ne pas impacter la valorisation</td>
+</tr>
+<tr>
+<td><strong>Confondre post-money et liquid value</strong></td>
+<td>La valeur post-money est théorique ; la liquidation preference peut réduire le retour réel des fondateurs</td>
+<td>Modéliser le waterfall pour chaque scénario d'exit</td>
+</tr>
+<tr>
+<td><strong>Participating preferred abusive</strong></td>
+<td>En cas de participating preferred, le VC double-dip : il prend d'abord son LP puis participe au reste</td>
+<td>Négocier non-participating ou un cap sur la participation</td>
+</tr>
+<tr>
+<td><strong>Ignorer le vesting dans les négociations</strong></td>
+<td>Sans vesting, un cofondateur qui part précocement garde ses actions → dilution pour les autres</td>
+<td>Standard : 4 ans avec cliff 1 an, accélération simple en cas de change of control</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_2">Exercices supplémentaires</h2>
+<h3 id="exercice-1_4">Exercice 1</h3>
+<p>Un VC investit 8 M€ dans une start-up à une valorisation pre-money de 24 M€. Le fondateur possède 100 % avant l'opération. Calculez la valorisation post-money, le % du VC et le % du fondateur après le tour.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Post-money = 24 + 8 = <strong>32 M€</strong>
+% VC = 8 / 32 = <strong>25 %</strong>
+% Fondateur = 24 / 32 = <strong>75 %</strong></p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>La start-up de l'exercice 1 réalise une Série B : 15 M€ levés à une valorisation pre-money de 80 M€. Calculez la nouvelle cap table et le % de dilution du fondateur.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Prix par action Série A = 24 M€ / Nb actions existantes.
+Simplifions : supposons 1 M actions au départ → prix Seed = 24 €/action
+Actions Seed = 8 M€ / 24 = 333 333 actions
+Total après Seed = 1 333 333 actions</p>
+<p>Prix Série B = 80 M€ / 1 333 333 = 60 €/action
+Nouvelles actions Série B = 15 M€ / 60 = 250 000 actions
+Total = 1 583 333 actions</p>
+<table>
+<thead>
+<tr>
+<th>Actionnaire</th>
+<th>Actions</th>
+<th>%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fondateur</td>
+<td>1 000 000</td>
+<td>63,2 %</td>
+</tr>
+<tr>
+<td>Seed VC</td>
+<td>333 333</td>
+<td>21,1 %</td>
+</tr>
+<tr>
+<td>VC Série B</td>
+<td>250 000</td>
+<td>15,8 %</td>
+</tr>
+</tbody>
+</table>
+<p>Dilution fondateur : de 75 % à 63,2 % = <strong>-11,8 points</strong></p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>Exit à 200 M€. VC Série A : 8 M€ investis, 25 %, liquidation preference 1× non-participating. VC Série B : 15 M€ investis, 15,8 %, liquidation preference 1× non-participating. Calculez le waterfall et les MOIC de chaque investisseur.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Option LP vs. conversion pour chaque investisseur</strong> :
+VC A : 1× LP = 8 M€ vs. 25 % × 200 = 50 M€ → SE CONVERTIT
+VC B : 1× LP = 15 M€ vs. 15,8 % × 200 = 31,6 M€ → SE CONVERTIT</p>
+<p>Distribution pro-rata (tous convertis) :
+| Actionnaire | % | Montant | MOIC |
+|------------|---|---------|------|
+| Fondateur | 63,2 % | 126,4 M€ | N/A |
+| VC A | 21,1 % | 42,2 M€ | 42,2/8 = <strong>5,3×</strong> |
+| VC B | 15,8 % | 31,6 M€ | 31,6/15 = <strong>2,1×</strong> |</p>
+</blockquote>
+<h3 id="exercice-4_1">Exercice 4</h3>
+<p>Décrivez les trois grandes formes de sorties VC et donnez pour chacune un avantage et un inconvénient du point de vue du fonds.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. IPO</strong> :
+✓ Prix élevé (prime de liquidité), visibilité.
+✗ Lock-up 180 jours (le VC ne peut pas vendre immédiatement), processus long et coûteux.</p>
+<p><strong>2. Trade sale</strong> (vente à un industriel) :
+✓ Liquidité immédiate, prix élevé si synergies (l'industriel paie pour les synergies).
+✗ Le fondateur perd son indépendance, le VC doit négocier les clauses de représentation/garantie.</p>
+<p><strong>3. Secondary buyout</strong> (vente à un autre fonds PE/VC) :
+✓ Process rapide, acquéreur familier avec les structures VC.
+✗ Prix souvent inférieur au trade sale (pas de synergies), "recycling" du risque plutôt que création de valeur réelle.</p>
+</blockquote>
+<hr />
+</body>
+</html>

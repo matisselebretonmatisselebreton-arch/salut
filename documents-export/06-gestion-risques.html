@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>06 Gestion Risques</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-6-gestion-des-risques-risk-management">Module 6 — Gestion des Risques (Risk Management)</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Identifier, mesurer et gérer les risques financiers auxquels sont exposés les institutions financières et les entreprises : risque de marché, risque de crédit, risque opérationnel. Maîtriser les outils réglementaires (Bâle III, VaR, stress tests).</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-introduction-risques.md">Identification et classification des risques financiers</a></li>
+<li><a href="./chapitre-02-var-expected-shortfall.md">Mesure du risque de marché : VaR et Expected Shortfall</a></li>
+<li><a href="./chapitre-03-risque-credit-reglementation.md">Risque de crédit et cadre réglementaire</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>12 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Calcul de VaR paramétrique et historique</li>
+<li>Étude de cas : portefeuille bancaire (stress test)</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-identification-et-classification-des-risques-financiers">Chapitre 1 — Identification et classification des risques financiers</h1>
+<h2 id="introduction">Introduction</h2>
+<p>La gestion des risques est au cœur de l'activité bancaire et financière. Le <strong>risk management</strong> consiste à identifier, mesurer, surveiller et contrôler les risques pour éviter les pertes catastrophiques et respecter les exigences réglementaires.</p>
+<hr />
+<h2 id="1-taxonomie-des-risques-financiers">1. Taxonomie des risques financiers</h2>
+<h3 id="11-risque-de-marche">1.1 Risque de marché</h3>
+<p>Risque de perte lié à des variations défavorables des <strong>variables de marché</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Facteur</th>
+<th>Exemples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Risque de taux</strong></td>
+<td>Hausse des taux d'intérêt → baisse du portefeuille obligataire</td>
+</tr>
+<tr>
+<td><strong>Risque actions</strong></td>
+<td>Chute des marchés actions → perte sur portefeuille equity</td>
+</tr>
+<tr>
+<td><strong>Risque de change</strong></td>
+<td>Dépréciation d'une devise → perte sur positions FX</td>
+</tr>
+<tr>
+<td><strong>Risque de matières premières</strong></td>
+<td>Volatilité du pétrole, métaux, etc.</td>
+</tr>
+<tr>
+<td><strong>Risque de volatilité</strong></td>
+<td>Variation de la volatilité implicite (vega)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-risque-de-credit">1.2 Risque de crédit</h3>
+<p>Risque de perte lié au <strong>défaut d'une contrepartie</strong> (incapacité à honorer ses obligations) :</p>
+<ul>
+<li><strong>Risque de défaut</strong> : la contrepartie ne rembourse pas.</li>
+<li><strong>Risque de dégradation</strong> (downgrade risk) : détérioration de la qualité de crédit.</li>
+<li><strong>Risque de contrepartie</strong> (CCR) : risque sur les instruments dérivés OTC.</li>
+<li><strong>Risque de concentration</strong> : exposition excessive à un secteur ou un débiteur.</li>
+</ul>
+<h3 id="13-risque-de-liquidite">1.3 Risque de liquidité</h3>
+<ul>
+<li><strong>Risque de liquidité de marché</strong> : impossibilité de liquider une position sans impact majeur sur le prix.</li>
+<li><strong>Risque de liquidité de financement</strong> : incapacité à lever des fonds à court terme (run bancaire).</li>
+</ul>
+<h3 id="14-risque-operationnel">1.4 Risque opérationnel</h3>
+<p>Risque de pertes liées à des <strong>défaillances humaines, des processus, des systèmes ou des événements externes</strong> :</p>
+<ul>
+<li>Fraudes internes / externes</li>
+<li>Erreurs de traitement (back-office)</li>
+<li>Pannes informatiques</li>
+<li>Catastrophes naturelles</li>
+<li>Risques juridiques</li>
+</ul>
+<h3 id="15-autres-risques">1.5 Autres risques</h3>
+<table>
+<thead>
+<tr>
+<th>Risque</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Risque systémique</strong></td>
+<td>Contagion financière (effet domino)</td>
+</tr>
+<tr>
+<td><strong>Risque de modèle</strong></td>
+<td>Erreurs dans les modèles de pricing/VaR</td>
+</tr>
+<tr>
+<td><strong>Risque de réputation</strong></td>
+<td>Scandales, controverses</td>
+</tr>
+<tr>
+<td><strong>Risque de taux de concentration</strong></td>
+<td>Exposition à un seul débiteur / secteur</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-le-processus-de-gestion-des-risques">2. Le processus de gestion des risques</h2>
+<pre><code>1. Identification → Cartographie des risques
+         ↓
+2. Mesure → VaR, ratings, scénarios de stress
+         ↓
+3. Surveillance → Systèmes de limites, reporting
+         ↓
+4. Contrôle / Atténuation → Couvertures, diversification, provisions
+         ↓
+5. Reporting → Direction, régulateurs, investisseurs
+</code></pre>
+<hr />
+<h2 id="3-gouvernance-des-risques">3. Gouvernance des risques</h2>
+<h3 id="31-les-trois-lignes-de-defense-three-lines-of-defense">3.1 Les trois lignes de défense (Three Lines of Defense)</h3>
+<table>
+<thead>
+<tr>
+<th>Ligne</th>
+<th>Acteurs</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1ère ligne</strong></td>
+<td>Métiers, traders, commerciaux</td>
+<td>Propriétaires du risque, gestion au quotidien</td>
+</tr>
+<tr>
+<td><strong>2ème ligne</strong></td>
+<td>Risk management, conformité</td>
+<td>Supervision, définition des politiques de risque</td>
+</tr>
+<tr>
+<td><strong>3ème ligne</strong></td>
+<td>Audit interne</td>
+<td>Évaluation indépendante de l'ensemble du dispositif</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-role-du-chief-risk-officer-cro">3.2 Rôle du Chief Risk Officer (CRO)</h3>
+<p>Le <strong>CRO</strong> est le responsable de la gestion des risques à l'échelle du groupe :
+- Définit l'<strong>appétit pour le risque</strong> (risk appetite).
+- Supervise les comités de risque.
+- Reporte au Conseil d'Administration.</p>
+<h3 id="33-comites-de-risque">3.3 Comités de risque</h3>
+<ul>
+<li><strong>ALCO</strong> (Asset-Liability Committee) : gestion du risque de taux et de liquidité du bilan bancaire.</li>
+<li><strong>Credit Committee</strong> : décisions de crédit sur les expositions significatives.</li>
+<li><strong>Market Risk Committee</strong> : validation des limites et modèles de risque de marché.</li>
+</ul>
+<hr />
+<h2 id="4-le-cadre-reglementaire-de-bale-iii">4. Le cadre réglementaire de Bâle III</h2>
+<h3 id="41-evolution-historique">4.1 Évolution historique</h3>
+<table>
+<thead>
+<tr>
+<th>Accord</th>
+<th>Date</th>
+<th>Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bâle I</td>
+<td>1988</td>
+<td>Exigences minimales de fonds propres (8 %)</td>
+</tr>
+<tr>
+<td>Bâle II</td>
+<td>2004</td>
+<td>Pilier 1 (quantitatif), Pilier 2 (surveillance), Pilier 3 (transparence)</td>
+</tr>
+<tr>
+<td>Bâle III</td>
+<td>2010–2023</td>
+<td>Renforcement fonds propres, liquidité (LCR, NSFR), levier</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-structure-de-bale-iii">4.2 Structure de Bâle III</h3>
+<p><strong>Pilier 1 — Exigences minimales de fonds propres</strong> :</p>
+<pre><code>Ratio de solvabilité = Fonds propres / Actifs pondérés par les risques (RWA) ≥ 8 %
+
+dont : CET1 (Common Equity Tier 1) ≥ 4,5 %
+       Tier 1 ≥ 6 %
+       Total capital ≥ 8 %
+       + Coussins de conservation (2,5 %)
+       + Coussins contracycliques (0–2,5 %)
+</code></pre>
+<p><strong>Ratio de levier</strong> :</p>
+<pre><code>Ratio de levier = Tier 1 / Exposition totale ≥ 3 %
+</code></pre>
+<p><strong>Ratios de liquidité</strong> :</p>
+<pre><code>LCR (Liquidity Coverage Ratio) : Actifs liquides / Sorties nettes 30 jours ≥ 100 %
+NSFR (Net Stable Funding Ratio) : Financement stable disponible / Financement stable requis ≥ 100 %
+</code></pre>
+<hr />
+<h2 id="5-exercices">5. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>Classifiez les risques suivants : (a) chute des taux d'intérêt sur un portefeuille d'obligations, (b) défaut d'un émetteur corporate, (c) erreur informatique causant un double paiement, (d) impossibilité de vendre un actif illiquide rapidement.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+(a) <strong>Risque de marché</strong> (taux d'intérêt) — impact sur la valeur du portefeuille.
+(b) <strong>Risque de crédit</strong> (défaut) — non-remboursement d'une obligation.
+(c) <strong>Risque opérationnel</strong> — défaillance d'un système informatique.
+(d) <strong>Risque de liquidité de marché</strong> — impossibilité de céder l'actif.</p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Une banque a un ratio CET1 de 11 % et un coussin de conservation de 2,5 %. Quel est son ratio CET1 au-dessus des exigences minimales ? Peut-elle distribuer des dividendes librement ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Exigence minimale CET1 = 4,5 % + 2,5 % = 7 %
+Ratio au-dessus de l'exigence = 11 % - 7 % = <strong>4 %</strong> de coussin disponible.
+La distribution de dividendes est libre si le ratio reste au-dessus du minimum (7 %). ✓</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>Les risques financiers se décomposent en : marché, crédit, liquidité, opérationnel et autres.</li>
+<li>Le processus de gestion des risques : identifier → mesurer → surveiller → contrôler → reporter.</li>
+<li>Les trois lignes de défense garantissent l'indépendance du contrôle.</li>
+<li>Bâle III impose des exigences de fonds propres (CET1), de levier et de liquidité (LCR, NSFR).</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="la-theorie-des-risques-extremes-et-la-distribution-des-pertes">La théorie des risques extrêmes et la distribution des pertes</h3>
+<p>La majorité des modèles de risque supposent des distributions normales. En réalité, les pertes financières présentent des <strong>queues épaisses</strong> (fat tails) : les événements extrêmes sont beaucoup plus fréquents que la loi normale ne le prédit.</p>
+<p><strong>Théorie des valeurs extrêmes (Extreme Value Theory — EVT)</strong> :
+La distribution de Pareto généralisée (GPD) modélise les queues de distribution :</p>
+<pre><code>P(X &gt; x | X &gt; u) ≈ (1 + ξ(x-u)/β)^(-1/ξ)
+</code></pre>
+<ul>
+<li><code>ξ</code> : paramètre de forme (tail index)</li>
+<li><code>u</code> : seuil (valeur au-delà duquel la GPD s'applique)</li>
+<li><code>β</code> : paramètre d'échelle</li>
+</ul>
+<p>Pour les marchés financiers, ξ ≈ 0,3–0,5 → queues épaisses (Pareto).</p>
+<h3 id="le-risque-systemique-et-les-cascades-de-defauts">Le risque systémique et les cascades de défauts</h3>
+<p>La crise de 2008 a illustré le <strong>risque systémique</strong> : la faillite de Lehman Brothers (15 septembre 2008) a déclenché une cascade de défauts via les expositions croisées.</p>
+<p><strong>Mécanismes de contagion</strong> :
+1. <strong>Effet direct</strong> : créances sur l'entité en défaut.
+2. <strong>Liquidité</strong> : ruée sur la trésorerie (bank run).
+3. <strong>Sentiment</strong> : perte de confiance généralisée → gel des marchés interbancaires.
+4. <strong>Fire sales</strong> : liquidation forcée d'actifs → baisse des prix → pertes latentes pour d'autres entités.</p>
+<p><strong>Mesures du risque systémique</strong> :
+- <strong>CoVaR (Adrian &amp; Brunnermeier, 2011)</strong> : VaR du système financier conditionnelle à la détresse d'une institution.
+- <strong>SRISK</strong> : capital manquant d'une institution en cas de crise systémique.
+- <strong>Expected Shortfall systémique</strong> : perte espérée du système au-delà d'un seuil.</p>
+<h3 id="bale-iv-et-evolutions-reglementaires">Bâle IV et évolutions réglementaires</h3>
+<p><strong>Bâle IV (finalisation de Bâle III, 2023–2025)</strong> apporte des changements majeurs :</p>
+<ol>
+<li><strong>Output floor</strong> : exigence minimale pour les banques utilisant des modèles internes (IRBA, modèles internes de marché) = 72,5 % de l'exigence en approche standard.</li>
+<li><strong>FRTB (Fundamental Review of the Trading Book)</strong> : révision complète du cadre pour le risque de marché, migration vers l'Expected Shortfall.</li>
+<li><strong>CVA simplifié</strong> : nouveau cadre pour le risque de valorisation des dérivés.</li>
+</ol>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-calcul-du-lcr-et-nsfr">Exemple 1 — Calcul du LCR et NSFR</h3>
+<p><strong>Banque ALPHA</strong> (données simplifiées, en Mds €) :</p>
+<table>
+<thead>
+<tr>
+<th>Actifs liquides de haute qualité (HQLA)</th>
+<th>Montant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Numéraire et réserves banque centrale</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Titres d'État (0 % pondération risque)</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Obligations souveraines AA</td>
+<td>8</td>
+</tr>
+<tr>
+<td><strong>HQLA total</strong></td>
+<td><strong>28</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Sorties nettes sur 30 jours :
+- Dépôts retail (taux de fuite 5 % sur 30 jours) : 200 Mds × 5 % = 10
+- Lignes de crédit confirmées non tirées (taux fuite 10 %) : 50 × 10 % = 5
+- Dettes wholesale CT (taux fuite 100 %) : 8
+- <strong>Sorties nettes totales : 23 Mds €</strong></p>
+<pre><code>LCR = HQLA / Sorties nettes = 28 / 23 = 122 % &gt; 100 % ✓
+</code></pre>
+<p>La banque satisfait à l'exigence LCR.</p>
+<h3 id="exemple-2-perte-operationnelle-et-pertes-historiques">Exemple 2 — Perte opérationnelle et pertes historiques</h3>
+<p><strong>Affaire Kerviel (Société Générale, 2008)</strong> : perte de <strong>4,9 Mds €</strong> due à des positions non autorisées sur futures d'indices européens. Classification : <strong>risque opérationnel — fraude interne</strong>.</p>
+<p>Exigence de fonds propres pour risque opérationnel (approche BIA — Basic Indicator Approach) :</p>
+<pre><code>Capital opérationnel = α × Produit Net Bancaire moyen (3 ans)
+α = 15 % (coefficient Bâle III)
+</code></pre>
+<p>Pour une banque avec PNB moyen = 10 Mds € :</p>
+<pre><code>Capital opérationnel = 15 % × 10 = 1,5 Mds €
+</code></pre>
+<p>→ La perte de 4,9 Mds aurait effacé 3× le capital opérationnel requis — preuve que les modèles sous-estiment le risque opérationnel de queue.</p>
+<h3 id="exemple-3-ratio-de-solvabilite-et-exigences-cet1">Exemple 3 — Ratio de solvabilité et exigences CET1</h3>
+<p><strong>Banque BETA</strong> (données en Mds €) :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Montant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CET1 (capital actions + réserves)</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Tier 1 (CET1 + AT1 hybrids)</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Tier 2 (dettes subordonnées)</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Total capital</td>
+<td>20</td>
+</tr>
+<tr>
+<td>RWA (Actifs pondérés des risques)</td>
+<td>150</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Ratio CET1 = 12 / 150 = 8 %    ≥ 4,5 % ✓ mais &lt; 7 % (avec coussin conservation) → restrictions dividendes
+Ratio Tier 1 = 15 / 150 = 10 % ≥ 6 % ✓
+Ratio Total = 20 / 150 = 13,3 % ≥ 8 % ✓
+Ratio de levier = Tier 1 / Exposition = 15 / 500 = 3 % = minimum ✓ (mais limite)
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="direction-des-risques-en-banque-risk-management-framework">Direction des risques en banque (Risk Management Framework)</h3>
+<p>La gouvernance des risques en pratique chez une grande banque (ex. BNP Paribas) :</p>
+<p><strong>Comité des risques (Board Risk Committee)</strong> :
+- Supervise le risk appetite statement global.
+- Valide les limites d'exposition par métier, secteur, géographie.</p>
+<p><strong>Risk Appetite Statement (RAS)</strong> :</p>
+<pre><code>Ex : &quot;Le Groupe n'accepte pas une perte supérieure à X% du CET1 sur
+un horizon 1 an dans un scénario de stress sévère. Le levier (D/EBITDA)
+des contreparties corporate financées ne doit pas dépasser 5× sauf exception.&quot;
+</code></pre>
+<p><strong>Reporting de risque</strong> :
+- <strong>Daily P&amp;L</strong> : rapport quotidien du P&amp;L réalisé vs. P&amp;L théorique (Greek-based).
+- <strong>VaR Dashboard</strong> : VaR par desk, par facteur de risque, backtesting.
+- <strong>Risk appetite consumption</strong> : consommation des limites vs. tolerances.</p>
+<h3 id="assurance-solvabilite-ii">Assurance : Solvabilité II</h3>
+<p>En assurance, le cadre <strong>Solvabilité II</strong> (2016) impose :
+- <strong>SCR (Solvency Capital Requirement)</strong> : capital pour survivre à un choc 1/200 ans.
+- <strong>MCR (Minimum Capital Requirement)</strong> : capital minimal absolu.
+- Pilier 2 : gouvernance des risques, ORSA (Own Risk and Solvency Assessment).
+- Pilier 3 : transparence et reporting.</p>
+<p><strong>SCR modulaire</strong> :</p>
+<pre><code>SCR_total = √(Σᵢ Σⱼ ρᵢⱼ × SCRᵢ × SCRⱼ)
+</code></pre>
+<p>Modules : risque de marché, risque de crédit (spread), risque vie, risque non-vie, risque opérationnel.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Croire que la VaR couvre tout</strong></td>
+<td>La VaR ne dit rien sur les pertes au-delà du seuil</td>
+<td>Compléter avec l'Expected Shortfall et les stress tests</td>
+</tr>
+<tr>
+<td><strong>Sous-estimer le risque de liquidité</strong></td>
+<td>En crise, la liquidité disparaît là où on en a le plus besoin</td>
+<td>LCR/NSFR et tests de résistance de liquidité</td>
+</tr>
+<tr>
+<td><strong>Confondre risque de marché et risque de crédit</strong></td>
+<td>Une obligation corporate comporte du risque de taux ET du risque de crédit</td>
+<td>Décomposer les expositions par facteur de risque</td>
+</tr>
+<tr>
+<td><strong>Croire que la diversification élimine tout risque</strong></td>
+<td>Le risque systémique n'est pas diversifiable</td>
+<td>Distinguer risque idiosyncratique (diversifiable) et systémique</td>
+</tr>
+<tr>
+<td><strong>Modèle de corrélation stable</strong></td>
+<td>En crise, les corrélations augmentent fortement (actifs très liés tombent ensemble)</td>
+<td>Tester les corrélations en conditions de stress (crisis correlation)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Une banque a : CET1 = 8 Mds €, Tier 1 = 10 Mds €, Tier 2 = 3 Mds €, RWA = 90 Mds €. Calculez les 3 ratios de solvabilité. La banque satisfait-elle aux exigences minimales de Bâle III (avec coussin de conservation de 2,5 %) ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Ratio CET1 = 8 / 90 = <strong>8,9 %</strong> ≥ 4,5 % + 2,5 % = 7 % ✓
+Ratio Tier 1 = 10 / 90 = <strong>11,1 %</strong> ≥ 6 % ✓
+Ratio Total = 13 / 90 = <strong>14,4 %</strong> ≥ 8 % + 2,5 % = 10,5 % ✓
+La banque satisfait à toutes les exigences avec des coussins confortables.</p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>Classifiez les scénarios de risque suivants et estimez si un stress test historique ou hypothétique est approprié : (a) krach boursier de type 2008, (b) cyber-attaque majeure sur les systèmes bancaires, (c) sortie d'un pays de la zone euro, (d) fraude découverte dans un fonds de pension client.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+(a) Krach 2008 → <strong>Risque de marché + risque de crédit</strong> → stress test historique (replay de 2008) ✓
+(b) Cyber-attaque → <strong>Risque opérationnel</strong> → stress test hypothétique (événement sans précédent complet) ✓
+(c) Sortie zone euro → <strong>Risque de marché (FX) + risque de crédit souverain</strong> → stress test hypothétique (jamais vu) ✓
+(d) Fraude → <strong>Risque opérationnel + risque de réputation</strong> → analyse de scénario spécifique ✓</p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Calculez le capital requis pour risque opérationnel (approche BIA) pour une banque dont les PNB des 3 dernières années sont : N-2 = 8 Mds €, N-1 = 9 Mds €, N = 10 Mds €.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+PNB moyen = (8 + 9 + 10) / 3 = <strong>9 Mds €</strong>
+Capital requis = 15 % × 9 = <strong>1,35 Mds €</strong></p>
+</blockquote>
+<h3 id="exercice-4">Exercice 4</h3>
+<p>Expliquez pourquoi la crise de 2008 a révélé les limites du modèle de corrélation gaussienne utilisé pour les CDO. Quel était le principal défaut de la "copule gaussienne" de Li ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Le modèle de Li (2000) modélisait les corrélations entre défauts par une copule gaussienne avec une corrélation fixe ρ. Les tranches senior des CDO hypothécaires étaient notées AAA car la probabilité de pertes simultanées semblait très faible.</p>
+<p><strong>Défauts principaux</strong> :
+1. La corrélation était calibrée sur des données historiques incluant peu de crises graves → sous-estimation.
+2. En cas de stress systémique (crise immobilière généralisée), les défauts sont fortement corrélés (queues épaisses dans la distribution conjointe).
+3. La copule gaussienne a des queues fines → elle sous-estime dramatiquement la probabilité de défauts conjoints massifs.</p>
+<p><strong>Conséquence</strong> : les tranchages AAA des CDO subprime n'avaient pas la protection supposée → pertes catastrophiques lors de la crise 2007-2008.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-2-mesure-du-risque-de-marche-var-et-expected-shortfall">Chapitre 2 — Mesure du risque de marché : VaR et Expected Shortfall</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>La <strong>VaR</strong> (Value at Risk) est la mesure de risque de marché la plus répandue dans la pratique bancaire et financière. Elle quantifie la perte maximale probable sur un portefeuille pour un niveau de confiance et un horizon donnés.</p>
+<hr />
+<h2 id="1-definition-de-la-var">1. Définition de la VaR</h2>
+<h3 id="11-definition-formelle">1.1 Définition formelle</h3>
+<pre><code>VaR(α, h) = q_(1-α)(L_h)
+</code></pre>
+<p>La VaR à <code>(1-α) %</code> de confiance sur <code>h</code> jours est le quantile <code>(1-α)</code> de la distribution des pertes sur <code>h</code> jours.</p>
+<p><strong>Exemple</strong> : VaR 99 % à 1 jour = 1 M€ signifie :</p>
+<blockquote>
+<p>"La perte quotidienne ne dépassera pas 1 M€ dans 99 % des cas.
+Il y a 1 % de chance de perdre plus de 1 M€ sur une journée."</p>
+</blockquote>
+<h3 id="12-parametres-cles">1.2 Paramètres clés</h3>
+<table>
+<thead>
+<tr>
+<th>Paramètre</th>
+<th>Valeur courante</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Niveau de confiance</td>
+<td>95 % ou 99 %</td>
+</tr>
+<tr>
+<td>Horizon</td>
+<td>1 jour (trading) ou 10 jours (Bâle)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-methodes-de-calcul-de-la-var">2. Méthodes de calcul de la VaR</h2>
+<h3 id="21-var-parametrique-methode-analytique">2.1 VaR paramétrique (méthode analytique)</h3>
+<p>Hypothèse : les rendements suivent une <strong>loi normale</strong>.</p>
+<pre><code>VaR(α) = -μ_P + z_α × σ_P
+</code></pre>
+<p>Où <code>z_α</code> est le quantile de la loi normale :
+- z_95% = 1,645
+- z_99% = 2,326</p>
+<p>Pour un portefeuille :</p>
+<pre><code>VaR = W × σ_P × z_α × √h
+</code></pre>
+<ul>
+<li><code>W</code> : valeur du portefeuille</li>
+<li><code>σ_P</code> : écart-type quotidien du portefeuille</li>
+<li><code>h</code> : horizon en jours (règle de la racine carrée du temps)</li>
+</ul>
+<p><strong>Exemple</strong> :
+- Portefeuille = 10 M€, σ = 1,5 %/jour, niveau de confiance 99 %
+- VaR (1 jour, 99 %) = 10 000 000 × 1,5 % × 2,326 = <strong>348 900 €</strong>
+- VaR (10 jours, 99 %) = 348 900 × √10 = <strong>1 103 066 €</strong></p>
+<h3 id="22-var-historique-historical-simulation">2.2 VaR historique (Historical Simulation)</h3>
+<ol>
+<li>Recueillir les <strong>rendements historiques</strong> sur les N dernières périodes (ex : 500 jours).</li>
+<li>Appliquer ces rendements au portefeuille actuel.</li>
+<li>Trier les P&amp;L simulés par ordre croissant.</li>
+<li>La VaR 99 % est le 1er percentile (5ème pire perte sur 500 observations).</li>
+</ol>
+<p><strong>Avantages</strong> : aucune hypothèse de distribution, capture les fat tails.
+<strong>Limites</strong> : dépend de la période historique choisie, lente à s'adapter.</p>
+<h3 id="23-var-par-simulation-de-monte-carlo">2.3 VaR par simulation de Monte Carlo</h3>
+<ol>
+<li>Modéliser les processus stochastiques des facteurs de risque.</li>
+<li>Simuler N scénarios (ex : 100 000 chemins).</li>
+<li>Calculer la P&amp;L du portefeuille pour chaque scénario.</li>
+<li>Lire le quantile correspondant au niveau de confiance.</li>
+</ol>
+<p><strong>Avantages</strong> : flexible, intègre les non-linéarités (options).
+<strong>Limites</strong> : coûteux en calcul, dépend de la qualité des modèles.</p>
+<hr />
+<h2 id="3-proprietes-et-limites-de-la-var">3. Propriétés et limites de la VaR</h2>
+<h3 id="31-limites-fondamentales">3.1 Limites fondamentales</h3>
+<table>
+<thead>
+<tr>
+<th>Limite</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ne dit rien sur la queue</strong></td>
+<td>La VaR ne mesure pas la perte si le seuil est dépassé</td>
+</tr>
+<tr>
+<td><strong>Non sous-additive</strong></td>
+<td>VaR(A+B) peut être &gt; VaR(A) + VaR(B) → ne récompense pas la diversification</td>
+</tr>
+<tr>
+<td><strong>Dépend de la distribution</strong></td>
+<td>En queues épaisses (fat tails), la VaR normale sous-estime les risques</td>
+</tr>
+<tr>
+<td><strong>Pro-cyclique</strong></td>
+<td>Faible volatilité → faible VaR → prise de risque excessive</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-backtesting-de-la-var">3.2 Backtesting de la VaR</h3>
+<p>Le backtesting vérifie que la VaR n'est dépassée que dans la proportion attendue de cas.</p>
+<pre><code>Nombre de dépassements / Nombre de jours ≈ (1 - niveau de confiance)
+</code></pre>
+<p><strong>Zones du trafic light (Bâle)</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Dépassements sur 250 jours</th>
+<th>Zone</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–4</td>
+<td>Verte</td>
+<td>Aucune</td>
+</tr>
+<tr>
+<td>5–9</td>
+<td>Jaune</td>
+<td>Enquête</td>
+</tr>
+<tr>
+<td>≥ 10</td>
+<td>Rouge</td>
+<td>Multiplicateur majoré</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-expected-shortfall-es-cvar">4. Expected Shortfall (ES) — CVaR</h2>
+<h3 id="41-definition">4.1 Définition</h3>
+<p>L'<strong>Expected Shortfall</strong> (ES), ou <strong>CVaR</strong> (Conditional VaR), mesure la <strong>perte moyenne au-delà de la VaR</strong> :</p>
+<pre><code>ES(α) = E[L | L &gt; VaR(α)]
+</code></pre>
+<p>C'est la moyenne des <code>(1-α) %</code> pires pertes.</p>
+<p><strong>Exemple</strong> : avec les 500 rendements historiques et une VaR 99 % (5 obs. au-delà), l'ES est la moyenne des 5 pires pertes.</p>
+<h3 id="42-avantages-de-les-vs-var">4.2 Avantages de l'ES vs VaR</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>VaR</th>
+<th>ES</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sous-additivité</td>
+<td>Non</td>
+<td>Oui (mesure cohérente)</td>
+</tr>
+<tr>
+<td>Information sur la queue</td>
+<td>Non</td>
+<td>Oui</td>
+</tr>
+<tr>
+<td>Standard Bâle IV (FRTB)</td>
+<td>Non</td>
+<td>Oui (ES 97,5 %)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-passage-de-la-var-a-les-loi-normale">4.3 Passage de la VaR à l'ES (loi normale)</h3>
+<pre><code>ES(α) = μ + σ × φ(z_α) / (1 - α)
+</code></pre>
+<ul>
+<li><code>φ(z_α)</code> : densité de la loi normale au quantile z_α</li>
+</ul>
+<hr />
+<h2 id="5-stress-tests-et-scenarios">5. Stress tests et scénarios</h2>
+<h3 id="51-definition">5.1 Définition</h3>
+<p>Les <strong>stress tests</strong> évaluent l'impact de scénarios extrêmes (mais plausibles) sur la valeur d'un portefeuille, au-delà de ce que capte la VaR normale.</p>
+<h3 id="52-types-de-stress-tests">5.2 Types de stress tests</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+<th>Exemple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Historique</strong></td>
+<td>Rejouer des crises passées</td>
+<td>Crise 2008, COVID 2020, crise euro 2011</td>
+</tr>
+<tr>
+<td><strong>Hypothétique</strong></td>
+<td>Scénario construit (adverse)</td>
+<td>Guerre, krach obligataire</td>
+</tr>
+<tr>
+<td><strong>Inverse (reverse stress)</strong></td>
+<td>Trouver le scénario qui ruinerait la banque</td>
+<td>"Quel choc détruirait nos fonds propres ?"</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-stress-tests-reglementaires">5.3 Stress tests réglementaires</h3>
+<ul>
+<li><strong>EBA</strong> (European Banking Authority) : stress tests européens annuels.</li>
+<li><strong>Fed</strong> (DFAST/CCAR) : stress tests américains.</li>
+<li>Ils définissent un scénario de base et un scénario adverse sur 3 ans.</li>
+</ul>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Un portefeuille de 5 M€ a un écart-type quotidien de 2 %. Calculez la VaR 95 % et 99 % à 1 jour, puis la VaR 99 % à 10 jours.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VaR 95 % 1j = 5 000 000 × 2 % × 1,645 = <strong>164 500 €</strong>
+VaR 99 % 1j = 5 000 000 × 2 % × 2,326 = <strong>232 600 €</strong>
+VaR 99 % 10j = 232 600 × √10 = <strong>735 342 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Sur 250 jours de backtesting, la VaR 99 % d'une banque est dépassée 8 fois. Dans quelle zone Bâle se trouve-t-elle ? Quelle action doit-elle envisager ?</p>
+<blockquote>
+<p><strong>Correction</strong> : 8 dépassements → <strong>zone jaune</strong> → enquête interne sur la qualité du modèle. Le régulateur peut appliquer un multiplicateur majoré sur les exigences de capital.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>La VaR mesure la perte maximale probable à un niveau de confiance donné.</li>
+<li>Trois méthodes : paramétrique (normale), historique (non paramétrique), Monte Carlo (flexible).</li>
+<li>La VaR a des limites : elle ne mesure pas la queue, n'est pas sous-additive.</li>
+<li>L'Expected Shortfall (ES) est une mesure cohérente qui comble les lacunes de la VaR ; c'est le standard Bâle IV.</li>
+<li>Les stress tests complètent la VaR pour capturer les scénarios extrêmes.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_1">Approfondissement théorique</h2>
+<h3 id="les-proprietes-dune-mesure-de-risque-coherente">Les propriétés d'une mesure de risque cohérente</h3>
+<p><strong>Artzner, Delbaen, Eber &amp; Heath (1999)</strong> ont défini les quatre axiomes d'une <strong>mesure de risque cohérente</strong> ρ :</p>
+<table>
+<thead>
+<tr>
+<th>Axiome</th>
+<th>Définition</th>
+<th>VaR</th>
+<th>ES</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Monotonie</strong></td>
+<td>Si X ≥ Y p.s. → ρ(X) ≤ ρ(Y)</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Translation-invariance</strong></td>
+<td>ρ(X + c) = ρ(X) - c</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Homogénéité positive</strong></td>
+<td>ρ(λX) = λρ(X), λ &gt; 0</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Sous-additivité</strong></td>
+<td>ρ(X + Y) ≤ ρ(X) + ρ(Y)</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<p>La VaR <strong>n'est pas sous-additive</strong> → elle peut ne pas encourager la diversification. Exemple pathologique : deux actifs indépendants de PD = 0,8 % chacun. En combinant, la PD de perte simultanée = très faible, mais la VaR individuelle à 99 % = 0 (aucun défaut prédit sur chaque actif isolément), alors que la VaR de la combinaison peut être positive. C'est pourquoi Bâle IV a adopté l'ES.</p>
+<h3 id="modeles-garch-pour-la-volatilite-dynamique">Modèles GARCH pour la volatilité dynamique</h3>
+<p>La volatilité financière est <strong>hétéroscédastique</strong> (variable dans le temps) et exhibe des <strong>clusters</strong> (périodes calmes / périodes turbulentes).</p>
+<p><strong>Modèle GARCH(1,1) — Bollerslev (1986)</strong> :</p>
+<pre><code>rₜ = μ + εₜ,   εₜ = σₜ × zₜ,   zₜ ~ N(0,1)
+σ²ₜ = ω + α × ε²ₜ₋₁ + β × σ²ₜ₋₁
+</code></pre>
+<p>Interprétation :
+- <code>ω</code> : variance à long terme × (1 - α - β)
+- <code>α</code> : réactivité aux chocs récents (si α élevé → forte réaction)
+- <code>β</code> : persistance (si β élevé → la volatilité reste élevée longtemps)
+- Condition de stationnarité : α + β &lt; 1</p>
+<p><strong>VaR dynamique (GARCH-VaR)</strong> :</p>
+<pre><code>VaR_t(1 jour, 99 %) = z₀,₉₉ × σₜ × W
+</code></pre>
+<p>La VaR change chaque jour en fonction de σₜ → plus réactive en période de stress.</p>
+<h3 id="expected-shortfall-proprietes-avancees">Expected Shortfall : propriétés avancées</h3>
+<p>L'ES satisfait à la sous-additivité, ce qui signifie que la diversification d'un portefeuille est toujours récompensée par une ES combinée ≤ à la somme des ES individuelles.</p>
+<p><strong>ES comme intégrale de VaR</strong> :</p>
+<pre><code>ES(α) = (1 / (1-α)) × ∫_α^1 VaR(u) du
+</code></pre>
+<p>L'ES est la moyenne des VaR au-delà de α% → elle capture l'ensemble de la queue de distribution.</p>
+<p><strong>Transition vers le FRTB (Fundamental Review of the Trading Book, Bâle IV)</strong> :
+- Migration de la VaR 99 % (10 jours) vers l'ES 97,5 % (horizons variables par asset class : 10–120 jours).
+- Decomposition par facteur de risque (RRAO — Risk Factor Eligibility Assessment).
+- Coût en fonds propres estimé à +40–50 % par rapport à l'ancien cadre.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_1">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-var-par-simulation-de-monte-carlo-portefeuille-doptions">Exemple 1 — VaR par simulation de Monte Carlo (portefeuille d'options)</h3>
+<p>Un portefeuille contient une option call sur CAC 40 (delta = 0,6, gamma = 0,02, vega = 0,5) avec valeur = 50 000 €.</p>
+<p>Simulation de 100 000 scénarios de Δ(CAC) et ΔVol :
+- ΔP ≈ Delta × ΔS + 0,5 × Gamma × ΔS² + Vega × Δσ</p>
+<p>Si ΔS ~ N(0, 1 %²) et Δσ ~ N(0, 0,5 pt²) :</p>
+<pre><code>Résultats triés (5e percentile bas = VaR 95 %) :
+VaR 95 % (1 jour) = -3 200 €
+ES 95 % = moyenne des 5 % pires = -4 800 €
+VaR 99 % (1 jour) = -5 600 €
+ES 99 % = -7 200 €
+</code></pre>
+<p>Le ratio ES/VaR ≈ 1,28 → dans la normalité, ce ratio est ≈ 1,25. Des queues plus épaisses (fat tails) augmentent ce ratio.</p>
+<h3 id="exemple-2-comparaison-des-3-methodes-de-var">Exemple 2 — Comparaison des 3 méthodes de VaR</h3>
+<p><strong>Portefeuille</strong> : 100 M€ en actions tech. Volatilité récente : 2 %/jour.</p>
+<p><strong>VaR paramétrique</strong> (99 %, 1 jour) :</p>
+<pre><code>VaR = 100 M€ × 2 % × 2,326 = 4,65 M€
+</code></pre>
+<p><strong>VaR historique</strong> (sur 500 jours, pire 1 % = 5 observations) :</p>
+<pre><code>5 pires rendements observés : -3,1 %, -3,6 %, -4,2 %, -5,0 %, -7,3 %
+VaR historique (99 %) = 4,2 % × 100 M€ = 4,2 M€
+ES historique = (-3,1 - 3,6 - 4,2 - 5,0 - 7,3) % / 5 = -4,64 % → ES = 4,64 M€
+</code></pre>
+<p><strong>Monte Carlo</strong> (GARCH vol) : σ actuel = 2,3 %</p>
+<pre><code>VaR MC = 100 M€ × 2,3 % × 2,326 = 5,35 M€
+</code></pre>
+<p><strong>Synthèse</strong> : VaR paramétrique &lt; VaR historique &lt; VaR MC. La méthode MC capte la volatilité actuelle plus élevée.</p>
+<h3 id="exemple-3-modele-garch11-prevision-de-volatilite">Exemple 3 — Modèle GARCH(1,1) : prévision de volatilité</h3>
+<p>Paramètres estimés sur S&amp;P 500 : ω = 0,000001, α = 0,08, β = 0,91
+Variance à long terme : σ²_LT = ω / (1 - α - β) = 0,000001 / 0,01 = 0,0001 → σ_LT = 1 %</p>
+<p>Volatilité actuelle σ_t = 2 % (après un choc), r_t = -3 % :</p>
+<pre><code>ε²ₜ = (-3 %)² = 0,0009
+σ²ₜ₊₁ = 0,000001 + 0,08 × 0,0009 + 0,91 × (2 %)²
+       = 0,000001 + 0,000072 + 0,000364 = 0,000437
+σₜ₊₁ = √0,000437 = 2,09 %
+</code></pre>
+<p>La volatilité monte légèrement. Sur 10 jours :</p>
+<pre><code>σ²ₜ₊ₖ → ω/(1-α-β) + (α+β)^k × (σ²ₜ - ω/(1-α-β))
+σ²ₜ₊₁₀ → 0,0001 + (0,99)^10 × (0,0004 - 0,0001) = 0,0001 + 0,904 × 0,0003 = 0,000371
+σₜ₊₁₀ = 1,93 % → retour progressif vers la moyenne (mean reversion de la vol)
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles_1">Applications professionnelles</h2>
+<h3 id="salle-des-marches-gestion-quotidienne-des-risques">Salle des marchés : gestion quotidienne des risques</h3>
+<p><strong>Morning risk meeting</strong> (réunion risques du matin) :
+1. Revue des P&amp;L overnight et des P&amp;L théoriques (greeks).
+2. VaR du jour vs. VaR de la veille → changements significatifs ?
+3. Limites : dépassements détectés → actions correctives immédiates.
+4. Stress tests quotidiens : impact d'un krach actions -10 %, hausse taux +50 bp, vol +5 pts.</p>
+<p><strong>Structure de limites typique</strong> :</p>
+<pre><code>Limite VaR desk = 5 M€ (1 jour, 99 %)
+Limite stress test = 20 M€ pour le scénario &quot;crise 2008&quot;
+Limite de concentration = 50 M€ notionnel par émetteur
+Limite de duration = 5 ans d'équivalent obligataire
+</code></pre>
+<h3 id="regulateurs-stress-tests-eba">Régulateurs : stress tests EBA</h3>
+<p>L'<strong>EBA (European Banking Authority)</strong> conduit des stress tests biannuels sur les grandes banques européennes :
+- <strong>Scénario de base</strong> : croissance du PIB zone euro en ligne avec les prévisions.
+- <strong>Scénario adverse</strong> : récession sévère (-4 % PIB), chute actions -30 %, hausse spread souverain.
+- Les banques publient leurs résultats → comparaison inter-établissements.</p>
+<p><strong>Résultats typiques</strong> : en scénario adverse, le CET1 moyen des grandes banques européennes baisse de 4–5 points de base → révèle les banques les plus vulnérables.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_1">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ignorer les corrélations en crise</strong></td>
+<td>Les corrélations montent en période de stress → diversification inefficace</td>
+<td>Utiliser une matrice de corrélation "stress"</td>
+</tr>
+<tr>
+<td><strong>Calibrer la VaR sur période trop courte</strong></td>
+<td>Une VaR calibrée en période calme sous-estime les chocs</td>
+<td>Utiliser 2–3 ans minimum de données historiques incluant une crise</td>
+</tr>
+<tr>
+<td><strong>Croire que backtesting = validation</strong></td>
+<td>4 dépassements sur 250 jours ne garantit pas que le modèle est bon</td>
+<td>Test statistique (Kupiec, Christoffersen)</td>
+</tr>
+<tr>
+<td><strong>Utiliser la VaR 10 jours = VaR 1 jour × √10 toujours</strong></td>
+<td>La règle √T n'est valide que si les P&amp;L sont i.i.d. normaux (non vrai avec auto-corrélation)</td>
+<td>Simuler directement sur 10 jours ou corriger pour l'autocorrélation</td>
+</tr>
+<tr>
+<td><strong>Oublier le risque de modèle</strong></td>
+<td>La VaR dépend des hypothèses → erreur de modèle → fausse sécurité</td>
+<td>Calculer plusieurs VaR (méthodes différentes) et comparer</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_1">Exercices supplémentaires</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Calculez la VaR 99 % et l'ES 99 % (méthode paramétrique, loi normale) pour un portefeuille de 20 M€ avec σ = 1,8 %/jour.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VaR 99 % = 20 M€ × 1,8 % × 2,326 = <strong>837 360 €</strong></p>
+<p>ES 99 % = 20 M€ × 1,8 % × φ(2,326) / (1 - 0,99)
+φ(2,326) = 0,0267 (densité normale)
+ES = 20 × 0,018 × 0,0267 / 0,01 = 20 × 0,018 × 2,67 = <strong>961 200 €</strong>
+Ratio ES/VaR = 961 200 / 837 360 = <strong>1,148</strong></p>
+</blockquote>
+<h3 id="exercice-2_3">Exercice 2</h3>
+<p>Un portefeuille subit les P&amp;L suivants sur 10 jours de stress : -2 M€, -1 M€, +0,5 M€, -3 M€, -0,2 M€, +1 M€, -4 M€, -0,5 M€, +0,3 M€, -1,5 M€. Calculez la VaR 90 % et l'ES 90 % sur cet échantillon.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Classement des P&amp;L (les 10 % pires = 1 observation sur 10) :
+Triés : -4, -3, -2, -1,5, -1, -0,5, -0,2, +0,3, +0,5, +1
+VaR 90 % = -(-3 M€) = <strong>3 M€</strong> (1er percentile 10 %)
+ES 90 % = seule observation pire que la VaR = <strong>4 M€</strong></p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>Un desk a une VaR de 2 M€ (99 %, 1 jour). Sur l'année (250 jours), la VaR a été dépassée 12 fois. Dans quelle zone Bâle se trouve-t-il ? Que doit faire la banque ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+12 dépassements → <strong>zone rouge</strong> (≥ 10 dépassements)
+Le régulateur applique le multiplicateur maximal de 4 sur les fonds propres de marché.</p>
+<p>Actions requises :
+1. Audit immédiat du modèle de VaR.
+2. Identification des causes (mauvaise modélisation de la distribution, données historiques inadéquates).
+3. Renforcement des fonds propres le temps de corriger le modèle.
+4. Reporting au régulateur (BCE/ACPR) avec plan de correction.</p>
+</blockquote>
+<h3 id="exercice-4_1">Exercice 4</h3>
+<p>Comparez la VaR 99 % et l'ES 97,5 % pour un portefeuille avec σ = 2 %/jour, W = 50 M€. Pourquoi Bâle IV a-t-il choisi l'ES 97,5 % plutôt que la VaR 99 % ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+VaR 99 % = 50 × 2 % × 2,326 = <strong>2,326 M€</strong>
+ES 97,5 % = 50 × 2 % × φ(1,96) / (1 - 0,975) = 50 × 0,02 × 0,0584 / 0,025 = <strong>2,336 M€</strong></p>
+<p>Les deux valeurs sont proches en loi normale. Mais en distributions à queues épaisses :
+- La VaR 99 % ignore ce qui se passe dans le 1 % de pire cas.
+- L'ES 97,5 % est la <strong>moyenne des 2,5 % pires pertes</strong> → elle capture l'étendue de la queue.</p>
+<p>Avantages de l'ES pour Bâle IV :
+1. Sous-additivité (encourage la diversification du capital).
+2. Sensible à la sévérité des pertes extrêmes (pas seulement leur fréquence).
+3. Plus stable statistiquement que la VaR en zone de quantile élevé.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-3-risque-de-credit-et-cadre-reglementaire">Chapitre 3 — Risque de crédit et cadre réglementaire</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Le <strong>risque de crédit</strong> est la principale source de pertes bancaires historiques. Il désigne le risque de perte lié à l'incapacité d'un emprunteur à honorer ses engagements. Sa mesure et sa gestion sont encadrées par des réglementations strictes (Bâle III).</p>
+<hr />
+<h2 id="1-les-composantes-du-risque-de-credit">1. Les composantes du risque de crédit</h2>
+<h3 id="11-parametres-de-risque-de-credit">1.1 Paramètres de risque de crédit</h3>
+<table>
+<thead>
+<tr>
+<th>Paramètre</th>
+<th>Abréviation</th>
+<th>Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Probabilité de défaut</strong></td>
+<td>PD</td>
+<td>Probabilité que l'emprunteur fasse défaut sur 1 an</td>
+</tr>
+<tr>
+<td><strong>Exposition au moment du défaut</strong></td>
+<td>EAD</td>
+<td>Montant exposé au moment du défaut</td>
+</tr>
+<tr>
+<td><strong>Perte en cas de défaut</strong></td>
+<td>LGD</td>
+<td>% de l'EAD perdu après recouvrement</td>
+</tr>
+<tr>
+<td><strong>Maturité effective</strong></td>
+<td>M</td>
+<td>Durée résiduelle de l'exposition</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-perte-attendue-vs-perte-inattendue">1.2 Perte attendue vs. perte inattendue</h3>
+<pre><code>Perte attendue (EL) = PD × LGD × EAD
+</code></pre>
+<p>La <strong>perte attendue</strong> est provisionnée (elle est "le coût du crédit").</p>
+<p>La <strong>perte inattendue</strong> (UL) est l'écart-type des pertes au-delà de l'EL. Elle est couverte par les <strong>fonds propres réglementaires</strong>.</p>
+<pre><code>Fonds propres = VaR_crédit - EL
+</code></pre>
+<hr />
+<h2 id="2-notation-de-credit">2. Notation de crédit</h2>
+<h3 id="21-notation-externe-agences">2.1 Notation externe (agences)</h3>
+<p>Les <strong>agences de notation</strong> (Moody's, S&amp;P, Fitch) évaluent la qualité de crédit des émetteurs :</p>
+<table>
+<thead>
+<tr>
+<th>Moody's</th>
+<th>S&amp;P/Fitch</th>
+<th>Probabilité de défaut 1 an (approx.)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aaa</td>
+<td>AAA</td>
+<td>0,01 %</td>
+</tr>
+<tr>
+<td>Aa</td>
+<td>AA</td>
+<td>0,02 %</td>
+</tr>
+<tr>
+<td>A</td>
+<td>A</td>
+<td>0,06 %</td>
+</tr>
+<tr>
+<td>Baa</td>
+<td>BBB</td>
+<td>0,18 % (limite IG)</td>
+</tr>
+<tr>
+<td>Ba</td>
+<td>BB</td>
+<td>0,5 %</td>
+</tr>
+<tr>
+<td>B</td>
+<td>B</td>
+<td>1,5 %</td>
+</tr>
+<tr>
+<td>Caa</td>
+<td>CCC</td>
+<td>10–20 %</td>
+</tr>
+<tr>
+<td>D</td>
+<td>D</td>
+<td>Défaut</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-notation-interne-irb-internal-ratings-based">2.2 Notation interne (IRB — Internal Ratings Based)</h3>
+<p>Les grandes banques peuvent utiliser leurs propres modèles de notation (sur validation du régulateur) pour calculer les fonds propres :</p>
+<ul>
+<li><strong>Fondation IRB</strong> : la banque estime la PD, le régulateur fournit LGD et EAD.</li>
+<li><strong>Avancé IRB</strong> : la banque estime PD, LGD et EAD.</li>
+</ul>
+<hr />
+<h2 id="3-instruments-de-transfert-du-risque-de-credit">3. Instruments de transfert du risque de crédit</h2>
+<h3 id="31-credit-default-swap-cds">3.1 Credit Default Swap (CDS)</h3>
+<p>Un <strong>CDS</strong> est une protection contre le défaut d'un émetteur de référence :</p>
+<ul>
+<li><strong>Acheteur de protection</strong> : verse un spread périodique (en bp/an).</li>
+<li><strong>Vendeur de protection</strong> : paie la perte en cas de défaut de l'émetteur de référence.</li>
+</ul>
+<pre><code>Acheteur ──── Spread (ex : 100 bp/an) ───► Vendeur
+Acheteur ◄──── Paiement en cas de défaut ─── Vendeur
+</code></pre>
+<p><strong>Spread CDS ≈ PD × LGD</strong> (lien avec les paramètres de risque de crédit).</p>
+<h3 id="32-clo-cdo-collateralized-loan-debt-obligation">3.2 CLO / CDO (Collateralized Loan / Debt Obligation)</h3>
+<p>Titrisation de portefeuilles de prêts ou d'obligations en <strong>tranches</strong> de risque :</p>
+<pre><code>Actifs sous-jacents (prêts)
+         ↓
+Tranche Senior (AAA) — faibles rendement / faible risque
+Tranche Mezzanine (BBB)
+Tranche Junior / Equity — fort rendement / fort risque (first-loss)
+</code></pre>
+<p>Les tranches se caractérisent par leur <strong>ordre d'absorption des pertes</strong> : la tranche equity absorbe les premières pertes, protégeant les tranches supérieures.</p>
+<hr />
+<h2 id="4-gestion-de-portefeuille-de-credit">4. Gestion de portefeuille de crédit</h2>
+<h3 id="41-concentration-et-diversification">4.1 Concentration et diversification</h3>
+<p>Le risque de crédit d'un portefeuille dépend :
+- Des <strong>PD individuelles</strong> de chaque emprunteur.
+- Des <strong>corrélations entre défauts</strong> (les défauts sont-ils liés ?)</p>
+<p><strong>Corrélation de défaut élevée</strong> (récession sévère) → les débiteurs font défaut ensemble → perte plus concentrée.</p>
+<h3 id="42-copule-gaussienne">4.2 Copule gaussienne</h3>
+<p>Le modèle de <strong>corrélation gaussienne</strong> (Li, 2000) modélise les dépendances entre défauts. Ce modèle a été au cœur de la crise des CDO de 2008 (corrélations sous-estimées).</p>
+<h3 id="43-limites-de-concentration">4.3 Limites de concentration</h3>
+<p>Les régulateurs imposent des <strong>grandes expositions</strong> (Large Exposures) :
+- Exposition à un seul client ou groupe ≤ 25 % des fonds propres.</p>
+<hr />
+<h2 id="5-risque-de-contrepartie-ccr-et-xva">5. Risque de contrepartie (CCR) et XVA</h2>
+<h3 id="51-risque-de-contrepartie-sur-derives">5.1 Risque de contrepartie sur dérivés</h3>
+<p>Sur un dérivé OTC (non compensé en chambre de compensation), si la contrepartie fait défaut alors que le dérivé a une <strong>valeur positive</strong> pour la banque, la banque subit une perte.</p>
+<pre><code>Exposition attendue (EE) = E[max(MtM, 0)]
+Exposition positive espérée (EPE) = moyenne des EE dans le temps
+</code></pre>
+<h3 id="52-xva-ajustements-de-valeur">5.2 XVA — Ajustements de valeur</h3>
+<p>Les <strong>XVA</strong> sont des ajustements de la valeur des dérivés pour tenir compte des risques de contrepartie et de financement :</p>
+<table>
+<thead>
+<tr>
+<th>XVA</th>
+<th>Signification</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CVA</strong></td>
+<td>Credit Valuation Adjustment</td>
+<td>Ajustement pour le risque de défaut de la contrepartie</td>
+</tr>
+<tr>
+<td><strong>DVA</strong></td>
+<td>Debt Valuation Adjustment</td>
+<td>Ajustement pour le risque propre de la banque</td>
+</tr>
+<tr>
+<td><strong>FVA</strong></td>
+<td>Funding Valuation Adjustment</td>
+<td>Coût de financement des marges de dérivés</td>
+</tr>
+<tr>
+<td><strong>MVA</strong></td>
+<td>Margin Valuation Adjustment</td>
+<td>Coût des marges initiales obligatoires</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Prix ajusté = Prix sans risque - CVA + DVA - FVA - MVA
+</code></pre>
+<hr />
+<h2 id="6-exigences-reglementaires-en-risque-de-credit">6. Exigences réglementaires en risque de crédit</h2>
+<h3 id="61-approche-standard-sa">6.1 Approche standard (SA)</h3>
+<p>Pondération des actifs selon la notation externe :</p>
+<table>
+<thead>
+<tr>
+<th>Emprunteur</th>
+<th>Notation</th>
+<th>Pondération</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>État OCDE</td>
+<td>AAA à AA-</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td>Banque</td>
+<td>A+ à A-</td>
+<td>50 %</td>
+</tr>
+<tr>
+<td>Entreprise</td>
+<td>BBB+ à BB-</td>
+<td>100 %</td>
+</tr>
+<tr>
+<td>Entreprise</td>
+<td>&lt; BB-</td>
+<td>150 %</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-ratio-de-fonds-propres-credit">6.2 Ratio de fonds propres crédit</h3>
+<pre><code>Exigence = Σ (RWA_crédit) × 8 %
+RWA_crédit = EAD × pondération
+</code></pre>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1_4">Exercice 1</h3>
+<p>Calculez la perte attendue (EL) pour un portefeuille de 10 M€ avec PD = 2 %, LGD = 45 %.</p>
+<blockquote>
+<p><strong>Correction</strong> : EL = PD × LGD × EAD = 2 % × 45 % × 10 M€ = <strong>90 000 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_4">Exercice 2</h3>
+<p>Une banque a accordé un prêt de 5 M€ à une entreprise notée BBB (pondération 100 %). Quelle est l'exigence en fonds propres en approche standard ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+RWA = 5 M€ × 100 % = 5 M€
+Fonds propres = 5 M€ × 8 % = <strong>400 000 €</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>Les paramètres clés du risque de crédit : PD, LGD, EAD.</li>
+<li>La perte attendue (EL) est provisionnée ; la perte inattendue est couverte par les fonds propres.</li>
+<li>Les CDS permettent de transférer le risque de crédit sans céder l'actif.</li>
+<li>Les XVA ajustent la valeur des dérivés pour le risque de contrepartie et les coûts de financement.</li>
+<li>Bâle III impose des pondérations de risque (approche standard) ou des modèles internes (IRB) pour calculer les RWA.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_2">Approfondissement théorique</h2>
+<h3 id="modeles-structurels-de-risque-de-credit-merton-1974">Modèles structurels de risque de crédit (Merton, 1974)</h3>
+<p>Le <strong>modèle de Merton</strong> (1974) traite les capitaux propres d'une entreprise comme une <strong>option d'achat</strong> sur ses actifs :</p>
+<pre><code>Valeur des CP = Call(V_actifs, K = Dette, T, r, σ_V)
+
+CP = V × N(d₁) - D × e^(-rT) × N(d₂)
+
+d₁ = [ln(V/D) + (r + σ²V/2) × T] / (σV × √T)
+d₂ = d₁ - σV × √T
+</code></pre>
+<p><strong>Probabilité de défaut neutre au risque</strong> :</p>
+<pre><code>PD = N(-d₂)
+</code></pre>
+<p><strong>Distance to Default (DD)</strong> :</p>
+<pre><code>DD = (ln(V/D) + (μ - σ²V/2) × T) / (σV × √T)
+</code></pre>
+<p>→ Plus le DD est grand, plus l'entreprise est loin du défaut.</p>
+<p><strong>KMV (Moody's Analytics)</strong> a commercialisé une version de ce modèle : EDF (Expected Default Frequency) = probabilité de défaut sur 1 an, calculée à partir de la valeur de marché des actifs et de la structure d'endettement de l'entreprise.</p>
+<h3 id="les-modeles-de-scoring-de-credit">Les modèles de scoring de crédit</h3>
+<p><strong>Altman Z-score (1968)</strong> : modèle discriminant de prédiction des défauts d'entreprises (déjà vu en Module 2).</p>
+<p><strong>Modèles de survie (Cox proportional hazard model)</strong> :
+Modélisent la probabilité de défaut en fonction du temps et de covariables :</p>
+<pre><code>h(t, x) = h₀(t) × exp(β₁x₁ + β₂x₂ + ... + βₖxₖ)
+</code></pre>
+<p>Où h₀(t) est la hazard rate de base et xᵢ sont les caractéristiques financières de l'emprunteur.</p>
+<p><strong>Machine Learning en scoring</strong> :
+Les banques utilisent désormais des modèles ML (Random Forest, XGBoost, réseaux de neurones) pour améliorer la discrimination. Avantage : capture des non-linéarités et interactions entre variables. Défi : explicabilité (règlement RGPD).</p>
+<h3 id="la-gestion-de-portefeuille-de-credit-approche-credit-var">La gestion de portefeuille de crédit : approche Credit VaR</h3>
+<p>La <strong>Credit VaR</strong> mesure la perte maximale due au risque de crédit à un niveau de confiance donné :</p>
+<pre><code>Credit VaR (99 %) = VaR_crédit (99 %) - EL
+</code></pre>
+<p>Pour un portefeuille de N emprunteurs, la distribution des pertes dépend :
+1. Des <strong>PD individuelles</strong>.
+2. Des <strong>LGD individuelles</strong>.
+3. Des <strong>corrélations de défaut</strong> (modélisées par une copule ou un facteur commun).</p>
+<p><strong>Modèle à un facteur de Vasicek (fondement Bâle II)</strong> :</p>
+<pre><code>P_défaut(ρ) = N[(N⁻¹(PD) - √ρ × X) / √(1-ρ)]
+</code></pre>
+<p>Où X est un facteur macroéconomique commun et ρ la corrélation avec ce facteur.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_2">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-application-du-modele-de-merton">Exemple 1 — Application du modèle de Merton</h3>
+<p><strong>Entreprise GAMMA</strong> :
+- Valeur de marché des actifs : V = 150 M€
+- Dette nominale (horizon 1 an) : D = 100 M€
+- Volatilité des actifs : σV = 25 %
+- Taux sans risque : r = 3 %</p>
+<pre><code>d₁ = [ln(150/100) + (0,03 + 0,25²/2) × 1] / (0,25 × 1)
+   = [0,405 + 0,061] / 0,25 = 0,466 / 0,25 = 1,864
+
+d₂ = 1,864 - 0,25 = 1,614
+
+PD = N(-d₂) = N(-1,614) = 5,3 %
+
+Distance to Default = 1,614 → environ 1,6 σ séparent l'entreprise du défaut
+</code></pre>
+<p><strong>Interprétation</strong> : probabilité de défaut à 1 an ≈ 5,3 %. Le spread CDS théorique ≈ PD × LGD.</p>
+<p>Si LGD = 40 % : Spread = 5,3 % × 40 % = <strong>2,12 % = 212 bp</strong></p>
+<h3 id="exemple-2-cva-credit-valuation-adjustment">Exemple 2 — CVA (Credit Valuation Adjustment)</h3>
+<p><strong>Contexte</strong> : Banque XYZ a conclu un swap de taux avec une contrepartie corporate notée BBB (PD 1 an = 0,5 %, LGD = 60 %).</p>
+<p>Profil d'exposition attendue (EPE) du swap sur 5 ans :</p>
+<table>
+<thead>
+<tr>
+<th>Année</th>
+<th>EPE (M€)</th>
+<th>PD marginale (%)</th>
+<th>LGD</th>
+<th>CVA contribution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>5</td>
+<td>0,5 %</td>
+<td>60 %</td>
+<td>15 000 €</td>
+</tr>
+<tr>
+<td>2</td>
+<td>8</td>
+<td>0,5 %</td>
+<td>60 %</td>
+<td>24 000 €</td>
+</tr>
+<tr>
+<td>3</td>
+<td>10</td>
+<td>0,5 %</td>
+<td>60 %</td>
+<td>30 000 €</td>
+</tr>
+<tr>
+<td>4</td>
+<td>8</td>
+<td>0,5 %</td>
+<td>60 %</td>
+<td>24 000 €</td>
+</tr>
+<tr>
+<td>5</td>
+<td>5</td>
+<td>0,5 %</td>
+<td>60 %</td>
+<td>15 000 €</td>
+</tr>
+</tbody>
+</table>
+<pre><code>CVA total ≈ Σ EPE_t × PD_t × LGD = 15 000 + 24 000 + 30 000 + 24 000 + 15 000 = 108 000 €
+</code></pre>
+<p>Ce montant est déduit de la valorisation du swap → réduction de ~0,1 % de la valeur.</p>
+<h3 id="exemple-3-credit-var-dun-portefeuille">Exemple 3 — Credit VaR d'un portefeuille</h3>
+<p>Portefeuille de 100 prêts identiques :
+- EAD = 1 M€ chacun → Exposition totale = 100 M€
+- PD uniforme = 2 %, LGD = 50 %
+- Corrélation de défaut ρ = 0,15</p>
+<pre><code>EL = 100 × 2 % × 50 % = 1 M€ (attendue, provisionnée)
+
+UL (perte inattendue, Bâle) ≈ EAD × LGD × N[(N⁻¹(PD) + √ρ × N⁻¹(99,9%)) / √(1-ρ)] - EL
+
+N⁻¹(2 %) = -2,054
+N⁻¹(99,9 %) = 3,090
+
+PD_stress = N[(-2,054 + √0,15 × 3,090) / √0,85]
+           = N[(-2,054 + 1,196) / 0,922]
+           = N[-0,930] = 17,6 %
+
+VaR crédit = 100 × 17,6 % × 50 % = 8,8 M€
+Credit VaR = 8,8 - 1,0 = 7,8 M€ (fonds propres requis)
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles_2">Applications professionnelles</h2>
+<h3 id="departement-risques-de-credit-en-banque-workflow">Département Risques de Crédit en banque : workflow</h3>
+<p><strong>1. Origination</strong> : L'analyste crédit évalue le dossier de financement (analyse des états financiers, business plan, secteur).</p>
+<p><strong>2. Rating interne</strong> : Attribution d'une note interne (ex. A+, BBB, etc.) via une scorecard sectorielle. La note détermine :
+- Le taux de marge (pricing du risque).
+- Les covenants applicables.
+- Le niveau d'autorisation requis (comité crédit).</p>
+<p><strong>3. Surveillance</strong> : Monitoring trimestriel des covenant covenants. Alerte si le levier dépasse un seuil → mise sous "Watch List".</p>
+<p><strong>4. Gestion de portefeuille</strong> : 
+- Suivi des concentrations sectorielles et géographiques.
+- Calcul trimestriel des provisions IFRS 9 (ECL — Expected Credit Loss).
+- Gestion active via CDS ou titrisation pour alléger les expositions concentrées.</p>
+<h3 id="ifrs-9-provisionnement-dynamique">IFRS 9 : provisionnement dynamique</h3>
+<p><strong>IFRS 9 (2018)</strong> introduit un modèle de pertes attendues (Expected Credit Loss — ECL) en 3 stages :</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Condition</th>
+<th>Provision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stage 1</strong></td>
+<td>Risque faible (pas de dégradation significative)</td>
+<td>ECL 12 mois</td>
+</tr>
+<tr>
+<td><strong>Stage 2</strong></td>
+<td>Dégradation significative (ex. downgrade, impayé &gt; 30 j)</td>
+<td>ECL lifetime (toute la durée)</td>
+</tr>
+<tr>
+<td><strong>Stage 3</strong></td>
+<td>Défaut (impayé &gt; 90 j ou restructuration)</td>
+<td>ECL lifetime + déclenchement des provisions</td>
+</tr>
+</tbody>
+</table>
+<p>L'ECL intègre des <strong>informations prospectives</strong> (forward-looking) : prévisions macro, scénarios de PIB, chômage.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_2">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Confondre EL et EAD</strong></td>
+<td>La perte attendue (EL) ≠ l'exposition (EAD)</td>
+<td>EL = PD × LGD × EAD</td>
+</tr>
+<tr>
+<td><strong>Ignorer la corrélation de défaut</strong></td>
+<td>Deux emprunteurs du même secteur ont des défauts corrélés</td>
+<td>Intégrer ρ dans le calcul du capital économique</td>
+</tr>
+<tr>
+<td><strong>Croire que le CDS élimine totalement le risque</strong></td>
+<td>Le CDS crée un risque de contrepartie sur le vendeur de protection</td>
+<td>Compenser les CDS en chambre de compensation (CCH)</td>
+</tr>
+<tr>
+<td><strong>Surestimer les LGD en période de stress</strong></td>
+<td>En récession, la valeur des collatéraux baisse → LGD augmente</td>
+<td>Utiliser des LGD de stress (downturn LGD)</td>
+</tr>
+<tr>
+<td><strong>Confondre note externe et notation interne</strong></td>
+<td>Les ratings Moody's/S&amp;P sont des opinions externes ; la banque doit avoir sa propre notation interne</td>
+<td>Validation régulière des modèles de notation internes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_2">Exercices supplémentaires</h2>
+<h3 id="exercice-1_5">Exercice 1</h3>
+<p>Calculez le spread CDS théorique d'une entreprise avec PD = 3 % et LGD = 55 %, sur la base de la relation Spread ≈ PD × LGD. Si le spread de marché est 200 bp, l'entreprise est-elle survalorisée ou sous-valorisée en termes de risque ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Spread théorique = 3 % × 55 % = <strong>1,65 % = 165 bp</strong>
+Spread marché = 200 bp &gt; 165 bp → le marché exige une prime supplémentaire.
+Soit le marché anticipe une PD plus élevée que 3 %, soit il y a une prime de liquidité ou d'incertitude.
+PD implicite = 200 bp / 55 % = <strong>3,64 %</strong> (plus pessimiste que le modèle interne).</p>
+</blockquote>
+<h3 id="exercice-2_5">Exercice 2</h3>
+<p>Un portefeuille de crédit a : EAD = 50 M€, PD = 4 %, LGD = 40 %. Calculez l'EL, les fonds propres réglementaires en approche standard (pondération 100 %) et en IRB simplifié (en supposant RWA = 8× EL pour cet exercice).</p>
+<blockquote>
+<p><strong>Correction</strong> :
+<strong>EL</strong> = 4 % × 40 % × 50 M€ = <strong>800 000 €</strong> (provisionnés)</p>
+<p><strong>Approche standard</strong> :
+RWA = 50 M€ × 100 % = 50 M€
+Fonds propres = 50 M€ × 8 % = <strong>4 M€</strong></p>
+<p><strong>IRB simplifié</strong> (exercice) :
+RWA = 8 × EL = 8 × 0,8 M€ = 6,4 M€
+Fonds propres = 6,4 × 8 % = <strong>512 000 €</strong> (plus faible car modèle interne plus précis)</p>
+</blockquote>
+<h3 id="exercice-3_2">Exercice 3</h3>
+<p>Expliquez les trois tranches de titrisation d'un CLO (Collateralized Loan Obligation) de 500 M€ : la tranche Equity (50 M€), Mezzanine (100 M€, BBB) et Senior (350 M€, AAA). Qui absorbe les premières pertes et pourquoi la tranche Senior est notée AAA ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Structure du CLO</strong> :
+- Sous-jacent : portefeuille de 150 prêts leveraged (LBO) → diversification sectorielle</p>
+<table>
+<thead>
+<tr>
+<th>Tranche</th>
+<th>Montant</th>
+<th>Rating</th>
+<th>Rendement</th>
+<th>Priorité</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Senior</td>
+<td>350 M€ (70 %)</td>
+<td>AAA</td>
+<td>Euribor + 100 bp</td>
+<td>1er payé, dernier à perdre</td>
+</tr>
+<tr>
+<td>Mezzanine</td>
+<td>100 M€ (20 %)</td>
+<td>BBB</td>
+<td>Euribor + 350 bp</td>
+<td>2e</td>
+</tr>
+<tr>
+<td>Equity</td>
+<td>50 M€ (10 %)</td>
+<td>Non noté</td>
+<td>15–20 %</td>
+<td>1er à perdre</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mécanisme de protection</strong> :
+- Pertes jusqu'à 10 % du portefeuille → absorbées par la tranche Equity
+- Pertes entre 10–30 % → absorbées par la tranche Mezzanine
+- Pertes &gt; 30 % → tranche Senior impactée</p>
+<p>La tranche Senior est AAA car les modèles montrent qu'un portefeuille diversifié de 150 prêts dépasse rarement 30 % de pertes même dans les pires scénarios historiques (avec des corrélations "normales").</p>
+</blockquote>
+<h3 id="exercice-4_2">Exercice 4</h3>
+<p>Application Distance to Default : une entreprise a V = 200 M€, D = 120 M€, σV = 30 %, T = 1 an, r = 2 %. Calculez la DD et la probabilité de défaut neutre au risque.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+d₁ = [ln(200/120) + (0,02 + 0,09/2) × 1] / (0,30 × 1)
+   = [0,511 + 0,065] / 0,30 = 0,576 / 0,30 = 1,920</p>
+<p>d₂ = 1,920 - 0,30 = <strong>1,620</strong>
+PD = N(-1,620) = <strong>5,27 %</strong>
+DD = 1,620 → l'entreprise est à 1,62 écart-type du défaut.</p>
+<p>Si σV augmente à 40 % :
+d₂ = [ln(200/120) + (0,02 + 0,08) × 1] / 0,40 - 0,40
+   = [0,511 + 0,10] / 0,40 - 0,40 = 1,528 - 0,40 = 1,128
+PD = N(-1,128) = <strong>12,97 %</strong> → la hausse de volatilité plus que double la PD</p>
+</blockquote>
+<hr />
+</body>
+</html>

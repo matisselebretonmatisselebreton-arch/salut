@@ -1,0 +1,2696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>04 Marches Financiers</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-4-marches-financiers">Module 4 — Marchés Financiers</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Comprendre l'organisation et le fonctionnement des marchés financiers, savoir valoriser les principaux instruments (actions, obligations, dérivés), maîtriser les théories de la gestion de portefeuille et les modèles de pricing.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-organisation-marches.md">Organisation et microstructure des marchés</a></li>
+<li><a href="./chapitre-02-actions-obligations.md">Actions et obligations : valorisation</a></li>
+<li><a href="./chapitre-03-produits-derives.md">Produits dérivés : options, futures, swaps</a></li>
+<li><a href="./chapitre-04-gestion-portefeuille.md">Théorie moderne du portefeuille</a></li>
+<li><a href="./chapitre-05-modeles-pricing.md">Modèles de pricing : MEDAF, APT, Black-Scholes</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>20 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Exercices de valorisation d'obligations et d'actions</li>
+<li>Construction et optimisation d'un portefeuille</li>
+<li>Calcul de prix d'option par Black-Scholes</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-organisation-et-microstructure-des-marches">Chapitre 1 — Organisation et microstructure des marchés</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Les marchés financiers sont les lieux (physiques ou électroniques) où s'échangent des instruments financiers. Comprendre leur organisation est essentiel pour appréhender les mécanismes de formation des prix et les coûts de transaction.</p>
+<hr />
+<h2 id="1-classification-des-marches">1. Classification des marchés</h2>
+<h3 id="11-par-type-dinstrument">1.1 Par type d'instrument</h3>
+<table>
+<thead>
+<tr>
+<th>Marché</th>
+<th>Instruments</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Marché actions</strong> (equity)</td>
+<td>Actions ordinaires, préférentielles, droits</td>
+</tr>
+<tr>
+<td><strong>Marché obligataire</strong> (fixed income)</td>
+<td>Obligations d'État, corporate bonds, convertibles</td>
+</tr>
+<tr>
+<td><strong>Marché monétaire</strong></td>
+<td>Instruments court terme (&lt; 1 an) : T-bills, billets de trésorerie, repo</td>
+</tr>
+<tr>
+<td><strong>Marché des changes</strong> (forex)</td>
+<td>Paires de devises (EUR/USD, etc.)</td>
+</tr>
+<tr>
+<td><strong>Marché des dérivés</strong></td>
+<td>Options, futures, swaps, forwards</td>
+</tr>
+<tr>
+<td><strong>Marché des matières premières</strong> (commodities)</td>
+<td>Pétrole, métaux, agricole</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-marche-primaire-vs-marche-secondaire">1.2 Marché primaire vs. marché secondaire</h3>
+<table>
+<thead>
+<tr>
+<th>Marché</th>
+<th>Rôle</th>
+<th>Exemple</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Primaire</strong></td>
+<td>Émission de nouveaux titres</td>
+<td>IPO, émission d'obligations, augmentation de capital</td>
+</tr>
+<tr>
+<td><strong>Secondaire</strong></td>
+<td>Échanges entre investisseurs</td>
+<td>Bourse (Euronext Paris, NYSE)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-marche-organise-vs-de-gre-a-gre-otc">1.3 Marché organisé vs. de gré à gré (OTC)</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Caractéristiques</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Organisé</strong> (exchange)</td>
+<td>Règles standardisées, chambre de compensation (CCP), transparence</td>
+</tr>
+<tr>
+<td><strong>OTC</strong> (Over-the-Counter)</td>
+<td>Bilatéral, personnalisé, moins transparent, risque de contrepartie</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-acteurs-des-marches-financiers">2. Acteurs des marchés financiers</h2>
+<table>
+<thead>
+<tr>
+<th>Acteur</th>
+<th>Rôle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Émetteurs</strong></td>
+<td>États, entreprises : lèvent des fonds</td>
+</tr>
+<tr>
+<td><strong>Investisseurs institutionnels</strong></td>
+<td>Fonds de pension, assureurs, fonds souverains : gérent des portefeuilles</td>
+</tr>
+<tr>
+<td><strong>Gestionnaires d'actifs</strong></td>
+<td>Asset managers (BlackRock, Amundi) : gèrent pour compte de tiers</td>
+</tr>
+<tr>
+<td><strong>Banques d'investissement</strong></td>
+<td>Intermédiation, conseil, tenue de marché</td>
+</tr>
+<tr>
+<td><strong>Teneurs de marché (Market Makers)</strong></td>
+<td>Assurent la liquidité en cotant en permanence bid/ask</td>
+</tr>
+<tr>
+<td><strong>Hedge funds</strong></td>
+<td>Stratégies spéculatives, arbitrage</td>
+</tr>
+<tr>
+<td><strong>Régulateurs</strong></td>
+<td>AMF (France), SEC (USA), ESMA (Europe)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-microstructure-des-marches">3. Microstructure des marchés</h2>
+<h3 id="31-carnet-dordres-order-book">3.1 Carnet d'ordres (order book)</h3>
+<p>Le carnet d'ordres centralise les ordres d'achat (bid) et de vente (ask) en attente.</p>
+<pre><code>CARNET D'ORDRES — Action XYZ
+
+   VENTE (ask)           ACHAT (bid)
+Qté    Prix             Prix    Qté
+200    50,20 €          50,10 € 300
+150    50,25 €          50,05 € 500
+400    50,30 €          50,00 € 200
+</code></pre>
+<ul>
+<li><strong>Bid</strong> : meilleur prix acheteur (50,10 €)</li>
+<li><strong>Ask</strong> : meilleur prix vendeur (50,20 €)</li>
+<li><strong>Spread bid-ask</strong> : 50,20 - 50,10 = <strong>0,10 € (10 cts)</strong> → coût implicite de transaction</li>
+</ul>
+<h3 id="32-types-dordres">3.2 Types d'ordres</h3>
+<table>
+<thead>
+<tr>
+<th>Ordre</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Ordre au marché</strong></td>
+<td>Exécution immédiate au meilleur prix disponible</td>
+</tr>
+<tr>
+<td><strong>Ordre à cours limité</strong></td>
+<td>Prix maximum (achat) ou minimum (vente) fixé par l'investisseur</td>
+</tr>
+<tr>
+<td><strong>Ordre stop (stop-loss)</strong></td>
+<td>Déclenchement automatique si le prix atteint un seuil</td>
+</tr>
+<tr>
+<td><strong>Ordre iceberg</strong></td>
+<td>Seule une fraction de la quantité est affichée au carnet</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-liquidite-et-ses-dimensions">3.3 Liquidité et ses dimensions</h3>
+<p>La liquidité est la facilité à acheter ou vendre rapidement sans impact significatif sur le prix.</p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Mesure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Immédiateté</strong></td>
+<td>Délai d'exécution</td>
+</tr>
+<tr>
+<td><strong>Largeur</strong></td>
+<td>Spread bid-ask</td>
+</tr>
+<tr>
+<td><strong>Profondeur</strong></td>
+<td>Volume disponible à différents niveaux de prix</td>
+</tr>
+<tr>
+<td><strong>Résilience</strong></td>
+<td>Vitesse de retour à l'équilibre après un choc</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-mecanismes-de-cotation">4. Mécanismes de cotation</h2>
+<h3 id="41-cotation-en-continu">4.1 Cotation en continu</h3>
+<p>Les ordres sont exécutés dès qu'un vendeur et un acheteur se trouvent à un prix compatible. C'est le système dominant (Euronext, NYSE).</p>
+<h3 id="42-fixing-cotation-au-fixing">4.2 Fixing (cotation au fixing)</h3>
+<p>Un seul prix d'équilibre est calculé à heure fixe pour maximiser les échanges. Utilisé pour les valeurs peu liquides.</p>
+<h3 id="43-regles-de-priorite">4.3 Règles de priorité</h3>
+<ol>
+<li>Priorité <strong>prix</strong> : le meilleur prix passe en premier.</li>
+<li>Priorité <strong>temps</strong> : à prix égal, l'ordre le plus ancien passe en premier.</li>
+</ol>
+<hr />
+<h2 id="5-efficience-des-marches-emh">5. Efficience des marchés (EMH)</h2>
+<h3 id="theorie-de-lefficience-fama-1970">Théorie de l'efficience (Fama, 1970)</h3>
+<p>Un marché est <strong>efficient</strong> si les prix reflètent instantanément et complètement toute l'information disponible.</p>
+<h3 id="trois-formes-defficience">Trois formes d'efficience</h3>
+<table>
+<thead>
+<tr>
+<th>Forme</th>
+<th>Information incorporée</th>
+<th>Implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Faible</strong></td>
+<td>Prix historiques</td>
+<td>L'analyse technique ne peut pas battre le marché</td>
+</tr>
+<tr>
+<td><strong>Semi-forte</strong></td>
+<td>Toute information publique</td>
+<td>L'analyse fondamentale ne peut pas battre le marché</td>
+</tr>
+<tr>
+<td><strong>Forte</strong></td>
+<td>Toute information (y compris privée)</td>
+<td>Même les insiders ne peuvent pas battre le marché</td>
+</tr>
+</tbody>
+</table>
+<h3 id="anomalies-de-marche-remise-en-cause-de-lemh">Anomalies de marché (remise en cause de l'EMH)</h3>
+<ul>
+<li><strong>Effet taille (size effect)</strong> : les petites capitalisations sur-performent.</li>
+<li><strong>Effet valeur (value effect)</strong> : les actions décotées (PBR faible) sur-performent.</li>
+<li><strong>Effet momentum</strong> : les actions récemment performantes continuent de surperformer.</li>
+<li><strong>Excès de volatilité</strong> : les prix fluctuent plus que ce que justifient les fondamentaux.</li>
+</ul>
+<p>Ces anomalies sont étudiées par la <strong>finance comportementale</strong> (Kahneman, Shiller, Thaler).</p>
+<hr />
+<h2 id="6-indices-boursiers">6. Indices boursiers</h2>
+<table>
+<thead>
+<tr>
+<th>Indice</th>
+<th>Marché</th>
+<th>Méthode de calcul</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CAC 40</strong></td>
+<td>France (Euronext Paris)</td>
+<td>Capitalisation flottante, 40 plus grandes</td>
+</tr>
+<tr>
+<td><strong>DAX</strong></td>
+<td>Allemagne</td>
+<td>Performance (dividendes réinvestis), 40 valeurs</td>
+</tr>
+<tr>
+<td><strong>EUROSTOXX 50</strong></td>
+<td>Zone euro</td>
+<td>50 plus grandes capitalisations</td>
+</tr>
+<tr>
+<td><strong>S&amp;P 500</strong></td>
+<td>USA</td>
+<td>500 plus grandes capitalisations pondérées</td>
+</tr>
+<tr>
+<td><strong>NASDAQ Composite</strong></td>
+<td>USA (technologie)</td>
+<td>Toutes les valeurs cotées sur le NASDAQ</td>
+</tr>
+<tr>
+<td><strong>MSCI World</strong></td>
+<td>Monde</td>
+<td>1 500+ actions de 23 pays développés</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>Les marchés primaires lèvent des fonds ; les marchés secondaires assurent la liquidité.</li>
+<li>Le spread bid-ask est le coût implicite de transaction ; il reflète la liquidité du titre.</li>
+<li>L'EMH distingue trois niveaux : les formes semi-forte et forte sont largement débattues.</li>
+<li>Les anomalies de marché (taille, valeur, momentum) remettent en cause l'efficience stricte.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="microstructure-des-marches-la-theorie-de-linformation-adverse">Microstructure des marchés : la théorie de l'information adverse</h3>
+<p>La <strong>microstructure financière</strong> étudie les mécanismes de formation des prix et les coûts de transaction. Le <strong>modèle de Glosten &amp; Milgrom (1985)</strong> décompose le spread bid-ask en trois composantes :</p>
+<pre><code>Spread = Coûts d'inventaire + Coûts de traitement + Composante informationnelle
+</code></pre>
+<p>La <strong>composante informationnelle</strong> reflète l'asymétrie d'information entre les teneurs de marché (market makers) et les investisseurs informés. Un teneur de marché qui cote face à un investisseur disposant d'information privée (insider) prend un risque — il augmente donc son spread pour se protéger.</p>
+<p><strong>Modèle de Kyle (1985)</strong> : un investisseur informé trade progressivement pour ne pas révéler son information au marché (trading camouflé dans le flux d'ordres aléatoires). L'<strong>impact de marché</strong> est la variation de prix causée par une transaction.</p>
+<h3 id="fragmentation-des-marches-et-mif-ii">Fragmentation des marchés et MIF II</h3>
+<p>La directive <strong>MIF II</strong> (2018) a profondément restructuré les marchés européens :
+- <strong>Obligation de transparence pré-trade</strong> : publication des carnets d'ordres.
+- <strong>Obligation de transparence post-trade</strong> : publication des transactions.
+- <strong>Systematic Internalisers (SI)</strong> : courtiers qui matchent les ordres de leurs clients en interne.
+- <strong>Dark pools</strong> (MTF sans pré-transparence) : limités à 4 % des échanges par action et 8 % au total.</p>
+<p>La fragmentation a réduit les coûts de transaction mais a complexifié la recherche du meilleur prix (<strong>Best Execution</strong>).</p>
+<h3 id="finance-comportementale-et-inefficience-des-marches">Finance comportementale et inefficience des marchés</h3>
+<p><strong>Kahneman &amp; Tversky (1979)</strong> montrent que les investisseurs ne sont pas rationnels. La <strong>théorie des perspectives</strong> (Prospect Theory) décrit des biais cognitifs documentés :</p>
+<table>
+<thead>
+<tr>
+<th>Biais</th>
+<th>Description</th>
+<th>Effet sur les marchés</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Excès de confiance</strong></td>
+<td>Les investisseurs surestiment leur précision</td>
+<td>Sur-réaction aux informations privées</td>
+</tr>
+<tr>
+<td><strong>Biais de représentativité</strong></td>
+<td>Extrapoler les tendances récentes</td>
+<td>Momentum et retournements</td>
+</tr>
+<tr>
+<td><strong>Aversion aux pertes</strong></td>
+<td>Souffrir 2× plus d'une perte que du plaisir d'un gain équivalent</td>
+<td>Disposition effect (garder les perdants)</td>
+</tr>
+<tr>
+<td><strong>Ancrage</strong></td>
+<td>S'ancrer sur un prix de référence (cours d'achat)</td>
+<td>Résistances/supports psychologiques</td>
+</tr>
+<tr>
+<td><strong>Biais de confirmation</strong></td>
+<td>Ignorer les informations contredisant ses positions</td>
+<td>Bulles spéculatives</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Robert Shiller</strong> (Prix Nobel 2013) a documenté l'<strong>excès de volatilité</strong> : les prix des actions fluctuent bien plus que ne le justifient les variations des dividendes fondamentaux → les marchés ne sont pas pleinement efficients.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-calcul-du-cout-implicite-de-transaction">Exemple 1 — Calcul du coût implicite de transaction</h3>
+<p>Un investisseur achète 1 000 actions XYZ au cours de 50,20 € (meilleur ask). La veille, la cotation était : bid 50,15 € / ask 50,20 €.</p>
+<pre><code>Spread = 50,20 - 50,15 = 0,05 €
+Point médian (mid-price) = (50,20 + 50,15) / 2 = 50,175 €
+
+Coût de transaction implicite = Cours exécuté - Mid-price
+= 50,20 - 50,175 = 0,025 € par action
+
+Coût total sur 1 000 actions = 0,025 × 1 000 = 25 €
+Coût en % de la transaction = 25 / (50,20 × 1 000) = 0,05 % (5 bp)
+</code></pre>
+<p>Sur un portefeuille de 10 M€ avec 12 rotations par an et des spreads moyens de 10 bp, le coût annuel de transaction est de <strong>10 M€ × 10 bp × 12 = 120 000 €</strong>.</p>
+<h3 id="exemple-2-test-defficience-de-forme-faible">Exemple 2 — Test d'efficience de forme faible</h3>
+<p>Un économiste teste si les rendements passés prédisent les rendements futurs sur le CAC 40. Il calcule l'autocorrélation des rendements journaliers sur 10 ans :</p>
+<pre><code>ρ(1) = Corr(Rₜ, Rₜ₋₁) = -0,03 (non significatif, p = 0,42)
+ρ(5) = Corr(Rₜ, Rₜ₋₅) = +0,02 (non significatif, p = 0,71)
+</code></pre>
+<p>Conclusion : aucune autocorrélation significative → cohérent avec l'efficience de forme faible.</p>
+<p>Mais sur données hebdomadaires d'actions individuelles :</p>
+<pre><code>ρ(1 semaine) = +0,08 (p = 0,02) → momentum à court terme significatif
+</code></pre>
+<p>Anomalie de momentum → l'efficience de forme faible n'est pas parfaite pour les actions individuelles.</p>
+<h3 id="exemple-3-liquidite-et-cout-dimpact-de-marche">Exemple 3 — Liquidité et coût d'impact de marché</h3>
+<p>Un gérant veut vendre 100 000 actions d'une société dont le volume quotidien moyen est de 200 000 titres. Participation = 50 % du volume journalier.</p>
+<p>Le modèle d'impact de marché de <strong>Almgren &amp; Chriss (2001)</strong> estime :</p>
+<pre><code>Impact linéaire ≈ η × (Q / V_journalier)
+η (coefficient d'impact) ≈ 0,1 pour les mid-caps
+
+Impact ≈ 0,1 × (100 000 / 200 000) = 5 %
+</code></pre>
+<p>Si le cours est 20 €, l'impact de marché serait de ~1 € par action, soit 100 000 € de coût de transaction supplémentaire. Le gérant devra fragmenter l'ordre sur plusieurs jours.</p>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="asset-management-tca-transaction-cost-analysis">Asset Management : TCA (Transaction Cost Analysis)</h3>
+<p>Les gérants d'actifs mesurent systématiquement la qualité d'exécution par la <strong>TCA</strong> :</p>
+<ul>
+<li><strong>Mesure du slippage</strong> : écart entre le prix décisionnel et le prix d'exécution moyen.</li>
+<li><strong>VWAP benchmark</strong> : comparaison du prix d'exécution au VWAP du jour.</li>
+<li><strong>Implementation shortfall</strong> : mesure le "coût" total de l'intention de trading à l'exécution finale.</li>
+</ul>
+<pre><code>IS = (Cours final - Cours décision) × Qté non exécutée   ← coût d'opportunité
+   + (Cours exécution - Cours décision) × Qté exécutée   ← coût de marché
+</code></pre>
+<h3 id="banque-dinvestissement-tenue-de-marche-market-making">Banque d'investissement : Tenue de marché (Market Making)</h3>
+<p>Un teneur de marché doit gérer :
+1. <strong>Le risque d'inventaire</strong> : position accumulée due aux flux clients → hedger continuellement.
+2. <strong>Le PnL bid-ask</strong> : chaque transaction lui rapporte le spread (mais le risque de contrepartie informée peut effacer ce gain).
+3. <strong>Les obligations réglementaires</strong> : engagement de continuité de cotation avec des fourchettes maximales définies par Euronext.</p>
+<p><strong>Exemple BNP Paribas</strong> : teneur de marché sur les obligations OAT, cote en permanence avec une fourchette &lt; 1 centime. Gère un inventaire de plusieurs centaines de millions et hedge le risque de taux via des futures sur Bund.</p>
+<h3 id="regulation-surveillance-de-la-manipulation-de-marche">Régulation : Surveillance de la manipulation de marché</h3>
+<p>L'<strong>AMF</strong> surveille les comportements abusifs grâce à des algorithmes de détection :
+- <strong>Spoofing</strong> : placement d'ordres jamais destinés à être exécutés → retraits massifs juste avant l'exécution.
+- <strong>Painting the tape</strong> : transactions entre entités liées pour créer un volume fictif.
+- <strong>Front running</strong> : exécuter ses propres ordres avant un ordre client important.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Confondre EV et capitalisation</strong></td>
+<td>La capitalisation boursière n'inclut pas la dette</td>
+<td>Toujours utiliser EV pour les comparaisons</td>
+</tr>
+<tr>
+<td><strong>Interpréter un faible spread comme signe de liquidité</strong></td>
+<td>Un spread faible peut masquer une profondeur insuffisante</td>
+<td>Analyser aussi la profondeur du carnet d'ordres</td>
+</tr>
+<tr>
+<td><strong>Croire à l'efficience forte</strong></td>
+<td>Des insiders ont légalement accès à des informations avant les autres (ex. avant publication des résultats)</td>
+<td>Réglementation MAR/MAD et liste d'initiés</td>
+</tr>
+<tr>
+<td><strong>Ignorer la liquidité lors de l'investissement</strong></td>
+<td>Un actif peu liquide peut être difficile à céder sans impact majeur sur le prix</td>
+<td>Intégrer une "prime d'illiquidité" dans le rendement exigé</td>
+</tr>
+<tr>
+<td><strong>Tester l'EMH sur données passées</strong></td>
+<td>Les anomalies disparaissent une fois documentées (arbitrage) — problème du "data mining"</td>
+<td>Out-of-sample testing, prudence dans l'interprétation des backtest</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>Un carnet d'ordres affiche : bid 100,50 € (500 titres) / ask 100,60 € (300 titres). Un institutionnel place un ordre de vente au marché de 700 titres. À quel prix s'exécutent les 700 titres ? Quel est le prix moyen d'exécution ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Les 300 premiers titres s'exécutent à 100,50 € (seule bid disponible à ce niveau).
+Les 400 titres restants s'exécutent au niveau bid suivant (non affiché). Pour cet exercice, supposons bid 2 = 100,40 € (400 titres).</p>
+<p>Prix moyen = (300 × 100,50 + 400 × 100,40) / 700
+= (30 150 + 40 160) / 700 = 70 310 / 700 = <strong>100,44 €</strong>
+Impact de marché = 100,50 - 100,44 = <strong>0,06 €</strong> (coût d'exécution de l'ordre de 700 titres)</p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Le S&amp;P 500 affiche un rendement annualisé de 10 % sur 20 ans. La prime de risque de marché historique est de 6 % et rf = 2 %. Un fonds actif a réalisé 11,5 % annualisé avec un bêta de 1,2. Calculez l'alpha annualisé. Ce fonds a-t-il créé de la valeur au sens du MEDAF ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Rendement MEDAF = 2 % + 1,2 × 6 % = 2 % + 7,2 % = <strong>9,2 %</strong>
+Alpha = 11,5 % - 9,2 % = <strong>+2,3 %</strong> par an
+OUI, le fonds a surperformé son niveau de risque systématique de 2,3 % / an.
+Sur 20 ans, un investissement de 100 000 € aurait donné :
+- Fonds actif : 100 000 × (1,115)^20 = <strong>811 000 €</strong>
+- Indice ajusté (9,2 %) : 100 000 × (1,092)^20 = <strong>585 000 €</strong>
+Survaleur générée : <strong>226 000 €</strong></p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Décrivez les mécanismes par lesquels la MIF II a modifié la structure des marchés actions européens. Donnez trois avantages et deux inconvénients de la fragmentation des marchés.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Modifications apportées par MIF II</strong> :
+- Obligation de Best Execution : les courtiers doivent prouver qu'ils ont obtenu le meilleur prix disponible sur tous les lieux d'exécution (bourses, MTF, dark pools, SI).
+- Transparence pré-trade : publication des ordres avant exécution (sauf waiver volume cap).
+- Transparence post-trade : publication systématique de toutes les transactions.</p>
+<p><strong>Avantages de la fragmentation</strong> :
+1. Compétition entre plateformes → réduction des frais de courtage.
+2. Innovation : nouvelles plateformes offrant des fonctionnalités avancées (SOR, smart order routing).
+3. Résilience : si un marché tombe, les ordres se redirigent vers d'autres plateformes.</p>
+<p><strong>Inconvénients</strong> :
+1. Complexité pour les investisseurs : comparaison des prix sur 20+ plateformes.
+2. Fragilité lors de pics de volatilité : circuit breakers désynchronisés entre plateformes.</p>
+</blockquote>
+<h3 id="exercice-4">Exercice 4</h3>
+<p>Un gérant achète 50 000 actions d'une société mid-cap (cours = 15 €, volume quotidien = 100 000 titres). Estimez le coût d'impact de marché avec η = 0,15. Combien de jours devrait-il fragmenter son ordre pour limiter l'impact à moins de 0,5 % ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p>Si exécution en 1 jour (participation = 50 %) :
+Impact = 0,15 × (50 000 / 100 000) = 7,5 % → <strong>beaucoup trop élevé</strong></p>
+<p>Pour un impact &lt; 0,5 % :
+0,15 × (50 000 / (j × 100 000)) &lt; 0,5 %
+0,15 / (2j) &lt; 0,005
+j &gt; 0,15 / (2 × 0,005) = j &gt; <strong>15 jours</strong></p>
+<p>Le gérant doit fragmenter son ordre sur <strong>au moins 15 jours</strong> (~3 300 actions/jour) pour limiter l'impact à 0,5 % du cours.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-2-actions-et-obligations-valorisation">Chapitre 2 — Actions et obligations : valorisation</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>Actions et obligations sont les deux instruments fondamentaux des marchés financiers. Leur valorisation repose sur le même principe : la valeur actuelle des flux futurs qu'ils génèrent.</p>
+<hr />
+<h2 id="partie-a-les-obligations">PARTIE A — LES OBLIGATIONS</h2>
+<h2 id="1-caracteristiques-dune-obligation">1. Caractéristiques d'une obligation</h2>
+<p>Une <strong>obligation</strong> est un titre de créance émis par un État ou une entreprise. Elle confère à son détenteur le droit de percevoir des <strong>coupons</strong> (intérêts périodiques) et le <strong>remboursement du nominal</strong> à l'échéance.</p>
+<table>
+<thead>
+<tr>
+<th>Caractéristique</th>
+<th>Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Valeur nominale</strong></td>
+<td>Montant sur lequel est calculé le coupon (ex : 1 000 €)</td>
+</tr>
+<tr>
+<td><strong>Coupon</strong></td>
+<td>Intérêt périodique = Taux nominal × Valeur nominale</td>
+</tr>
+<tr>
+<td><strong>Maturité</strong></td>
+<td>Date de remboursement du nominal</td>
+</tr>
+<tr>
+<td><strong>Prix</strong></td>
+<td>Exprimé en % du nominal (pied de coupon)</td>
+</tr>
+<tr>
+<td><strong>Taux actuariel (YTM)</strong></td>
+<td>Taux de rendement si l'obligation est conservée jusqu'à maturité</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-valorisation-dune-obligation">2. Valorisation d'une obligation</h2>
+<h3 id="formule-de-prix">Formule de prix</h3>
+<pre><code>Prix = Σ [C / (1 + r)^t] + N / (1 + r)^n
+</code></pre>
+<ul>
+<li><code>C</code> : coupon annuel</li>
+<li><code>N</code> : valeur nominale</li>
+<li><code>r</code> : taux actuariel (YTM — Yield to Maturity)</li>
+<li><code>n</code> : nombre de périodes</li>
+</ul>
+<h3 id="exemple">Exemple</h3>
+<p>Obligation nominale 1 000 €, coupon 5 %, maturité 3 ans, YTM demandé 6 % :</p>
+<pre><code>Prix = 50/1,06 + 50/1,06² + 1050/1,06³
+Prix = 47,17 + 44,50 + 881,68 = 973,35 €
+</code></pre>
+<p>Prix &lt; 1 000 € car le taux de coupon (5 %) &lt; YTM (6 %) → décote.</p>
+<h3 id="relation-prix-taux">Relation prix / taux</h3>
+<p><strong>Relation inverse</strong> : quand les taux montent, les prix des obligations baissent.</p>
+<pre><code>YTM &gt; Taux coupon → Prix &lt; Pair (décote)
+YTM = Taux coupon → Prix = Pair (au pair)
+YTM &lt; Taux coupon → Prix &gt; Pair (prime)
+</code></pre>
+<hr />
+<h2 id="3-duration-et-sensibilite">3. Duration et sensibilité</h2>
+<h3 id="31-duration-de-macaulay">3.1 Duration de Macaulay</h3>
+<p>La <strong>duration</strong> mesure la durée de vie moyenne pondérée des flux, en années.</p>
+<pre><code>D = Σ [t × (CF_t / (1 + r)^t)] / Prix
+</code></pre>
+<p><strong>Propriétés</strong> :
+- Duration = maturité pour une obligation zéro-coupon.
+- Duration &lt; maturité pour une obligation avec coupons.
+- Plus la duration est élevée, plus l'obligation est sensible aux variations de taux.</p>
+<h3 id="32-duration-modifiee-sensibilite">3.2 Duration modifiée (sensibilité)</h3>
+<pre><code>D* = D / (1 + r)
+</code></pre>
+<h3 id="33-impact-dune-variation-de-taux-sur-le-prix">3.3 Impact d'une variation de taux sur le prix</h3>
+<pre><code>ΔP/P ≈ -D* × Δr
+</code></pre>
+<p><strong>Exemple</strong> : Duration modifiée = 4 ans, taux augmente de +50 bp (0,5 %)</p>
+<pre><code>ΔP/P ≈ -4 × 0,5 % = -2 %
+</code></pre>
+<p>Le prix de l'obligation baisse d'environ 2 %.</p>
+<h3 id="34-convexite">3.4 Convexité</h3>
+<p>La duration est une approximation linéaire. La <strong>convexité</strong> corrige le biais pour les variations importantes de taux :</p>
+<pre><code>ΔP/P ≈ -D* × Δr + 0,5 × Convexité × (Δr)²
+</code></pre>
+<hr />
+<h2 id="4-types-dobligations">4. Types d'obligations</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Caractéristique</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OAT</strong> (Obligation Assimilable du Trésor)</td>
+<td>Obligation d'État français</td>
+</tr>
+<tr>
+<td><strong>Corporate bond</strong></td>
+<td>Émise par une entreprise (IG ou HY)</td>
+</tr>
+<tr>
+<td><strong>Obligation zéro-coupon</strong></td>
+<td>Pas de coupon, émise en dessous du pair</td>
+</tr>
+<tr>
+<td><strong>Obligation convertible</strong></td>
+<td>Peut être convertie en actions</td>
+</tr>
+<tr>
+<td><strong>Obligation à taux variable</strong></td>
+<td>Coupon indexé sur un taux de référence (Euribor)</td>
+</tr>
+<tr>
+<td><strong>Obligation indexée inflation</strong></td>
+<td>Nominal ou coupon indexé sur l'inflation (OATi)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="notation-de-credit">Notation de crédit</h3>
+<table>
+<thead>
+<tr>
+<th>Moody's</th>
+<th>S&amp;P</th>
+<th>Fitch</th>
+<th>Catégorie</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Aaa–Baa3</td>
+<td>AAA–BBB-</td>
+<td>AAA–BBB-</td>
+<td>Investment Grade (IG)</td>
+</tr>
+<tr>
+<td>Ba1–B3</td>
+<td>BB+–B-</td>
+<td>BB+–B-</td>
+<td>High Yield (HY) / Spéculatif</td>
+</tr>
+<tr>
+<td>Caa1–D</td>
+<td>CCC–D</td>
+<td>CCC–D</td>
+<td>Détresse financière / Défaut</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="partie-b-les-actions">PARTIE B — LES ACTIONS</h2>
+<h2 id="5-caracteristiques-dune-action">5. Caractéristiques d'une action</h2>
+<p>Une <strong>action</strong> est un titre de propriété représentant une fraction du capital d'une société. Elle confère :
+- Droit aux <strong>dividendes</strong> (revenu).
+- Droit de <strong>vote</strong> en AGO/AGE.
+- Droit sur l'<strong>actif net</strong> en cas de liquidation.</p>
+<hr />
+<h2 id="6-modeles-de-valorisation-des-actions">6. Modèles de valorisation des actions</h2>
+<h3 id="61-modele-de-gordon-shapiro-dividend-discount-model">6.1 Modèle de Gordon-Shapiro (Dividend Discount Model)</h3>
+<p>Croissance perpétuelle des dividendes au taux <code>g</code> :</p>
+<pre><code>P₀ = D₁ / (kE - g)
+</code></pre>
+<ul>
+<li><code>D₁</code> : dividende attendu en année 1</li>
+<li><code>kE</code> : coût des capitaux propres (MEDAF)</li>
+<li><code>g</code> : taux de croissance perpétuel du dividende</li>
+</ul>
+<p><strong>Exemple</strong> :
+- Dividende actuel : 2 €, croissance : 4 %, kE = 9 %
+- D₁ = 2 × 1,04 = 2,08 €
+- P₀ = 2,08 / (0,09 - 0,04) = 2,08 / 0,05 = <strong>41,60 €</strong></p>
+<h3 id="62-modele-a-plusieurs-phases">6.2 Modèle à plusieurs phases</h3>
+<p>Croissance forte pendant <code>n</code> années, puis croissance stable :</p>
+<pre><code>P₀ = Σ [Dₜ / (1 + kE)ᵗ] + Pₙ / (1 + kE)ⁿ
+
+Pₙ = D_(n+1) / (kE - g_stable)
+</code></pre>
+<h3 id="63-valorisation-par-les-multiples">6.3 Valorisation par les multiples</h3>
+<p><strong>PER</strong> :</p>
+<pre><code>Cours = BPA × PER_sectoriel
+</code></pre>
+<p><strong>EV/EBITDA</strong> (déjà vu en Module 3) → retrouver la valeur des capitaux propres en soustrayant la dette nette.</p>
+<hr />
+<h2 id="7-rendement-total-dune-action">7. Rendement total d'une action</h2>
+<pre><code>Rendement total = (Cours final - Cours initial + Dividendes) / Cours initial
+               = Plus-value + Dividend Yield
+</code></pre>
+<p><strong>Exemple</strong> :
+- Cours achat : 40 €, cours vente : 46 €, dividende perçu : 2 €
+- Rendement = (46 - 40 + 2) / 40 = 8 / 40 = <strong>20 %</strong></p>
+<hr />
+<h2 id="8-exercices">8. Exercices</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Obligation nominale 1 000 €, coupon 4 %, 5 ans, YTM 5 %. Calculez le prix.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+P = 40/1,05 + 40/1,05² + 40/1,05³ + 40/1,05⁴ + 1040/1,05⁵
+P = 38,10 + 36,28 + 34,55 + 32,91 + 814,46 = <strong>956,30 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>Une obligation a une duration modifiée de 5 ans. Si les taux augmentent de 75 bp, de combien le prix varie-t-il approximativement ?</p>
+<blockquote>
+<p><strong>Correction</strong> : ΔP/P ≈ -5 × 0,75 % = <strong>-3,75 %</strong></p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>Une entreprise verse un dividende de 3 €. Le taux de croissance anticipé est 5 % et kE = 11 %. Quel est le cours théorique ?</p>
+<blockquote>
+<p><strong>Correction</strong> : P₀ = 3 × 1,05 / (0,11 - 0,05) = 3,15 / 0,06 = <strong>52,50 €</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>Prix d'une obligation = somme actualisée des coupons + nominal actualisé.</li>
+<li>Relation inverse prix/taux : hausse des taux → baisse des prix.</li>
+<li>La duration mesure la sensibilité au taux : D* × Δr ≈ variation relative du prix.</li>
+<li>Les actions se valorisent par DDM (dividendes actualisés) ou par multiples.</li>
+<li>Rendement total = plus-value + dividendes.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_1">Approfondissement théorique</h2>
+<h3 id="la-structure-par-terme-des-taux-dinteret">La structure par terme des taux d'intérêt</h3>
+<p>La <strong>courbe des taux</strong> (yield curve) représente les taux actuariels en fonction de la maturité. Elle est fondamentale pour la valorisation des obligations et constitue un indicateur économique avancé.</p>
+<p><strong>Formes de la courbe</strong> :</p>
+<pre><code>Taux
+  |   /‾‾‾‾‾‾‾‾ Normale (pentue) : tx LT &gt; tx CT
+  |  /
+  | /
+  |/______________ Maturité
+
+Taux
+  |____
+       \
+        \_________  Inversée : tx CT &gt; tx LT (signal récession)
+
+Taux
+  |‾‾‾‾‾‾‾‾‾‾‾‾‾  Plate : peu différenciée
+</code></pre>
+<p><strong>Théories explicatives</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Théorie</th>
+<th>Explication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Anticipations pures</strong></td>
+<td>La courbe reflète les anticipations des taux courts futurs</td>
+</tr>
+<tr>
+<td><strong>Préférence pour la liquidité</strong></td>
+<td>Les investisseurs exigent une prime pour les maturités longues</td>
+</tr>
+<tr>
+<td><strong>Segmentation</strong></td>
+<td>Chaque segment de courbe a des offrants et demandeurs distincts</td>
+</tr>
+<tr>
+<td><strong>Habitat préféré</strong></td>
+<td>Les acteurs ont des préférences pour certaines maturités mais s'en éloignent si la prime est suffisante</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Duration de portefeuille</strong> : dans un portefeuille obligataire, la duration est la moyenne pondérée des durations individuelles :</p>
+<pre><code>D_portfolio = Σ wᵢ × Dᵢ
+</code></pre>
+<h3 id="les-obligations-a-haut-rendement-et-les-spreads-de-credit">Les obligations à haut rendement et les spreads de crédit</h3>
+<p>Les <strong>obligations High Yield</strong> (BB+ et en dessous) offrent des rendements supérieurs aux IG pour compenser le risque de crédit. Le <strong>spread de crédit</strong> est la différence de rendement vs. l'obligation d'État de même maturité :</p>
+<pre><code>Spread = YTM_corporate - YTM_souverain (même maturité)
+       ≈ PD × LGD (lien avec le risque de crédit)
+</code></pre>
+<p><strong>Exemple</strong> : OAT 10 ans = 3 %, Corporate BBB+ 10 ans = 4,2 % → Spread = 120 bp.</p>
+<p><strong>Indices de spreads</strong> : iTraxx (Europe, CDS sur investment grade), CDX (USA). Ces indices varient selon l'appétit pour le risque des marchés.</p>
+<h3 id="evaluation-des-obligations-convertibles">Évaluation des obligations convertibles</h3>
+<p>Une <strong>obligation convertible</strong> (OC) combine une obligation classique et une option d'achat sur les actions de l'émetteur :</p>
+<pre><code>Valeur OC = Valeur obligation pure (plancher obligataire)
+           + Valeur de l'option de conversion (prime de conversion)
+</code></pre>
+<ul>
+<li><strong>Plancher obligataire</strong> : PV des flux futurs actualisé au taux de marché pour l'émetteur.</li>
+<li><strong>Prime de conversion</strong> : valeur de l'option BSM (K = prix de conversion, S = cours actuel).</li>
+</ul>
+<p><strong>Parité</strong> = Cours action × Ratio de conversion (nb actions par obligation)</p>
+<p>En pratique, si parité &gt; valeur nette obligataire : l'OC se comporte comme une action. Sinon : comme une obligation.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_1">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-duration-et-immunisation-de-portefeuille">Exemple 1 — Duration et immunisation de portefeuille</h3>
+<p>Un gérant obligataire a des engagements futurs de 1 M€ dans 6 ans. Il veut immuniser ce portefeuille contre les variations de taux. Il dispose de deux obligations :</p>
+<p><strong>OBL A</strong> : maturité 3 ans, coupon 4 %, YTM 5 % → Duration ≈ 2,85 ans
+<strong>OBL B</strong> : maturité 10 ans, coupon 6 %, YTM 5 % → Duration ≈ 7,80 ans</p>
+<pre><code>Pour immuniser à 6 ans :
+w_A × 2,85 + w_B × 7,80 = 6,0
+w_A + w_B = 1
+
+Résoudre : w_B = (6,0 - 2,85) / (7,80 - 2,85) = 3,15 / 4,95 = 63,6 %
+w_A = 36,4 %
+</code></pre>
+<p>→ Le gérant doit investir <strong>63,6 % en OBL B</strong> et <strong>36,4 % en OBL A</strong> pour immuniser son engagement à 6 ans.</p>
+<h3 id="exemple-2-valorisation-complete-avec-convexite">Exemple 2 — Valorisation complète avec convexité</h3>
+<p>Obligation : nominal 1 000 €, coupon 5 %, maturité 5 ans, YTM actuel = 4 %.</p>
+<p><strong>Prix actuel</strong> :</p>
+<pre><code>P = 50/(1,04) + 50/(1,04)² + 50/(1,04)³ + 50/(1,04)⁴ + 1050/(1,04)⁵
+P = 48,08 + 46,23 + 44,45 + 42,74 + 863,00 = 1 044,50 €
+</code></pre>
+<p><strong>Duration de Macaulay</strong> (simplifiée à 4,55 ans pour cet exemple)
+<strong>Duration modifiée</strong> : D<em> = 4,55 / 1,04 = 4,38 ans
+</em><em>Convexité</em>* : C ≈ 23,5 (pour cet exemple)</p>
+<p><strong>Impact d'une hausse de taux de +100 bp</strong> :</p>
+<pre><code>ΔP/P ≈ -D* × Δr + 0,5 × C × (Δr)²
+       = -4,38 × 0,01 + 0,5 × 23,5 × (0,01)²
+       = -0,0438 + 0,001175 = -0,0426 → -4,26 %
+
+Nouveau prix ≈ 1 044,50 × (1 - 0,0426) = 1 044,50 × 0,9574 = **999,9 €** ≈ pair
+</code></pre>
+<p>La convexité <strong>atténue</strong> la baisse de prix vs. la seule duration (-4,38 %).</p>
+<h3 id="exemple-3-modele-ddm-a-deux-phases">Exemple 3 — Modèle DDM à deux phases</h3>
+<p><strong>Entreprise OMEGA</strong> : secteur technologie, dividende actuel = 1 €.
+Phase 1 (3 ans) : g₁ = 20 % (croissance élevée).
+Phase 2 (perpétuité) : g₂ = 4 % (croissance stable).
+kE = 10 %.</p>
+<pre><code>Phase 1 :
+D₁ = 1 × 1,20 = 1,20 € → VA = 1,20 / 1,10 = 1,091
+D₂ = 1,20 × 1,20 = 1,44 → VA = 1,44 / 1,21 = 1,190
+D₃ = 1,44 × 1,20 = 1,728 → VA = 1,728 / 1,331 = 1,298
+
+Phase 2 (prix en fin d'an 3) :
+P₃ = D₄ / (kE - g₂) = 1,728 × 1,04 / (0,10 - 0,04) = 1,797 / 0,06 = 29,95 €
+VA(P₃) = 29,95 / 1,331 = 22,50 €
+
+P₀ = 1,091 + 1,190 + 1,298 + 22,50 = 26,08 €
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles_1">Applications professionnelles</h2>
+<h3 id="gestion-obligataire-en-assurance">Gestion obligataire en assurance</h3>
+<p>Les assureurs-vie détiennent d'importants portefeuilles obligataires pour couvrir leurs engagements long terme (contrats d'assurance-vie, retraites). La <strong>gestion actif-passif (ALM)</strong> consiste à :</p>
+<ol>
+<li><strong>Mesurer la duration du passif</strong> (engagements actuariels) : typiquement 10–20 ans.</li>
+<li><strong>Construire un portefeuille obligataire</strong> dont la duration = duration du passif → immunisation du risque de taux.</li>
+<li><strong>Gérer l'écart de duration</strong> (mismatch) : si les taux montent et la duration actif &lt; duration passif → valeur du passif baisse plus que l'actif → perte économique.</li>
+</ol>
+<p><strong>Directive Solvabilité II</strong> : impose de mesurer la sensibilité du bilan à une hausse des taux de +50 bp → <strong>ORSA (Own Risk and Solvency Assessment)</strong>.</p>
+<h3 id="tresorerie-dentreprise-gestion-de-la-dette-obligataire">Trésorerie d'entreprise : gestion de la dette obligataire</h3>
+<p>Une grande entreprise (ex. Total Energies) gère sa dette obligataire comme un portefeuille :
+- <strong>Diversification des devises</strong> : émissions en €, USD, JPY (pour couvrir les besoins en devises locales).
+- <strong>Diversification des maturités</strong> : éviter les "walls" (remboursements massifs une même année).
+- <strong>Swap de taux</strong> : transformer la dette à taux fixe en taux variable pour profiter des baisses de taux (ou vice versa).</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_1">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Confondre taux coupon et taux actuariel</strong></td>
+<td>Le YTM ≠ coupon sauf si l'obligation est au pair</td>
+<td>Toujours recalculer le YTM à partir du prix de marché</td>
+</tr>
+<tr>
+<td><strong>Négliger la convexité pour les grandes variations de taux</strong></td>
+<td>La duration donne une approximation linéaire, insuffisante pour Δr &gt; 50 bp</td>
+<td>Ajouter le terme de convexité pour les variations importantes</td>
+</tr>
+<tr>
+<td><strong>Ignorer le risque de réinvestissement</strong></td>
+<td>Les coupons sont réinvestis à un taux inconnu → le rendement effectif peut différer du YTM</td>
+<td>Immunisation uniquement garantie pour une duration = horizon d'investissement</td>
+</tr>
+<tr>
+<td><strong>Comparer rendement d'obligations de devises différentes</strong></td>
+<td>Un rendement en USD de 5 % ≠ un rendement en EUR de 3 % sans tenir compte du différentiel de change</td>
+<td>Convertir en monnaie commune avec hedge de change</td>
+</tr>
+<tr>
+<td><strong>Valoriser actions avec DDM à g élevé perpétuellement</strong></td>
+<td>g &gt; kE est impossible à l'infini → formule explosive</td>
+<td>Utiliser un modèle multiphase avec g terminal ≤ croissance économique</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_1">Exercices supplémentaires</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>Obligation : nominal 1 000 €, coupon 3 %, maturité 7 ans. YTM actuel = 2 %. Calculez (a) le prix, (b) la variation de prix approximative si les taux montent de 50 bp, sachant que D* = 6,5 ans.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+(a) Prix = Σ 30/(1,02)ᵗ + 1000/(1,02)⁷
+= 30 × [1 - (1,02)^(-7)] / 0,02 + 1000/1,149
+= 30 × 6,472 + 870,6 = 194,2 + 870,6 = <strong>1 064,8 €</strong></p>
+<p>(b) ΔP/P ≈ -6,5 × 0,005 = -3,25 %
+Nouveau prix ≈ 1 064,8 × (1 - 0,0325) = 1 064,8 × 0,9675 = <strong>1 030,2 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Une entreprise a un cours = 60 €, BPA = 4 €, dividende = 2 €. Taux de distribution = 50 %. kE = 8 %. Calculez le PER, le dividend yield et le taux de croissance implicite du DDM de Gordon.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+PER = 60 / 4 = <strong>15×</strong>
+Dividend yield = 2 / 60 = <strong>3,33 %</strong>
+DDM : 60 = D₁ / (kE - g) → g = kE - D₁/P₀ = 8 % - (2 × 1,0g) / 60
+En simplifiant : g ≈ kE - D₀/P₀ = 8 % - 3,33 % = <strong>4,67 %</strong> (croissance implicite)</p>
+</blockquote>
+<h3 id="exercice-3_2">Exercice 3</h3>
+<p>Un gérant possède 100 000 € d'obligations (duration modifiée = 8 ans, YTM = 3 %). Il anticipe une hausse des taux de 75 bp. (a) Estimer la perte en valeur. (b) Comment peut-il couvrir ce risque avec des futures sur Bund (duration = 7 ans, prix = 140 000 €/contrat) ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+(a) ΔP/P ≈ -8 × 0,0075 = -6 %
+Perte estimée = 100 000 × 6 % = <strong>6 000 €</strong></p>
+<p>(b) Couverture avec futures Bund :
+Nb contrats = (Duration portefeuille / Duration futures) × (Valeur portefeuille / Valeur futures)
+= (8 / 7) × (100 000 / 140 000) = 1,143 × 0,714 = <strong>0,816</strong> → vendre <strong>1 contrat</strong></p>
+<p>Gain sur les futures si taux +75 bp :
+ΔPrix futures ≈ -7 × 0,0075 × 140 000 = <strong>-7 350 €</strong> par contrat → gain de 7 350 € en position short
+Couverture partielle (gain 7 350 € &gt; perte 6 000 €oucoup).</p>
+</blockquote>
+<h3 id="exercice-4_1">Exercice 4</h3>
+<p>Calculez le rendement total d'une obligation achetée au prix de 950 € (nominal 1 000 €, coupon 5 %, maturité résiduelle 3 ans) et revendue après 2 ans à 1 020 € (après encaissement de 2 coupons de 50 €).</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Cash flows reçus : coupon an 1 = 50 €, coupon an 2 = 50 €, prix de vente = 1 020 €
+Flux total = 50 + 50 + 1 020 = 1 120 € sur 2 ans pour une mise de 950 €</p>
+<p>TRI (rendement annualisé) :
+950 = 50/r + (50 + 1020)/(1+r)²
+Essayons r = 10 % : 50/1,10 + 1 070/1,21 = 45,45 + 884 = 929,5 (trop bas)
+r = 9 % : 50/1,09 + 1 070/1,188 = 45,87 + 900,5 = 946,4 (proche)
+r ≈ <strong>9,1 %</strong> annualisé (vs. 5,4 % du coupon seul — plus-value significative)</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-3-produits-derives-options-futures-swaps">Chapitre 3 — Produits dérivés : options, futures, swaps</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Les <strong>produits dérivés</strong> sont des instruments financiers dont la valeur dépend d'un <strong>sous-jacent</strong> (action, indice, taux, devise, matière première). Ils servent à la <strong>couverture du risque</strong> (hedging), à la <strong>spéculation</strong> et à l'<strong>arbitrage</strong>.</p>
+<hr />
+<h2 id="1-les-contrats-a-terme-forwards-et-futures">1. Les contrats à terme (Forwards et Futures)</h2>
+<h3 id="11-forward">1.1 Forward</h3>
+<p>Un <strong>forward</strong> est un engagement ferme et bilatéral d'acheter ou de vendre un actif à une date future à un prix fixé aujourd'hui (<strong>prix forward</strong>).</p>
+<pre><code>Payoff acheteur = S_T - F₀
+Payoff vendeur  = F₀ - S_T
+</code></pre>
+<ul>
+<li><code>S_T</code> : prix spot à l'échéance</li>
+<li><code>F₀</code> : prix forward convenu</li>
+</ul>
+<p><strong>Prix forward théorique</strong> (absence d'arbitrage) :</p>
+<pre><code>F₀ = S₀ × (1 + r - d)^T
+</code></pre>
+<ul>
+<li><code>S₀</code> : prix spot actuel</li>
+<li><code>r</code> : taux sans risque</li>
+<li><code>d</code> : rendement du sous-jacent (dividendes pour une action, carry pour une devise)</li>
+<li><code>T</code> : maturité en années</li>
+</ul>
+<h3 id="12-futures-vs-forwards">1.2 Futures vs. Forwards</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Forward</th>
+<th>Futures</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lieu</td>
+<td>OTC</td>
+<td>Bourse organisée</td>
+</tr>
+<tr>
+<td>Standardisation</td>
+<td>Non</td>
+<td>Oui</td>
+</tr>
+<tr>
+<td>Chambre de compensation</td>
+<td>Non</td>
+<td>Oui (CCP)</td>
+</tr>
+<tr>
+<td>Risque de contrepartie</td>
+<td>Élevé</td>
+<td>Quasi nul</td>
+</tr>
+<tr>
+<td>Appels de marge</td>
+<td>Non</td>
+<td>Oui (daily mark-to-market)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-les-options">2. Les options</h2>
+<h3 id="21-definitions">2.1 Définitions</h3>
+<table>
+<thead>
+<tr>
+<th>Terme</th>
+<th>Définition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Call</strong></td>
+<td>Droit (non obligation) d'<strong>acheter</strong> le sous-jacent au prix d'exercice</td>
+</tr>
+<tr>
+<td><strong>Put</strong></td>
+<td>Droit (non obligation) de <strong>vendre</strong> le sous-jacent au prix d'exercice</td>
+</tr>
+<tr>
+<td><strong>Prix d'exercice (Strike K)</strong></td>
+<td>Prix auquel l'option peut être exercée</td>
+</tr>
+<tr>
+<td><strong>Prime</strong></td>
+<td>Prix payé pour acquérir l'option</td>
+</tr>
+<tr>
+<td><strong>Échéance (T)</strong></td>
+<td>Date limite d'exercice</td>
+</tr>
+<tr>
+<td><strong>Européenne</strong></td>
+<td>Exercice uniquement à l'échéance</td>
+</tr>
+<tr>
+<td><strong>Américaine</strong></td>
+<td>Exercice possible à tout moment</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-payoffs-a-lecheance">2.2 Payoffs à l'échéance</h3>
+<p><strong>Call (acheteur)</strong> :</p>
+<pre><code>Payoff = max(S_T - K, 0)
+</code></pre>
+<p><strong>Put (acheteur)</strong> :</p>
+<pre><code>Payoff = max(K - S_T, 0)
+</code></pre>
+<h3 id="23-representation-graphique-des-payoffs">2.3 Représentation graphique des payoffs</h3>
+<pre><code>CALL (acheteur)                PUT (acheteur)
+Profit                          Profit
+  |      /                        |  \
+  |     /                         |   \
+──|────/──── S_T                  |    \──── S_T
+  |   K                           |    K
+  | (prime)                       | (prime)
+</code></pre>
+<h3 id="24-les-quatre-positions-de-base">2.4 Les quatre positions de base</h3>
+<table>
+<thead>
+<tr>
+<th>Position</th>
+<th>Description</th>
+<th>Profil de risque</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Achat call</td>
+<td>Exposition haussière</td>
+<td>Perte limitée (prime), gain illimité</td>
+</tr>
+<tr>
+<td>Vente call</td>
+<td>Vue neutre/baissière</td>
+<td>Gain limité (prime), perte illimitée</td>
+</tr>
+<tr>
+<td>Achat put</td>
+<td>Couverture baissière</td>
+<td>Perte limitée (prime), gain limité (K-S)</td>
+</tr>
+<tr>
+<td>Vente put</td>
+<td>Vue haussière / génération de revenus</td>
+<td>Gain limité, perte significative</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-le-modele-black-scholes-merton-bsm">3. Le modèle Black-Scholes-Merton (BSM)</h2>
+<h3 id="31-formule-de-black-scholes-1973">3.1 Formule de Black-Scholes (1973)</h3>
+<p>Pour une <strong>option européenne</strong> sur action sans dividende :</p>
+<p><strong>Prix du call</strong> :</p>
+<pre><code>C = S₀ × N(d₁) - K × e^(-rT) × N(d₂)
+</code></pre>
+<p><strong>Prix du put</strong> :</p>
+<pre><code>P = K × e^(-rT) × N(-d₂) - S₀ × N(-d₁)
+</code></pre>
+<p>Avec :</p>
+<pre><code>d₁ = [ln(S₀/K) + (r + σ²/2) × T] / (σ × √T)
+d₂ = d₁ - σ × √T
+</code></pre>
+<ul>
+<li><code>S₀</code> : prix actuel du sous-jacent</li>
+<li><code>K</code> : prix d'exercice</li>
+<li><code>r</code> : taux sans risque (continu)</li>
+<li><code>σ</code> : volatilité annualisée du sous-jacent</li>
+<li><code>T</code> : maturité (en années)</li>
+<li><code>N(x)</code> : fonction de répartition de la loi normale standard</li>
+</ul>
+<h3 id="32-hypotheses-du-modele-bsm">3.2 Hypothèses du modèle BSM</h3>
+<ol>
+<li>Sous-jacent suit un mouvement brownien géométrique.</li>
+<li>Volatilité σ constante.</li>
+<li>Pas de dividendes.</li>
+<li>Marchés sans friction (pas de coûts de transaction).</li>
+<li>Taux sans risque r constant.</li>
+</ol>
+<h3 id="33-exemple-numerique">3.3 Exemple numérique</h3>
+<ul>
+<li>S₀ = 100 €, K = 100 €, r = 5 %, σ = 20 %, T = 1 an</li>
+</ul>
+<pre><code>d₁ = [ln(1) + (0,05 + 0,02) × 1] / (0,20 × 1)
+   = [0 + 0,07] / 0,20 = 0,35
+
+d₂ = 0,35 - 0,20 = 0,15
+
+N(0,35) = 0,6368
+N(0,15) = 0,5596
+
+C = 100 × 0,6368 - 100 × e^(-0,05) × 0,5596
+  = 63,68 - 95,12 × 0,5596
+  = 63,68 - 53,24 = 10,44 €
+</code></pre>
+<hr />
+<h2 id="4-les-grecques-greeks">4. Les grecques (Greeks)</h2>
+<p>Les <strong>grecques</strong> mesurent la sensibilité du prix d'une option aux différents paramètres.</p>
+<table>
+<thead>
+<tr>
+<th>Grecque</th>
+<th>Formule</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Delta (Δ)</strong></td>
+<td>∂C/∂S</td>
+<td>Variation du prix de l'option pour +1 € du sous-jacent</td>
+</tr>
+<tr>
+<td><strong>Gamma (Γ)</strong></td>
+<td>∂²C/∂S²</td>
+<td>Variation du delta pour +1 € du sous-jacent</td>
+</tr>
+<tr>
+<td><strong>Vega (ν)</strong></td>
+<td>∂C/∂σ</td>
+<td>Variation du prix pour +1 % de volatilité</td>
+</tr>
+<tr>
+<td><strong>Thêta (Θ)</strong></td>
+<td>∂C/∂T</td>
+<td>Perte de valeur par jour qui passe (time decay)</td>
+</tr>
+<tr>
+<td><strong>Rho (ρ)</strong></td>
+<td>∂C/∂r</td>
+<td>Sensibilité aux taux d'intérêt</td>
+</tr>
+</tbody>
+</table>
+<h3 id="valeurs-typiques-pour-un-call-atm">Valeurs typiques pour un call ATM</h3>
+<table>
+<thead>
+<tr>
+<th>Grecque</th>
+<th>Valeur call ATM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Delta</td>
+<td>≈ 0,5</td>
+</tr>
+<tr>
+<td>Gamma</td>
+<td>Maximum (ATM)</td>
+</tr>
+<tr>
+<td>Vega</td>
+<td>Maximum (ATM)</td>
+</tr>
+<tr>
+<td>Thêta</td>
+<td>Négatif (érosion temporelle)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-les-swaps">5. Les swaps</h2>
+<h3 id="51-swap-de-taux-irs-interest-rate-swap">5.1 Swap de taux (IRS — Interest Rate Swap)</h3>
+<p>Un <strong>IRS</strong> est un contrat d'échange de flux d'intérêts entre deux contreparties :
+- Partie A paie un taux <strong>fixe</strong> sur un notionnel.
+- Partie B paie un taux <strong>variable</strong> (ex : Euribor 3 mois) sur le même notionnel.</p>
+<p><strong>Usage</strong> :
+- Une entreprise endettée à taux variable veut se couvrir → elle paie fixe, reçoit variable.
+- Valorisé comme la différence entre deux obligations : fixe et variable.</p>
+<h3 id="52-swap-de-devises-cross-currency-swap">5.2 Swap de devises (Cross Currency Swap)</h3>
+<p>Échange de flux dans deux devises différentes. Utilisé pour financer des actifs dans une devise à moindre coût.</p>
+<h3 id="53-credit-default-swap-cds">5.3 Credit Default Swap (CDS)</h3>
+<p>Un <strong>CDS</strong> est une assurance contre le défaut d'un émetteur :
+- L'acheteur verse une prime périodique (spread CDS).
+- Le vendeur compense en cas de défaut.</p>
+<pre><code>Spread CDS ≈ Probabilité de défaut × (1 - Taux de recouvrement)
+</code></pre>
+<hr />
+<h2 id="6-strategies-optionnelles">6. Stratégies optionnelles</h2>
+<table>
+<thead>
+<tr>
+<th>Stratégie</th>
+<th>Construction</th>
+<th>Vue de marché</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Bull spread</strong></td>
+<td>Achat call K1 + Vente call K2 (K1&lt;K2)</td>
+<td>Haussier modéré</td>
+</tr>
+<tr>
+<td><strong>Bear spread</strong></td>
+<td>Achat put K2 + Vente put K1 (K1&lt;K2)</td>
+<td>Baissier modéré</td>
+</tr>
+<tr>
+<td><strong>Straddle</strong></td>
+<td>Achat call + Achat put (même K, T)</td>
+<td>Forte volatilité attendue</td>
+</tr>
+<tr>
+<td><strong>Strangle</strong></td>
+<td>Achat call K2 + Achat put K1 (K1&lt;K2)</td>
+<td>Très forte volatilité (moins cher)</td>
+</tr>
+<tr>
+<td><strong>Butterfly</strong></td>
+<td>Achat call K1 + Vente 2 calls K2 + Achat call K3</td>
+<td>Faible volatilité attendue</td>
+</tr>
+<tr>
+<td><strong>Protective put</strong></td>
+<td>Action + Achat put</td>
+<td>Couverture d'un portefeuille actions</td>
+</tr>
+<tr>
+<td><strong>Covered call</strong></td>
+<td>Action + Vente call</td>
+<td>Génération de revenus, vue neutre</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Un forward sur action est coté. S₀ = 50 €, r = 4 %, dividende yield = 2 %, T = 0,5 an. Calculez le prix forward.</p>
+<blockquote>
+<p><strong>Correction</strong> : F₀ = 50 × (1 + 0,04 - 0,02)^0,5 = 50 × (1,02)^0,5 ≈ 50 × 1,00995 ≈ <strong>50,50 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_3">Exercice 2</h3>
+<p>Un acheteur de put K = 45 € paie une prime de 3 €. Le sous-jacent vaut 40 € à l'échéance. Calculez son profit net.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Payoff = max(45 - 40, 0) = 5 €
+Profit = 5 - 3 = <strong>+2 €</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>Les dérivés servent à couvrir, spéculer ou arbitrer.</li>
+<li>Forward : engagement ferme ; option : droit sans obligation.</li>
+<li>Black-Scholes valorise une option avec cinq paramètres : S, K, r, σ, T.</li>
+<li>Les grecques mesurent les sensibilités : delta (sous-jacent), vega (volatilité), thêta (temps).</li>
+<li>Un swap IRS convertit une exposition taux variable en taux fixe (ou inversement).</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_2">Approfondissement théorique</h2>
+<h3 id="a-la-parite-put-call-put-call-parity">A. La parité put-call (Put-Call Parity)</h3>
+<p>La <strong>parité put-call</strong> est l'une des relations fondamentales de la théorie des options. Elle établit une équivalence stricte entre le prix d'un call européen, d'un put européen, du sous-jacent et de l'actif sans risque, pour un même strike K et une même maturité T.</p>
+<p><strong>Relation de parité put-call</strong> :</p>
+<pre><code>C - P = S₀ - K × e^(-rT)
+</code></pre>
+<p>ou de manière équivalente :</p>
+<pre><code>C + K × e^(-rT) = P + S₀
+</code></pre>
+<p><strong>Interprétation</strong> : le membre gauche représente un portefeuille long call + cash actualisé ; le membre droit représente un portefeuille long put + long sous-jacent. Les deux doivent avoir le même prix en l'absence d'arbitrage.</p>
+<p><strong>Démonstration par arbitrage</strong> : supposons C + K·e^(-rT) &gt; P + S₀. Un arbitragiste peut alors :
+- Vendre le call (encaisser C)
+- Acheter le put (payer P)
+- Acheter le sous-jacent (payer S₀)
+- Emprunter K·e^(-rT) au taux sans risque</p>
+<p>À l'échéance, quel que soit S_T, les positions se compensent exactement et l'arbitragiste empoche la différence initiale sans risque. Ce mécanisme d'arbitrage force l'égalité à l'équilibre.</p>
+<p><strong>Utilisation pratique</strong> :
+- Déduire le prix d'un put à partir d'un call coté (et vice-versa).
+- Détecter des opportunités d'arbitrage sur les marchés d'options.
+- Construire des positions synthétiques : un call synthétique = long put + long sous-jacent + emprunt.</p>
+<p><strong>Extension aux options avec dividendes</strong> : si le sous-jacent verse un dividende actualisé D pendant la vie de l'option :</p>
+<pre><code>C - P = S₀ - D - K × e^(-rT)
+</code></pre>
+<p><strong>Limites</strong> : la parité put-call s'applique strictement aux options <strong>européennes</strong>. Pour les options américaines, on dispose seulement d'inégalités (bounds d'arbitrage), car l'exercice anticipé introduit une asymétrie.</p>
+<hr />
+<h3 id="b-modeles-a-volatilite-stochastique-le-modele-de-heston-1993">B. Modèles à volatilité stochastique : le modèle de Heston (1993)</h3>
+<p>La principale limite de Black-Scholes est l'hypothèse de <strong>volatilité constante</strong>, contredite empiriquement par le smile de volatilité. Le modèle de <strong>Heston</strong> (1993) est la référence académique et professionnelle pour modéliser une volatilité stochastique.</p>
+<p><strong>Dynamique du modèle Heston</strong> (sous la mesure risk-neutral Q) :</p>
+<pre><code>dS_t = r × S_t × dt + √(v_t) × S_t × dW_t^S
+dv_t = κ × (θ - v_t) × dt + ξ × √(v_t) × dW_t^v
+</code></pre>
+<p>avec :
+- <code>v_t</code> : variance instantanée (processus CIR — Cox-Ingersoll-Ross)
+- <code>κ</code> : vitesse de retour à la moyenne (mean-reversion speed)
+- <code>θ</code> : variance à long terme (long-run variance)
+- <code>ξ</code> : vol of vol (volatilité de la volatilité)
+- <code>dW_t^S</code> et <code>dW_t^v</code> : mouvements browniens corrélés avec <code>dW^S × dW^v = ρ dt</code></p>
+<p><strong>Le paramètre de corrélation ρ</strong> est crucial : sur les marchés actions, ρ est généralement <strong>négatif</strong> (-0,5 à -0,8), traduisant l'effet levier — quand le prix de l'action baisse, la volatilité augmente (panic selling). Cela génère le skew de volatilité observé empiriquement.</p>
+<p><strong>Condition de Feller</strong> : pour que v_t reste strictement positif presque sûrement, il faut :</p>
+<pre><code>2κθ &gt; ξ²
+</code></pre>
+<p><strong>Prix d'une option dans Heston</strong> : il n'existe pas de formule analytique fermée simple, mais une <strong>formule semi-analytique</strong> reposant sur les transformées de Fourier (Carr-Madan) ou les fonctions caractéristiques :</p>
+<pre><code>C = S₀ × P₁ - K × e^(-rT) × P₂
+</code></pre>
+<p>où P₁ et P₂ sont calculés par intégration numérique des fonctions caractéristiques du log-prix.</p>
+<p><strong>Calibration</strong> : les cinq paramètres (v₀, κ, θ, ξ, ρ) sont calibrés sur la surface de volatilité implicite observée, minimisant l'erreur quadratique entre volatilités implicites de marché et celles produites par le modèle.</p>
+<p><strong>Autres modèles à volatilité stochastique</strong> :
+- <strong>SABR</strong> (Hagan et al., 2002) : très utilisé sur les marchés de taux pour sa formule analytique approchée.
+- <strong>Rough Volatility (Gatheral et al., 2018)</strong> : volatilité pilotée par un mouvement brownien fractionnaire (H &lt; 1/2), reproduisant mieux le comportement à court terme de la volatilité.
+- <strong>Local volatility (Dupire, 1994)</strong> : σ = σ(S,t), déterministe mais dépendant du spot et du temps. Exact sur la surface de volat actuelle mais problèmes pour les hedges dynamiques.</p>
+<hr />
+<h3 id="c-replication-dynamique-et-couverture-delta">C. Réplication dynamique et couverture delta</h3>
+<p>La <strong>réplication dynamique</strong> est le fondement théorique de la valorisation par Black-Scholes. L'idée centrale est que l'on peut répliquer exactement le payoff d'une option en gérant dynamiquement un portefeuille composé du sous-jacent et de l'actif sans risque.</p>
+<p><strong>Construction du portefeuille réplicant</strong> :</p>
+<p>À chaque instant t, le portefeuille est composé de :
+- Δ_t unités du sous-jacent (où Δ_t = N(d₁) pour un call BSM)
+- Une position monétaire sur l'actif sans risque</p>
+<p><strong>L'équation de Black-Scholes</strong> découle directement de cette réplication :</p>
+<pre><code>∂V/∂t + (1/2) × σ² × S² × ∂²V/∂S² + r × S × ∂V/∂S - r × V = 0
+</code></pre>
+<p>Cette EDP (équation aux dérivées partielles) est vérifiée par tout instrument dérivé V(S,t) dans le cadre BSM.</p>
+<p><strong>Couverture delta en pratique</strong> :</p>
+<p>Le delta hedging consiste à rebalancer continuellement la position delta pour rester immunisé contre les mouvements du sous-jacent. Dans un portefeuille delta-neutre, la valeur du portefeuille est momentanément insensible aux petites variations de S.</p>
+<p><strong>Limites pratiques</strong> :
+- Le rééquilibrage continu est impossible et coûteux (coûts de transaction).
+- En pratique, les traders rééquilibrent à intervalles discrets (quotidien, hebdomadaire).
+- Le risque résiduel entre deux rééquilibrages est mesuré par le <strong>gamma</strong> : plus gamma est élevé, plus le portefeuille est exposé aux grands mouvements.</p>
+<hr />
+<h3 id="d-le-gamma-scalping">D. Le gamma-scalping</h3>
+<p>Le <strong>gamma-scalping</strong> est une stratégie de trading utilisée par les teneurs de marché et les options traders qui consiste à profiter de la convexité (gamma) d'un portefeuille d'options tout en restant delta-neutre.</p>
+<p><strong>Principe</strong> :</p>
+<p>Un portefeuille long gamma (achat de straddle, par exemple) bénéficie des grands mouvements du sous-jacent dans les deux directions. Le trader :
+1. Achète des options (long gamma, long vega, short thêta).
+2. Maintient un delta nul en achetant ou vendant le sous-jacent à chaque mouvement.
+3. Empoche des profits à chaque rebalancement si la volatilité réalisée &gt; volatilité implicite payée.</p>
+<p><strong>P&amp;L du gamma-scalping</strong> :</p>
+<p>Le profit/perte quotidien d'un portefeuille delta-neutre s'écrit :</p>
+<pre><code>P&amp;L ≈ (1/2) × Γ × (ΔS)² - Θ × Δt
+</code></pre>
+<ul>
+<li>Le terme <code>(1/2) × Γ × (ΔS)²</code> est le gain lié aux mouvements du sous-jacent.</li>
+<li>Le terme <code>Θ × Δt</code> est le coût du temps (time decay négatif pour un acheteur d'options).</li>
+</ul>
+<p><strong>Condition de profitabilité</strong> : le gamma-scalping est rentable si la <strong>volatilité réalisée</strong> (σ_réalisée) est supérieure à la <strong>volatilité implicite</strong> (σ_impl) payée à l'achat des options.</p>
+<pre><code>Σ (1/2) × Γ × (ΔS)² &gt; Σ Θ × Δt
+⟺ σ_réalisée &gt; σ_implicite
+</code></pre>
+<p><strong>Application par les market makers</strong> : les teneurs de marché sur options sont souvent long gamma et pratiquent le gamma-scalping pour couvrir le risque et générer du P&amp;L. Leur rentabilité dépend de leur capacité à estimer la volatilité future mieux que le marché.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_2">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-verification-de-la-parite-put-call-et-arbitrage">Exemple 1 — Vérification de la parité put-call et arbitrage</h3>
+<p><strong>Données de marché</strong> :
+- Sous-jacent : action XYZ, S₀ = 80 €
+- Strike K = 80 € (ATM)
+- Maturité T = 6 mois (0,5 an)
+- Taux sans risque r = 4 % (continu)
+- Call observé : C = 6,20 €
+- Put observé : P = 4,10 €</p>
+<p><strong>Vérification de la parité put-call</strong> :</p>
+<pre><code>K × e^(-rT) = 80 × e^(-0,04 × 0,5) = 80 × e^(-0,02) = 80 × 0,9802 = 78,42 €
+
+Membre gauche  : C + K × e^(-rT) = 6,20 + 78,42 = 84,62 €
+Membre droit   : P + S₀          = 4,10 + 80,00 = 84,10 €
+</code></pre>
+<p>Il existe un <strong>écart de 0,52 €</strong> (avant coûts de transaction), ce qui signale une opportunité d'arbitrage potentielle. Pour l'exploiter :</p>
+<ul>
+<li>Vendre le call à 6,20 € (encaisser)</li>
+<li>Acheter le put à 4,10 € (payer)</li>
+<li>Acheter le sous-jacent à 80 € (payer)</li>
+<li>Emprunter 78,42 € (reçu)</li>
+</ul>
+<p>Flux initial net = +6,20 - 4,10 - 80 + 78,42 = <strong>+0,52 €</strong> (encaissé sans risque)</p>
+<p>À l'échéance, quel que soit S_T, les positions s'annulent exactement. Profit sans risque : 0,52 € par contrat.</p>
+<p>En pratique, les coûts de transaction (bid-ask spread, commissions) absorberaient cet écart si celui-ci est inférieur à ~0,20-0,30 €. Ici, l'écart de 0,52 € peut être exploitable selon les conditions de marché.</p>
+<hr />
+<h3 id="exemple-2-couverture-delta-dun-call-et-gamma-scalping-sur-3-jours">Exemple 2 — Couverture delta d'un call et gamma-scalping sur 3 jours</h3>
+<p><strong>Position initiale</strong> :
+- Vente de 1 000 calls sur action ABC
+- S₀ = 50 €, K = 50 €, T = 30 jours = 0,0822 an, r = 3 %, σ = 25 %
+- Delta du call (BSM) ≈ 0,52, Gamma ≈ 0,08 (par euro de sous-jacent), Thêta = -0,04 €/jour/option</p>
+<p><strong>Portefeuille delta-neutre initial</strong> : acheter 0,52 × 1 000 = 520 actions ABC.</p>
+<p><strong>Jour 1</strong> : S monte à 52 € (+2 €)</p>
+<pre><code>Nouveau delta ≈ 0,52 + 0,08 × 2 = 0,68
+
+Actions à détenir = 680
+Actions actuellement = 520
+→ Acheter 160 actions supplémentaires à 52 €
+
+P&amp;L gamma : (1/2) × 0,08 × 2² × 1 000 = 160 €
+P&amp;L thêta : -0,04 × 1 000 = -40 €
+P&amp;L net jour 1 ≈ +120 €
+</code></pre>
+<p><strong>Jour 2</strong> : S redescend à 50 € (-2 €)</p>
+<pre><code>Nouveau delta ≈ 0,52 (retour à l'ATM)
+
+Actions à détenir = 520
+Actions actuellement = 680
+→ Vendre 160 actions à 50 €
+
+P&amp;L gamma : (1/2) × 0,08 × 2² × 1 000 = 160 €
+P&amp;L thêta : -0,04 × 1 000 = -40 €
+P&amp;L net jour 2 ≈ +120 €
+</code></pre>
+<p><strong>Jour 3</strong> : S reste à 50 € (pas de mouvement)</p>
+<pre><code>P&amp;L gamma : 0 €
+P&amp;L thêta : -40 €
+P&amp;L net jour 3 = -40 €
+</code></pre>
+<p><strong>Bilan sur 3 jours</strong> : +120 + 120 - 40 = <strong>+200 €</strong> (avant coûts de transaction).</p>
+<p>La forte volatilité réalisée (mouvements de ±2 €) a compensé largement le time decay. Le gamma-scalping est ici rentable car σ_réalisée &gt; σ_implicite.</p>
+<hr />
+<h3 id="exemple-3-valorisation-dun-irs-et-analyse-de-sensibilite">Exemple 3 — Valorisation d'un IRS et analyse de sensibilité</h3>
+<p><strong>Contexte</strong> : une entreprise a emprunté 10 M€ à taux variable (Euribor 3M + 150 bps) sur 3 ans. Elle souhaite se couvrir contre une hausse des taux en entrant dans un IRS où elle paie fixe 3,20 % et reçoit Euribor 3M.</p>
+<p><strong>Situation de départ</strong> : Euribor 3M = 2,00 % ; coût total de l'emprunt = 2,00 % + 1,50 % = 3,50 %.</p>
+<p><strong>Après IRS</strong> :</p>
+<pre><code>Coût net = Taux variable payé - Taux variable reçu + Taux fixe payé
+         = (Euribor + 1,50%) - Euribor + 3,20%
+         = 1,50% + 3,20%
+         = 4,70% fixe garanti
+</code></pre>
+<p>L'entreprise accepte de payer 4,70 % fixe (vs 3,50 % actuel) pour se protéger contre une hausse des taux.</p>
+<p><strong>Valorisation de l'IRS à la date initiale</strong> :</p>
+<p>Un IRS se valorise comme la différence de deux obligations (jambes) :</p>
+<pre><code>Valeur IRS (payeur fixe) = Valeur jambe variable - Valeur jambe fixe
+</code></pre>
+<p>À la date initiale d'un IRS équilibré, la valeur est <strong>nulle</strong> par construction (le taux fixe de swap est choisi pour égaliser les deux jambes).</p>
+<p><strong>Sensibilité (DV01 — Dollar Value of 1 basis point)</strong> :</p>
+<pre><code>DV01 = Variation de valeur de l'IRS pour +1 bp de taux
+     = Notionnel × Duration modifiée × 0,0001
+     ≈ 10 000 000 × 2,7 × 0,0001 = 2 700 €/bp
+</code></pre>
+<p><strong>Scénario de stress</strong> : si les taux montent de +200 bps :</p>
+<pre><code>Gain pour le payeur fixe ≈ 2 700 × 200 = 540 000 €
+</code></pre>
+<p>L'entreprise réalise un gain de couverture de 540 000 € sur son IRS, compensant la hausse de coût sur son emprunt variable. Cette couverture illustre le rôle des swaps comme outil de gestion active du risque de taux.</p>
+<hr />
+<h2 id="applications-professionnelles_2">Applications professionnelles</h2>
+<h3 id="gerant-de-fonds-utilisation-des-derives-pour-loverlay-strategique">Gérant de fonds : utilisation des dérivés pour l'overlay stratégique</h3>
+<p>Un gérant de fonds multi-actifs utilise les produits dérivés de plusieurs façons complémentaires :</p>
+<p><strong>Couverture du risque de marché (delta hedging au niveau portefeuille)</strong> : en vendant des contrats futures sur l'indice (CAC40, EuroStoxx50), le gérant peut réduire rapidement son exposition actions sans vendre les titres en portefeuille. Cette approche est plus efficiente en termes de coûts de transaction que des cessions physiques.</p>
+<pre><code>Nombre de contrats futures à vendre = (β_cible - β_actuel) × Valeur portefeuille / (Prix futures × Multiplicateur)
+</code></pre>
+<p>Par exemple, pour neutraliser l'exposition d'un portefeuille de 50 M€ avec β = 1,1 en utilisant des futures EuroStoxx50 à 4 200 pts (multiplicateur 10 €) :</p>
+<pre><code>Contrats = (0 - 1,1) × 50 000 000 / (4 200 × 10) = -1 310 contrats (vente)
+</code></pre>
+<p><strong>Génération de revenus supplémentaires</strong> : la vente couverte de calls (covered call writing) permet d'encaisser des primes d'options sur les positions détenues. Une stratégie systématique de vente de calls OTM d'un mois peut générer 1 à 3 % de revenus annuels supplémentaires sur un portefeuille actions, au prix d'une limitation des plus-values si le marché monte fortement.</p>
+<p><strong>Exposition tactique à faible coût</strong> : l'achat de calls sur indice permet au gérant de prendre une exposition haussière à court terme avec une mise de fonds limitée (prime), sans immobiliser du capital sur des positions physiques.</p>
+<hr />
+<h3 id="trader-options-gestion-du-book-et-du-risque-greeks">Trader options : gestion du book et du risque Greeks</h3>
+<p>Un trader d'options (market maker ou proprietary trader) gère quotidiennement un <strong>book</strong> composé de centaines de positions, avec pour objectif de maintenir un profil de risque contrôlé tout en captant le bid-ask spread.</p>
+<p><strong>Gestion du delta</strong> : le trader maintient en permanence un delta global proche de zéro en achetant ou vendant le sous-jacent (ou des futures). C'est le delta hedging quotidien.</p>
+<p><strong>Gestion du vega et de la surface de volatilité</strong> : le risque de vega est géré par des trades de volatilité — acheter ou vendre des options à différentes maturités et strikes pour obtenir le profil de vega désiré. Un book long vega bénéficie des hausses de volatilité implicite (crises de marché).</p>
+<p><strong>Analyse du P&amp;L quotidien</strong> :</p>
+<pre><code>P&amp;L journalier ≈ Delta × ΔS + (1/2) × Gamma × (ΔS)² + Vega × Δσ_impl + Theta × Δt + Rho × Δr
+</code></pre>
+<p>Le trader décompose son P&amp;L par grecque pour identifier les sources de profit/perte et ajuster ses hedges en conséquence.</p>
+<p><strong>Skew trading</strong> : exploiter les anomalies dans la surface de volatilité implicite — par exemple, si le skew entre puts OTM et calls OTM est jugé excessif (puts trop chers), le trader peut mettre en place un risk reversal (achat call OTM, vente put OTM) pour capitaliser sur la normalisation attendue.</p>
+<hr />
+<h3 id="risk-manager-controle-des-expositions-et-reporting">Risk manager : contrôle des expositions et reporting</h3>
+<p>Le risk manager utilise les produits dérivés principalement sous l'angle de leur contribution au risque global du portefeuille ou de la banque.</p>
+<p><strong>Calcul de la VaR options</strong> : les options introduisent une non-linéarité qui complique le calcul de la VaR paramétrique. Le risk manager utilise soit la méthode <strong>delta-gamma</strong> (approximation quadratique), soit la simulation Monte Carlo complète :</p>
+<pre><code>VaR delta-gamma ≈ |Delta × σ_S × √T × z_α| + (1/2) × Gamma × σ²_S × T × (z²_α - 1)
+</code></pre>
+<p><strong>Stress testing sur les dérivés de taux</strong> : pour un portefeuille de swaps, le risk manager analyse l'impact d'un choc parallèle de la courbe des taux (+100, +200, +300 bps) et d'une inversion de la courbe (aplatissement, pentification) sur la valeur mark-to-market du portefeuille.</p>
+<p><strong>Surveillance du risque de contrepartie (CVA)</strong> : pour les dérivés OTC (swaps, forwards), le risk manager calcule le <strong>Credit Valuation Adjustment (CVA)</strong> qui mesure la perte attendue due au risque de défaut de la contrepartie :</p>
+<pre><code>CVA ≈ (1 - R) × Σ EE_t × PD_t × DF_t
+</code></pre>
+<p>où EE_t est l'exposition positive espérée, PD_t la probabilité de défaut marginale et DF_t le facteur d'actualisation.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_2">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-confondre-payoff-et-profit-net">Erreur 1 — Confondre payoff et profit net</h3>
+<p>Le payoff d'une option à l'échéance ne tient pas compte de la prime initiale payée. Le <strong>profit net</strong> est le payoff diminué de la prime (éventuellement capitalisée au taux sans risque).</p>
+<pre><code>Payoff acheteur call = max(S_T - K, 0)           [PAYOFF]
+Profit net acheteur  = max(S_T - K, 0) - C × e^(rT) [PROFIT]
+</code></pre>
+<p>Exemple classique d'erreur : un call K = 100 € est acheté 8 €. À l'échéance, S_T = 105 €. Le payoff est 5 €, mais le profit est -3 € (perte nette malgré l'option en-the-money).</p>
+<hr />
+<h3 id="erreur-2-appliquer-la-parite-put-call-aux-options-americaines">Erreur 2 — Appliquer la parité put-call aux options américaines</h3>
+<p>La parité put-call <code>C - P = S₀ - K·e^(-rT)</code> n'est valable que pour des options <strong>européennes</strong>. Pour les options américaines, les droits d'exercice anticipé créent une asymétrie irréductible entre call et put américains. On dispose seulement d'inégalités de type :</p>
+<pre><code>S₀ - K ≤ C_américain - P_américain ≤ S₀ - K × e^(-rT)
+</code></pre>
+<p>Appliquer la formule européenne à des options américaines génère des conclusions erronées sur les opportunités d'arbitrage.</p>
+<hr />
+<h3 id="erreur-3-interpreter-le-delta-comme-une-probabilite-dexercice">Erreur 3 — Interpréter le delta comme une probabilité d'exercice</h3>
+<p>Le delta d'un call (N(d₁) dans BSM) est souvent interprété comme la probabilité que l'option soit exercée à l'échéance. C'est <strong>inexact</strong> : cette probabilité est N(d₂), pas N(d₁). La différence provient de la convention de mesure (mesure risque-neutre pour N(d₂), mesure réelle ajustée pour N(d₁)).</p>
+<pre><code>Probabilité d'exercice (mesure Q) = N(d₂)
+Delta du call                      = N(d₁) &gt; N(d₂) pour r &gt; 0
+</code></pre>
+<p>Pour un call ATM à longue maturité avec taux positif, le delta peut être significativement supérieur à 0,5 tandis que la probabilité d'exercice est proche de 0,5.</p>
+<hr />
+<h3 id="erreur-4-negliger-le-convexity-adjustment-dans-les-futures-sur-taux">Erreur 4 — Négliger le convexity adjustment dans les futures sur taux</h3>
+<p>Le prix d'un <strong>futures sur taux d'intérêt</strong> n'est pas exactement égal au prix forward correspondant en raison de la marque au marché quotidienne des futures. Le <strong>convexity adjustment</strong> (ajustement de convexité) corrige cette différence, qui peut être significative pour des maturités longues :</p>
+<pre><code>Futures rate ≈ Forward rate - (1/2) × σ² × T₁ × T₂
+</code></pre>
+<p>Négliger cet ajustement lors du pricing de produits de taux à long terme (caps, floors, swaptions) conduit à une sous-estimation systématique du coût de couverture.</p>
+<hr />
+<h3 id="erreur-5-supposer-la-volatilite-constante-pour-les-strategies-multi-legs">Erreur 5 — Supposer la volatilité constante pour les stratégies multi-legs</h3>
+<p>Lors du pricing ou de la gestion de stratégies complexes (butterfly, condor, calendar spread), l'hypothèse BSM de volatilité constante est particulièrement trompeuse. Chaque jambe de la stratégie doit être pricée avec la volatilité implicite correspondant à son propre strike et sa propre maturité (lue sur la surface de volatilité). Utiliser une volatilité unique pour toute la stratégie peut conduire à des erreurs de pricing de plusieurs points de base, et à des hedges incorrects.</p>
+<hr />
+<h2 id="exercices-supplementaires_2">Exercices supplémentaires</h2>
+<h3 id="exercice-1-parite-put-call-et-position-synthetique-niveau-intermediaire">Exercice 1 — Parité put-call et position synthétique (niveau intermédiaire)</h3>
+<p>Une option call européenne sur l'action TotalEnergies (K = 60 €, T = 3 mois = 0,25 an, r = 3 %) cote 3,50 €. L'action vaut 60 €.</p>
+<p>a) Calculez le prix théorique du put de mêmes caractéristiques via la parité put-call.
+b) Si le put est coté 2,80 € sur le marché, construisez une stratégie d'arbitrage et calculez le profit.
+c) Construisez un call synthétique avec le put, l'action et l'actif sans risque. Quelle quantité de chaque instrument utiliser pour répliquer exactement un call ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) Prix théorique du put</strong> :
+<code>P = C - S₀ + K × e^(-rT)
+  = 3,50 - 60 + 60 × e^(-0,03 × 0,25)
+  = 3,50 - 60 + 60 × 0,99251
+  = 3,50 - 60 + 59,55 = 3,05 €</code></p>
+<p><strong>b) Arbitrage si P = 2,80 €</strong> (put sous-évalué de 0,25 €) :</p>
+<p>La valeur théorique du put est 3,05 €, mais le marché le cote 2,80 €. Il faut acheter le put et répliquer sa valeur implicitement en vendant la combinaison équivalente :
+- Acheter le put : -2,80 €
+- Vendre le call : +3,50 €
+- Acheter l'action : -60,00 €
+- Emprunter K·e^(-rT) = 59,55 € : +59,55 €</p>
+<p>Flux net initial = -2,80 + 3,50 - 60 + 59,55 = <strong>+0,25 €</strong> (profit d'arbitrage sans risque)</p>
+<p><strong>c) Call synthétique</strong> :
+D'après la parité put-call : C = P + S₀ - K·e^(-rT)
+Pour répliquer 1 call, il faut :
+- Acheter 1 put (même K, même T) : +1 put
+- Acheter 1 action : +1 action
+- Emprunter la valeur actuelle du strike : -K·e^(-rT) = -59,55 € (soit vendre de l'actif sans risque)</p>
+<p>Ce portefeuille a exactement le même profil de payoff qu'un call europeen de strike K.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-2-calcul-bsm-complet-avec-greeks-niveau-intermediaire-avance">Exercice 2 — Calcul BSM complet avec Greeks (niveau intermédiaire-avancé)</h3>
+<p>Une option call européenne a les caractéristiques suivantes : S₀ = 120 €, K = 115 €, r = 4 %, σ = 30 %, T = 6 mois (0,5 an).</p>
+<p>a) Calculez d₁, d₂, N(d₁) et N(d₂).
+b) Calculez le prix du call et du put (via BSM et parité put-call).
+c) Calculez le delta du call, la valeur du vega (pour 1 % de variation de σ) et le thêta (variation en 1 jour).
+d) Vérifiez la parité put-call.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) d₁ et d₂</strong> :
+```
+d₁ = [ln(120/115) + (0,04 + 0,09/2) × 0,5] / (0,30 × √0,5)
+   = [ln(1,04348) + (0,04 + 0,045) × 0,5] / (0,30 × 0,7071)
+   = [0,04255 + 0,0425] / 0,2121
+   = 0,08505 / 0,2121
+   = 0,4010</p>
+<p>d₂ = 0,4010 - 0,2121 = 0,1889</p>
+<p>N(0,40) ≈ 0,6554
+N(0,19) ≈ 0,5753
+```</p>
+<p><strong>b) Prix du call et du put</strong> :
+```
+K × e^(-rT) = 115 × e^(-0,04 × 0,5) = 115 × 0,9802 = 112,72 €</p>
+<p>C = 120 × 0,6554 - 112,72 × 0,5753
+  = 78,65 - 64,85
+  = 13,80 €</p>
+<p>P (parité put-call) = C - S₀ + K × e^(-rT)
+                   = 13,80 - 120 + 112,72
+                   = 6,52 €
+```</p>
+<p><strong>c) Greeks</strong> :
+```
+Delta call = N(d₁) = 0,6554</p>
+<p>n(d₁) = (1/√(2π)) × e^(-d₁²/2) = 0,3989 × e^(-0,0804) = 0,3989 × 0,9227 = 0,3681</p>
+<p>Vega = S₀ × n(d₁) × √T = 120 × 0,3681 × 0,7071 = 31,24 €
+     → Variation pour +1% de σ = 31,24 × 0,01 = 0,31 € par option</p>
+<p>Theta call ≈ -[S₀ × n(d₁) × σ / (2√T) + r × K × e^(-rT) × N(d₂)] / 365
+           ≈ -[120 × 0,3681 × 0,30 / (2 × 0,7071) + 0,04 × 112,72 × 0,5753] / 365
+           ≈ -[9,36 + 2,59] / 365
+           ≈ -0,033 €/jour
+```</p>
+<p><strong>d) Vérification parité</strong> :
+<code>C - P = 13,80 - 6,52 = 7,28 €
+S₀ - K × e^(-rT) = 120 - 112,72 = 7,28 € ✓</code></p>
+</blockquote>
+<hr />
+<h3 id="exercice-3-strategie-straddle-et-seuil-de-rentabilite-niveau-avance">Exercice 3 — Stratégie straddle et seuil de rentabilité (niveau avancé)</h3>
+<p>Un investisseur anticipe une forte volatilité sur l'action Airbus (résultats trimestriels dans 1 mois) mais ne sait pas dans quel sens le cours va évoluer. Il achète un straddle ATM :
+- Achat call K = 130 €, prime = 4,20 €
+- Achat put K = 130 €, prime = 3,80 €
+- Cours actuel : S₀ = 130 €</p>
+<p>a) Calculez le coût total de la stratégie et les seuils de rentabilité.
+b) Calculez le P&amp;L net pour S_T ∈ {115, 120, 125, 130, 135, 140, 145} €.
+c) Quelle volatilité implicite annualisée (approximative) cette stratégie induit-elle si T = 1/12 an et r = 0 ? (indice : utiliser la formule approchée Vega ≈ S₀ × √(T/2π))
+d) L'investisseur anticipe une volatilité réalisée de 35 %. Ce straddle est-il attractif ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) Coût et seuils de rentabilité</strong> :
+```
+Prime totale = 4,20 + 3,80 = 8,00 €</p>
+<p>Seuil haut = K + Prime = 130 + 8 = 138 €
+Seuil bas  = K - Prime = 130 - 8 = 122 €
+```</p>
+<p><strong>b) Table de P&amp;L</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>S_T</th>
+<th>Payoff Call</th>
+<th>Payoff Put</th>
+<th>P&amp;L brut</th>
+<th>Prime</th>
+<th>P&amp;L net</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>115</td>
+<td>0</td>
+<td>15</td>
+<td>15</td>
+<td>-8</td>
+<td><strong>+7 €</strong></td>
+</tr>
+<tr>
+<td>120</td>
+<td>0</td>
+<td>10</td>
+<td>10</td>
+<td>-8</td>
+<td><strong>+2 €</strong></td>
+</tr>
+<tr>
+<td>125</td>
+<td>0</td>
+<td>5</td>
+<td>5</td>
+<td>-8</td>
+<td><strong>-3 €</strong></td>
+</tr>
+<tr>
+<td>130</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>-8</td>
+<td><strong>-8 €</strong></td>
+</tr>
+<tr>
+<td>135</td>
+<td>5</td>
+<td>0</td>
+<td>5</td>
+<td>-8</td>
+<td><strong>-3 €</strong></td>
+</tr>
+<tr>
+<td>140</td>
+<td>10</td>
+<td>0</td>
+<td>10</td>
+<td>-8</td>
+<td><strong>+2 €</strong></td>
+</tr>
+<tr>
+<td>145</td>
+<td>15</td>
+<td>0</td>
+<td>15</td>
+<td>-8</td>
+<td><strong>+7 €</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>c) Volatilité implicite approximative</strong> :
+```
+Prix straddle ATM ≈ 2 × Vega × σ_impl / (2 × nombre d'options)
+Formule simplifiée pour straddle ATM : Prime_straddle ≈ S₀ × σ_impl × √(T/2π) × 2</p>
+<p>8 ≈ 2 × 130 × σ_impl × √(1/12 / 6,283)
+  ≈ 2 × 130 × σ_impl × √(0,01326)
+  ≈ 2 × 130 × σ_impl × 0,11519</p>
+<p>σ_impl ≈ 8 / (2 × 130 × 0,11519) = 8 / 29,95 ≈ 0,267 = 26,7 %
+```</p>
+<p><strong>d) Attractivité du straddle</strong> :</p>
+<p>La volatilité implicite du straddle est d'environ 26,7 %. L'investisseur anticipe une volatilité réalisée de 35 %. Comme σ_réalisée attendue (35 %) &gt; σ_implicite payée (26,7 %), la stratégie long straddle est <strong>attractive</strong> : l'investisseur anticipe des mouvements plus importants que ce que le marché pricé. Il paie "bon marché" la volatilité. En revanche, si la publication de résultats est moins volatile qu'attendu (σ_réalisée &lt; 26,7 %), la stratégie sera perdante.</p>
+</blockquote>
+<hr />
+<h3 id="exercice-4-couverture-avec-futures-et-calcul-du-nombre-de-contrats-optimal-niveau-avance">Exercice 4 — Couverture avec futures et calcul du nombre de contrats optimal (niveau avancé)</h3>
+<p>Un gérant actions détient un portefeuille de 25 M€ diversifié avec un bêta de 1,25 par rapport au CAC40. Il redoute une correction de marché sur 2 mois et souhaite réduire son bêta à 0,40 en utilisant des contrats futures sur le CAC40.</p>
+<p>Données : contrat futures CAC40 = 3 750 pts, multiplicateur = 10 €/pt, maturité 2 mois, taux sans risque = 3 % annuel.</p>
+<p>a) Calculez le nombre de contrats futures à vendre pour atteindre le bêta cible de 0,40.
+b) Le CAC40 chute de 8 % sur les 2 mois. Calculez la perte sur le portefeuille actions et le gain sur les futures.
+c) Calculez le résultat net du portefeuille couvert. Quelle est l'efficacité de la couverture ?
+d) Quelle aurait été la perte sans couverture ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>a) Nombre de contrats</strong> :
+<code>N = (β_cible - β_actuel) × Valeur_portefeuille / (Prix_futures × Multiplicateur)
+  = (0,40 - 1,25) × 25 000 000 / (3 750 × 10)
+  = -0,85 × 25 000 000 / 37 500
+  = -21 250 000 / 37 500
+  = -566,67 → arrondi à -567 contrats (vendre 567 contrats)</code></p>
+<p><strong>b) Calcul des P&amp;L</strong> :</p>
+<p><em>Perte portefeuille actions</em> :
+<code>Perte = β_actuel × Rendement_marché × Valeur
+      = 1,25 × (-8 %) × 25 000 000
+      = -2 500 000 €</code></p>
+<p><em>Gain futures</em> (hausse de valeur d'une position courte si le marché baisse) :
+<code>Variation CAC40 = -8 % × 3 750 = -300 pts
+Gain par contrat = 300 × 10 = 3 000 €
+Gain total = 567 × 3 000 = 1 701 000 €</code></p>
+<p><strong>c) Résultat net et efficacité</strong> :
+```
+Résultat net = -2 500 000 + 1 701 000 = -799 000 €
+Rendement couvert = -799 000 / 25 000 000 = -3,20 %</p>
+<p>Rendement cible (bêta 0,40 × -8 %) = -3,20 % ✓ (cohérent)</p>
+<p>Efficacité = Gain futures / Perte portefeuille = 1 701 000 / 2 500 000 = 68 %
+```</p>
+<p>L'arrondi du nombre de contrats (567 vs 566,67) explique la légère imperfection. La couverture est efficace à 68 %, ce qui correspond bien au fait que le bêta résiduel est 0,40 (soit 40/125 = 32 % du bêta initial restant non couvert, d'où 68 % couvert).</p>
+<p><strong>d) Sans couverture</strong> :
+<code>Perte sans couverture = 1,25 × 8 % × 25 000 000 = 2 500 000 €
+Économie réalisée grâce à la couverture = 2 500 000 - 799 000 = 1 701 000 €</code></p>
+<p>La couverture a sauvé 1 701 000 € sur une perte potentielle de 2 500 000 €, avec un bêta réduit de 1,25 à 0,40 comme prévu.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-4-theorie-moderne-du-portefeuille">Chapitre 4 — Théorie moderne du portefeuille</h1>
+<h2 id="introduction_3">Introduction</h2>
+<p>La <strong>théorie moderne du portefeuille</strong> (MPT — Modern Portfolio Theory), développée par <strong>Harry Markowitz</strong> (1952, Prix Nobel 1990), formalise mathématiquement le principe de diversification : en combinant des actifs dont les rendements ne sont pas parfaitement corrélés, on réduit le risque pour un niveau de rendement donné.</p>
+<hr />
+<h2 id="1-rendement-et-risque-dun-actif-individuel">1. Rendement et risque d'un actif individuel</h2>
+<h3 id="11-rendement-espere">1.1 Rendement espéré</h3>
+<pre><code>E[R] = Σ pᵢ × Rᵢ
+</code></pre>
+<p>Ou sur données historiques :</p>
+<pre><code>E[R] = (1/T) × Σ Rₜ
+</code></pre>
+<h3 id="12-variance-et-ecart-type-risque-total">1.2 Variance et écart-type (risque total)</h3>
+<pre><code>σ² = Σ pᵢ × (Rᵢ - E[R])²
+σ  = √σ²
+</code></pre>
+<hr />
+<h2 id="2-portefeuille-de-deux-actifs">2. Portefeuille de deux actifs</h2>
+<h3 id="21-rendement-du-portefeuille">2.1 Rendement du portefeuille</h3>
+<pre><code>E[Rp] = w₁ × E[R₁] + w₂ × E[R₂]
+</code></pre>
+<ul>
+<li><code>w₁ + w₂ = 1</code></li>
+</ul>
+<h3 id="22-variance-du-portefeuille">2.2 Variance du portefeuille</h3>
+<pre><code>σ²p = w₁² × σ₁² + w₂² × σ₂² + 2 × w₁ × w₂ × σ₁₂
+</code></pre>
+<p>Avec la <strong>covariance</strong> :</p>
+<pre><code>σ₁₂ = ρ₁₂ × σ₁ × σ₂
+</code></pre>
+<ul>
+<li><code>ρ₁₂</code> : coefficient de corrélation entre actifs 1 et 2 (-1 ≤ ρ ≤ +1)</li>
+</ul>
+<h3 id="23-effet-de-la-correlation">2.3 Effet de la corrélation</h3>
+<table>
+<thead>
+<tr>
+<th>Corrélation</th>
+<th>Effet</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ρ = +1</td>
+<td>Aucune diversification possible</td>
+</tr>
+<tr>
+<td>-1 &lt; ρ &lt; +1</td>
+<td>Diversification partielle : σp &lt; moyenne pondérée</td>
+</tr>
+<tr>
+<td>ρ = -1</td>
+<td>Diversification parfaite possible (risque annulable)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-frontiere-efficiente">3. Frontière efficiente</h2>
+<h3 id="31-definition">3.1 Définition</h3>
+<p>La <strong>frontière efficiente</strong> (ou frontière de Markowitz) est l'ensemble des portefeuilles qui <strong>maximisent le rendement pour un niveau de risque donné</strong> (ou minimisent le risque pour un rendement donné).</p>
+<pre><code>Rendement E[Rp]
+  |              ← Frontière efficiente (partie supérieure)
+  |           /
+  |          /
+  |         /  ←── Portefeuille à variance minimale (MVP)
+  |        |
+  |         \
+  |          \__ Inefficients (dominés)
+  └─────────────────────────────── Risque σp
+</code></pre>
+<h3 id="32-portefeuille-a-variance-minimale-mvp">3.2 Portefeuille à variance minimale (MVP)</h3>
+<pre><code>w₁* = (σ₂² - σ₁₂) / (σ₁² + σ₂² - 2σ₁₂)
+</code></pre>
+<hr />
+<h2 id="4-lactif-sans-risque-et-la-droite-de-marche-des-capitaux-cml">4. L'actif sans risque et la droite de marché des capitaux (CML)</h2>
+<h3 id="41-introduction-de-lactif-sans-risque">4.1 Introduction de l'actif sans risque</h3>
+<p>En combinant un portefeuille risqué P et un actif sans risque (taux rf), on obtient la <strong>droite du marché des capitaux</strong> (CML — Capital Market Line) :</p>
+<pre><code>E[Rp] = rf + [(E[RM] - rf) / σM] × σp
+</code></pre>
+<ul>
+<li><code>RM</code> : rendement du portefeuille de marché M</li>
+<li><code>σM</code> : écart-type du portefeuille de marché</li>
+</ul>
+<h3 id="42-theoreme-de-separation-de-tobin">4.2 Théorème de séparation de Tobin</h3>
+<p>Le <strong>portefeuille de marché M</strong> est le seul portefeuille risqué optimal pour tous les investisseurs, indépendamment de leur aversion au risque. Chaque investisseur combine uniquement M et l'actif sans risque.</p>
+<p><strong>Conséquence</strong> :
+- Aversion au risque forte → investir surtout en rf.
+- Aversion au risque faible → investir surtout en M (voire emprunter à rf pour effet de levier).</p>
+<h3 id="43-ratio-de-sharpe">4.3 Ratio de Sharpe</h3>
+<pre><code>Sharpe = (E[Rp] - rf) / σp
+</code></pre>
+<p>Mesure le rendement excédentaire par unité de risque total. Plus il est élevé, meilleur est le portefeuille.</p>
+<hr />
+<h2 id="5-decomposition-du-risque">5. Décomposition du risque</h2>
+<pre><code>Risque total = Risque systématique + Risque spécifique
+σ²p          = β²p × σ²M          + σ²εp
+</code></pre>
+<ul>
+<li><strong>Risque systématique</strong> (non diversifiable) : lié aux facteurs macroéconomiques (taux, croissance).</li>
+<li><strong>Risque spécifique</strong> (diversifiable) : lié à l'entreprise. Il disparaît dans un portefeuille diversifié.</li>
+</ul>
+<p><strong>Théorème de diversification</strong> : avec ~20–30 titres non corrélés, le risque spécifique est quasi éliminé.</p>
+<pre><code>Risque
+  |  \
+  |   \      Risque spécifique
+  |    \___________________________
+  |          Risque systématique
+  └─────────────────────────────── Nb de titres
+             20
+</code></pre>
+<hr />
+<h2 id="6-mesures-de-performance">6. Mesures de performance</h2>
+<h3 id="61-ratio-de-sharpe-rappel">6.1 Ratio de Sharpe (rappel)</h3>
+<pre><code>Sharpe = (Rp - rf) / σp
+</code></pre>
+<h3 id="62-ratio-de-treynor">6.2 Ratio de Treynor</h3>
+<pre><code>Treynor = (Rp - rf) / βp
+</code></pre>
+<p>Rendement excédentaire par unité de risque <strong>systématique</strong> (pertinent pour un portefeuille bien diversifié).</p>
+<h3 id="63-alpha-de-jensen">6.3 Alpha de Jensen</h3>
+<pre><code>αJ = Rp - [rf + βp × (RM - rf)]
+</code></pre>
+<p>L'<strong>alpha</strong> mesure la surperformance (ou sous-performance) par rapport à ce que prédit le MEDAF.</p>
+<h3 id="64-ratio-dinformation">6.4 Ratio d'information</h3>
+<pre><code>IR = (Rp - RBenchmark) / Tracking Error
+</code></pre>
+<p>Mesure l'efficacité du gestionnaire actif à générer de l'alpha par rapport à son benchmark.</p>
+<hr />
+<h2 id="7-gestion-active-vs-passive">7. Gestion active vs. passive</h2>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>Gestion passive</th>
+<th>Gestion active</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Objectif</td>
+<td>Répliquer un indice</td>
+<td>Battre un indice</td>
+</tr>
+<tr>
+<td>Coûts</td>
+<td>Faibles (ETF : 0,1–0,3 %)</td>
+<td>Élevés (fonds : 1–2 %)</td>
+</tr>
+<tr>
+<td>Fréquence d'opérations</td>
+<td>Faible</td>
+<td>Élevée</td>
+</tr>
+<tr>
+<td>Alpha attendu</td>
+<td>Nul par construction</td>
+<td>Positif (mais rare)</td>
+</tr>
+<tr>
+<td>Fondement théorique</td>
+<td>Efficience des marchés</td>
+<td>Anomalies, analyse</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Études empiriques</strong> : moins de 30 % des fonds actifs battent leur indice sur 10 ans après frais.</p>
+<hr />
+<h2 id="8-exercices_1">8. Exercices</h2>
+<h3 id="exercice-1_4">Exercice 1</h3>
+<p>Deux actions A et B : E[RA] = 8 %, σA = 10 % ; E[RB] = 12 %, σB = 20 % ; ρAB = 0,3. Calculez le rendement et l'écart-type d'un portefeuille 50/50.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+E[Rp] = 0,5 × 8 % + 0,5 × 12 % = <strong>10 %</strong></p>
+<p>σAB = 0,3 × 10 % × 20 % = 0,006
+σ²p = 0,25 × 0,01 + 0,25 × 0,04 + 2 × 0,5 × 0,5 × 0,006
+    = 0,0025 + 0,01 + 0,003 = 0,0155
+σp = √0,0155 = <strong>12,45 %</strong></p>
+<p><strong>Effet de diversification</strong> : la moyenne pondérée des risques = 15 %, mais σp = 12,45 % (réduction de 2,55 pts grâce à la diversification).</p>
+</blockquote>
+<h3 id="exercice-2_4">Exercice 2</h3>
+<p>Un fonds a réalisé +14 % sur un an. rf = 3 %, σ fonds = 18 %, β = 1,2, rendement marché = 10 %. Calculez Sharpe, Treynor et alpha de Jensen.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Sharpe = (14 - 3) / 18 = <strong>0,61</strong>
+Treynor = (14 - 3) / 1,2 = <strong>9,17 %</strong>
+Alpha = 14 % - [3 % + 1,2 × (10 % - 3 %)] = 14 % - 11,4 % = <strong>+2,6 %</strong> (surperformance)</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_3">Points clés à retenir</h2>
+<ul>
+<li>La diversification réduit le risque spécifique mais pas le risque systématique.</li>
+<li>La frontière efficiente regroupe les portefeuilles optimaux risque/rendement.</li>
+<li>Avec un actif sans risque, tous les investisseurs détiennent le portefeuille de marché M (théorème de Tobin).</li>
+<li>Alpha = surperformance ajustée du risque systématique (MEDAF).</li>
+<li>La gestion passive domine statistiquement la gestion active sur longue période.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_3">Approfondissement théorique</h2>
+<h3 id="facteurs-de-risque-et-smart-beta">Facteurs de risque et Smart Beta</h3>
+<p>Le modèle de <strong>Fama &amp; French (1993, 2015)</strong> a démontré que le rendement des portefeuilles est mieux expliqué par des <strong>facteurs</strong> que par le seul bêta de marché :</p>
+<table>
+<thead>
+<tr>
+<th>Facteur</th>
+<th>Prime historique (USA, 1963–2020)</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Marché (MKT)</td>
+<td>~5–6 %/an</td>
+<td>Risque économique global</td>
+</tr>
+<tr>
+<td>Taille (SMB)</td>
+<td>~2–3 %/an</td>
+<td>Prime de risque des petites caps</td>
+</tr>
+<tr>
+<td>Valeur (HML)</td>
+<td>~3–4 %/an</td>
+<td>Entreprises décotées vs. de croissance</td>
+</tr>
+<tr>
+<td>Momentum (MOM)</td>
+<td>~4–5 %/an (mais instable)</td>
+<td>Persistance des tendances</td>
+</tr>
+<tr>
+<td>Profitabilité (RMW)</td>
+<td>~2 %/an</td>
+<td>Entreprises profitables</td>
+</tr>
+<tr>
+<td>Investissement (CMA)</td>
+<td>~1–2 %/an</td>
+<td>Entreprises qui investissent peu (conservative)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Smart Beta (ou Factor Investing)</strong> : fonds passifs qui se construisent selon des règles factorielles plutôt que selon la capitalisation boursière.</p>
+<p><strong>Arbitrage et disparition des primes</strong> : une fois une prime documentée et connue, les investisseurs l'arbitrent → prime tend à diminuer (Schwert, 2003). La prime de valeur a été très faible sur 2010–2020.</p>
+<h3 id="loptimisation-de-markowitz-les-limites-pratiques">L'optimisation de Markowitz : les limites pratiques</h3>
+<p>En théorie, la frontière efficiente se calcule par optimisation quadratique. En pratique, plusieurs problèmes surgissent :</p>
+<p><strong>1. Estimation risk</strong> : les paramètres (μ, Σ) sont estimés sur données historiques → erreurs d'estimation importantes, surtout pour les rendements espérés.</p>
+<p><strong>Stabilité de la solution</strong> : une petite variation des inputs génère de grandes variations des poids → portefeuilles instables.</p>
+<p><strong>Remèdes pratiques</strong> :
+- <strong>Portefeuille équipondéré (1/N)</strong> : simple mais souvent performant out-of-sample (DeMiguel et al., 2009).
+- <strong>Black-Litterman (1992)</strong> : combine les rendements d'équilibre CAPM avec les vues du gérant via le théorème de Bayes.
+- <strong>Minimum variance</strong> : maximise la diversification sans utiliser les rendements espérés (moins d'erreurs d'estimation).
+- <strong>Risk parity</strong> : chaque actif contribue également au risque total du portefeuille (popularisé par Bridgewater).</p>
+<h3 id="gestion-de-portefeuille-multi-actifs-et-correlation-en-crise">Gestion de portefeuille multi-actifs et corrélation en crise</h3>
+<p>En temps normal, les corrélations entre classes d'actifs permettent la diversification. En crise, les corrélations augmentent fortement (phénomène de <strong>flight to quality</strong>) :</p>
+<table>
+<thead>
+<tr>
+<th>Paire</th>
+<th>Corrélation normale</th>
+<th>Corrélation crise 2008</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actions / Obligations IG</td>
+<td>-0,20</td>
+<td>-0,40 (refuge)</td>
+</tr>
+<tr>
+<td>Actions / Or</td>
+<td>-0,10</td>
+<td>-0,30 (refuge)</td>
+</tr>
+<tr>
+<td>Actions Europe / USA</td>
+<td>+0,60</td>
+<td>+0,90</td>
+</tr>
+<tr>
+<td>Actions / HY Bonds</td>
+<td>+0,30</td>
+<td>+0,80</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implication</strong> : la diversification entre actions internationales disparaît précisément quand on en a le plus besoin. D'où l'intérêt d'actifs décorrelés structurellement : or, CTA (trend following), stratégies long volatilité.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_3">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-construction-de-la-frontiere-efficiente-3-actifs">Exemple 1 — Construction de la frontière efficiente (3 actifs)</h3>
+<p><strong>Actions A</strong> : μ = 10 %, σ = 15 %
+<strong>Obligations B</strong> : μ = 4 %, σ = 5 %
+<strong>Or C</strong> : μ = 6 %, σ = 18 %</p>
+<p>Corrélations : ρ_AB = -0,20, ρ_AC = 0,10, ρ_BC = -0,05</p>
+<p><strong>Portefeuille équipondéré (33/33/33)</strong> :</p>
+<pre><code>E[Rp] = (10 + 4 + 6) / 3 = 6,67 %
+
+σ²_AB = ρ_AB × σ_A × σ_B = -0,20 × 15 % × 5 % = -0,0015
+σ²_AC = 0,10 × 15 % × 18 % = +0,0027
+σ²_BC = -0,05 × 5 % × 18 % = -0,00045
+
+σ²_p = (1/3)² × [σ²_A + σ²_B + σ²_C + 2σ_AB + 2σ_AC + 2σ_BC]
+     = (1/9) × [0,0225 + 0,0025 + 0,0324 + 2(-0,0015) + 2(0,0027) + 2(-0,00045)]
+     = (1/9) × [0,0574 - 0,003 + 0,0054 - 0,0009]
+     = (1/9) × 0,0589 = 0,00654
+
+σ_p = √0,00654 = 8,09 %
+Sharpe = (6,67 - 2) / 8,09 = 0,577
+</code></pre>
+<p><strong>Portefeuille minimum variance</strong> (calculé numériquement) donnerait σ_p ≈ 5–6 % pour un rendement de ~5–6 %.</p>
+<h3 id="exemple-2-attribution-de-performance-performance-attribution">Exemple 2 — Attribution de performance (performance attribution)</h3>
+<p><strong>Fonds Global Equity</strong> vs. benchmark MSCI World :</p>
+<table>
+<thead>
+<tr>
+<th>Zone</th>
+<th>Poids fonds</th>
+<th>Poids bench</th>
+<th>Rendement fonds</th>
+<th>Rendement bench</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>USA</td>
+<td>50 %</td>
+<td>65 %</td>
+<td>+15 %</td>
+<td>+12 %</td>
+</tr>
+<tr>
+<td>Europe</td>
+<td>35 %</td>
+<td>25 %</td>
+<td>+8 %</td>
+<td>+10 %</td>
+</tr>
+<tr>
+<td>Émergents</td>
+<td>15 %</td>
+<td>10 %</td>
+<td>+18 %</td>
+<td>+16 %</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Performance benchmark = 65%×12% + 25%×10% + 10%×16% = 7,8% + 2,5% + 1,6% = 11,9%
+Performance fonds = 50%×15% + 35%×8% + 15%×18% = 7,5% + 2,8% + 2,7% = 13,0%
+Surperformance totale = 13,0% - 11,9% = +1,1%
+
+Attribution Brinson :
+Allocation USA : (50%-65%) × (12%-11,9%) = -15% × 0,1% = -0,015% (légère pénalisation)
+Sélection USA : 50% × (15%-12%) = 1,5% (forte surperformance de sélection)
+</code></pre>
+<p>Conclusion : la surperformance vient principalement de la <strong>sélection de titres</strong> en actions américaines.</p>
+<h3 id="exemple-3-risk-parity-vs-6040">Exemple 3 — Risk parity vs. 60/40</h3>
+<p><strong>Portefeuille 60/40</strong> : 60 % actions (σ=15 %), 40 % obligations (σ=5 %), ρ=-0,20</p>
+<pre><code>σ²_60/40 = (0,6)² × (15%)² + (0,4)² × (5%)² + 2 × 0,6 × 0,4 × (-0,20) × 15% × 5%
+= 0,0081 + 0,0004 - 0,00072 = 0,00778
+σ_60/40 = 8,82 %
+
+Contribution au risque :
+Actions : (0,6 × 15%)² + 0,6×0,4×(-0,20)×15%×5% = 0,0081 - 0,00036 = 0,00774 → 99,5% !
+Obligations : ~0,005% → 0,5%
+</code></pre>
+<p>Le portefeuille 60/40 est <strong>dominé par le risque actions à 99,5 %</strong> → pas réellement diversifié en risque.</p>
+<p><strong>Risk parity</strong> : trouver les poids w_A, w_B tels que la contribution au risque soit 50/50 :</p>
+<pre><code>w_A × σ_A ≈ w_B × σ_B (approximation sans corrélation)
+w_A × 15 = w_B × 5 → w_B = 3 × w_A
+w_A + 3w_A = 1 → w_A = 25 %, w_B = 75 %
+</code></pre>
+<p>Avec levier, on monte ce portefeuille à un niveau de risque cible de 10 % → rendement amélioré.</p>
+<hr />
+<h2 id="applications-professionnelles_3">Applications professionnelles</h2>
+<h3 id="asset-management-processus-dinvestissement">Asset Management : processus d'investissement</h3>
+<p><strong>Comité d'investissement</strong> (Investment Committee) :
+- Revue macroéconomique mensuelle : croissance, inflation, politique monétaire, cycle de crédit.
+- Décisions d'allocation tactique : sur/sous-pondération par rapport aux benchmarks stratégiques.
+- Revue sectorielle : secteurs cycliques vs. défensifs selon le cycle économique.</p>
+<p><strong>Workflow de gestion de portefeuille</strong> :
+1. <strong>Allocation stratégique</strong> (SAA) : poids des classes d'actifs à long terme.
+2. <strong>Allocation tactique</strong> (TAA) : ajustements court terme selon les vues macro.
+3. <strong>Sélection des titres</strong> : analyse fondamentale bottom-up ou modèles quantitatifs.
+4. <strong>Construction du portefeuille</strong> : optimisation des poids + contraintes (liquidité, tracking error, positions max).
+5. <strong>Exécution</strong> : VWAP, algo trading pour minimiser l'impact de marché.
+6. <strong>Reporting</strong> : performance attribution, attribution des risques, rapport mensuel aux clients.</p>
+<h3 id="pension-funds-gestion-actif-passif-alm">Pension Funds : gestion actif-passif (ALM)</h3>
+<p>Les fonds de pension gèrent des actifs pour couvrir des engagements futurs envers les retraités. La problématique est de minimiser le risque de déficit (actifs &lt; passifs) :</p>
+<pre><code>Taux de couverture = Valeur actifs / Valeur actuarielle des engagements
+Objectif : taux de couverture &gt; 100 % avec un degré de confiance élevé
+</code></pre>
+<p><strong>Stratégie LDI (Liability-Driven Investing)</strong> : investir dans des actifs dont les flux correspondent aux engagements (obligations à long terme indexées inflation).</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_3">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Optimiser avec des paramètres historiques</strong></td>
+<td>Les rendements passés ne prédisent pas les rendements futurs</td>
+<td>Utiliser Black-Litterman ou contraindre les poids</td>
+</tr>
+<tr>
+<td><strong>Ignorer la corrélation dans la diversification</strong></td>
+<td>Deux actifs corrélés à +0,9 n'apportent presque aucune diversification</td>
+<td>Chercher des actifs réellement décorrélés</td>
+</tr>
+<tr>
+<td><strong>Confondre Sharpe et alpha de Jensen</strong></td>
+<td>Sharpe mesure le risque total ; Jensen mesure le risque systématique</td>
+<td>Utiliser Sharpe pour les portefeuilles, Jensen pour un actif dans un portefeuille diversifié</td>
+</tr>
+<tr>
+<td><strong>Penser que plus d'actifs = toujours mieux</strong></td>
+<td>Au-delà de 30–40 actifs, le bénéfice marginal de diversification est quasi nul</td>
+<td>Ne pas diluer un portefeuille concentré de qualité avec des positions de remplissage</td>
+</tr>
+<tr>
+<td><strong>Négliger les coûts de rééquilibrage</strong></td>
+<td>Rééquilibrer fréquemment génère des coûts de transaction</td>
+<td>Définir des seuils de dérive (5 %) avant de rééquilibrer</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_3">Exercices supplémentaires</h2>
+<h3 id="exercice-1_5">Exercice 1</h3>
+<p>Un investisseur combine l'actif A (μ=12 %, σ=20 %) avec l'actif sans risque (rf=2 %). Il souhaite un écart-type de portefeuille de 15 %. Calculez les poids et le rendement espéré.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+σ_p = w_A × σ_A (car σ_rf = 0)
+15 % = w_A × 20 % → w_A = <strong>75 %</strong>, w_rf = <strong>25 %</strong>
+E[Rp] = 75 % × 12 % + 25 % × 2 % = 9 % + 0,5 % = <strong>9,5 %</strong>
+Sharpe = (9,5 % - 2 %) / 15 % = <strong>0,50</strong></p>
+</blockquote>
+<h3 id="exercice-2_5">Exercice 2</h3>
+<p>Un fonds a réalisé : Rp = 16 %, rf = 3 %, βp = 1,3, σp = 22 %, Rbenchmark = 12 %, Tracking Error = 6 %. Calculez Sharpe, Treynor, Alpha Jensen et Ratio d'Information.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Sharpe = (16 - 3) / 22 = <strong>0,591</strong>
+Treynor = (16 - 3) / 1,3 = <strong>10,0 %</strong>
+RM - rf = (12 - 3) = 9 %
+Alpha Jensen = 16 - [3 + 1,3 × 9] = 16 - 14,7 = <strong>+1,3 %</strong>
+Ratio d'Information = (16 - 12) / 6 = <strong>0,667</strong>
+Interprétation : le fonds génère une bonne surperformance mais son alpha vs. MEDAF est modeste (1,3 %).</p>
+</blockquote>
+<h3 id="exercice-3_3">Exercice 3</h3>
+<p>Expliquez pourquoi un investisseur rationnel n'a jamais intérêt à détenir un portefeuille en dessous de la frontière efficiente, selon la théorie de Markowitz.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Un portefeuille en dessous de la frontière efficiente est <strong>dominé</strong> : il existe un portefeuille sur la frontière qui offre :
+- Le même rendement espéré pour un risque plus faible (dominance en risque), OU
+- Le même risque pour un rendement plus élevé (dominance en rendement).</p>
+<p>Un investisseur rationnel préfère toujours plus de rendement pour moins de risque → il n'y a aucune justification économique à rester sur un portefeuille sous-optimal.</p>
+<p><strong>Exception</strong> : si des contraintes (liquidité, réglementaires, fiscales) empêchent de détenir certains actifs, l'investisseur peut se retrouver dans une "frontière efficiente contrainte" différente de la frontière théorique.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-5-modeles-de-pricing-medaf-apt-black-scholes">Chapitre 5 — Modèles de pricing : MEDAF, APT, Black-Scholes</h1>
+<h2 id="introduction_4">Introduction</h2>
+<p>Ce chapitre synthétise les grands modèles de valorisation des actifs financiers et de tarification du risque. Ces modèles sont au cœur de la finance quantitative et de la pratique professionnelle en gestion d'actifs et en banque d'investissement.</p>
+<hr />
+<h2 id="1-le-medaf-modele-devaluation-des-actifs-financiers">1. Le MEDAF (Modèle d'Évaluation Des Actifs Financiers)</h2>
+<h3 id="11-rappel-du-medaf-capm">1.1 Rappel du MEDAF (CAPM)</h3>
+<pre><code>E[Ri] = rf + βi × (E[RM] - rf)
+</code></pre>
+<ul>
+<li><code>E[Ri]</code> : rendement espéré de l'actif i</li>
+<li><code>rf</code> : taux sans risque</li>
+<li><code>βi</code> : sensibilité de l'actif au marché</li>
+<li><code>E[RM] - rf</code> : prime de risque du marché (Market Risk Premium)</li>
+</ul>
+<h3 id="12-le-beta">1.2 Le bêta</h3>
+<pre><code>βi = Cov(Ri, RM) / Var(RM) = ρiM × σi / σM
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Bêta</th>
+<th>Interprétation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>β = 0</td>
+<td>Actif sans risque systématique (ou actif sans risque)</td>
+</tr>
+<tr>
+<td>0 &lt; β &lt; 1</td>
+<td>Moins volatile que le marché (secteurs défensifs : utilities, santé)</td>
+</tr>
+<tr>
+<td>β = 1</td>
+<td>Évolue comme le marché</td>
+</tr>
+<tr>
+<td>β &gt; 1</td>
+<td>Plus volatile que le marché (technologie, cycliques)</td>
+</tr>
+<tr>
+<td>β &lt; 0</td>
+<td>Évolue en sens inverse du marché (or, VIX)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-la-droite-de-marche-des-titres-sml">1.3 La droite de marché des titres (SML)</h3>
+<pre><code>Rendement espéré
+  |              SML
+  |            /
+  |           /
+  |          * A (sous-évalué, au-dessus de la SML)
+  |         /
+rf|--------/
+  |       / * B (surévalué, en dessous de la SML)
+  |      /
+  └───────────────────── Beta
+       0      1
+</code></pre>
+<ul>
+<li>Point <strong>au-dessus</strong> de la SML → alpha positif → actif <strong>sous-évalué</strong>.</li>
+<li>Point <strong>en dessous</strong> de la SML → alpha négatif → actif <strong>surévalué</strong>.</li>
+</ul>
+<h3 id="14-hypotheses-et-limites-du-medaf">1.4 Hypothèses et limites du MEDAF</h3>
+<p><strong>Hypothèses</strong> :
+- Investisseurs rationnels, average-variance optimizers.
+- Mêmes anticipations (homogeneous expectations).
+- Marché efficient.
+- Horizon d'investissement unique.</p>
+<p><strong>Limites empiriques</strong> :
+- Anomalies persistantes (value, size, momentum).
+- Bêta instable dans le temps.
+- Le portefeuille de marché est inobservable (critique de Roll).</p>
+<hr />
+<h2 id="2-le-modele-apt-arbitrage-pricing-theory">2. Le modèle APT (Arbitrage Pricing Theory)</h2>
+<h3 id="21-principe-ross-1976">2.1 Principe (Ross, 1976)</h3>
+<p>L'<strong>APT</strong> généralise le MEDAF en admettant <strong>plusieurs facteurs</strong> de risque systématique :</p>
+<pre><code>E[Ri] = rf + β₁ × λ₁ + β₂ × λ₂ + ... + βk × λk
+</code></pre>
+<ul>
+<li><code>βj</code> : sensibilité de l'actif au facteur j</li>
+<li><code>λj</code> : prime de risque associée au facteur j</li>
+</ul>
+<h3 id="22-fondement-absence-darbitrage">2.2 Fondement : absence d'arbitrage</h3>
+<p>L'APT ne repose pas sur l'optimisation mean-variance mais sur le principe d'<strong>absence d'arbitrage</strong> : deux portefeuilles de même profil de risque doivent avoir le même rendement espéré.</p>
+<h3 id="23-modele-de-fama-french-a-3-facteurs-1993">2.3 Modèle de Fama-French à 3 facteurs (1993)</h3>
+<pre><code>E[Ri] - rf = βMKT × (RM - rf) + βSMB × SMB + βHML × HML
+</code></pre>
+<ul>
+<li><strong>MKT</strong> : prime de risque du marché</li>
+<li><strong>SMB</strong> (Small Minus Big) : prime de taille (petites caps surperforment)</li>
+<li><strong>HML</strong> (High Minus Low) : prime de valeur (actions décotées surperforment)</li>
+</ul>
+<h3 id="24-modele-de-carhart-a-4-facteurs-1997">2.4 Modèle de Carhart à 4 facteurs (1997)</h3>
+<p>Ajoute le facteur <strong>momentum</strong> :</p>
+<pre><code>E[Ri] - rf = βMKT × MKT + βSMB × SMB + βHML × HML + βMOM × MOM
+</code></pre>
+<h3 id="25-modele-de-fama-french-a-5-facteurs-2015">2.5 Modèle de Fama-French à 5 facteurs (2015)</h3>
+<p>Ajoute <strong>profitabilité (RMW)</strong> et <strong>investissement (CMA)</strong> :</p>
+<pre><code>E[Ri] - rf = βMKT × MKT + βSMB × SMB + βHML × HML + βRMW × RMW + βCMA × CMA
+</code></pre>
+<hr />
+<h2 id="3-le-modele-de-black-scholes-merton-bsm">3. Le modèle de Black-Scholes-Merton (BSM)</h2>
+<p><em>(Développé dans le chapitre Produits Dérivés — synthèse ici)</em></p>
+<h3 id="31-rappel-de-la-formule">3.1 Rappel de la formule</h3>
+<pre><code>C = S₀ × N(d₁) - K × e^(-rT) × N(d₂)
+P = K × e^(-rT) × N(-d₂) - S₀ × N(-d₁)
+
+d₁ = [ln(S₀/K) + (r + σ²/2) × T] / (σ√T)
+d₂ = d₁ - σ√T
+</code></pre>
+<h3 id="32-la-volatilite-implicite">3.2 La volatilité implicite</h3>
+<p>La <strong>volatilité implicite</strong> est la valeur de σ qui, insérée dans BSM, reproduit le prix de marché observé d'une option.</p>
+<pre><code>Prix observé = BSM(S, K, r, T, σ_implicite)
+</code></pre>
+<p>Elle est plus utile que la volatilité historique car elle reflète les anticipations du marché.</p>
+<h3 id="33-le-smile-de-volatilite">3.3 Le smile de volatilité</h3>
+<p>En théorie BSM, σ devrait être constante. En pratique, la volatilité implicite varie avec le strike et la maturité → <strong>smile</strong> (ou <strong>skew</strong>) de volatilité.</p>
+<pre><code>σ_impl
+  |  \.         /
+  |   \       /
+  |    \_____/     ← Smile
+  |
+  └──────────────── Strike K
+       ITM   ATM   OTM
+</code></pre>
+<p><strong>Interprétations</strong> :
+- <strong>Skew</strong> (sourire asymétrique) : le marché actions anticipe plus de risque baissier que haussier (puts OTM plus chers).
+- Le modèle BSM est donc une approximation ; les praticiens utilisent des modèles à volatilité stochastique (Heston, SABR).</p>
+<hr />
+<h2 id="4-valorisation-par-arbres-binomiaux">4. Valorisation par arbres binomiaux</h2>
+<h3 id="41-modele-de-cox-ross-rubinstein-crr-1979">4.1 Modèle de Cox-Ross-Rubinstein (CRR, 1979)</h3>
+<p>Le prix du sous-jacent évolue en hausse (facteur u) ou en baisse (facteur d) à chaque pas de temps.</p>
+<pre><code>Su
+S
+  Sd
+</code></pre>
+<p><strong>Probabilité risk-neutral</strong> :</p>
+<pre><code>p = (e^(rΔt) - d) / (u - d)
+</code></pre>
+<p><strong>Prix de l'option</strong> (remontée dans l'arbre) :</p>
+<pre><code>C = e^(-rΔt) × [p × Cu + (1-p) × Cd]
+</code></pre>
+<h3 id="42-avantages-vs-bsm">4.2 Avantages vs. BSM</h3>
+<table>
+<thead>
+<tr>
+<th>Critère</th>
+<th>BSM</th>
+<th>Binomial</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Options européennes</td>
+<td>Formule fermée</td>
+<td>Possible</td>
+</tr>
+<tr>
+<td>Options américaines</td>
+<td>Non</td>
+<td>Oui (exercice anticipé)</td>
+</tr>
+<tr>
+<td>Dividendes discrets</td>
+<td>Approximatif</td>
+<td>Traitement exact</td>
+</tr>
+<tr>
+<td>Barrières</td>
+<td>Non</td>
+<td>Oui</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-value-at-risk-var-introduction">5. Value at Risk (VaR) — introduction</h2>
+<p><em>(Développé en détail dans le module Gestion des Risques)</em></p>
+<pre><code>VaR (α%, 1 jour) = Perte maximale non dépassée avec probabilité α%
+</code></pre>
+<p><strong>Exemple</strong> : VaR 99 % à 1 jour = 1 M€ signifie que la perte quotidienne ne dépassera pas 1 M€ dans 99 % des cas.</p>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_6">Exercice 1</h3>
+<p>Calculez le rendement exigé par le MEDAF pour une action de bêta 1,4 si rf = 2 % et prime de risque = 5 %.</p>
+<blockquote>
+<p><strong>Correction</strong> : E[R] = 2 % + 1,4 × 5 % = 2 % + 7 % = <strong>9 %</strong></p>
+</blockquote>
+<h3 id="exercice-2_6">Exercice 2</h3>
+<p>Une action affiche un rendement réalisé de 12 %, rf = 2 %, β = 1,4, prime de risque = 5 %. Calculez l'alpha de Jensen et concluez sur la sur/sous-évaluation.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+MEDAF → E[R] = 2 % + 1,4 × 5 % = 9 %
+Alpha = 12 % - 9 % = <strong>+3 %</strong> → actif <strong>sous-évalué</strong> (au-dessus de la SML).</p>
+</blockquote>
+<h3 id="exercice-3_4">Exercice 3</h3>
+<p>Un portefeuille est exposé aux 3 facteurs Fama-French : βMKT = 1,0, βSMB = 0,5, βHML = 0,3. Les primes de risque sont : MKT = 6 %, SMB = 3 %, HML = 4 %, rf = 2 %. Calculez le rendement espéré.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+E[R] = 2 % + 1,0 × 6 % + 0,5 × 3 % + 0,3 × 4 %
+E[R] = 2 % + 6 % + 1,5 % + 1,2 % = <strong>10,7 %</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_4">Points clés à retenir</h2>
+<ul>
+<li>Le MEDAF relie rendement espéré et risque systématique (bêta) via la SML.</li>
+<li>L'APT généralise avec plusieurs facteurs de risque ; Fama-French (3 ou 5 facteurs) est le standard académique.</li>
+<li>Black-Scholes est la référence pour les options européennes, mais suppose une volatilité constante.</li>
+<li>La volatilité implicite et le smile révèlent les limites de BSM et les anticipations du marché.</li>
+<li>Les arbres binomiaux permettent de valoriser les options américaines et les structures à barrières.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_4">Approfondissement théorique</h2>
+<h3 id="le-medaf-inter-temporel-icapm-et-le-capm-conditionnel">Le MEDAF inter-temporel (ICAPM) et le CAPM conditionnel</h3>
+<p><strong>Merton (1973)</strong> étend le MEDAF à un monde multi-périodique où les investisseurs se couvrent contre les changements des opportunités d'investissement :</p>
+<pre><code>E[Ri] - rf = βi,M × (RM - rf) + Σk βi,k × λk
+</code></pre>
+<p>Les investisseurs ne se soucient pas seulement du risque de marché, mais aussi de la <strong>variation des conditions d'investissement futures</strong> (taux d'intérêt, inflation, opportunités d'emploi).</p>
+<p><strong>CAPM conditionnel</strong> : le bêta et la prime de risque varient dans le temps selon les conditions macro. En expansion économique, les bêtas sont plus faibles ; en récession, ils augmentent (amplification du cycle).</p>
+<p><strong>Critique de Roll (1977)</strong> : le portefeuille de marché théorique inclut TOUS les actifs risqués (immobilier, capital humain, private equity...). En pratique, on utilise un indice action (S&amp;P 500, MSCI World) comme proxy → le MEDAF n'est pas testable rigoureusement.</p>
+<h3 id="black-scholes-derivation-et-hypotheses">Black-Scholes : dérivation et hypothèses</h3>
+<p><strong>Hypothèses BSM</strong> :
+1. Le sous-jacent suit un mouvement brownien géométrique : dS = μS dt + σS dW
+2. Pas de dividendes (ou dividendes continus)
+3. Taux sans risque r constant
+4. Pas de coûts de transaction
+5. Volatilité σ constante
+6. Options européennes</p>
+<p><strong>Dérivation (intuition)</strong> : par couverture continue (delta hedge), une position long option + short delta actions est <strong>sans risque</strong> → elle doit rapporter rf.</p>
+<pre><code>dC/dt + rS × dC/dS + 0,5 × σ²S² × d²C/dS² = rC
+</code></pre>
+<p>Cette EDP (équation de Black-Scholes) admet pour solution la formule BSM.</p>
+<p><strong>Interprétation financière de N(d₁) et N(d₂)</strong> :
+- N(d₂) = probabilité risk-neutral que l'option expire dans la monnaie (ITM)
+- N(d₁) = delta de l'option call (sensibilité au cours du sous-jacent)
+- K × e^(-rT) × N(d₂) = valeur actualisée du prix d'exercice × probabilité d'exercice</p>
+<h3 id="les-modeles-a-volatilite-stochastique">Les modèles à volatilité stochastique</h3>
+<p>Le <strong>smile de volatilité</strong> réfute l'hypothèse de σ constante. Modèles avancés :</p>
+<p><strong>Modèle de Heston (1993)</strong> :</p>
+<pre><code>dS = μS dt + √v × S × dW₁
+dv = κ(θ - v)dt + σ_v × √v × dW₂
+ρ = Corr(dW₁, dW₂)
+</code></pre>
+<ul>
+<li>v : variance instantanée (stochastique)</li>
+<li>κ : vitesse de retour à la variance moyenne θ</li>
+<li>σ_v : vol-of-vol</li>
+<li>ρ : corrélation entre spot et volatilité (typiquement négative pour les actions → skew)</li>
+</ul>
+<p>Le modèle de Heston reproduit le smile et permet une solution semi-analytique par transformée de Fourier.</p>
+<p><strong>SABR (Hagan et al., 2002)</strong> : modèle à vol stochastique très utilisé en taux d'intérêt.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_4">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-calcul-bsm-detaille-grecs">Exemple 1 — Calcul BSM détaillé + Grecs</h3>
+<p>Call européen : S₀ = 100 €, K = 105 €, T = 0,5 an, r = 3 %, σ = 25 %.</p>
+<pre><code>d₁ = [ln(100/105) + (0,03 + 0,0625/2) × 0,5] / (0,25 × √0,5)
+   = [-0,04879 + 0,02688] / 0,17678
+   = -0,02191 / 0,17678 = -0,124
+
+d₂ = -0,124 - 0,17678 = -0,301
+
+N(d₁) = N(-0,124) = 0,4507
+N(d₂) = N(-0,301) = 0,3817
+
+C = 100 × 0,4507 - 105 × e^(-0,03×0,5) × 0,3817
+  = 45,07 - 105 × 0,9851 × 0,3817
+  = 45,07 - 39,48 = 5,59 €
+
+Put (parité call-put) : P = C + K×e^(-rT) - S₀ = 5,59 + 103,43 - 100 = 9,02 €
+</code></pre>
+<p><strong>Grecs du call</strong> :</p>
+<pre><code>Delta = N(d₁) = 0,4507 → pour S=100, le delta est 45 %
+Gamma = N'(d₁) / (S × σ × √T) = 0,3958 / (100 × 0,25 × 0,7071) = 0,0224
+Vega = S × √T × N'(d₁) = 100 × 0,7071 × 0,3958 = 27,98 € (pour +1 pt de vol)
+Theta = -(S×σ×N'(d₁))/(2√T) - r×K×e^(-rT)×N(d₂) = -10,81 €/an = -0,030 €/jour
+Rho = K×T×e^(-rT)×N(d₂) = 105×0,5×0,9851×0,3817 = 19,76 € (pour +1 % de taux)
+</code></pre>
+<h3 id="exemple-2-arbre-binomial-options-americaines">Exemple 2 — Arbre binomial (options américaines)</h3>
+<p><strong>Option put américaine</strong> : S₀ = 50 €, K = 52 €, T = 2 périodes (6 mois chacune), r = 5 % annuel, u = 1,20, d = 0,85.</p>
+<pre><code>Δt = 0,5 an, R = e^(r×Δt) = e^(0,025) = 1,0253
+p_risk_neutral = (R - d) / (u - d) = (1,0253 - 0,85) / (1,20 - 0,85) = 0,1753 / 0,35 = 0,501
+
+Arbre des prix :
+S₀ = 50
+Period 1 : Su = 60, Sd = 42,5
+Period 2 : Suu = 72, Sud = 51, Sdd = 36,125
+
+Valeurs intrinsèques du put (max(K-S, 0)) :
+Vuu = max(52-72, 0) = 0
+Vud = max(52-51, 0) = 1
+Vdd = max(52-36,125, 0) = 15,875
+
+Remontée de l'arbre (period 1) :
+Vu = [p×0 + (1-p)×1] / R = [0 + 0,499×1] / 1,0253 = 0,487 €
+Exercice anticipé à Su=60 : max(52-60, 0) = 0 → PAS d'exercice anticipé
+Vd = [p×1 + (1-p)×15,875] / R = [0,501 + 7,921] / 1,0253 = 8,216 €
+Exercice anticipé à Sd=42,5 : max(52-42,5, 0) = 9,5 € &gt; 8,216 € → EXERCICE ANTICIPÉ OPTIMAL
+
+P₀ = [p×0,487 + (1-p)×9,5] / R = [0,244 + 4,741] / 1,0253 = 4,862 €
+</code></pre>
+<p>→ Le put américain vaut 4,86 € (le put européen vaudrait moins car l'exercice anticipé est optimal en Sd).</p>
+<h3 id="exemple-3-volatilite-implicite-et-smile">Exemple 3 — Volatilité implicite et smile</h3>
+<p>Pour une action S=100 €, T=1 mois, r=2 %, différents strikes donnent :</p>
+<table>
+<thead>
+<tr>
+<th>Strike K</th>
+<th>Prix call observé</th>
+<th>σ implicite (BSM inverse)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>85 €</td>
+<td>15,20 €</td>
+<td>28 % (OTM put wing)</td>
+</tr>
+<tr>
+<td>90 €</td>
+<td>10,80 €</td>
+<td>24 %</td>
+</tr>
+<tr>
+<td>95 €</td>
+<td>6,90 €</td>
+<td>21 %</td>
+</tr>
+<tr>
+<td>100 € (ATM)</td>
+<td>4,00 €</td>
+<td>18 %</td>
+</tr>
+<tr>
+<td>105 €</td>
+<td>2,00 €</td>
+<td>19 %</td>
+</tr>
+<tr>
+<td>110 €</td>
+<td>0,90 €</td>
+<td>21 %</td>
+</tr>
+<tr>
+<td>115 €</td>
+<td>0,35 €</td>
+<td>24 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Smile</strong> visible : la vol implicite ATM est la plus basse. Les puts OTM (K=85–90) ont une vol implicite bien plus élevée → le marché paie une prime pour se couvrir contre un crash → <strong>skew négatif</strong> typique des marchés actions.</p>
+<hr />
+<h2 id="applications-professionnelles_4">Applications professionnelles</h2>
+<h3 id="desk-exotiques-en-banque-greeks-et-couverture">Desk Exotiques en banque : Greeks et couverture</h3>
+<p>Un trader options gère son book (portefeuille d'options) en neutralisant les Grecs :</p>
+<p><strong>Delta hedging</strong> : maintenir un delta nul en achetant/vendant le sous-jacent.</p>
+<pre><code>Si book delta = +500 000 actions → vendre 500 000 actions pour delta-neutre
+</code></pre>
+<p><strong>Gamma hedging</strong> : le gamma mesure la variation du delta ; des positions à fort gamma nécessitent des rééquilibrages fréquents (coûteux).</p>
+<p><strong>Vega hedging</strong> : neutraliser l'exposition à la vol implicite en achetant/vendant d'autres options (variance swaps).</p>
+<p><strong>P&amp;L explication journalière</strong> :</p>
+<pre><code>P&amp;L = Delta × ΔS + 0,5 × Gamma × (ΔS)² + Vega × Δσ + Theta × Δt + Rho × Δr
+</code></pre>
+<p>Si la P&amp;L réelle diffère significativement de cette décomposition → risque de modèle, position à examiner.</p>
+<h3 id="gestion-dactifs-utilisation-des-options-pour-ameliorer-la-performance">Gestion d'actifs : utilisation des options pour améliorer la performance</h3>
+<p><strong>Stratégie buy-write (covered call)</strong> : le gérant possède une action et vend un call OTM pour générer un revenu (la prime du call).</p>
+<pre><code>Rendement = Dividende + Prime call OTM - Max(0, S-K)
+</code></pre>
+<p><strong>Protective put</strong> : achat d'un put pour se couvrir contre une baisse.</p>
+<p><strong>Collar</strong> : achat d'un put + vente d'un call → encadre les gains et les pertes.</p>
+<p>Ces stratégies sont courantes dans les mandats à capital garanti.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_4">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Utiliser BSM pour des options américaines</strong></td>
+<td>BSM ne gère pas l'exercice anticipé</td>
+<td>Utiliser les arbres binomiaux ou méthodes numériques (Finite Difference)</td>
+</tr>
+<tr>
+<td><strong>Ignorer le smile de volatilité</strong></td>
+<td>Valoriser tous les strikes avec la vol ATM → mispricing des options OTM</td>
+<td>Utiliser une surface de volatilité ou des modèles à vol stochastique</td>
+</tr>
+<tr>
+<td><strong>Confondre delta et probabilité d'exercice</strong></td>
+<td>Delta = N(d₁) ≠ probabilité d'ITM = N(d₂)</td>
+<td>Bien distinguer les deux interprétations</td>
+</tr>
+<tr>
+<td><strong>Négliger le theta sur des positions longues d'options</strong></td>
+<td>Une option perd de la valeur chaque jour (theta decay) même si le marché reste stable</td>
+<td>Intégrer le coût de portage des options dans la décision d'investissement</td>
+</tr>
+<tr>
+<td><strong>Utiliser le MEDAF seul pour fixer le taux de rendement exigé</strong></td>
+<td>Le bêta capture le risque systématique mais ignore les facteurs taille, valeur, etc.</td>
+<td>Compléter avec le modèle de Fama-French ou une analyse multifactorielle</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_4">Exercices supplémentaires</h2>
+<h3 id="exercice-1_7">Exercice 1</h3>
+<p>Calculez le prix d'une option call BSM : S=80 €, K=82 €, T=3 mois (0,25 an), r=2 %, σ=30 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+d₁ = [ln(80/82) + (0,02 + 0,045) × 0,25] / (0,30 × 0,5)
+   = [-0,02469 + 0,01625] / 0,15 = -0,00844 / 0,15 = -0,0563</p>
+<p>d₂ = -0,0563 - 0,15 = -0,2063</p>
+<p>N(-0,0563) = 0,4775, N(-0,2063) = 0,4183</p>
+<p>C = 80 × 0,4775 - 82 × e^(-0,005) × 0,4183
+  = 38,20 - 82 × 0,9950 × 0,4183
+  = 38,20 - 34,10 = <strong>4,10 €</strong></p>
+</blockquote>
+<h3 id="exercice-2_7">Exercice 2</h3>
+<p>Le MEDAF prédit E[R] = 9 % pour une action. Le modèle Fama-French 3F prédit E[R] = 11 % (βSMB=0,8, SMB=3 %). Que suggère cet écart ? Quelle décision d'allocation en déduire ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+L'écart de 2 % entre FF3F et MEDAF est dû à l'exposition au facteur taille (SMB = petites capitalisations) : l'action est sensible aux petites caps qui surperforment sur longue période.</p>
+<p>Le MEDAF sous-estime le rendement exigé car il ne capture pas ce facteur de risque additionnel.</p>
+<p><strong>Décision d'allocation</strong> :
+- Si l'on utilise le MEDAF pour actualiser les flux → on surestime la valeur de cette action (on actualise trop peu).
+- Si l'action semble attractivement valorisée selon MEDAF mais justement valorisée selon FF3F → pas d'alpha réel.
+- L'investisseur doit décider s'il veut s'exposer au facteur taille (prime long terme) ou non.</p>
+</blockquote>
+<h3 id="exercice-3_5">Exercice 3</h3>
+<p>Calculez le rendement espéré d'une action avec : rf = 2,5 %, βMKT = 1,1, βSMB = 0,6, βHML = -0,3, βMOM = 0,4. Primes : MKT = 5,5 %, SMB = 2 %, HML = 3,5 %, MOM = 4 %.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+E[R] = 2,5 % + 1,1 × 5,5 % + 0,6 × 2 % + (-0,3) × 3,5 % + 0,4 × 4 %
+= 2,5 % + 6,05 % + 1,2 % - 1,05 % + 1,6 %
+= <strong>10,3 %</strong></p>
+<p>Cette action est sensible au marché (bêta 1,1), aux petites caps (+), aux actions de croissance (-HML), et au momentum (+). Le profil correspond à une <strong>action growth de petite/moyenne capitalisation en momentum positif</strong>.</p>
+</blockquote>
+<h3 id="exercice-4_2">Exercice 4</h3>
+<p>Pour un call avec S=100, K=100, T=1 an, r=4 %, σ=20 %, calculez le delta, et expliquez comment un teneur de marché peut couvrir une vente de 1 000 calls.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+d₁ = [ln(1) + (0,04 + 0,02) × 1] / (0,20 × 1) = 0,06 / 0,20 = 0,30
+N(d₁) = N(0,30) = 0,6179</p>
+<p><strong>Delta du call = 0,6179</strong></p>
+<p>Le teneur de marché a vendu 1 000 calls. Pour être delta-neutre :
+Position delta = -1 000 × 0,6179 = -617,9 (short deltas)
+→ Acheter <strong>618 actions</strong> pour couvrir le delta.</p>
+<p>Coût de couverture = 618 × 100 = 61 800 €.</p>
+<p>Si S monte à 101 € → N(d₁) ≈ 0,644 → nouvel achat de (0,644 - 0,618) × 1 000 = 26 actions supplémentaires (gamma trading).
+Si S baisse à 99 € → N(d₁) ≈ 0,592 → vente de (0,618 - 0,592) × 1 000 = 26 actions.</p>
+</blockquote>
+<hr />
+</body>
+</html>

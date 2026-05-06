@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>02 Analyse Financiere</title>
+  
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 40px auto; padding: 0 40px; color: #222; line-height: 1.7; }
+  h1 { color: #1a3a5c; border-bottom: 3px solid #1a3a5c; padding-bottom: 10px; }
+  h2 { color: #1a3a5c; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #2c5f8a; margin-top: 28px; }
+  h4 { color: #3a7ab8; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f4f4f4; padding: 16px; border-radius: 6px; overflow-x: auto; }
+  blockquote { border-left: 4px solid #1a3a5c; margin: 0; padding-left: 20px; color: #555; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th { background: #1a3a5c; color: white; padding: 10px 14px; text-align: left; }
+  td { padding: 8px 14px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  hr { border: none; border-top: 2px solid #eee; margin: 40px 0; }
+</style>
+
+</head>
+<body>
+<h1 id="module-2-analyse-financiere">Module 2 — Analyse Financière</h1>
+<h2 id="objectifs-pedagogiques">Objectifs pédagogiques</h2>
+<p>Savoir lire, interpréter et critiquer les états financiers d'une entreprise. Diagnostiquer la santé financière, la rentabilité et la solvabilité à partir des documents comptables.</p>
+<h2 id="chapitres">Chapitres</h2>
+<ol>
+<li><a href="./chapitre-01-bilan.md">Le bilan : structure et lecture</a></li>
+<li><a href="./chapitre-02-compte-resultat.md">Le compte de résultat</a></li>
+<li><a href="./chapitre-03-flux-tresorerie.md">Le tableau des flux de trésorerie</a></li>
+<li><a href="./chapitre-04-ratios-financiers.md">Les ratios financiers et le diagnostic</a></li>
+</ol>
+<h2 id="duree-estimee">Durée estimée</h2>
+<p>16 heures (4h par chapitre)</p>
+<h2 id="evaluation">Évaluation</h2>
+<ul>
+<li>Analyse d'un jeu d'états financiers réels ou fictifs</li>
+<li>Production d'une note de synthèse financière avec recommandations</li>
+</ul>
+<hr />
+<h1 id="chapitre-1-le-bilan-structure-et-lecture">Chapitre 1 — Le bilan : structure et lecture</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Le <strong>bilan</strong> est une photographie du patrimoine de l'entreprise à une date donnée. Il répond à deux questions fondamentales :
+- <strong>Actif</strong> : que possède l'entreprise ?
+- <strong>Passif</strong> : comment a-t-elle financé ce qu'elle possède ?</p>
+<p>L'équilibre fondamental est toujours respecté :</p>
+<pre><code>ACTIF = PASSIF
+(Emplois = Ressources)
+</code></pre>
+<hr />
+<h2 id="1-structure-du-bilan-comptable">1. Structure du bilan comptable</h2>
+<h3 id="11-lactif">1.1 L'actif</h3>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Actif immobilisé</strong></td>
+<td>Immobilisations incorporelles (brevets, fonds de commerce, R&amp;D), Immobilisations corporelles (terrains, constructions, matériels), Immobilisations financières (participations, prêts)</td>
+</tr>
+<tr>
+<td><strong>Actif circulant</strong></td>
+<td>Stocks (matières, en-cours, produits finis), Créances clients, Autres créances, Valeurs mobilières de placement (VMP)</td>
+</tr>
+<tr>
+<td><strong>Trésorerie active</strong></td>
+<td>Disponibilités (caisse, comptes bancaires)</td>
+</tr>
+<tr>
+<td><strong>Charges constatées d'avance</strong></td>
+<td>Charges payées mais rattachées à l'exercice suivant</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-le-passif">1.2 Le passif</h3>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Contenu</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Capitaux propres</strong></td>
+<td>Capital social, Réserves, Report à nouveau, Résultat de l'exercice</td>
+</tr>
+<tr>
+<td><strong>Provisions pour risques et charges</strong></td>
+<td>Provisions pour litiges, garanties, retraites</td>
+</tr>
+<tr>
+<td><strong>Dettes financières</strong></td>
+<td>Emprunts bancaires, obligations, dettes de leasing</td>
+</tr>
+<tr>
+<td><strong>Dettes d'exploitation</strong></td>
+<td>Dettes fournisseurs, dettes fiscales et sociales</td>
+</tr>
+<tr>
+<td><strong>Trésorerie passive</strong></td>
+<td>Concours bancaires courants (découverts)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-exemple-de-bilan-simplifie">1.3 Exemple de bilan simplifié</h3>
+<pre><code>ACTIF                              PASSIF
+────────────────────────────────   ────────────────────────────────
+Immobilisations nettes  400 000    Capitaux propres       300 000
+  dont amortissements  (100 000)     Capital              200 000
+                                     Réserves              80 000
+                                     Résultat              20 000
+Stocks                  80 000
+Créances clients        60 000    Dettes financières LT  150 000
+Disponibilités          10 000    Dettes fournisseurs     60 000
+                                  Dettes fiscales/sociales 40 000
+────────────────────────────────   ────────────────────────────────
+TOTAL ACTIF             550 000    TOTAL PASSIF           550 000
+</code></pre>
+<hr />
+<h2 id="2-du-bilan-comptable-au-bilan-financier">2. Du bilan comptable au bilan financier</h2>
+<p>Le bilan <strong>financier</strong> (ou bilan liquidité) réclasse les postes en fonction de leur <strong>liquidité</strong> (actif) et de leur <strong>exigibilité</strong> (passif), sur deux horizons : plus d'un an / moins d'un an.</p>
+<h3 id="21-retraitements-courants">2.1 Retraitements courants</h3>
+<table>
+<thead>
+<tr>
+<th>Retraitement</th>
+<th>Principe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Actif fictif</strong></td>
+<td>Frais d'établissement, charges à répartir → déduire des capitaux propres</td>
+</tr>
+<tr>
+<td><strong>Plus-values latentes</strong></td>
+<td>Biens sous-évalués → réévaluer à la valeur de marché et créditer les capitaux propres</td>
+</tr>
+<tr>
+<td><strong>Effets escomptés non échus (EENE)</strong></td>
+<td>Réintégrer en créances clients et en dettes bancaires</td>
+</tr>
+<tr>
+<td><strong>Stock outil</strong></td>
+<td>Part stable des stocks → reclasser en actif à plus d'un an</td>
+</tr>
+<tr>
+<td><strong>Part à moins d'un an de la dette LT</strong></td>
+<td>Reclasser en passif à court terme</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-structure-du-bilan-financier">2.2 Structure du bilan financier</h3>
+<pre><code>ACTIF                         PASSIF
+&gt; 1 an (stable)               &gt; 1 an (stable)
+  Actif immobilisé net          Capitaux propres
+  Stock outil                   Dettes LT
+
+&lt; 1 an (cyclique)             &lt; 1 an (cyclique)
+  Stocks (hors outil)           Dettes fournisseurs
+  Créances clients              Dettes fiscales/sociales
+  Autres créances               Part CT des dettes LT
+
+Trésorerie active             Trésorerie passive
+  Disponibilités                Concours bancaires
+</code></pre>
+<hr />
+<h2 id="3-les-grands-equilibres-bilanciels">3. Les grands équilibres bilanciels</h2>
+<h3 id="31-fonds-de-roulement-net-global-frng">3.1 Fonds de roulement net global (FRNG)</h3>
+<pre><code>FRNG = Ressources stables - Emplois stables
+     = (Capitaux propres + Dettes LT) - Actif immobilisé net
+</code></pre>
+<ul>
+<li><strong>FRNG &gt; 0</strong> : les ressources stables financent une partie du cycle d'exploitation → situation saine.</li>
+<li><strong>FRNG &lt; 0</strong> : les immobilisations sont partiellement financées par des ressources à court terme → risque de liquidité.</li>
+</ul>
+<h3 id="32-besoin-en-fonds-de-roulement-bfr">3.2 Besoin en fonds de roulement (BFR)</h3>
+<pre><code>BFR = Actif circulant d'exploitation - Passif circulant d'exploitation
+    = (Stocks + Créances clients) - Dettes fournisseurs
+</code></pre>
+<p>Le BFR représente le besoin de financement généré par le cycle d'exploitation.</p>
+<ul>
+<li><strong>BFR &gt; 0</strong> : besoin à financer (cas général dans l'industrie et les services).</li>
+<li><strong>BFR &lt; 0</strong> : ressource (cas de la grande distribution : les clients paient comptant, les fournisseurs à 90 jours).</li>
+</ul>
+<h3 id="33-tresorerie-nette-tn">3.3 Trésorerie nette (TN)</h3>
+<pre><code>TN = FRNG - BFR
+   = Trésorerie active - Trésorerie passive
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>Interprétation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TN &gt; 0</td>
+<td>Excédent de liquidité</td>
+</tr>
+<tr>
+<td>TN &lt; 0</td>
+<td>Recours au découvert bancaire</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-la-regle-dor-du-financement">3.4 La règle d'or du financement</h3>
+<pre><code>FRNG ≥ BFR   ⟺   TN ≥ 0
+</code></pre>
+<p>Les emplois longs doivent être financés par des ressources longues.</p>
+<hr />
+<h2 id="4-exemple-danalyse">4. Exemple d'analyse</h2>
+<p><strong>Données</strong> (en k€) :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Montant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actif immobilisé net</td>
+<td>800</td>
+</tr>
+<tr>
+<td>Stocks</td>
+<td>150</td>
+</tr>
+<tr>
+<td>Créances clients</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Disponibilités</td>
+<td>30</td>
+</tr>
+<tr>
+<td>Capitaux propres</td>
+<td>600</td>
+</tr>
+<tr>
+<td>Dettes LT</td>
+<td>400</td>
+</tr>
+<tr>
+<td>Dettes fournisseurs</td>
+<td>120</td>
+</tr>
+<tr>
+<td>Dettes fiscales/sociales</td>
+<td>60</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calculs</strong> :</p>
+<pre><code>FRNG = (600 + 400) - 800 = +200 k€
+BFR  = (150 + 200) - (120 + 60) = 170 k€
+TN   = 200 - 170 = +30 k€   ✓ (= disponibilités)
+</code></pre>
+<p><strong>Diagnostic</strong> : l'entreprise respecte la règle d'or. Son FRNG couvre son BFR avec 30 k€ de trésorerie nette positive.</p>
+<hr />
+<h2 id="5-exercices">5. Exercices</h2>
+<h3 id="exercice-1">Exercice 1</h3>
+<p>À partir du bilan ci-dessous, calculez le FRNG, le BFR et la TN.</p>
+<table>
+<thead>
+<tr>
+<th>Actif</th>
+<th>Montant</th>
+<th>Passif</th>
+<th>Montant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Immob. nettes</td>
+<td>500</td>
+<td>Cap. propres</td>
+<td>350</td>
+</tr>
+<tr>
+<td>Stocks</td>
+<td>80</td>
+<td>Dettes LT</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Créances clients</td>
+<td>120</td>
+<td>Dettes fournisseurs</td>
+<td>90</td>
+</tr>
+<tr>
+<td>Disponibilités</td>
+<td>20</td>
+<td>Dettes fiscales</td>
+<td>80</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>720</strong></td>
+<td><strong>Total</strong></td>
+<td><strong>720</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :
+FRNG = (350 + 200) - 500 = <strong>50 k€</strong>
+BFR = (80 + 120) - (90 + 80) = <strong>30 k€</strong>
+TN = 50 - 30 = <strong>20 k€</strong> ✓</p>
+</blockquote>
+<h3 id="exercice-2">Exercice 2</h3>
+<p>Une entreprise de distribution présente un BFR de -50 k€. Interprétez cette situation.</p>
+<blockquote>
+<p><strong>Correction</strong> : BFR négatif = ressource en fonds de roulement. Les clients paient à la livraison (délai de règlement ≈ 0 jour) tandis que les fournisseurs accordent 60 à 90 jours. L'entreprise est financée par son cycle d'exploitation.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir">Points clés à retenir</h2>
+<ul>
+<li>Le bilan est une photo patrimoniale à une date précise : actif = passif.</li>
+<li>Le bilan financier retraite le bilan comptable pour mieux refléter les échéances réelles.</li>
+<li>FRNG, BFR et TN constituent le triptyque fondamental de l'analyse de la structure financière.</li>
+<li>La règle d'or : les emplois longs doivent être financés par des ressources longues.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique">Approfondissement théorique</h2>
+<h3 id="le-bilan-en-normes-ifrs-vs-normes-francaises-pcg">Le bilan en normes IFRS vs. normes françaises (PCG)</h3>
+<p>Les entreprises cotées en Europe publient en <strong>IFRS</strong> (International Financial Reporting Standards). Les différences majeures avec les normes françaises (PCG — Plan Comptable Général) :</p>
+<table>
+<thead>
+<tr>
+<th>Domaine</th>
+<th>Normes françaises (PCG)</th>
+<th>IFRS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Goodwill</strong></td>
+<td>Amorti sur la durée d'utilité</td>
+<td>Non amorti (test d'impairment annuel — IAS 36)</td>
+</tr>
+<tr>
+<td><strong>Actifs financiers</strong></td>
+<td>Coût historique</td>
+<td>Juste valeur (fair value) pour la plupart</td>
+</tr>
+<tr>
+<td><strong>Leasing</strong></td>
+<td>Distinction crédit-bail / location simple</td>
+<td>Tous les contrats importants → actifs et dettes au bilan (IFRS 16)</td>
+</tr>
+<tr>
+<td><strong>Provisions</strong></td>
+<td>Charges provisionnées selon prudence</td>
+<td>Provisions uniquement si obligation légale ou réelle (IAS 37)</td>
+</tr>
+<tr>
+<td><strong>Stocks</strong></td>
+<td>FIFO ou CUMP</td>
+<td>FIFO ou CUMP (LIFO interdit)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact IFRS 16</strong> (contrats de location) : les entreprises ayant beaucoup de magasins ou de flottes de véhicules (grande distribution, compagnies aériennes) voient leur bilan augmenter significativement avec la capitalisation des loyers. EBITDA monte (les loyers sont remplacés par amortissements + charges financières) mais la dette augmente.</p>
+<h3 id="analyse-bilancielle-avancee-le-bilan-pool-de-fonds">Analyse bilancielle avancée : le bilan pool de fonds</h3>
+<p>Au-delà des équilibres FRNG/BFR/TN, l'analyse avancée recourt à une vision <strong>pool de fonds</strong> :</p>
+<pre><code>Sources de fonds :    Emplois de fonds :
+- Résultat conservé   → Immobilisations nettes
+- Dettes LT           → Stocks
+- Dettes CT           → Créances
+- Capitaux propres    → Trésorerie
+</code></pre>
+<p>La <strong>matrice de flux de fonds</strong> (sources/emplois) retrace les variations sur 2 exercices et identifie les déséquilibres structurels.</p>
+<h3 id="retraitements-analytiques-avances">Retraitements analytiques avancés</h3>
+<p><strong>Crédit-bail (Off balance sheet finance)</strong> : en normes françaises, les actifs en crédit-bail sont hors bilan. Pour comparer deux entreprises (une possédant ses actifs, l'autre les louant), il faut retraiter :</p>
+<pre><code>Actif → Ajouter la valeur nette des biens en crédit-bail
+Passif → Ajouter l'engagement de crédit-bail (dette financière implicite)
+EBE → Ajouter la redevance (loyer réintégré)
+Résultat → Soustraire l'amortissement + charges financières implicites
+</code></pre>
+<p><strong>Engagements de retraites</strong> : en France, les engagements de retraite peuvent être hors bilan si non provisionnés. L'analyse crédit exige de les intégrer à la dette nette (engagement actuariel actualisé).</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-analyse-bilancielle-complete-sur-2-exercices">Exemple 1 — Analyse bilancielle complète sur 2 exercices</h3>
+<p><strong>Entreprise DELTA</strong> (en k€) :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>N-1</th>
+<th>N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actif immobilisé net</td>
+<td>700</td>
+<td>850</td>
+</tr>
+<tr>
+<td>Stocks</td>
+<td>120</td>
+<td>160</td>
+</tr>
+<tr>
+<td>Créances clients</td>
+<td>180</td>
+<td>220</td>
+</tr>
+<tr>
+<td>Disponibilités</td>
+<td>50</td>
+<td>30</td>
+</tr>
+<tr>
+<td><strong>Total actif</strong></td>
+<td><strong>1 050</strong></td>
+<td><strong>1 260</strong></td>
+</tr>
+<tr>
+<td>Capitaux propres</td>
+<td>450</td>
+<td>520</td>
+</tr>
+<tr>
+<td>Dettes LT</td>
+<td>300</td>
+<td>400</td>
+</tr>
+<tr>
+<td>Dettes fournisseurs</td>
+<td>200</td>
+<td>230</td>
+</tr>
+<tr>
+<td>Dettes fiscales/sociales</td>
+<td>100</td>
+<td>110</td>
+</tr>
+<tr>
+<td><strong>Total passif</strong></td>
+<td><strong>1 050</strong></td>
+<td><strong>1 260</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calculs N-1 et N</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Indicateur</th>
+<th>N-1</th>
+<th>N</th>
+<th>Variation</th>
+<th>Commentaire</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FRNG</td>
+<td>50</td>
+<td>70</td>
+<td>+20</td>
+<td>Amélioration</td>
+</tr>
+<tr>
+<td>BFR</td>
+<td>100</td>
+<td>140</td>
+<td>+40</td>
+<td>BFR en hausse (croissance)</td>
+</tr>
+<tr>
+<td>TN</td>
+<td>-50</td>
+<td>-70</td>
+<td>-20</td>
+<td>Dégradation de la trésorerie</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Diagnostic</strong> : Malgré un FRNG en hausse, le BFR augmente plus vite → la trésorerie se détériore. Signe d'une croissance mal financée ou d'un allongement du délai clients.</p>
+<h3 id="exemple-2-impact-du-retraitement-credit-bail">Exemple 2 — Impact du retraitement crédit-bail</h3>
+<p>Entreprise E : elle loue ses entrepôts pour 500 k€/an sur 10 ans. Taux d'actualisation = 6 %, valeur résiduelle nulle.</p>
+<pre><code>Valeur actuelle des loyers = 500 × [1 - (1,06)^(-10)] / 0,06
+= 500 × 7,360 = 3 680 k€
+
+Retraitement bilan :
++ 3 680 k€ en actif (bien en crédit-bail)
++ 3 680 k€ en passif (dette financière implicite)
+
+Impact FRNG : neutre (l'actif et le passif LT augmentent de la même valeur)
+Impact gearing : gearing augmente de 3 680 k€ de dette
+Impact levier : si EBITDA ajusté = 2 000 k€ → levier +1,84× avant le retraitement
+</code></pre>
+<h3 id="exemple-3-determination-du-besoin-en-fonds-de-roulement-normatif">Exemple 3 — Détermination du besoin en fonds de roulement normatif</h3>
+<p>Une entreprise de négoce a les données suivantes :
+- CA annuel HT = 3 600 k€ (10 k€/jour)
+- Achats HT = 2 400 k€ (6,67 k€/jour)
+- Délai clients : 45 jours
+- Délai fournisseurs : 30 jours
+- Durée de stockage : 20 jours</p>
+<pre><code>BFR normatif :
++ Créances clients = 45 × (CA TTC/360) = 45 × (3 600 × 1,20 / 360) = 45 × 12 = 540 k€
++ Stocks = 20 × (Achats / 360) = 20 × 6,67 = 133 k€
+- Dettes fournisseurs = 30 × (Achats TTC / 360) = 30 × (2 400 × 1,20 / 360) = 30 × 8 = 240 k€
+
+BFR normatif = 540 + 133 - 240 = 433 k€
+En % CA : 433 / 3 600 = 12 %
+</code></pre>
+<hr />
+<h2 id="applications-professionnelles">Applications professionnelles</h2>
+<h3 id="banque-analyse-credit-du-bilan">Banque : analyse crédit du bilan</h3>
+<p>Lors d'une demande de crédit, l'analyste bancaire structure son analyse en plusieurs axes :</p>
+<p><strong>1. Qualité des actifs</strong> :
+- Actifs incorporels (goodwill, marques) → faible valeur de réalisation en cas de liquidation.
+- Valeur de réalisation des stocks (provisions pour obsolescence ?)
+- Qualité des créances clients (provision pour créances douteuses à jours ?)</p>
+<p><strong>2. Endettement financier net</strong> :</p>
+<pre><code>Dette nette = Emprunts + Crédit-bail capitalisé + Engagement retraites - Trésorerie disponible
+</code></pre>
+<p><strong>3. Flexibilité financière</strong> :
+- FRNG / BFR : marge de sécurité.
+- Lignes de crédit non tirées.
+- Ratio de couverture des intérêts.</p>
+<p><strong>Standard d'analyse crédit Moody's / S&amp;P</strong> :
+- Investment Grade : FRNG &gt; 0, gearing &lt; 1, ICR &gt; 3×
+- Watch List : FRNG &lt; 0 OU gearing &gt; 2 OU ICR &lt; 1,5×</p>
+<h3 id="conseil-en-restructuration">Conseil en restructuration</h3>
+<p>En situation de <strong>détresse financière</strong>, le diagnostic bilan est crucial :
+- <strong>Test de liquidité immédiate</strong> : La TN peut-elle couvrir les échéances des 30 prochains jours ?
+- <strong>Test de solvabilité</strong> : Capitaux propres positifs ? (insolvabilité technique si capitaux propres &lt; 0)
+- <strong>Passif exigible vs. actif disponible</strong> : en droit français, la cessation des paiements est constatée quand l'actif disponible ne couvre plus le passif exigible → ouverture de redressement judiciaire.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Confondre TN et trésorerie disponible</strong></td>
+<td>La TN = disponibilités - concours bancaires courants ≠ solde du compte en banque</td>
+<td>Vérifier la définition comptable exacte des postes</td>
+</tr>
+<tr>
+<td><strong>Oublier les engagements hors bilan</strong></td>
+<td>Cautions, garanties, retraites, crédit-bail → non apparents dans le bilan standard</td>
+<td>Lire les notes annexes aux états financiers</td>
+</tr>
+<tr>
+<td><strong>Comparer des bilans de secteurs différents</strong></td>
+<td>Un distributeur a un BFR négatif (structurel) ; l'industrie a un BFR fortement positif</td>
+<td>Toujours contextualiser par secteur</td>
+</tr>
+<tr>
+<td><strong>Ne pas retraiter les actifs fictifs</strong></td>
+<td>Les frais d'établissement ou les charges à répartir ne sont pas de "vrais" actifs</td>
+<td>Déduire des capitaux propres pour une vision réelle</td>
+</tr>
+<tr>
+<td><strong>Ignorer l'impact du cycle sur le bilan</strong></td>
+<td>Un bilan pris en fin d'exercice peut être "embelli" (window dressing)</td>
+<td>Analyser les bilans intermédiaires (T1, T2, T3) si disponibles</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires">Exercices supplémentaires</h2>
+<h3 id="exercice-1_1">Exercice 1</h3>
+<p>Une entreprise de services informatiques présente : Actif immo. net = 300, Stocks = 0, Créances clients = 250, Disponibilités = 80, Total actif = 630. Passif : CP = 200, Dettes LT = 150, Dettes fournisseurs = 130, Dettes fiscales/sociales = 150. Calculez FRNG, BFR, TN et commentez.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+FRNG = (200 + 150) - 300 = <strong>50 k€</strong> (ressources stables &gt; immobilisations)
+BFR = (0 + 250) - (130 + 150) = 250 - 280 = <strong>-30 k€</strong> (ressource !)
+TN = 50 - (-30) = <strong>80 k€</strong> ✓ (= disponibilités)</p>
+<p>Commentaire : Le BFR négatif est atypique pour les services. Cela signifie que les clients paient vite (ou que les délais fournisseurs/sociaux sont longs). La trésorerie est confortable à 80 k€. Structure financière saine.</p>
+</blockquote>
+<h3 id="exercice-2_1">Exercice 2</h3>
+<p>Une entreprise a un BFR normatif de 15 % du CA. Le CA passe de 10 M€ à 14 M€ (+40 %). Quel est le besoin de financement additionnel lié à cette croissance ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+BFR N-1 = 15 % × 10 = 1,5 M€
+BFR N = 15 % × 14 = 2,1 M€
+Besoin additionnel = 2,1 - 1,5 = <strong>0,6 M€</strong> à financer par la CAF, les actionnaires ou la dette.</p>
+<p>Ce calcul est fondamental en LBO (croissance = consommation de BFR) et en conseil M&amp;A.</p>
+</blockquote>
+<h3 id="exercice-3">Exercice 3</h3>
+<p>Calculez le FRNG, BFR et TN, puis répondez : la règle d'or est-elle respectée ?</p>
+<table>
+<thead>
+<tr>
+<th>Actif</th>
+<th>k€</th>
+<th>Passif</th>
+<th>k€</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Immob. nettes</td>
+<td>900</td>
+<td>CP</td>
+<td>400</td>
+</tr>
+<tr>
+<td>Stocks</td>
+<td>200</td>
+<td>Dettes LT</td>
+<td>300</td>
+</tr>
+<tr>
+<td>Créances</td>
+<td>300</td>
+<td>Dettes fourn.</td>
+<td>250</td>
+</tr>
+<tr>
+<td>Disp.</td>
+<td>50</td>
+<td>Dettes fisc.</td>
+<td>100</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>1 450</strong></td>
+<td>Découvert</td>
+<td>400</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td><strong>Total</strong></td>
+<td><strong>1 450</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :
+FRNG = (400 + 300) - 900 = <strong>-200 k€</strong> → FRNG NÉGATIF
+BFR = (200 + 300) - (250 + 100) = <strong>150 k€</strong>
+TN = -200 - 150 = <strong>-350 k€</strong> (= -400 découvert + 50 disp. = -350) ✓</p>
+<p>La règle d'or N'EST PAS respectée : les immobilisations sont partiellement financées par des ressources court terme (découvert bancaire de 400 k€). Risque de liquidité élevé.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-2-le-compte-de-resultat">Chapitre 2 — Le compte de résultat</h1>
+<h2 id="introduction_1">Introduction</h2>
+<p>Le <strong>compte de résultat</strong> (CR) mesure la <strong>performance économique</strong> de l'entreprise sur une période (l'exercice). Contrairement au bilan qui est statique, le CR est dynamique : il enregistre tous les flux de produits et de charges entre deux bilans.</p>
+<pre><code>Résultat net = Produits - Charges
+</code></pre>
+<hr />
+<h2 id="1-structure-du-compte-de-resultat">1. Structure du compte de résultat</h2>
+<p>Le CR est organisé en trois niveaux :</p>
+<h3 id="11-resultat-dexploitation">1.1 Résultat d'exploitation</h3>
+<pre><code>Chiffre d'affaires (HT)
++ Production stockée / déstockée
++ Production immobilisée
+= Production de l'exercice
+
+- Achats consommés
+- Variation de stocks de matières
+- Autres achats et charges externes
+= Valeur ajoutée (VA)
+
+- Impôts et taxes
+- Charges de personnel
+= Excédent Brut d'Exploitation (EBE / EBITDA)
+
+- Dotations aux amortissements et provisions
++ Reprises sur provisions
++ Autres produits d'exploitation
+- Autres charges d'exploitation
+= Résultat d'exploitation (EBIT)
+</code></pre>
+<h3 id="12-resultat-financier">1.2 Résultat financier</h3>
+<pre><code>Produits financiers (intérêts reçus, dividendes reçus)
+- Charges financières (intérêts versés)
+= Résultat financier
+</code></pre>
+<h3 id="13-resultat-net">1.3 Résultat net</h3>
+<pre><code>Résultat d'exploitation
++ Résultat financier
+= Résultat courant avant impôt
+
+± Résultat exceptionnel
+- Participation des salariés
+- Impôt sur les bénéfices (IS)
+= Résultat net de l'exercice
+</code></pre>
+<hr />
+<h2 id="2-les-soldes-intermediaires-de-gestion-sig">2. Les soldes intermédiaires de gestion (SIG)</h2>
+<p>Les SIG décomposent la formation du résultat et permettent des comparaisons sectorielles.</p>
+<h3 id="21-tableau-des-sig">2.1 Tableau des SIG</h3>
+<table>
+<thead>
+<tr>
+<th>Solde</th>
+<th>Formule</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Marge commerciale</strong></td>
+<td>Ventes de marchandises - Coût d'achat des marchandises vendues</td>
+<td>Valeur créée par l'activité de négoce</td>
+</tr>
+<tr>
+<td><strong>Production de l'exercice</strong></td>
+<td>CA + Production stockée + Production immobilisée</td>
+<td>Volume d'activité global</td>
+</tr>
+<tr>
+<td><strong>Valeur ajoutée (VA)</strong></td>
+<td>Production - Consommations intermédiaires</td>
+<td>Richesse créée par l'entreprise</td>
+</tr>
+<tr>
+<td><strong>EBE</strong></td>
+<td>VA + Subventions d'exploitation - Impôts/taxes - Charges de personnel</td>
+<td>Flux généré avant amortissements et financement</td>
+</tr>
+<tr>
+<td><strong>Résultat d'exploitation</strong></td>
+<td>EBE - Dotations + Reprises ± Autres</td>
+<td>Performance opérationnelle</td>
+</tr>
+<tr>
+<td><strong>RCAI</strong></td>
+<td>Résultat d'exploitation + Résultat financier</td>
+<td>Performance avant exceptionnel</td>
+</tr>
+<tr>
+<td><strong>Résultat net</strong></td>
+<td>RCAI ± Exceptionnel - Participation - IS</td>
+<td>Profit définitif revenant aux actionnaires</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-correspondances-avec-les-termes-anglo-saxons-ifrs">2.2 Correspondances avec les termes anglo-saxons (IFRS)</h3>
+<table>
+<thead>
+<tr>
+<th>Terme français</th>
+<th>Terme anglo-saxon</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EBE</td>
+<td>EBITDA (Earnings Before Interest, Taxes, Depreciation &amp; Amortization)</td>
+</tr>
+<tr>
+<td>Résultat d'exploitation</td>
+<td>EBIT (Earnings Before Interest and Taxes)</td>
+</tr>
+<tr>
+<td>RCAI (avant IS)</td>
+<td>EBT (Earnings Before Tax)</td>
+</tr>
+<tr>
+<td>Résultat net</td>
+<td>Net income / Net profit</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-exemple-complet-de-sig">3. Exemple complet de SIG</h2>
+<p><strong>Données</strong> (exercice N, en k€) :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Montant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA (ventes de biens)</td>
+<td>5 000</td>
+</tr>
+<tr>
+<td>Production stockée</td>
+<td>+ 200</td>
+</tr>
+<tr>
+<td>Achats consommés</td>
+<td>1 800</td>
+</tr>
+<tr>
+<td>Variation de stocks matières</td>
+<td>- 100</td>
+</tr>
+<tr>
+<td>Autres achats ext. (sous-traitance, énergie)</td>
+<td>600</td>
+</tr>
+<tr>
+<td>Impôts et taxes</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Charges de personnel</td>
+<td>1 200</td>
+</tr>
+<tr>
+<td>Dotations aux amortissements</td>
+<td>300</td>
+</tr>
+<tr>
+<td>Charges financières</td>
+<td>120</td>
+</tr>
+<tr>
+<td>IS (taux 25 %)</td>
+<td>?</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calcul</strong> :</p>
+<pre><code>Production = 5 000 + 200 = 5 200
+Consommations = 1 800 - 100 + 600 = 2 300
+VA = 5 200 - 2 300 = 2 900 k€
+EBE = 2 900 - 80 - 1 200 = 1 620 k€
+Résultat exploitation = 1 620 - 300 = 1 320 k€
+Résultat financier = -120 k€
+RCAI = 1 320 - 120 = 1 200 k€
+IS = 1 200 × 25 % = 300 k€
+Résultat net = 1 200 - 300 = 900 k€
+</code></pre>
+<hr />
+<h2 id="4-analyse-de-la-rentabilite">4. Analyse de la rentabilité</h2>
+<h3 id="41-taux-de-marge-et-de-profitabilite">4.1 Taux de marge et de profitabilité</h3>
+<table>
+<thead>
+<tr>
+<th>Indicateur</th>
+<th>Formule</th>
+<th>Interprétation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Taux de VA</td>
+<td>VA / CA</td>
+<td>Part de CA conservée après consommations</td>
+</tr>
+<tr>
+<td>Taux d'EBE</td>
+<td>EBE / CA</td>
+<td>Marge opérationnelle avant amortissements</td>
+</tr>
+<tr>
+<td>Taux de marge opérationnelle</td>
+<td>EBIT / CA</td>
+<td>Marge après amortissements</td>
+</tr>
+<tr>
+<td>Marge nette</td>
+<td>Résultat net / CA</td>
+<td>Profitabilité globale</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Valeurs de référence sectorielles (ordres de grandeur)</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Secteur</th>
+<th>Taux d'EBE</th>
+<th>Taux EBIT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grande distribution</td>
+<td>3–5 %</td>
+<td>1–3 %</td>
+</tr>
+<tr>
+<td>Industrie manufacturière</td>
+<td>10–15 %</td>
+<td>6–10 %</td>
+</tr>
+<tr>
+<td>Logiciels / SaaS</td>
+<td>25–40 %</td>
+<td>15–30 %</td>
+</tr>
+<tr>
+<td>Luxe</td>
+<td>30–40 %</td>
+<td>20–35 %</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-effet-de-levier-operationnel">4.2 Effet de levier opérationnel</h3>
+<p>Le <strong>levier opérationnel</strong> mesure la sensibilité du résultat d'exploitation à une variation du CA :</p>
+<pre><code>Levier opérationnel = Marge sur coûts variables / Résultat d'exploitation
+                    = (CA - Coûts variables) / EBIT
+</code></pre>
+<p>Plus le levier est élevé, plus l'entreprise est exposée aux variations d'activité (risque d'exploitation élevé).</p>
+<hr />
+<h2 id="5-capacite-dautofinancement-caf">5. Capacité d'autofinancement (CAF)</h2>
+<h3 id="definition">Définition</h3>
+<p>La <strong>CAF</strong> représente le flux de trésorerie potentiel généré par l'activité, avant distribution de dividendes. Elle est calculée à partir du résultat net en réintégrant les charges non décaissées.</p>
+<h3 id="methode-additive">Méthode additive</h3>
+<pre><code>CAF = Résultat net
+    + Dotations aux amortissements et provisions (charges non décaissées)
+    - Reprises sur provisions (produits non encaissés)
+    - Plus-values de cession (exceptionnelles)
+    + Moins-values de cession
+</code></pre>
+<h3 id="methode-soustractive-a-partir-de-lebe">Méthode soustractive (à partir de l'EBE)</h3>
+<pre><code>CAF = EBE
+    + Produits financiers encaissables
+    - Charges financières décaissables
+    + Produits exceptionnels encaissables
+    - Charges exceptionnelles décaissables
+    - Participation des salariés
+    - IS
+</code></pre>
+<p><strong>Reprise de l'exemple</strong> :</p>
+<pre><code>CAF = 900 + 300 = 1 200 k€
+</code></pre>
+<h3 id="utilisation-de-la-caf">Utilisation de la CAF</h3>
+<pre><code>CAF = Autofinancement + Dividendes versés
+</code></pre>
+<p>La CAF finance les investissements, rembourse les dettes et distribue des dividendes.</p>
+<hr />
+<h2 id="6-exercices">6. Exercices</h2>
+<h3 id="exercice-1_2">Exercice 1</h3>
+<p>À partir des données suivantes, calculez la VA, l'EBE et le résultat net.</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Montant (k€)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA</td>
+<td>3 000</td>
+</tr>
+<tr>
+<td>Achats consommés</td>
+<td>1 200</td>
+</tr>
+<tr>
+<td>Sous-traitance / services ext.</td>
+<td>300</td>
+</tr>
+<tr>
+<td>Charges de personnel</td>
+<td>900</td>
+</tr>
+<tr>
+<td>Impôts et taxes</td>
+<td>50</td>
+</tr>
+<tr>
+<td>Dotations amort.</td>
+<td>150</td>
+</tr>
+<tr>
+<td>Charges financières</td>
+<td>60</td>
+</tr>
+<tr>
+<td>IS 25 %</td>
+<td>?</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :
+VA = 3 000 - 1 200 - 300 = <strong>1 500 k€</strong>
+EBE = 1 500 - 50 - 900 = <strong>550 k€</strong>
+EBIT = 550 - 150 = <strong>400 k€</strong>
+RCAI = 400 - 60 = <strong>340 k€</strong>
+IS = 340 × 25 % = 85 k€
+Résultat net = <strong>255 k€</strong></p>
+</blockquote>
+<h3 id="exercice-2_2">Exercice 2</h3>
+<p>Calculez la CAF par la méthode additive. Dotations = 150 k€.</p>
+<blockquote>
+<p><strong>Correction</strong> : CAF = 255 + 150 = <strong>405 k€</strong></p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_1">Points clés à retenir</h2>
+<ul>
+<li>Le compte de résultat mesure la performance sur une période ; le bilan est une photo instantanée.</li>
+<li>Les SIG décomposent la formation du résultat : VA → EBE → EBIT → Résultat net.</li>
+<li>L'EBE (EBITDA) est le flux opérationnel avant financement et fiscal : indicateur clé de comparaison.</li>
+<li>La CAF mesure la ressource interne de financement de l'entreprise.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_1">Approfondissement théorique</h2>
+<h3 id="la-normalisation-de-lebitda-en-contexte-ma">La normalisation de l'EBITDA en contexte M&amp;A</h3>
+<p>En M&amp;A et en LBO, l'EBITDA "comptable" doit être <strong>normalisé</strong> pour refléter la vraie capacité bénéficiaire récurrente de l'entreprise :</p>
+<pre><code>EBITDA comptable (selon SIG)
++ Éléments non récurrents (restructurations, litiges, honoraires M&amp;A)
++ Charges liées aux actionnaires-dirigeants (salaires excessifs vs. marché)
++ Run-rate d'acquisitions récentes (ajout de l'EBITDA des cibles achetées en cours d'année)
+- Revenus non récurrents (cessions d'actifs, subventions exceptionnelles)
+- Sous-investissement (CAPEX inférieur à l'amortissement économique)
+= EBITDA normalisé (&quot;Adjusted EBITDA&quot;)
+</code></pre>
+<p><strong>Exemple</strong> : Une société affiche un EBITDA comptable de 10 M€. Elle a engagé 1,5 M€ de frais M&amp;A cette année et verse 0,5 M€ de salaire supra-marché à son dirigeant-actionnaire. L'EBITDA normalisé = 10 + 1,5 + 0,5 = <strong>12 M€</strong>. C'est cette base qui sera multipliée dans la valorisation.</p>
+<h3 id="lanalyse-des-marges-benchmarking-sectoriel">L'analyse des marges : benchmarking sectoriel</h3>
+<p>Les marges EBITDA et EBIT varient considérablement selon les secteurs :</p>
+<table>
+<thead>
+<tr>
+<th>Secteur</th>
+<th>EBITDA/CA</th>
+<th>EBIT/CA</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logiciels SaaS</td>
+<td>25–40 %</td>
+<td>15–30 %</td>
+<td>Coûts marginaux quasi nuls</td>
+</tr>
+<tr>
+<td>Luxe (LVMH, Hermès)</td>
+<td>30–40 %</td>
+<td>20–35 %</td>
+<td>Pricing power exceptionnel</td>
+</tr>
+<tr>
+<td>Industrie aéronautique</td>
+<td>12–18 %</td>
+<td>7–12 %</td>
+<td>Amortissements importants</td>
+</tr>
+<tr>
+<td>Grande distribution</td>
+<td>3–6 %</td>
+<td>1–3 %</td>
+<td>Marges étroites, volumes élevés</td>
+</tr>
+<tr>
+<td>Restauration rapide</td>
+<td>20–30 %</td>
+<td>15–22 %</td>
+<td>Franchises à fort levier</td>
+</tr>
+<tr>
+<td>Utilities (électricité)</td>
+<td>35–50 %</td>
+<td>20–30 %</td>
+<td>Capital-intensif, revenus régulés</td>
+</tr>
+</tbody>
+</table>
+<p><strong>L'analyse en tendance</strong> (trend analysis) : une marge EBITDA de 15 % qui était de 18 % il y a 3 ans signale une érosion des avantages compétitifs → drapeau rouge en analyse crédit.</p>
+<h3 id="lifrs-15-impact-sur-la-reconnaissance-du-revenu">L'IFRS 15 : impact sur la reconnaissance du revenu</h3>
+<p>La norme <strong>IFRS 15</strong> (2018) a unifié les règles de reconnaissance du revenu selon un modèle en 5 étapes :</p>
+<ol>
+<li>Identifier le contrat avec le client.</li>
+<li>Identifier les obligations de performance distinctes.</li>
+<li>Déterminer le prix de transaction.</li>
+<li>Allouer le prix aux obligations.</li>
+<li>Reconnaître le revenu quand l'obligation est satisfaite.</li>
+</ol>
+<p><strong>Impact pour les entreprises SaaS</strong> : les revenus de logiciels avec composantes installation + licence + maintenance doivent être répartis selon la valeur relative de chaque composante → peut modifier le profil temporel des revenus.</p>
+<p><strong>Impact pour les constructeurs</strong> : les revenus de construction à long terme (contrats pluriannuels) sont reconnus "au pourcentage d'avancement" (méthode de l'avancement) plutôt qu'à la livraison.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_1">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-analyse-complete-du-compte-de-resultat-sur-3-ans">Exemple 1 — Analyse complète du compte de résultat sur 3 ans</h3>
+<p><strong>Entreprise DELTA</strong> (en k€) :</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>N-2</th>
+<th>N-1</th>
+<th>N</th>
+<th>Var N/N-2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA</td>
+<td>10 000</td>
+<td>11 500</td>
+<td>13 200</td>
+<td>+32 %</td>
+</tr>
+<tr>
+<td>VA</td>
+<td>4 200</td>
+<td>4 700</td>
+<td>5 400</td>
+<td>+29 %</td>
+</tr>
+<tr>
+<td>VA/CA</td>
+<td>42 %</td>
+<td>40,9 %</td>
+<td>40,9 %</td>
+<td>Stable</td>
+</tr>
+<tr>
+<td>EBE</td>
+<td>1 500</td>
+<td>1 610</td>
+<td>1 850</td>
+<td>+23 %</td>
+</tr>
+<tr>
+<td>EBE/CA</td>
+<td>15 %</td>
+<td>14 %</td>
+<td>14 %</td>
+<td>Légère compression</td>
+</tr>
+<tr>
+<td>EBIT</td>
+<td>900</td>
+<td>960</td>
+<td>1 100</td>
+<td>+22 %</td>
+</tr>
+<tr>
+<td>Résultat net</td>
+<td>550</td>
+<td>600</td>
+<td>690</td>
+<td>+25 %</td>
+</tr>
+<tr>
+<td>CAF</td>
+<td>1 150</td>
+<td>1 260</td>
+<td>1 450</td>
+<td>+26 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Diagnostic</strong> :
+- Croissance du CA soutenue (+32 % sur 3 ans).
+- Léger décrochage de la marge EBITDA (15 % → 14 %) : les charges de personnel croissent plus vite que la VA.
+- CAF en hausse régulière → capacité d'autofinancement des investissements croissante.</p>
+<h3 id="exemple-2-levier-operationnel-chiffre">Exemple 2 — Levier opérationnel chiffré</h3>
+<p><strong>Entreprise E</strong> : charges variables = 60 % du CA, charges fixes = 3 M€/an.</p>
+<p>Pour CA = 10 M€ :</p>
+<pre><code>Marge sur coûts variables = 10 - 6 = 4 M€
+EBIT = 4 - 3 = 1 M€
+Levier opérationnel = 4 / 1 = 4
+
+Si CA augmente de 10 % (+1 M€) :
+Nouvelles MCV = 10 × (1,10 × 10 - 0,60 × 11) = 11 - 6,6 = 4,4 M€ → hausse de 10 %
+Nouvel EBIT = 4,4 - 3 = 1,4 M€ → hausse de 40 % (= 4 × 10 %)
+</code></pre>
+<p><strong>Interprétation</strong> : avec un levier opérationnel de 4, une hausse de CA de 10 % génère une hausse de l'EBIT de 40 %. Le risque est symétrique : une baisse de CA de 10 % ferait chuter l'EBIT de 40 %.</p>
+<h3 id="exemple-3-analyse-nopat-et-eva">Exemple 3 — Analyse NOPAT et EVA</h3>
+<p><strong>Entreprise F</strong> : EBIT = 200 M€, IS = 25 %, capitaux investis = 1 200 M€, WACC = 8 %.</p>
+<pre><code>NOPAT = EBIT × (1 - IS) = 200 × 0,75 = 150 M€
+ROCE = NOPAT / Capitaux investis = 150 / 1 200 = 12,5 %
+EVA = (ROCE - WACC) × Capital investi = (12,5 % - 8 %) × 1 200 = 4,5 % × 1 200 = 54 M€
+</code></pre>
+<p>L'entreprise crée <strong>54 M€</strong> de valeur économique au-delà du coût de son capital. Si EVA &lt; 0, l'entreprise détruit de la valeur même si elle est bénéficiaire.</p>
+<hr />
+<h2 id="applications-professionnelles_1">Applications professionnelles</h2>
+<h3 id="analyse-credit-le-compte-de-resultat-sous-langle-du-creancier">Analyse crédit : le compte de résultat sous l'angle du créancier</h3>
+<p>Un analyste crédit (banque, agence de notation) structure son analyse autour de la <strong>capacité de remboursement</strong> :</p>
+<p><strong>Metrics clés</strong> :</p>
+<pre><code>EBITDA = capacité brute de génération de cash
+EBITDA - CAPEX maintenance = Free Cash Flow &quot;robuste&quot;
+Dette nette / EBITDA = nb d'années pour rembourser la dette
+EBITDA / Charges d'intérêts = marge de couverture des intérêts
+</code></pre>
+<p><strong>Approche forward-looking</strong> : les prêteurs ne se contentent pas des données historiques. Ils analysent le business plan sur 3–5 ans et testent des scénarios adverses (baisse de CA de 20 %, hausse des taux de 200 bp).</p>
+<h3 id="equity-research-lanalyse-du-compte-de-resultat-cote-analyste-sell-side">Equity research : l'analyse du compte de résultat côté analyste sell-side</h3>
+<p>Un analyste equity (banque d'investissement) publie des <strong>research reports</strong> incluant :</p>
+<ol>
+<li><strong>Modèle de prévision</strong> : projections du CA, des marges et du résultat net sur 3 ans.</li>
+<li><strong>Révisions de consensus</strong> : comparaison avec les estimations des autres analystes.</li>
+<li><strong>Catalyseurs</strong> : événements susceptibles de faire bouger l'action (publication des résultats, lancements de produits, évolutions réglementaires).</li>
+<li><strong>Risques</strong> : éléments pouvant dégradé les résultats vs. consensus.</li>
+</ol>
+<p><strong>Les "surprises" de résultats</strong> : une publication de CA au-dessus du consensus de +5 % génère souvent une hausse du titre de +3–8 % → la gestion des anticipations est aussi importante que les résultats absolus.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_1">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Confondre EBE et EBITDA</strong></td>
+<td>En normes françaises, EBE ≠ EBITDA (certains éléments diffèrent)</td>
+<td>Toujours préciser les ajustements entre EBE et EBITDA</td>
+</tr>
+<tr>
+<td><strong>Ignorer les éléments non récurrents</strong></td>
+<td>Une plus-value de cession gonfle le résultat net mais ne se répètera pas</td>
+<td>Séparer le "normalized" du "reported"</td>
+</tr>
+<tr>
+<td><strong>Analyser les marges sans référence sectorielle</strong></td>
+<td>15 % d'EBITDA peut être excellent (distribution) ou médiocre (SaaS)</td>
+<td>Toujours comparer avec le secteur</td>
+</tr>
+<tr>
+<td><strong>Oublier que la CAF ≠ Trésorerie</strong></td>
+<td>La CAF est un flux potentiel ; la variation de BFR et les CAPEX réduisent la trésorerie effective</td>
+<td>Calculer le Free Cash Flow (CAF - CAPEX - ΔBFR)</td>
+</tr>
+<tr>
+<td><strong>Se fier au résultat net seul</strong></td>
+<td>Un résultat net élevé peut masquer une trésorerie négative (charges non décaissées importantes)</td>
+<td>Analyser conjointement CR, bilan et tableau de flux</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_1">Exercices supplémentaires</h2>
+<h3 id="exercice-1_3">Exercice 1</h3>
+<p>Calculez VA, EBE, EBIT, résultat net et CAF :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Montant (k€)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA</td>
+<td>8 000</td>
+</tr>
+<tr>
+<td>Production stockée</td>
+<td>+300</td>
+</tr>
+<tr>
+<td>Achats consommés</td>
+<td>2 500</td>
+</tr>
+<tr>
+<td>Sous-traitance</td>
+<td>800</td>
+</tr>
+<tr>
+<td>Impôts et taxes</td>
+<td>120</td>
+</tr>
+<tr>
+<td>Charges de personnel</td>
+<td>2 400</td>
+</tr>
+<tr>
+<td>Dotations amortissements</td>
+<td>450</td>
+</tr>
+<tr>
+<td>Charges financières</td>
+<td>180</td>
+</tr>
+<tr>
+<td>IS 25 %</td>
+<td>à calculer</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :
+VA = (8 000 + 300) - 2 500 - 800 = <strong>5 000 k€</strong>
+EBE = 5 000 - 120 - 2 400 = <strong>2 480 k€</strong>
+EBIT = 2 480 - 450 = <strong>2 030 k€</strong>
+RCAI = 2 030 - 180 = <strong>1 850 k€</strong>
+IS = 1 850 × 25 % = <strong>462,5 k€</strong>
+Résultat net = <strong>1 387,5 k€</strong>
+CAF = 1 387,5 + 450 = <strong>1 837,5 k€</strong></p>
+</blockquote>
+<h3 id="exercice-2_3">Exercice 2</h3>
+<p>Une entreprise a un levier opérationnel de 5 et un EBIT de 2 M€. Le CA baisse de 8 %. Calculez le nouvel EBIT et la variation en %.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Variation EBIT = Levier × Variation CA = 5 × (-8 %) = <strong>-40 %</strong>
+Nouvel EBIT = 2 M€ × (1 - 40 %) = <strong>1,2 M€</strong></p>
+<p>Pour vérification : si charges variables = 70 % CA, charges fixes = MCV - EBIT_initial.
+MCV initiale = EBIT + CF = 2 M€ + CF. Si LO = MCV/EBIT = 5 → MCV = 10 M€, CF = 8 M€.
+CA initial = 10/0,30 = 33,3 M€. CA baisse de 8 % → CA = 30,7 M€.
+MCV = 30,7 × 0,30 = 9,2 M€. EBIT = 9,2 - 8 = 1,2 M€ ✓</p>
+</blockquote>
+<h3 id="exercice-3_1">Exercice 3</h3>
+<p>Calculez l'EBITDA normalisé : EBITDA comptable = 5 M€, frais de restructuration = 0,8 M€ (non récurrents), dividende excessif du dirigeant = 0,3 M€/an (vs. 0,1 M€ de salaire marché équivalent), gain sur cession d'immeuble = 1,2 M€.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+EBITDA normalisé = 5 + 0,8 + (0,3 - 0,1) - 1,2 = 5 + 0,8 + 0,2 - 1,2 = <strong>4,8 M€</strong></p>
+<p>Commentaire :
++ Restructurations (non récurrentes) → réintégrer
++ Salaire excessif (1,5 fois le marché) → réintégrer le delta
+- Gain sur cession (non récurrent) → retirer
+L'EBITDA "économique" de 4,8 M€ est inférieur au comptable (5 M€) : le cédant a intérêt à ne pas présenter l'EBITDA normalisé à l'acheteur !</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-3-le-tableau-des-flux-de-tresorerie">Chapitre 3 — Le tableau des flux de trésorerie</h1>
+<h2 id="introduction_2">Introduction</h2>
+<p>Le <strong>tableau des flux de trésorerie</strong> (TFT) — ou <em>cash flow statement</em> en IFRS — retrace les mouvements de liquidités sur l'exercice. Il répond à la question : <strong>comment la trésorerie a-t-elle évolué et pourquoi ?</strong></p>
+<p>Il complète le bilan (situation) et le compte de résultat (performance) en apportant une vision <strong>liquidité</strong>. Un résultat net positif n'implique pas nécessairement une trésorerie positive (décalages de paiement, amortissements, investissements).</p>
+<hr />
+<h2 id="1-structure-du-tableau-des-flux">1. Structure du tableau des flux</h2>
+<p>Le TFT est divisé en <strong>trois sections</strong> :</p>
+<pre><code>Flux liés à l'activité (A)
++ Flux liés à l'investissement (B)
++ Flux liés au financement (C)
+= Variation de trésorerie nette (A + B + C)
+</code></pre>
+<hr />
+<h2 id="2-flux-lies-a-lactivite-flux-operationnels">2. Flux liés à l'activité (flux opérationnels)</h2>
+<p>Ils mesurent la capacité de l'entreprise à générer de la trésorerie par son exploitation.</p>
+<h3 id="methode-indirecte-la-plus-repandue">Méthode indirecte (la plus répandue)</h3>
+<pre><code>Résultat net
++ Dotations aux amortissements et provisions
+- Reprises sur provisions
+± Variation de BFR d'exploitation (*)
+= Flux de trésorerie opérationnel (Free Cash Flow to Firm avant CAPEX)
+</code></pre>
+<p>(<em>) </em><em>Variation de BFR</em>* :</p>
+<pre><code>ΔBFR = BFR(N) - BFR(N-1)
+</code></pre>
+<ul>
+<li>Si ΔBFR &gt; 0 : le BFR augmente → la trésorerie diminue (utilisation de cash).</li>
+<li>Si ΔBFR &lt; 0 : le BFR diminue → la trésorerie augmente (source de cash).</li>
+</ul>
+<p><strong>Détail de la variation de BFR</strong> :</p>
+<pre><code>ΔBFR = ΔStocks + ΔCréances - ΔDettes fournisseurs - ΔDettes fiscales/sociales
+</code></pre>
+<h3 id="methode-directe-normes-ifrs-recommandee">Méthode directe (normes IFRS recommandée)</h3>
+<pre><code>Encaissements clients
+- Décaissements fournisseurs
+- Décaissements salariaux
+- Décaissements fiscaux
+= Flux opérationnel
+</code></pre>
+<hr />
+<h2 id="3-flux-lies-a-linvestissement-capex">3. Flux liés à l'investissement (CAPEX)</h2>
+<p>Ils mesurent les dépenses et recettes d'investissement.</p>
+<pre><code>- Acquisitions d'immobilisations corporelles et incorporelles
+- Acquisitions de titres de participation
++ Cessions d'immobilisations
++ Encaissements sur cessions de titres
+= Flux d'investissement
+</code></pre>
+<p>Le <strong>CAPEX</strong> (Capital Expenditure) est la partie centrale :</p>
+<pre><code>CAPEX = Acquisitions d'immobilisations
+</code></pre>
+<ul>
+<li><strong>CAPEX de maintenance</strong> : maintien de l'outil de production existant.</li>
+<li><strong>CAPEX de croissance</strong> : expansion des capacités.</li>
+</ul>
+<hr />
+<h2 id="4-flux-lies-au-financement">4. Flux liés au financement</h2>
+<p>Ils retracent les relations avec les apporteurs de fonds.</p>
+<pre><code>+ Augmentations de capital (émissions d'actions)
++ Nouveaux emprunts
+- Remboursements d'emprunts
+- Dividendes versés
+= Flux de financement
+</code></pre>
+<hr />
+<h2 id="5-exemple-complet">5. Exemple complet</h2>
+<p><strong>Entreprise ALPHA — Exercice N</strong></p>
+<p><strong>Données</strong> (en k€) :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>N</th>
+<th>N-1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Résultat net</td>
+<td>900</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Dotations amort.</td>
+<td>300</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Stocks</td>
+<td>200</td>
+<td>150</td>
+</tr>
+<tr>
+<td>Créances clients</td>
+<td>350</td>
+<td>250</td>
+</tr>
+<tr>
+<td>Dettes fournisseurs</td>
+<td>180</td>
+<td>120</td>
+</tr>
+<tr>
+<td>Dettes fiscales/sociales</td>
+<td>90</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Acquisitions d'immo.</td>
+<td>500</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Cessions d'immo.</td>
+<td>80</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Nouvel emprunt</td>
+<td>200</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Remboursement emprunt</td>
+<td>150</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Dividendes versés</td>
+<td>400</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calculs</strong> :</p>
+<pre><code>Variation de BFR :
+ΔStocks = 200 - 150 = +50 (emploi)
+ΔCréances = 350 - 250 = +100 (emploi)
+ΔFournisseurs = 180 - 120 = +60 (ressource)
+ΔDettes fisc. = 90 - 80 = +10 (ressource)
+ΔBFR = 50 + 100 - 60 - 10 = +80 k€ (le BFR augmente : –80 en tréso)
+
+Flux opérationnel = 900 + 300 - 80 = +1 120 k€
+Flux d'investissement = -500 + 80 = -420 k€
+Flux de financement = +200 - 150 - 400 = -350 k€
+
+Variation de trésorerie = 1 120 - 420 - 350 = +350 k€
+</code></pre>
+<hr />
+<h2 id="6-du-resultat-au-free-cash-flow">6. Du résultat au Free Cash Flow</h2>
+<h3 id="free-cash-flow-to-firm-fcff">Free Cash Flow to Firm (FCFF)</h3>
+<p>Le <strong>FCFF</strong> est la trésorerie disponible pour les apporteurs de capitaux (actionnaires + créanciers) après investissements :</p>
+<pre><code>FCFF = EBE × (1 - taux d'IS) + IS économisé sur amortissements
+     = EBIT × (1 - t) + Amortissements - CAPEX - ΔBFR
+</code></pre>
+<p>Formulation simplifiée :</p>
+<pre><code>FCFF = Flux opérationnel - CAPEX
+</code></pre>
+<h3 id="free-cash-flow-to-equity-fcfe">Free Cash Flow to Equity (FCFE)</h3>
+<p>Le <strong>FCFE</strong> est la trésorerie disponible pour les seuls actionnaires :</p>
+<pre><code>FCFE = FCFF - Intérêts × (1 - t) + Nouveaux emprunts - Remboursements
+</code></pre>
+<h3 id="utilisation-en-valorisation">Utilisation en valorisation</h3>
+<p>Les modèles DCF (Discounted Cash Flow) actualisent les FCFF futurs au WACC pour obtenir la valeur de l'entreprise :</p>
+<pre><code>Valeur d'entreprise = Σ [FCFF_t / (1 + WACC)^t] + Valeur terminale / (1 + WACC)^n
+</code></pre>
+<hr />
+<h2 id="7-ratios-cles-issus-du-tft">7. Ratios clés issus du TFT</h2>
+<table>
+<thead>
+<tr>
+<th>Ratio</th>
+<th>Formule</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Cash conversion</strong></td>
+<td>Flux opérationnel / EBE</td>
+<td>Qualité de transformation du profit en cash</td>
+</tr>
+<tr>
+<td><strong>Taux de couverture des investissements</strong></td>
+<td>Flux opérationnel / CAPEX</td>
+<td>Capacité à autofinancer les investissements</td>
+</tr>
+<tr>
+<td><strong>Rendement du cash</strong></td>
+<td>FCFE / Capitalisation boursière</td>
+<td>Cash yield pour l'actionnaire</td>
+</tr>
+<tr>
+<td><strong>Ratio de remboursement</strong></td>
+<td>Dette nette / FCFF</td>
+<td>Nombre d'années pour rembourser la dette</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-exercices">8. Exercices</h2>
+<h3 id="exercice-1_4">Exercice 1</h3>
+<p>Une entreprise présente : résultat net = 500 k€, amortissements = 200 k€, variation de stocks = +30 k€, variation créances = -20 k€, variation dettes fournisseurs = +10 k€, CAPEX = 350 k€. Calculez le flux opérationnel et le FCFF.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+ΔBFR = 30 + (-20) - 10 = 0 (les créances diminuent → ressource, les stocks augmentent → emploi)</p>
+<p>Attention : ΔBFR = ΔStocks + ΔCréances - ΔFournisseurs = 30 - 20 - 10 = 0</p>
+<p>Flux opérationnel = 500 + 200 - 0 = <strong>700 k€</strong>
+FCFF = 700 - 350 = <strong>350 k€</strong></p>
+</blockquote>
+<h3 id="exercice-2_4">Exercice 2</h3>
+<p>Expliquez pourquoi une entreprise peut avoir un résultat net positif mais une trésorerie qui se dégrade.</p>
+<blockquote>
+<p><strong>Correction</strong> : Plusieurs raisons possibles :
+1. <strong>Fort CAPEX</strong> : des investissements massifs absorbent le cash.
+2. <strong>Augmentation du BFR</strong> : si le CA croît rapidement, les stocks et créances clients augmentent plus vite que les délais fournisseurs.
+3. <strong>Remboursement de dettes</strong> : les échéances financières sortent de la trésorerie sans figurer en charge.
+4. <strong>Distributions</strong> : des dividendes élevés réduisent la trésorerie sans impact sur le résultat.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_2">Points clés à retenir</h2>
+<ul>
+<li>Le TFT distingue trois sources de cash : activité, investissement, financement.</li>
+<li>La variation de BFR est souvent le principal poste réconciliant résultat et trésorerie.</li>
+<li>Le FCFF est la mesure phare pour la valorisation par DCF.</li>
+<li>Un résultat positif n'est pas synonyme de trésorerie positive.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_2">Approfondissement théorique</h2>
+<h3 id="1-fondements-academiques-du-free-cash-flow">1. Fondements académiques du Free Cash Flow</h3>
+<p>La notion de flux de trésorerie disponible occupe une place centrale dans la théorie financière moderne. Jensen (1986), dans son article fondateur sur les coûts d'agence du free cash flow, soutient que les dirigeants disposant de flux de trésorerie excédentaires tendent à sur-investir, c'est-à-dire à financer des projets à VAN négative plutôt que de redistribuer le cash aux actionnaires. Cette hypothèse du <em>free cash flow</em> est à l'origine des politiques de dividendes, rachats d'actions et politiques d'endettement contraignantes.</p>
+<p>La théorie de Modigliani-Miller (1958, 1963) établit que, en l'absence de fiscalité et de coûts de faillite, la structure financière est neutre sur la valeur d'entreprise. Les travaux ultérieurs ont montré que le FCFF est une mesure de valeur indépendante de la structure du capital, ce qui en fait la base des modèles de valorisation par DCF.</p>
+<h3 id="2-normalisation-et-retraitement-des-flux">2. Normalisation et retraitement des flux</h3>
+<p>En pratique, les analystes procèdent à plusieurs retraitements des flux publiés pour rendre les comparaisons inter-entreprises pertinentes :</p>
+<p><strong>Retraitement des locations (IFRS 16)</strong> : Depuis 2019, la norme IFRS 16 reclasse les loyers opérationnels en remboursements de dette locative (flux de financement) et intérêts (flux opérationnels). Avant retraitement, la comparabilité inter-périodes est altérée. L'analyste doit recalculer le flux opérationnel "économique" en réintégrant les loyers comme charges.</p>
+<p><strong>Normalisation du BFR</strong> : Certaines variations de BFR sont conjoncturelles (mouvement de stocks en fin d'année, décalage de paiement client de fin de période). L'analyste calcule un BFR normatif en pourcentage du chiffre d'affaires :</p>
+<pre><code>BFR normatif = (BFR moyen sur 3 ans) / CA moyen × CA projeté
+</code></pre>
+<p><strong>Séparation des CAPEX</strong> : La distinction entre CAPEX de maintenance et CAPEX de croissance est cruciale pour évaluer la rentabilité structurelle. Une approximation courante :</p>
+<pre><code>CAPEX maintenance ≈ Dotations aux amortissements
+CAPEX croissance = CAPEX total - CAPEX maintenance
+</code></pre>
+<h3 id="3-modeles-avances-de-flux-de-tresorerie">3. Modèles avancés de flux de trésorerie</h3>
+<p><strong>Cash Flow Return on Investment (CFROI)</strong> : Développé par le Boston Consulting Group, le CFROI mesure le taux de rendement interne des actifs de l'entreprise en utilisant les flux de trésorerie plutôt que les bénéfices comptables :</p>
+<pre><code>CFROI = Flux de trésorerie bruts / Actifs bruts ajustés de l'inflation
+</code></pre>
+<p>Ce modèle est utilisé par les fonds long-only pour identifier des entreprises dont le CFROI dépasse le coût du capital de façon pérenne.</p>
+<p><strong>Economic Value Added (EVA) et Cash Value Added (CVA)</strong> : L'EVA de Stern Stewart repose sur le résultat d'exploitation après IS moins le coût du capital investi. Le CVA utilise les flux de trésorerie opérationnels bruts à la place du résultat comptable, ce qui le rend moins sensible aux choix d'amortissement.</p>
+<pre><code>CVA = Flux opérationnels bruts - (Actifs bruts × WACC) - Amortissement économique
+</code></pre>
+<h3 id="4-dynamique-du-bfr-et-cycles-dexploitation">4. Dynamique du BFR et cycles d'exploitation</h3>
+<p>La décomposition du BFR en composantes individuelles permet d'identifier les leviers d'amélioration :</p>
+<pre><code>Délai de rotation des stocks (DRS)    = (Stocks / CAMV) × 360
+Délai de recouvrement clients (DRC)   = (Créances clients / CA TTC) × 360
+Délai de règlement fournisseurs (DRF) = (Dettes fournisseurs / Achats TTC) × 360
+
+Cycle de trésorerie = DRS + DRC - DRF
+</code></pre>
+<p>Un cycle de trésorerie court (voire négatif, comme chez Amazon ou Carrefour) signifie que l'entreprise se finance sur ses fournisseurs — un avantage compétitif considérable. À l'inverse, un cycle long dans l'industrie aéronautique ou la construction navale impose des besoins de financement importants.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_2">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-a-reconciliation-fluxresultat-avec-retraitement-ifrs-16">Exemple A — Réconciliation flux/résultat avec retraitement IFRS 16</h3>
+<p>La société BETA loue ses entrepôts. Avant IFRS 16, les loyers annuels de 120 k€ figuraient en charges d'exploitation. Après IFRS 16, un actif de droit d'utilisation de 600 k€ est reconnu (bail de 5 ans), amorti sur 5 ans, avec une charge d'intérêt de 30 k€/an sur la dette locative de 600 k€.</p>
+<p><strong>Impact sur les flux</strong> :</p>
+<pre><code>Avant IFRS 16 :
+  Flux opérationnel          = ... + 120 (loyer décaissé inclus en exploitation)
+  Flux de financement        = 0
+
+Après IFRS 16 :
+  Flux opérationnel          = ... + 30 k€ (seulement les intérêts locatifs)
+    → amélioration apparente de +90 k€ en flux opérationnel
+  Flux de financement        = -120 k€ (remboursement dette locative 90 + intérêts 30)
+    → dégradation de -120 k€ en flux de financement
+
+Variation de trésorerie nette = inchangée (-120 k€ dans les deux cas)
+</code></pre>
+<p><strong>Interprétation</strong> : L'analyste qui compare le flux opérationnel 2018 vs 2019 doit retraiter pour neutraliser l'effet IFRS 16. Sans retraitement, il conclut à tort que la génération de cash s'est améliorée.</p>
+<hr />
+<h3 id="exemple-b-calcul-du-fcff-et-valorisation-rapide">Exemple B — Calcul du FCFF et valorisation rapide</h3>
+<p>La société GAMMA présente les données suivantes pour l'exercice N (en M€) :</p>
+<table>
+<thead>
+<tr>
+<th>Poste</th>
+<th>Valeur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EBIT</td>
+<td>80</td>
+</tr>
+<tr>
+<td>Taux d'IS</td>
+<td>25 %</td>
+</tr>
+<tr>
+<td>Dotations aux amortissements</td>
+<td>25</td>
+</tr>
+<tr>
+<td>CAPEX</td>
+<td>35</td>
+</tr>
+<tr>
+<td>Variation de BFR</td>
+<td>+8</td>
+</tr>
+<tr>
+<td>Dette nette</td>
+<td>150</td>
+</tr>
+<tr>
+<td>WACC</td>
+<td>9 %</td>
+</tr>
+<tr>
+<td>Taux de croissance à l'infini (g)</td>
+<td>2 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calcul du FCFF</strong> :</p>
+<pre><code>FCFF = EBIT × (1 - t) + Amortissements - CAPEX - ΔBFR
+     = 80 × (1 - 0,25) + 25 - 35 - 8
+     = 60 + 25 - 35 - 8
+     = 42 M€
+</code></pre>
+<p><strong>Valeur terminale (Gordon-Shapiro)</strong> :</p>
+<pre><code>VT = FCFF × (1 + g) / (WACC - g)
+   = 42 × 1,02 / (0,09 - 0,02)
+   = 42,84 / 0,07
+   = 612 M€
+</code></pre>
+<p><strong>Valeur d'entreprise (en supposant que N représente une année normative)</strong> :</p>
+<pre><code>VE ≈ VT / (1 + WACC)^0 = 612 M€ (en valeur actualisée immédiate)
+</code></pre>
+<p><strong>Valeur des fonds propres</strong> :</p>
+<pre><code>Valeur des fonds propres = VE - Dette nette = 612 - 150 = 462 M€
+</code></pre>
+<hr />
+<h3 id="exemple-c-analyse-de-la-qualite-du-cash-comparaison-deux-entreprises">Exemple C — Analyse de la qualité du cash : comparaison deux entreprises</h3>
+<p>Deux entreprises du même secteur présentent le même résultat net de 100 M€.</p>
+<table>
+<thead>
+<tr>
+<th>Indicateur</th>
+<th>Entreprise X</th>
+<th>Entreprise Y</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Résultat net</td>
+<td>100 M€</td>
+<td>100 M€</td>
+</tr>
+<tr>
+<td>Dotations amortissements</td>
+<td>20 M€</td>
+<td>50 M€</td>
+</tr>
+<tr>
+<td>Variation BFR</td>
+<td>-5 M€</td>
+<td>+30 M€</td>
+</tr>
+<tr>
+<td>Flux opérationnel</td>
+<td>125 M€</td>
+<td>120 M€</td>
+</tr>
+<tr>
+<td>CAPEX</td>
+<td>15 M€</td>
+<td>80 M€</td>
+</tr>
+<tr>
+<td>FCFF</td>
+<td>110 M€</td>
+<td>40 M€</td>
+</tr>
+<tr>
+<td>Cash conversion (Flux op. / EBITDA)</td>
+<td>0,91</td>
+<td>0,71</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Calcul détaillé — Entreprise X</strong> :</p>
+<pre><code>Flux opérationnel = 100 + 20 - (-5) = 125 M€
+FCFF = 125 - 15 = 110 M€
+EBITDA ≈ Résultat net + amortissements (simplifié) = 120 M€
+Cash conversion = 125 / 120 = 1,04 → excellent (&gt;1 : le cash dépasse l'EBITDA)
+</code></pre>
+<p><strong>Calcul détaillé — Entreprise Y</strong> :</p>
+<pre><code>Flux opérationnel = 100 + 50 - 30 = 120 M€
+FCFF = 120 - 80 = 40 M€
+EBITDA ≈ 150 M€
+Cash conversion = 120 / 150 = 0,80 → acceptable mais dégradé par le BFR
+</code></pre>
+<p><strong>Interprétation</strong> : Malgré des résultats nets identiques, l'Entreprise X génère 2,75 fois plus de FCFF qu'Y. Y est dans une phase intensive d'investissement (CAPEX élevé) et souffre d'une gestion du BFR moins efficace. Pour un analyste actions, X est structurellement plus attractive à court terme.</p>
+<hr />
+<h2 id="applications-professionnelles_2">Applications professionnelles</h2>
+<h3 id="role-de-lanalyste-ma">Rôle de l'analyste M&amp;A</h3>
+<p>Dans le cadre d'une opération de fusion-acquisition, l'analyste M&amp;A utilise le TFT à plusieurs étapes de la mission :</p>
+<p><strong>Due diligence financière</strong> : L'analyse des flux sur 5 exercices historiques permet d'identifier la récurrence et la qualité du cash généré. L'analyste distingue les flux "one-off" (cession d'actif exceptionnelle, déblocage d'un litige) des flux récurrents. Il reconstruit un FCFF normalisé en excluant ces éléments atypiques.</p>
+<p><strong>Modélisation du LBO</strong> : Dans un LBO (Leveraged Buyout), la capacité de remboursement de la dette est directement liée au FCFF. L'analyste projette les FCFF sur 5-7 ans et s'assure que le ratio Dette/FCFF diminue régulièrement. Un ratio cible typique est de revenir sous 4x en fin de période d'investissement.</p>
+<p><strong>Valorisation</strong> : L'analyste construit un modèle DCF à 5-10 ans de FCFF projetés, actualisés au WACC. La sensibilité aux hypothèses de croissance et de WACC est présentée sous forme de tableau de sensibilité (tornado chart).</p>
+<h3 id="role-du-directeur-financier-cfo">Rôle du Directeur Financier (CFO)</h3>
+<p>Le CFO utilise l'analyse des flux dans sa gestion quotidienne du bilan :</p>
+<p><strong>Pilotage du BFR</strong> : Le CFO fixe des objectifs de délai de paiement pour les équipes opérationnelles (acheteurs, commerciaux, logistique). La réduction d'un jour de DRC sur un CA de 1 Md€ libère environ 2,8 M€ de trésorerie. Les programmes de Supply Chain Finance (affacturage inversé) permettent d'étendre les délais fournisseurs sans pénaliser les PME sous-traitantes.</p>
+<p><strong>Politique de CAPEX</strong> : Le CFO arbitre entre CAPEX de maintenance (obligatoire) et CAPEX de croissance (discrétionnaire), en s'assurant que le flux opérationnel couvre au minimum le CAPEX de maintenance (ratio de couverture &gt; 1). En période de tension de liquidité, seul le CAPEX de maintenance est maintenu.</p>
+<p><strong>Reporting aux investisseurs</strong> : Lors des résultats trimestriels, le CFO commente l'évolution du "cash flow from operations" qui est scruté par les analystes sell-side comme mesure de la qualité des résultats.</p>
+<h3 id="role-du-banquier-daffaires">Rôle du banquier d'affaires</h3>
+<p>Le banquier d'affaires (ECM, DCM, ou coverage) utilise le TFT dans le cadre de la structuration de financement :</p>
+<p><strong>Notation de crédit</strong> : Les agences de notation (S&amp;P, Moody's, Fitch) s'appuient sur le ratio Dette nette / EBITDA et sur le ratio Flux opérationnel / Charges d'intérêt (Interest Coverage Ratio) pour évaluer la solvabilité. Le banquier structure les covenants (clauses restrictives) des prêts en référence à ces ratios.</p>
+<p><strong>Émission obligataire</strong> : Le mémorandum d'information d'un high-yield bond (obligations à haut rendement) présente systématiquement les flux de trésorerie historiques et projetés pour démontrer la capacité de service de la dette.</p>
+<p><strong>Analyse de la liquidité intraday</strong> : Pour les entreprises en difficulté (restructuring), le banquier établit un "13-week cash flow forecast" — un prévisionnel hebdomadaire sur 13 semaines — pour anticiper les besoins de financement d'urgence.</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_2">Erreurs fréquentes et pièges</h2>
+<h3 id="erreur-1-confondre-ebitda-et-flux-operationnel">Erreur 1 — Confondre EBITDA et flux opérationnel</h3>
+<p>L'EBITDA est souvent présenté comme un proxy du flux de trésorerie, ce qui est inexact. L'EBITDA ignore la variation du BFR, qui peut être très significative. Une entreprise en forte croissance peut avoir un EBITDA de 100 M€ et un flux opérationnel de seulement 40 M€ si son BFR augmente de 60 M€. Toujours vérifier la variation du BFR avant d'utiliser l'EBITDA comme substitut au cash.</p>
+<h3 id="erreur-2-mauvais-signe-pour-la-variation-de-bfr">Erreur 2 — Mauvais signe pour la variation de BFR</h3>
+<p>La convention est source de nombreuses erreurs de calcul. Rappel : une <strong>augmentation</strong> du BFR est un <strong>emploi</strong> de trésorerie (signe négatif dans le TFT). Une <strong>diminution</strong> du BFR est une <strong>source</strong> de trésorerie (signe positif). Concrètement : si les stocks augmentent, l'entreprise a dépensé du cash pour les acheter, donc la trésorerie diminue. Toujours vérifier la cohérence logique du signe obtenu.</p>
+<h3 id="erreur-3-negliger-le-caractere-non-recurrent-de-certains-flux">Erreur 3 — Négliger le caractère non récurrent de certains flux</h3>
+<p>Certains postes du flux de financement (émission d'actions, cession de filiales) sont non récurrents. Utiliser un flux de financement fortement positif une année pour conclure à une bonne santé financière serait une erreur. L'analyste doit isoler les flux structurels des flux exceptionnels et calculer un "flux normalisé" sur plusieurs années.</p>
+<h3 id="erreur-4-oublier-les-impots-dans-le-calcul-du-fcff">Erreur 4 — Oublier les impôts dans le calcul du FCFF</h3>
+<p>Le FCFF part de l'EBIT, pas du résultat net. L'oubli du taux d'imposition conduit à surestimer significativement le flux disponible. La formule correcte est :</p>
+<pre><code>FCFF = EBIT × (1 - t) + Amortissements - CAPEX - ΔBFR
+</code></pre>
+<p>Et non pas : FCFF = EBIT + Amortissements - CAPEX - ΔBFR (erreur fréquente).</p>
+<h3 id="erreur-5-comparer-des-tft-sans-retraitement-des-normes-comptables">Erreur 5 — Comparer des TFT sans retraitement des normes comptables</h3>
+<p>La comparaison des flux opérationnels de sociétés appliquant des référentiels différents (IFRS vs US GAAP) ou avant/après IFRS 16 est trompeuse. En US GAAP, les intérêts payés peuvent être classés en activité opérationnelle ou de financement selon le choix de l'entreprise, alors qu'en IFRS, plusieurs options sont autorisées. Toujours vérifier les notes annexes avant toute comparaison.</p>
+<h3 id="erreur-6-traiter-le-flux-dinvestissement-comme-uniquement-negatif">Erreur 6 — Traiter le flux d'investissement comme uniquement négatif</h3>
+<p>Des flux d'investissement positifs (cessions d'actifs) ne sont pas nécessairement le signe d'une bonne santé financière. Au contraire, des cessions répétées peuvent indiquer une stratégie de désendettement forcé ou une liquidation progressive des actifs productifs. L'analyste doit distinguer les cessions stratégiques (recentrage) des cessions de survie.</p>
+<hr />
+<h2 id="exercices-supplementaires_2">Exercices supplémentaires</h2>
+<h3 id="exercice-3-calcul-complet-du-tft-niveau-intermediaire">Exercice 3 — Calcul complet du TFT (niveau intermédiaire)</h3>
+<p>La société DELTA présente les informations suivantes pour l'exercice N (en k€) :</p>
+<ul>
+<li>Résultat net : 1 200</li>
+<li>Dotations aux amortissements : 400</li>
+<li>Reprise sur provision pour litige (litige réglé) : 150</li>
+<li>Stocks N : 800, Stocks N-1 : 600</li>
+<li>Créances clients N : 1 100, Créances N-1 : 900</li>
+<li>Dettes fournisseurs N : 450, Dettes N-1 : 380</li>
+<li>Dettes fiscales/sociales N : 120, N-1 : 100</li>
+<li>Acquisitions d'immobilisations : 700</li>
+<li>Cessions d'immobilisations (VNC 50, prix de cession 80) : 80</li>
+<li>Plus-value sur cession : 30 (incluse dans le résultat net)</li>
+<li>Nouvel emprunt bancaire : 300</li>
+<li>Remboursements d'emprunt : 200</li>
+<li>Dividendes versés : 500</li>
+</ul>
+<p><strong>Questions</strong> :
+1. Calculez le flux de trésorerie opérationnel.
+2. Calculez le flux d'investissement.
+3. Calculez le flux de financement.
+4. Calculez la variation de trésorerie totale.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. Flux opérationnel</strong> :</p>
+<p>```
+ΔBFR :
+  ΔStocks          = 800 - 600      = +200 (emploi)
+  ΔCréances        = 1 100 - 900    = +200 (emploi)
+  ΔFournisseurs    = 450 - 380      = +70  (ressource)
+  ΔDettes fisc.    = 120 - 100      = +20  (ressource)
+  ΔBFR = 200 + 200 - 70 - 20 = +310 k€</p>
+<p>Retraitement plus-value : la plus-value de cession (30) est incluse dans
+le résultat net mais appartient aux flux d'investissement → à soustraire.</p>
+<p>Flux opérationnel = 1 200 + 400 - 150 - 310 - 30 = +1 110 k€
+```</p>
+<p><strong>2. Flux d'investissement</strong> :</p>
+<p><code>Flux d'investissement = -700 + 80 = -620 k€
+(La plus-value de 30 est incluse dans le prix de cession de 80)</code></p>
+<p><strong>3. Flux de financement</strong> :</p>
+<p><code>Flux de financement = +300 - 200 - 500 = -400 k€</code></p>
+<p><strong>4. Variation totale</strong> :</p>
+<p><code>Variation de trésorerie = 1 110 - 620 - 400 = +90 k€</code></p>
+</blockquote>
+<hr />
+<h3 id="exercice-4-diagnostic-de-liquidite-a-partir-du-tft-niveau-avance">Exercice 4 — Diagnostic de liquidité à partir du TFT (niveau avancé)</h3>
+<p>Une entreprise industrielle présente les TFT suivants sur 3 exercices (en M€) :</p>
+<table>
+<thead>
+<tr>
+<th>Flux</th>
+<th>N-2</th>
+<th>N-1</th>
+<th>N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flux opérationnel</td>
+<td>85</td>
+<td>72</td>
+<td>48</td>
+</tr>
+<tr>
+<td>Flux d'investissement</td>
+<td>-40</td>
+<td>-95</td>
+<td>-110</td>
+</tr>
+<tr>
+<td>Flux de financement</td>
+<td>-30</td>
+<td>+25</td>
+<td>+70</td>
+</tr>
+<tr>
+<td>Variation de trésorerie</td>
+<td>+15</td>
+<td>+2</td>
+<td>+8</td>
+</tr>
+<tr>
+<td>EBITDA</td>
+<td>100</td>
+<td>105</td>
+<td>110</td>
+</tr>
+<tr>
+<td>Dette nette (bilan)</td>
+<td>120</td>
+<td>185</td>
+<td>265</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Questions</strong> :
+1. Calculez le cash conversion ratio (flux opérationnel / EBITDA) sur les trois exercices. Commentez la tendance.
+2. Calculez le ratio de couverture des investissements (flux opérationnel / CAPEX) sur les trois exercices.
+3. Calculez le ratio d'endettement (dette nette / FCFF) en supposant FCFF ≈ flux opérationnel - CAPEX.
+4. Quel diagnostic financier portez-vous sur cette entreprise ? Quels risques identifiez-vous ?</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. Cash conversion ratio</strong> :</p>
+<p><code>N-2 : 85 / 100 = 0,85
+N-1 : 72 / 105 = 0,69
+N   : 48 / 110 = 0,44</code></p>
+<p>La tendance est nettement négative : le cash conversion se dégrade fortement
+malgré une EBITDA stable. Cela suggère une augmentation du BFR ou des charges
+non-cash qui ne se retrouvent pas en trésorerie.</p>
+<p><strong>2. Couverture des investissements</strong> :</p>
+<p><code>N-2 : 85 / 40 = 2,13 → l'entreprise autofinance largement ses CAPEX
+N-1 : 72 / 95 = 0,76 → le flux opérationnel ne couvre plus les investissements
+N   : 48 / 110 = 0,44 → forte dépendance au financement externe</code></p>
+<p><strong>3. Ratio Dette nette / FCFF</strong> :</p>
+<p><code>FCFF estimé :
+  N-2 : 85 - 40 = 45 M€  →  ratio = 120 / 45 = 2,7x  ✓
+  N-1 : 72 - 95 = -23 M€ →  ratio négatif (non significatif)
+  N   : 48 - 110 = -62 M€ → ratio négatif (non significatif)</code></p>
+<p>En N-1 et N, le FCFF est négatif : l'entreprise détruit de la trésorerie
+libre nette. Elle doit s'endetter pour financer ses investissements.</p>
+<p><strong>4. Diagnostic</strong> :</p>
+<p>L'entreprise est dans une phase d'investissement intensive (CAPEX multiplié
+par 2,75 en 3 ans) financée par dette (flux de financement passé de -30 à
++70). La dette nette progresse de 120 à 265 M€ (+121 %) tandis que
+l'EBITDA ne croît que de 10 %. Le ratio dette/EBITDA passe de 1,2x à 2,4x.</p>
+<p>Risques identifiés : (1) risque de refinancement si les banques resserrent
+leurs conditions, (2) risque de "cash burn" si les investissements ne
+génèrent pas les FCFF attendus, (3) risque de covenant breach si la dette
+nette / EBITDA dépasse un seuil contractuel (typiquement 3,0x à 3,5x).</p>
+</blockquote>
+<hr />
+<h3 id="exercice-5-construction-du-fcff-depuis-le-compte-de-resultat-niveau-avance">Exercice 5 — Construction du FCFF depuis le compte de résultat (niveau avancé)</h3>
+<p>La société EPSILON présente les données suivantes pour l'exercice N :</p>
+<ul>
+<li>Chiffre d'affaires : 500 M€</li>
+<li>Charges d'exploitation décaissables : 380 M€</li>
+<li>Dotations aux amortissements : 30 M€</li>
+<li>Charges d'intérêts : 12 M€</li>
+<li>Taux d'IS : 28 %</li>
+<li>CAPEX : 45 M€</li>
+<li>BFR en % du CA : 18 % (stable entre N-1 et N, mais le CA a progressé de 50 M€)</li>
+</ul>
+<p><strong>Questions</strong> :
+1. Calculez l'EBIT et le résultat net.
+2. Calculez la variation de BFR.
+3. Calculez le FCFF et le FCFE.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>1. Compte de résultat synthétique</strong> :</p>
+<p><code>CA                              = 500 M€
+Charges d'exploitation          = -380 M€
+EBITDA                          = 120 M€
+Dotations aux amortissements    = -30 M€
+EBIT                            = 90 M€
+Charges d'intérêts              = -12 M€
+EBT (Résultat avant IS)         = 78 M€
+IS (78 × 28 %)                  = -21,84 M€
+Résultat net                    = 56,16 M€</code></p>
+<p><strong>2. Variation de BFR</strong> :</p>
+<p><code>BFR = 18 % × CA
+BFR(N)   = 18 % × 500 = 90 M€
+BFR(N-1) = 18 % × 450 = 81 M€  (CA(N-1) = 500 - 50 = 450 M€)
+ΔBFR = 90 - 81 = +9 M€ (emploi de trésorerie)</code></p>
+<p><strong>3. FCFF et FCFE</strong> :</p>
+<p>```
+FCFF = EBIT × (1 - t) + Amortissements - CAPEX - ΔBFR
+     = 90 × (1 - 0,28) + 30 - 45 - 9
+     = 64,8 + 30 - 45 - 9
+     = 40,8 M€</p>
+<p>FCFE = FCFF - Intérêts × (1 - t) + Δ Dette nette
+     = 40,8 - 12 × (1 - 0,28) + 0  (en supposant pas de variation de dette)
+     = 40,8 - 8,64
+     = 32,16 M€
+```</p>
+</blockquote>
+<hr />
+<h3 id="exercice-6-previsionnel-de-tresorerie-et-determination-du-besoin-de-financement-niveau-expert">Exercice 6 — Prévisionnel de trésorerie et détermination du besoin de financement (niveau expert)</h3>
+<p>La startup ZETA prévoit les données suivantes pour ses 3 premières années d'exploitation (en k€) :</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Année 1</th>
+<th>Année 2</th>
+<th>Année 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA prévisionnel</td>
+<td>500</td>
+<td>1 200</td>
+<td>2 000</td>
+</tr>
+<tr>
+<td>Marge opérationnelle (EBIT/CA)</td>
+<td>-20 %</td>
+<td>5 %</td>
+<td>15 %</td>
+</tr>
+<tr>
+<td>BFR / CA</td>
+<td>25 %</td>
+<td>22 %</td>
+<td>20 %</td>
+</tr>
+<tr>
+<td>Amortissements</td>
+<td>80</td>
+<td>120</td>
+<td>180</td>
+</tr>
+<tr>
+<td>CAPEX</td>
+<td>400</td>
+<td>300</td>
+<td>200</td>
+</tr>
+<tr>
+<td>Taux d'IS</td>
+<td>0 % (déficit)</td>
+<td>0 % (déficit)</td>
+<td>25 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Questions</strong> :
+1. Calculez le FCFF de chaque année.
+2. Calculez le besoin cumulé de financement (en supposant une trésorerie initiale nulle).
+3. Commentez la trajectoire de trésorerie.</p>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<p><strong>Calcul de l'EBIT et des FCFF</strong> :</p>
+<p>```
+Année 1 :
+  EBIT = 500 × (-20 %) = -100 k€
+  IS = 0 (déficit reportable)
+  EBIT(1-t) = -100 k€
+  BFR(1) = 500 × 25 % = 125 k€
+  BFR(0) = 0 → ΔBFR = +125 k€
+  FCFF = -100 + 80 - 400 - 125 = -545 k€</p>
+<p>Année 2 :
+  EBIT = 1 200 × 5 % = 60 k€
+  IS = 0 (déficit reportable)
+  EBIT(1-t) = 60 k€
+  BFR(2) = 1 200 × 22 % = 264 k€
+  ΔBFR = 264 - 125 = +139 k€
+  FCFF = 60 + 120 - 300 - 139 = -259 k€</p>
+<p>Année 3 :
+  EBIT = 2 000 × 15 % = 300 k€
+  IS = 300 × 25 % = 75 k€
+  EBIT(1-t) = 225 k€
+  BFR(3) = 2 000 × 20 % = 400 k€
+  ΔBFR = 400 - 264 = +136 k€
+  FCFF = 225 + 180 - 200 - 136 = +69 k€
+```</p>
+<p><strong>Besoin cumulé de financement</strong> :</p>
+<p><code>Fin Année 1 : -545 k€  → besoin total : 545 k€
+Fin Année 2 : -545 - 259 = -804 k€ → besoin cumulé : 804 k€
+Fin Année 3 : -804 + 69 = -735 k€ → besoin cumulé : 735 k€</code></p>
+<p><strong>Commentaire</strong> :</p>
+<p>La startup doit lever au minimum 804 k€ pour couvrir ses besoins de
+trésorerie jusqu'au point d'inflexion (fin d'année 3). En pratique,
+une levée avec marge de sécurité (buffer de 20-30 %) est recommandée,
+soit environ 1 M€. À partir de l'année 3, le FCFF devient positif,
+signalant l'atteinte de l'auto-financement opérationnel. La startup
+peut alors envisager une levée de série B pour financer l'accélération
+plutôt que la survie.</p>
+</blockquote>
+<hr />
+<h1 id="chapitre-4-les-ratios-financiers-et-le-diagnostic">Chapitre 4 — Les ratios financiers et le diagnostic</h1>
+<h2 id="introduction_3">Introduction</h2>
+<p>Les <strong>ratios financiers</strong> transforment les chiffres bruts des états financiers en indicateurs comparables dans le temps et entre entreprises. Un ratio seul n'a pas de sens : il prend sa signification dans une tendance pluriannuelle ou par rapport à un référentiel sectoriel.</p>
+<hr />
+<h2 id="1-ratios-de-structure-financiere-bilan">1. Ratios de structure financière (bilan)</h2>
+<h3 id="11-autonomie-financiere">1.1 Autonomie financière</h3>
+<pre><code>Ratio d'autonomie financière = Capitaux propres / Total du passif
+</code></pre>
+<ul>
+<li>Mesure la part de financement interne.</li>
+<li>Référence : &gt; 30 % généralement exigé par les banques.</li>
+</ul>
+<pre><code>Ratio d'endettement (Gearing) = Dettes financières nettes / Capitaux propres
+</code></pre>
+<ul>
+<li>Dettes nettes = Dettes financières - Trésorerie disponible.</li>
+<li>Référence : &lt; 1 pour la plupart des secteurs.</li>
+</ul>
+<h3 id="12-solvabilite">1.2 Solvabilité</h3>
+<pre><code>Ratio de solvabilité = Actif total / Dettes totales
+</code></pre>
+<ul>
+<li>
+<blockquote>
+<p>1 : l'actif couvre l'ensemble des dettes.</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="13-couverture-des-interets">1.3 Couverture des intérêts</h3>
+<pre><code>Interest Coverage Ratio = EBIT / Charges financières
+</code></pre>
+<ul>
+<li>Référence : &gt; 3 fois (covenants bancaires usuels).</li>
+</ul>
+<h3 id="14-levier-financier-leverage">1.4 Levier financier (leverage)</h3>
+<pre><code>Levier = Dette nette / EBITDA
+</code></pre>
+<ul>
+<li>Référence selon secteurs :</li>
+<li>Sociétés industrielles saines : 1–2×</li>
+<li>LBO : 4–6×</li>
+<li>Stress : &gt; 6×</li>
+</ul>
+<hr />
+<h2 id="2-ratios-de-liquidite">2. Ratios de liquidité</h2>
+<h3 id="21-ratio-de-liquidite-generale">2.1 Ratio de liquidité générale</h3>
+<pre><code>Liquidité générale = Actif circulant / Passif circulant
+</code></pre>
+<ul>
+<li>
+<blockquote>
+<p>1 : les actifs CT couvrent les dettes CT.</p>
+</blockquote>
+</li>
+<li>Référence : entre 1,5 et 2 (varie selon le secteur).</li>
+</ul>
+<h3 id="22-ratio-de-liquidite-reduite-quick-ratio">2.2 Ratio de liquidité réduite (Quick Ratio)</h3>
+<pre><code>Quick Ratio = (Actif circulant - Stocks) / Passif circulant
+</code></pre>
+<ul>
+<li>Exclut les stocks (moins liquides).</li>
+<li>Référence : ≥ 1.</li>
+</ul>
+<h3 id="23-ratio-de-liquidite-immediate-cash-ratio">2.3 Ratio de liquidité immédiate (Cash Ratio)</h3>
+<pre><code>Cash Ratio = Disponibilités / Passif circulant
+</code></pre>
+<ul>
+<li>Vision la plus stricte : uniquement le cash.</li>
+</ul>
+<hr />
+<h2 id="3-ratios-de-rentabilite">3. Ratios de rentabilité</h2>
+<h3 id="31-rentabilite-economique-roa-roce">3.1 Rentabilité économique (ROA / ROCE)</h3>
+<pre><code>ROA  = Résultat net / Total actif
+ROCE = EBIT × (1 - t) / Capitaux investis
+</code></pre>
+<p>Le <strong>ROCE</strong> (Return On Capital Employed) est préféré car il mesure le rendement de l'outil économique indépendamment de la structure financière.</p>
+<pre><code>Capitaux investis = Capitaux propres + Dettes financières nettes
+                  = Actif immobilisé + BFR
+</code></pre>
+<h3 id="32-rentabilite-financiere-roe">3.2 Rentabilité financière (ROE)</h3>
+<pre><code>ROE = Résultat net / Capitaux propres
+</code></pre>
+<p>Le <strong>ROE</strong> mesure le rendement pour les actionnaires. Référence sectorielle : 10–20 % pour les secteurs normaux, parfois 25–35 % dans le luxe ou les logiciels.</p>
+<h3 id="33-decomposition-du-roe-la-formule-dupont">3.3 Décomposition du ROE : la formule Dupont</h3>
+<pre><code>ROE = (Résultat net / CA) × (CA / Actif total) × (Actif total / Capitaux propres)
+    = Marge nette × Rotation des actifs × Levier financier
+</code></pre>
+<p>Cette décomposition identifie les leviers d'amélioration :
+- <strong>Marge nette</strong> : efficacité opérationnelle.
+- <strong>Rotation des actifs</strong> : efficacité d'utilisation des actifs.
+- <strong>Levier financier</strong> : amplification par l'endettement.</p>
+<h3 id="34-effet-de-levier-financier">3.4 Effet de levier financier</h3>
+<pre><code>ROE = ROCE + (ROCE - coût de la dette) × Dettes / Capitaux propres
+</code></pre>
+<ul>
+<li>Si <strong>ROCE &gt; coût de la dette</strong> : l'endettement amplifie le ROE (effet levier positif).</li>
+<li>Si <strong>ROCE &lt; coût de la dette</strong> : l'endettement détruit de la valeur (effet massue).</li>
+</ul>
+<p><strong>Exemple</strong> :
+- ROCE = 12 %, coût de la dette = 5 %, D/CP = 1</p>
+<pre><code>ROE = 12 % + (12 % - 5 %) × 1 = 19 %
+</code></pre>
+<hr />
+<h2 id="4-ratios-dactivite-rotation">4. Ratios d'activité (rotation)</h2>
+<h3 id="41-rotation-des-stocks">4.1 Rotation des stocks</h3>
+<pre><code>Durée de stockage (jours) = Stocks / (Achats consommés / 360)
+</code></pre>
+<h3 id="42-delai-de-reglement-clients-dso">4.2 Délai de règlement clients (DSO)</h3>
+<pre><code>DSO = Créances clients TTC / (CA TTC / 360)
+</code></pre>
+<p>Référence France : 50–60 jours.</p>
+<h3 id="43-delai-de-reglement-fournisseurs-dpo">4.3 Délai de règlement fournisseurs (DPO)</h3>
+<pre><code>DPO = Dettes fournisseurs TTC / (Achats TTC / 360)
+</code></pre>
+<p>Référence France : 45–60 jours.</p>
+<h3 id="44-cycle-de-conversion-de-la-tresorerie-cash-conversion-cycle">4.4 Cycle de conversion de la trésorerie (Cash Conversion Cycle)</h3>
+<pre><code>CCC = Durée de stockage + DSO - DPO
+</code></pre>
+<p>Un CCC bas (voire négatif) signifie une gestion du BFR efficace.</p>
+<hr />
+<h2 id="5-ratios-de-marche-valorisation-boursiere">5. Ratios de marché (valorisation boursière)</h2>
+<table>
+<thead>
+<tr>
+<th>Ratio</th>
+<th>Formule</th>
+<th>Signification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PER</strong> (Price-to-Earnings)</td>
+<td>Cours / BPA</td>
+<td>Nombre d'années de bénéfice dans le cours</td>
+</tr>
+<tr>
+<td><strong>PBR</strong> (Price-to-Book)</td>
+<td>Cours / Actif net par action</td>
+<td>Prime sur valeur comptable</td>
+</tr>
+<tr>
+<td><strong>EV/EBITDA</strong></td>
+<td>Valeur d'entreprise / EBITDA</td>
+<td>Multiple de valorisation sectorielle</td>
+</tr>
+<tr>
+<td><strong>EV/EBIT</strong></td>
+<td>Valeur d'entreprise / EBIT</td>
+<td>Comparaison sectorielles (capex-intensif)</td>
+</tr>
+<tr>
+<td><strong>Dividend Yield</strong></td>
+<td>DPA / Cours</td>
+<td>Rendement dividende</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Valeur d'entreprise (EV)</strong> :</p>
+<pre><code>EV = Capitalisation boursière + Dettes financières nettes + Minoritaires - Participations
+</code></pre>
+<hr />
+<h2 id="6-diagnostic-financier-synthetique">6. Diagnostic financier synthétique</h2>
+<h3 id="61-grille-de-lecture">6.1 Grille de lecture</h3>
+<table>
+<thead>
+<tr>
+<th>Axe</th>
+<th>Ratios clés</th>
+<th>Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Activité</strong></td>
+<td>CA, taux de croissance, rotation</td>
+<td>L'activité croît-elle ? Est-elle efficace ?</td>
+</tr>
+<tr>
+<td><strong>Profitabilité</strong></td>
+<td>Marge EBE, EBIT, nette</td>
+<td>L'entreprise est-elle profitable ?</td>
+</tr>
+<tr>
+<td><strong>Structure</strong></td>
+<td>Gearing, levier, autonomie</td>
+<td>La structure financière est-elle solide ?</td>
+</tr>
+<tr>
+<td><strong>Liquidité</strong></td>
+<td>FRNG, BFR, TN, quick ratio</td>
+<td>L'entreprise peut-elle faire face à court terme ?</td>
+</tr>
+<tr>
+<td><strong>Rentabilité</strong></td>
+<td>ROE, ROCE, Dupont</td>
+<td>Les capitaux sont-ils bien employés ?</td>
+</tr>
+<tr>
+<td><strong>Valorisation</strong></td>
+<td>PER, EV/EBITDA</td>
+<td>L'action est-elle chère par rapport au marché ?</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-methode-de-notation-scoring-altman-z-score">6.2 Méthode de notation (scoring — Altman Z-score)</h3>
+<p>Le modèle <strong>Z-score d'Altman</strong> prédit la probabilité de défaillance :</p>
+<pre><code>Z = 1,2 × X₁ + 1,4 × X₂ + 3,3 × X₃ + 0,6 × X₄ + 1,0 × X₅
+</code></pre>
+<p>Avec :
+- X₁ = BFR / Actif total
+- X₂ = Réserves / Actif total
+- X₃ = EBIT / Actif total
+- X₄ = Capitalisation boursière / Dettes totales
+- X₅ = CA / Actif total</p>
+<table>
+<thead>
+<tr>
+<th>Z-score</th>
+<th>Diagnostic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Z &gt; 2,99</td>
+<td>Zone saine</td>
+</tr>
+<tr>
+<td>1,81 &lt; Z &lt; 2,99</td>
+<td>Zone grise</td>
+</tr>
+<tr>
+<td>Z &lt; 1,81</td>
+<td>Zone de détresse</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-exercices">7. Exercices</h2>
+<h3 id="exercice-1_5">Exercice 1</h3>
+<p>Calculez le ROE par la formule Dupont à partir des données suivantes :
+- CA = 4 000 k€ ; Résultat net = 320 k€ ; Actif total = 2 500 k€ ; Capitaux propres = 1 000 k€</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Marge nette = 320 / 4 000 = 8 %
+Rotation actifs = 4 000 / 2 500 = 1,6
+Levier = 2 500 / 1 000 = 2,5
+<strong>ROE = 8 % × 1,6 × 2,5 = 32 %</strong></p>
+</blockquote>
+<h3 id="exercice-2_5">Exercice 2</h3>
+<p>Une entreprise a un ROCE de 8 %, une dette nette de 2 000 k€, des capitaux propres de 1 000 k€ et un coût de la dette de 10 %. L'effet de levier est-il positif ou négatif ?</p>
+<blockquote>
+<p><strong>Correction</strong> :
+ROCE (8 %) &lt; coût de la dette (10 %) → <strong>effet massue</strong> (négatif)
+ROE = 8 % + (8 % - 10 %) × 2 = 8 % - 4 % = <strong>4 %</strong>
+L'endettement réduit la rentabilité des actionnaires.</p>
+</blockquote>
+<hr />
+<h2 id="points-cles-a-retenir_3">Points clés à retenir</h2>
+<ul>
+<li>Un ratio ne vaut que par rapport à une tendance ou une norme sectorielle.</li>
+<li>La formule Dupont décompose le ROE en trois leviers : marge, rotation, levier.</li>
+<li>L'effet de levier amplifie le ROE si ROCE &gt; coût de la dette, et le détériore sinon.</li>
+<li>Le diagnostic financier couvre systématiquement : activité, profitabilité, structure, liquidité, rentabilité.</li>
+</ul>
+<hr />
+<h2 id="approfondissement-theorique_3">Approfondissement théorique</h2>
+<h3 id="les-ratios-ifrs-et-leurs-specificites">Les ratios IFRS et leurs spécificités</h3>
+<p>En normes IFRS, certains ratios sont calculés différemment des normes françaises :</p>
+<p><strong>EBITDA IFRS</strong> : généralement présenté en <strong>Adjusted EBITDA</strong> (excluant les charges de restructuration, de dépréciation de goodwill, les stock-options).</p>
+<p><strong>Dette nette IFRS</strong> (post-IFRS 16) :</p>
+<pre><code>Dette nette = Emprunts bancaires + Obligations + Dettes de lease (IFRS 16)
+             + Provisions pour retraites (IAS 19)
+             + Earn-outs et dette contingente
+             - Trésorerie et équivalents
+             - Instruments dérivés actifs
+</code></pre>
+<p>L'adoption d'IFRS 16 (2019) a augmenté la dette nette des entreprises avec beaucoup de locations (retail, compagnies aériennes) de 30–100 %, ce qui a dégradé mécaniquement les ratios de levier.</p>
+<h3 id="lanalyse-des-flux-de-tresorerie-vs-les-ratios-de-resultat">L'analyse des flux de trésorerie vs. les ratios de résultat</h3>
+<p>Les ratios basés sur le résultat peuvent être manipulés par des choix comptables (amortissements, provisions). Les <strong>ratios basés sur les flux de trésorerie</strong> sont plus robustes :</p>
+<table>
+<thead>
+<tr>
+<th>Ratio cash</th>
+<th>Formule</th>
+<th>Avantage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FCF Yield</td>
+<td>Free Cash Flow / EV</td>
+<td>Non manipulable</td>
+</tr>
+<tr>
+<td>FCF Conversion</td>
+<td>FCF / EBITDA</td>
+<td>Qualité de la conversion en trésorerie</td>
+</tr>
+<tr>
+<td>Cash ROCE</td>
+<td>FCF / Capital investi</td>
+<td>Rentabilité économique "cash"</td>
+</tr>
+<tr>
+<td>Payout ratio cash</td>
+<td>Dividendes / FCF</td>
+<td>Soutenabilité des dividendes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>FCF (Free Cash Flow)</strong> :</p>
+<pre><code>FCF = EBITDA - CAPEX - ΔBFR - Impôts sur EBIT - Intérêts (si levered FCF)
+    = CAF - CAPEX - ΔBFR (approche pratique)
+</code></pre>
+<h3 id="analyse-extra-financiere-esg-et-performance">Analyse extra-financière (ESG) et performance</h3>
+<p>Les investisseurs institutionnels intègrent désormais des critères <strong>ESG (Environnement, Social, Gouvernance)</strong> dans leur analyse :</p>
+<p><strong>Gouvernance (G)</strong> : qualité du board, séparation PDG/Président, droits des actionnaires minoritaires, politique de rémunération.
+→ Corrélation empirique entre bonne gouvernance et performance long terme (Gompers, Ishii &amp; Metrick, 2003).</p>
+<p><strong>Environnement (E)</strong> : empreinte carbone, exposition au risque climatique physique et de transition (stranded assets).
+→ Les entreprises avec une forte exposition aux combustibles fossiles voient leur multiple de valorisation se comprimer.</p>
+<p><strong>Social (S)</strong> : relations sociales, turn-over, accidents du travail, diversité.</p>
+<hr />
+<h2 id="exemples-numeriques-supplementaires_3">Exemples numériques supplémentaires</h2>
+<h3 id="exemple-1-diagnostic-financier-complet-cas-reel-simplifie">Exemple 1 — Diagnostic financier complet (cas réel simplifié)</h3>
+<p><strong>Entreprise RETAIL X</strong> (distribution spécialisée, en M€) :</p>
+<table>
+<thead>
+<tr>
+<th>Indicateur</th>
+<th>Valeur</th>
+<th>Référence secteur</th>
+<th>Commentaire</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CA</td>
+<td>500</td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td>Croissance CA</td>
+<td>+3 %</td>
+<td>+5 %</td>
+<td>Sous-croissance sectorielle</td>
+</tr>
+<tr>
+<td>Marge EBE</td>
+<td>6 %</td>
+<td>8 %</td>
+<td>En dessous de la médiane</td>
+</tr>
+<tr>
+<td>Marge EBIT</td>
+<td>3 %</td>
+<td>5 %</td>
+<td>Pression sur les marges</td>
+</tr>
+<tr>
+<td>ROCE</td>
+<td>8 %</td>
+<td>12 %</td>
+<td>Insuffisant (vs WACC 9 %)</td>
+</tr>
+<tr>
+<td>ROE</td>
+<td>12 %</td>
+<td>15 %</td>
+<td>Effet levier masque la faiblesse ROCE</td>
+</tr>
+<tr>
+<td>Gearing</td>
+<td>1,5×</td>
+<td>1,0×</td>
+<td>Endettement supérieur à la norme</td>
+</tr>
+<tr>
+<td>Levier (D/EBITDA)</td>
+<td>4,5×</td>
+<td>2,5×</td>
+<td>Élevé, proche des covenants</td>
+</tr>
+<tr>
+<td>Liquidité générale</td>
+<td>0,9</td>
+<td>1,3</td>
+<td>Problème de liquidité CT</td>
+</tr>
+<tr>
+<td>DSO</td>
+<td>20 j</td>
+<td>15 j</td>
+<td>Légèrement allongé</td>
+</tr>
+<tr>
+<td>DPO</td>
+<td>75 j</td>
+<td>60 j</td>
+<td>Fournisseurs allongés (tension?)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Diagnostic global</strong> : l'entreprise croît moins vite que son secteur, ses marges se compriment, son endettement est élevé (proche des covenants). Le ROCE inférieur au WACC signifie une <strong>destruction de valeur</strong>. <strong>Recommandation</strong> : cote à surveiller, analyse crédit défavorable.</p>
+<h3 id="exemple-2-formule-dupont-avancee-5-facteurs">Exemple 2 — Formule Dupont avancée (5 facteurs)</h3>
+<p>La décomposition Dupont en 5 facteurs :</p>
+<pre><code>ROE = (Résultat net / EBT) × (EBT / EBIT) × (EBIT / CA) × (CA / Actif) × (Actif / CP)
+    = Charge fiscale     × Charge financière × Marge EBIT × Rotation actifs × Levier
+</code></pre>
+<p><strong>Application LVMH (approximations 2023)</strong> :</p>
+<pre><code>Charge fiscale = 1 - IS effectif ≈ 1 - 22 % = 0,78
+Charge financière = EBIT / (EBIT + Résultat financier) ≈ 0,95
+Marge EBIT = 26 %
+Rotation actifs = CA / Actif = 80 Mds / 160 Mds = 0,50
+Levier = Actif / CP = 160 / 55 = 2,91
+
+ROE = 0,78 × 0,95 × 0,26 × 0,50 × 2,91 = 28 %
+</code></pre>
+<p>LVMH combine un <strong>pricing power exceptionnel</strong> (marge EBIT 26 %) avec un levier modéré (2,91×).</p>
+<h3 id="exemple-3-z-score-applique-a-une-entreprise-en-difficulte">Exemple 3 — Z-score appliqué à une entreprise en difficulté</h3>
+<p><strong>Entreprise "Défaillante"</strong> (en M€, données fin N-1) :</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Calcul</th>
+<th>Valeur</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>X1 = BFR / Actif</td>
+<td>(80+50-90-60) / 400</td>
+<td>-0,05</td>
+</tr>
+<tr>
+<td>X2 = Réserves / Actif</td>
+<td>40 / 400</td>
+<td>0,10</td>
+</tr>
+<tr>
+<td>X3 = EBIT / Actif</td>
+<td>15 / 400</td>
+<td>0,0375</td>
+</tr>
+<tr>
+<td>X4 = Capitalisation / Dettes</td>
+<td>25 / 300</td>
+<td>0,083</td>
+</tr>
+<tr>
+<td>X5 = CA / Actif</td>
+<td>350 / 400</td>
+<td>0,875</td>
+</tr>
+</tbody>
+</table>
+<pre><code>Z = 1,2 × (-0,05) + 1,4 × 0,10 + 3,3 × 0,0375 + 0,6 × 0,083 + 1,0 × 0,875
+  = -0,06 + 0,14 + 0,124 + 0,050 + 0,875 = 1,129
+</code></pre>
+<p><strong>Z = 1,13 &lt; 1,81 → Zone de détresse financière.</strong> L'entreprise a une probabilité élevée de défaillance dans les 2 ans. Bilan: BFR négatif, faibles réserves, rentabilité insuffisante, capitalisation très faible vs. dette.</p>
+<hr />
+<h2 id="applications-professionnelles_3">Applications professionnelles</h2>
+<h3 id="analyse-credit-corporate-rating-advisory">Analyse crédit corporate (Rating Advisory)</h3>
+<p>Les équipes <strong>Rating Advisory</strong> des banques aident leurs clients à maintenir ou améliorer leur note de crédit. Le processus inclut :</p>
+<ol>
+<li><strong>Simulation de rating</strong> : modèle qui prédit la note en fonction des ratios financiers.</li>
+<li><strong>Identification des leviers</strong> : quelles actions améliorent le plus la note (réduction de la dette, amélioration de la marge, cession d'actifs non stratégiques) ?</li>
+<li><strong>Communication avec les agences</strong> : préparation des présentations à Moody's/S&amp;P.</li>
+</ol>
+<p><strong>Impact d'un rating sur le financement</strong> :
+- Passage de BBB à BB (high yield) → accès réduit aux marchés obligataires, hausse du coût de financement de 100–300 bp.
+- Passage de A à BBB → spread commercial papers et CP US augmente.</p>
+<h3 id="private-equity-due-diligence-financiere">Private Equity : due diligence financière</h3>
+<p>L'équipe d'investissement d'un fonds PE analyse les ratios financiers en context spécifique :</p>
+<p><strong>Ratios LBO-spécifiques</strong> :</p>
+<pre><code>Capacité d'endettement = EBITDA × Multiple d'endettement max (généralement 4–6×)
+Cash sweep = FCF disponible pour remboursement anticipé de la dette
+TRI equity = f(EBITDA sortie × multiple, désendettement, mise de fonds)
+MOIC = Equity valeur sortie / Equity mise d'entrée
+</code></pre>
+<p><strong>Métriques opérationnelles</strong> (varient par secteur) :
+- SaaS : ARR growth, NDR (Net Dollar Retention), LTV/CAC
+- Retail : SSSG (Same-Store Sales Growth), ventes/m²
+- Services financiers : ROE, ROA, Cost-to-Income ratio</p>
+<hr />
+<h2 id="erreurs-frequentes-et-pieges_3">Erreurs fréquentes et pièges</h2>
+<table>
+<thead>
+<tr>
+<th>Erreur</th>
+<th>Description</th>
+<th>Remède</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Utiliser le PER hors contexte</strong></td>
+<td>PER élevé peut indiquer une croissance forte ou une surévaluation</td>
+<td>Comparer avec le PEG (PER / croissance) pour neutraliser la croissance</td>
+</tr>
+<tr>
+<td><strong>Levier calculé sur bilan vs. EBITDA</strong></td>
+<td>Gearing et D/EBITDA peuvent diverger (amortissements importants)</td>
+<td>Toujours préciser le numérateur (dette brute ou nette) et le dénominateur</td>
+</tr>
+<tr>
+<td><strong>Rotation des actifs sans segmentation</strong></td>
+<td>La rotation est très sectorielle ; comparer cross-secteur est trompeur</td>
+<td>Utiliser des benchmarks sectoriels</td>
+</tr>
+<tr>
+<td><strong>Ignorer l'impact d'IFRS 16 sur les ratios</strong></td>
+<td>Post-IFRS 16, la dette nette et l'EBITDA augmentent — les ratios historiques ne sont plus comparables</td>
+<td>Recalculer les ratios pre/post IFRS 16 pour les comparaisons temporelles</td>
+</tr>
+<tr>
+<td><strong>Se fier à un ratio unique</strong></td>
+<td>Un seul ratio peut être flatteur alors que la situation globale se détériore</td>
+<td>Toujours analyser un tableau de bord complet (5–6 ratios)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="exercices-supplementaires_3">Exercices supplémentaires</h2>
+<h3 id="exercice-1_6">Exercice 1</h3>
+<p>Calculez le ROE par la formule Dupont (5 facteurs) pour une entreprise :
+CA = 200 M€, EBIT = 30 M€, Résultat financier = -8 M€, IS = 25 %, Actif total = 150 M€, Capitaux propres = 60 M€.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+EBT = 30 - 8 = 22 M€
+Résultat net = 22 × 0,75 = 16,5 M€</p>
+<p>Charge fiscale = 16,5 / 22 = 0,75
+Charge financière = 22 / 30 = 0,733
+Marge EBIT = 30 / 200 = 15 %
+Rotation actifs = 200 / 150 = 1,333
+Levier = 150 / 60 = 2,5</p>
+<p>ROE = 0,75 × 0,733 × 0,15 × 1,333 × 2,5 = <strong>27,5 %</strong>
+Vérification : ROE direct = 16,5 / 60 = <strong>27,5 %</strong> ✓</p>
+</blockquote>
+<h3 id="exercice-2_6">Exercice 2</h3>
+<p>Calculez les délais de rotation DSO, DPO et le CCC, puis commentez :
+CA HT = 3 600 k€, Créances clients TTC (TVA 20 %) = 720 k€, Achats TTC = 1 800 k€, Dettes fournisseurs TTC = 450 k€.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+CA TTC = 3 600 × 1,20 = 4 320 k€
+DSO = 720 / (4 320 / 360) = 720 / 12 = <strong>60 jours</strong> (dans la fourchette normale France)</p>
+<p>DPO = 450 / (1 800 / 360) = 450 / 5 = <strong>90 jours</strong> (DÉPASSE le délai légal français de 60 jours → risque de litige fournisseur)</p>
+<p>CCC = DSO + Durée stock - DPO. Si durée stock = 30 j :
+CCC = 60 + 30 - 90 = <strong>0 jour</strong> (BFR quasi nul grâce aux longs délais fournisseurs)</p>
+<p>Commentaire : L'entreprise finance son BFR grâce à ses fournisseurs. Risque si les fournisseurs exigent de passer à 60 jours (légal) : BFR passerait à +30 j → besoin de financement additionnel.</p>
+</blockquote>
+<h3 id="exercice-3_2">Exercice 3</h3>
+<p>Analysez si l'effet de levier est positif pour une entreprise avec ROCE = 10 %, coût de la dette brut = 7,5 %, IS = 25 %, D/CP = 0,8. Calculez le ROE.</p>
+<blockquote>
+<p><strong>Correction</strong> :
+Coût dette net d'IS = 7,5 % × (1 - 25 %) = 5,625 %
+ROCE (10 %) &gt; coût dette après IS (5,625 %) → <strong>effet de levier POSITIF</strong> ✓</p>
+<p>ROE = ROCE + (ROCE - coût dette après IS) × D/CP
+    = 10 % + (10 % - 5,625 %) × 0,8
+    = 10 % + 4,375 % × 0,8 = 10 % + 3,5 % = <strong>13,5 %</strong></p>
+</blockquote>
+<h3 id="exercice-4">Exercice 4</h3>
+<p>Classifiez les alertes dans ce tableau de bord financier (OK / À surveiller / Alerte rouge) :</p>
+<table>
+<thead>
+<tr>
+<th>Ratio</th>
+<th>Valeur</th>
+<th>Référence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gearing</td>
+<td>2,8×</td>
+<td>&lt; 1×</td>
+</tr>
+<tr>
+<td>ICR</td>
+<td>1,8×</td>
+<td>&gt; 3×</td>
+</tr>
+<tr>
+<td>Liquidité générale</td>
+<td>1,2</td>
+<td>&gt; 1,5</td>
+</tr>
+<tr>
+<td>ROCE</td>
+<td>11 %</td>
+<td>&gt; WACC 9 %</td>
+</tr>
+<tr>
+<td>Marge EBIT</td>
+<td>9 %</td>
+<td>Secteur 10 %</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction</strong> :</p>
+<table>
+<thead>
+<tr>
+<th>Ratio</th>
+<th>Classification</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gearing 2,8×</td>
+<td>🔴 Alerte</td>
+<td>2,8× &gt;&gt; 1× → endettement excessif</td>
+</tr>
+<tr>
+<td>ICR 1,8×</td>
+<td>🔴 Alerte</td>
+<td>&lt; 3× → couverture insuffisante, risque covenant</td>
+</tr>
+<tr>
+<td>Liquidité 1,2</td>
+<td>🟡 À surveiller</td>
+<td>&lt; 1,5 mais &gt; 1 → trésorerie serrée</td>
+</tr>
+<tr>
+<td>ROCE 11 %</td>
+<td>🟢 OK</td>
+<td>&gt; WACC → création de valeur</td>
+</tr>
+<tr>
+<td>Marge EBIT 9 %</td>
+<td>🟡 À surveiller</td>
+<td>Légèrement sous la médiane sectorielle</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Synthèse</strong> : profil crédit dégradé (gearing et ICR critiques). La rentabilité économique est satisfaisante mais la structure financière fragilise l'entreprise en cas de choc de résultat.</p>
+</blockquote>
+<hr />
+</body>
+</html>

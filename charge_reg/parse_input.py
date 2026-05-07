@@ -162,8 +162,9 @@ def _finalize_poste(current_poste: dict, invoice_pcts: dict, current_invoices: l
             qps[lot_name] = 0.0
             lot_pct[lot_name] = 0.0
 
-    current_poste["lot_qp"] = qps
+    current_poste["lot_qp"]  = qps
     current_poste["lot_pct"] = lot_pct
+    # preserve scope tag if already set on the poste dict
 
     # Auto-detect implied base surface: median(lot_surface / pct)
     implied_bases = []
@@ -203,6 +204,7 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict,
     charges = []
     current_category = None
     current_poste = None
+    current_scope = None          # "SITE", "BAT 1", "BAT 2", …
     invoice_pcts: dict = {}   # lot_name -> [pct values from invoices]
     current_invoices: list = []  # invoice dicts for current poste
 
@@ -236,6 +238,15 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict,
 
         rnr_str = str(rnr).strip().upper() if rnr else ""
 
+        # Scope header: "CHARGES - SITE", "CHARGES - BAT 1", "CHARGES - BAT 2"
+        if (rnr_str.startswith("CHARGES -")
+                and not isinstance(rnr, (int, float))
+                and rnr_str not in ("CHARGES NON RECUPERABLES",)):
+            _flush()
+            current_scope = rnr_str[len("CHARGES -"):].strip()  # "SITE", "BAT 1", "BAT 2"
+            current_category = None
+            continue
+
         # Category row: col A has a non-R/NR string like "FLUIDES", "CONTRAT..."
         if rnr_str and rnr_str not in ("R", "NR") and not isinstance(rnr, (int, float)):
             _flush()
@@ -250,6 +261,7 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict,
                 "poste": type_dep.strip(),
                 "realise_ht": realise if isinstance(realise, (int, float)) else 0.0,
                 "provision_ht": provision if isinstance(provision, (int, float)) else 0.0,
+                "scope": current_scope,
             }
             invoice_pcts = {}
             current_invoices = []

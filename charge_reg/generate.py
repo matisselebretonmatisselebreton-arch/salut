@@ -150,27 +150,45 @@ def _assign_charges_to_scopes(
     charges: list, site_surface: float, bat_surfaces: dict
 ) -> dict:
     """
-    Assign each charge to 'site' or a batiment name based on base_surface.
-    bat_surfaces: {bat_name: total_surface_m2}
+    Assign each charge to 'site' or a batiment name.
+    Uses the 'scope' field set by the parser ("SITE", "BAT 1", "BAT 2", …)
+    when available; falls back to base_surface proximity matching.
+    bat_surfaces: {bat_name: total_surface_m2} in declaration order.
     Returns {scope: [charges]}.
     """
     scopes: dict[str, list] = {"site": []}
     for bat in bat_surfaces:
         scopes[bat] = []
 
-    for charge in charges:
-        base = charge.get("base_surface")
-        if base is None:
-            scopes["site"].append(charge)
-            continue
+    bat_order = list(bat_surfaces.keys())  # e.g. ["MEAUX I", "MEAUX II"]
 
-        assigned = None
+    def _scope_from_tag(tag: str | None) -> str:
+        if not tag:
+            return "site"
+        t = tag.upper()
+        if "SITE" in t:
+            return "site"
+        # Match "BAT 1" → bat_order[0], "BAT 2" → bat_order[1], …
+        for i, bat_name in enumerate(bat_order):
+            if str(i + 1) in t or bat_name.upper() in t:
+                return bat_name
+        return "site"
+
+    def _scope_from_base(base) -> str:
+        if base is None:
+            return "site"
         for bat, surf in bat_surfaces.items():
             if surf > 0 and abs(base - surf) / surf < 0.02:
-                assigned = bat
-                break
+                return bat
+        return "site"
 
-        scopes[assigned if assigned else "site"].append(charge)
+    for charge in charges:
+        scope_tag = charge.get("scope")
+        if scope_tag is not None:
+            assigned = _scope_from_tag(scope_tag)
+        else:
+            assigned = _scope_from_base(charge.get("base_surface"))
+        scopes[assigned].append(charge)
 
     return scopes
 
@@ -1131,7 +1149,13 @@ def generate(enriched: dict, output_path: str | None = None) -> str:
             lot_bat   = lot_info.get("batiment")
 
             site_charges = scopes["site"]
-            bat_charges  = scopes.get(lot_bat, []) if lot_bat else []
+            bat_charges_raw = scopes.get(lot_bat, []) if lot_bat else []
+            # Inject bat surface as base_surface so clé = lot/bat_surface
+            bat_surf = bat_surfaces.get(lot_bat, surface_totale)
+            bat_charges = [
+                {**c, "base_surface": c.get("base_surface") or bat_surf}
+                for c in bat_charges_raw
+            ]
 
             sections = []
             if site_charges:

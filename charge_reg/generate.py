@@ -102,6 +102,48 @@ def _rh(ws, row, height):
     ws.row_dimensions[row].height = height
 
 
+# ── Merge interleaved charges ─────────────────────────────────────────────────
+
+def _merge_charges(charges: list) -> list:
+    """
+    Merge charges that share the same (categorie, poste) key, combining their
+    invoices and summing realise_ht. Then re-sort by category (preserving first
+    appearance order) so all postes of a category are contiguous.
+    """
+    from collections import OrderedDict
+    seen: OrderedDict[tuple, dict] = OrderedDict()
+    cat_order: list[str] = []
+
+    for charge in charges:
+        cat   = charge.get("categorie") or ""
+        poste = charge.get("poste", "")
+        key   = (cat, poste)
+
+        if cat not in cat_order:
+            cat_order.append(cat)
+
+        if key not in seen:
+            seen[key] = {
+                "categorie":    cat,
+                "poste":        poste,
+                "realise_ht":   charge.get("realise_ht", 0) or 0,
+                "invoices":     list(charge.get("invoices", [])),
+                "base_surface": charge.get("base_surface"),
+            }
+        else:
+            seen[key]["realise_ht"] = (seen[key]["realise_ht"] or 0) + (charge.get("realise_ht", 0) or 0)
+            seen[key]["invoices"].extend(charge.get("invoices", []))
+            if seen[key]["base_surface"] is None:
+                seen[key]["base_surface"] = charge.get("base_surface")
+
+    # Sort so all postes of a category are contiguous (by first-appearance order)
+    def sort_key(item):
+        cat = item[1]["categorie"]
+        return cat_order.index(cat) if cat in cat_order else len(cat_order)
+
+    return [v for _, v in sorted(seen.items(), key=sort_key)]
+
+
 # ── Clé formula ───────────────────────────────────────────────────────────────
 
 def _cle_formula(param_row: int, base_surface, site_surface: float) -> str:
@@ -156,8 +198,9 @@ def build_parametres_sheet(
     _rh(ws, 5, 7.55)
 
     headers = ["Lot", "Statut", "Surface (m²)", "Bâtiment", "Locataire",
-               "Début de bail", "Fin de bail",
-               f"Jours {year}", "Prorata"]
+               "Début de bail / MAD", "Fin de bail",
+               f"Jours Fluides {year}", f"Prorata Fluides",
+               f"Jours Autres {year}", f"Prorata Autres"]
     for col, h in enumerate(headers, 1):
         _c(ws, 6, col, h, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
     _rh(ws, 6, 19.55)
@@ -190,22 +233,43 @@ def build_parametres_sheet(
                 cell.number_format = DATE_FMT
             cell.alignment = _AL_CTR
 
-        # Col H — days formula (use ="" to detect empty, matching reference)
-        days_formula = (
-            f"=MAX(0,MIN(DATE({year},12,31),"
-            f"IF(G{idx}=\"\",DATE({year},12,31),G{idx}))"
-            f"-MAX(DATE({year},1,1),"
-            f"IF(F{idx}=\"\",DATE({year},1,1),F{idx}))+1)"
-        )
-        ch = ws.cell(row=idx, column=8, value=days_formula)
+        # Col H — Jours Fluides: explicit value if provided, else date formula
+        jours_fluides = info.get("jours_fluides")
+        if jours_fluides is not None:
+            ch = ws.cell(row=idx, column=8, value=int(jours_fluides))
+            ch.number_format = INT_FMT
+        else:
+            days_formula = (
+                f"=MAX(0,MIN(DATE({year},12,31),"
+                f"IF(G{idx}=\"\",DATE({year},12,31),G{idx}))"
+                f"-MAX(DATE({year},1,1),"
+                f"IF(F{idx}=\"\",DATE({year},1,1),F{idx}))+1)"
+            )
+            ch = ws.cell(row=idx, column=8, value=days_formula)
         ch.font = _fn(9, True, "000000")
         ch.alignment = _AL_RIGHT
 
-        # Col I — prorata = H/365
+        # Col I — Prorata Fluides = H/365
         ci = ws.cell(row=idx, column=9, value=f"=H{idx}/365")
         ci.font = _fn(9, True, "000000")
         ci.number_format = PERIOD_FMT
         ci.alignment = _AL_RIGHT
+
+        # Col J — Jours Autres: explicit value if provided, else =H (same period)
+        jours_autres = info.get("jours_autres")
+        if jours_autres is not None:
+            cj = ws.cell(row=idx, column=10, value=int(jours_autres))
+            cj.number_format = INT_FMT
+        else:
+            cj = ws.cell(row=idx, column=10, value=f"=H{idx}")
+        cj.font = _fn(9, True, "000000")
+        cj.alignment = _AL_RIGHT
+
+        # Col K — Prorata Autres = J/365
+        ck = ws.cell(row=idx, column=11, value=f"=J{idx}/365")
+        ck.font = _fn(9, True, "000000")
+        ck.number_format = PERIOD_FMT
+        ck.alignment = _AL_RIGHT
 
         _rh(ws, idx, 15.05)
 
@@ -235,7 +299,7 @@ def build_parametres_sheet(
 
     _set_col_widths(ws, {
         "A": 20, "B": 14, "C": 14, "D": 12, "E": 22,
-        "F": 16, "G": 16, "H": 12, "I": 10,
+        "F": 16, "G": 16, "H": 12, "I": 10, "J": 12, "K": 10,
     })
 
     return lot_rows
@@ -252,8 +316,10 @@ def build_recapitulatif_sheet(ws, enriched: dict) -> dict:
     """
     year    = enriched.get("year", 2025)
     site    = enriched["site"]
-    charges = [c for c in enriched["charges"]
-               if (c.get("realise_ht") or 0) > 0 or c.get("invoices")]
+    charges = _merge_charges([
+        c for c in enriched["charges"]
+        if (c.get("realise_ht") or 0) > 0 or c.get("invoices")
+    ])
 
     # Row 1 — title
     ws.merge_cells("A1:G1")
@@ -478,6 +544,8 @@ def build_lot_sheet(
     category_end:   dict[str, int] = {}   # cat -> last detail row
     subtotal_rows:  list[int] = []         # for TOTAL formula
 
+    charges = _merge_charges(charges)
+
     # ── Inline category → postes → subtotal blocks ────────────────────────────
     for charge in charges:
         cat      = charge.get("categorie") or ""
@@ -528,8 +596,10 @@ def build_lot_sheet(
         cd.value = f"=B{det_row}*C{det_row}"
         cd.font  = F_VAL; cd.number_format = MONEY_FMT; cd.alignment = _AL_RIGHT
 
+        # Col E — Période : Fluides → col H, Autres → col J
         ce = ws.cell(row=det_row, column=5)
-        ce.value = f"=Paramètres!$H${param_row}/365"
+        period_col = "H" if "FLUIDE" in cat.upper() else "J"
+        ce.value = f"=Paramètres!${period_col}${param_row}/365"
         ce.font  = F_VAL; ce.number_format = PERIOD_FMT; ce.alignment = _AL_CTR
 
         cf = ws.cell(row=det_row, column=6)

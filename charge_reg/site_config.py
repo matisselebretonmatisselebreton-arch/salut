@@ -52,28 +52,57 @@ def merge_parsed_with_stored(parsed: dict, stored: dict) -> dict:
     """
     Combine fresh parse result with stored site config.
     Stored values fill gaps (tenants, provisions, surfaces, dates, batiment).
+    If stored lots are provided and their names don't match the parsed lots
+    (e.g. the parser couldn't detect lot names), stored lots take precedence.
     Returns enriched dict ready for generate.py.
     """
     stored_lots = stored.get("lots", {})
     stored_provisions = stored.get("provisions", {})
 
+    # If stored lots are defined and none of the parsed lot names match,
+    # use stored lots as the authoritative source (parser couldn't detect them).
+    parsed_lot_names = set(parsed["lots"].keys())
+    stored_lot_names = set(stored_lots.keys())
+    stored_takes_precedence = bool(stored_lots) and parsed_lot_names.isdisjoint(stored_lot_names)
+
     lots_out = {}
-    for lot_name, lot_data in parsed["lots"].items():
-        stored_lot = stored_lots.get(lot_name, {})
-        lots_out[lot_name] = {
-            "surface": lot_data.get("surface") or stored_lot.get("surface"),
-            "tenant": lot_data.get("tenant") or stored_lot.get("tenant"),
-            "days": lot_data.get("days") or stored_lot.get("days", 365),
-            "statut": stored_lot.get(
-                "statut",
-                "Occupé" if (lot_data.get("tenant") or stored_lot.get("tenant")) else "Vacant"
-            ),
-            # New fields — stored config only (not auto-detected from relevé)
-            "bail_start": stored_lot.get("bail_start"),
-            "bail_end": stored_lot.get("bail_end"),
-            "mad_start": stored_lot.get("mad_start"),
-            "batiment": stored_lot.get("batiment"),
-        }
+
+    if stored_takes_precedence:
+        # Use stored lots directly; charges still come from the parsed file
+        for lot_name, stored_lot in stored_lots.items():
+            lots_out[lot_name] = {
+                "surface": stored_lot.get("surface"),
+                "tenant": stored_lot.get("tenant"),
+                "days": stored_lot.get("days", 0),
+                "jours_fluides": stored_lot.get("jours_fluides"),
+                "jours_autres": stored_lot.get("jours_autres"),
+                "statut": stored_lot.get(
+                    "statut",
+                    "Occupé" if stored_lot.get("tenant") else "Vacant"
+                ),
+                "bail_start": stored_lot.get("bail_start"),
+                "bail_end": stored_lot.get("bail_end"),
+                "mad_start": stored_lot.get("mad_start"),
+                "batiment": stored_lot.get("batiment"),
+            }
+    else:
+        for lot_name, lot_data in parsed["lots"].items():
+            stored_lot = stored_lots.get(lot_name, {})
+            lots_out[lot_name] = {
+                "surface": lot_data.get("surface") or stored_lot.get("surface"),
+                "tenant": lot_data.get("tenant") or stored_lot.get("tenant"),
+                "days": lot_data.get("days") or stored_lot.get("days", 365),
+                "jours_fluides": stored_lot.get("jours_fluides"),
+                "jours_autres": stored_lot.get("jours_autres"),
+                "statut": stored_lot.get(
+                    "statut",
+                    "Occupé" if (lot_data.get("tenant") or stored_lot.get("tenant")) else "Vacant"
+                ),
+                "bail_start": stored_lot.get("bail_start"),
+                "bail_end": stored_lot.get("bail_end"),
+                "mad_start": stored_lot.get("mad_start"),
+                "batiment": stored_lot.get("batiment"),
+            }
 
     # Build per-tenant provisions
     provisions_out = {}

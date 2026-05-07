@@ -49,6 +49,18 @@ def find_header_row(ws) -> tuple[int, dict]:
                 elif label in ("Quote-Part \nHT", "Quote-Part HT"):
                     if "first_qp" not in col_map:
                         col_map["first_qp"] = col_idx
+                elif label in ("Nom Fournisseur", "Fournisseur"):
+                    col_map["fournisseur"] = col_idx
+                elif label == "Date facture":
+                    col_map["date_facture"] = col_idx
+                elif label in ("Numéro facture", "N° facture", "Numéro\nfacture"):
+                    col_map["num_facture_col"] = col_idx
+                elif label in ("Description", "Libellé"):
+                    col_map["description_col"] = col_idx
+                elif label == "TVA":
+                    col_map["tva_col"] = col_idx
+                elif label in ("TTC", "Montant TTC"):
+                    col_map["ttc_col"] = col_idx
             return row_idx, col_map
     return -1, {}
 
@@ -208,10 +220,16 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict,
     invoice_pcts: dict = {}   # lot_name -> [pct values from invoices]
     current_invoices: list = []  # invoice dicts for current poste
 
-    rnr_col = col_map.get("rnr", 0)
-    type_col = col_map.get("type_depense", 1)
-    prov_col = col_map.get("provision_ht", 10)
-    real_col = col_map.get("realise_ht", 11)
+    rnr_col      = col_map.get("rnr", 0)
+    type_col     = col_map.get("type_depense", 1)
+    prov_col     = col_map.get("provision_ht", 10)
+    real_col     = col_map.get("realise_ht", 11)
+    fournisseur_col = col_map.get("fournisseur", 3)
+    date_col     = col_map.get("date_facture", 5)
+    num_col      = col_map.get("num_facture_col", 6)
+    desc_col     = col_map.get("description_col", 7)
+    tva_col      = col_map.get("tva_col", real_col + 1)
+    ttc_col      = col_map.get("ttc_col", real_col + 2)
 
     all_rows = list(ws.iter_rows(values_only=True))
 
@@ -275,19 +293,19 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict,
                 if isinstance(pct_val, (int, float)) and 0 < pct_val <= 1:
                     invoice_pcts.setdefault(lot_name, []).append(pct_val)
 
-            # Detect invoice row: fournisseur present (col 3) + realise_ht > 0
-            fournisseur = _get(row, 3)
+            # Detect invoice row: fournisseur present + realise_ht > 0
+            fournisseur = _get(row, fournisseur_col)
             inv_realise = _get(row, real_col)
             if (fournisseur is not None
                     and isinstance(inv_realise, (int, float))
                     and inv_realise > 0):
-                tva_val = _get(row, 12)
-                ttc_val = _get(row, 13)
+                tva_val = _get(row, tva_col)
+                ttc_val = _get(row, ttc_col)
                 current_invoices.append({
                     "fournisseur": str(fournisseur),
-                    "date": _get(row, 5),
-                    "num_facture": str(_get(row, 6)) if _get(row, 6) is not None else "",
-                    "description": str(_get(row, 7)) if _get(row, 7) is not None else "",
+                    "date": _get(row, date_col),
+                    "num_facture": str(_get(row, num_col)) if _get(row, num_col) is not None else "",
+                    "description": str(_get(row, desc_col)) if _get(row, desc_col) is not None else "",
                     "realise_ht": float(inv_realise),
                     "tva": float(tva_val) if isinstance(tva_val, (int, float)) else 0.0,
                     "ttc": float(ttc_val) if isinstance(ttc_val, (int, float)) else 0.0,

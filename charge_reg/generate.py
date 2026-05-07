@@ -19,13 +19,13 @@ _GREEN  = "D5F5E3"
 _RED    = "FDECEA"
 _ORANGE = "E64A19"   # non-récupérables in Vacance tab
 
-_fill_navy   = PatternFill("solid", fgColor=_NAVY)
-_fill_blue   = PatternFill("solid", fgColor=_BLUE)
-_fill_lblue  = PatternFill("solid", fgColor=_LBLUE)
-_fill_lgray  = PatternFill("solid", fgColor=_LGRAY)
-_fill_green  = PatternFill("solid", fgColor=_GREEN)
-_fill_red    = PatternFill("solid", fgColor=_RED)
-_fill_orange = PatternFill("solid", fgColor=_ORANGE)
+_fill_navy   = PatternFill("solid", fgColor="FF" + _NAVY)
+_fill_blue   = PatternFill("solid", fgColor="FF" + _BLUE)
+_fill_lblue  = PatternFill("solid", fgColor="FF" + _LBLUE)
+_fill_lgray  = PatternFill("solid", fgColor="FF" + _LGRAY)
+_fill_green  = PatternFill("solid", fgColor="FF" + _GREEN)
+_fill_red    = PatternFill("solid", fgColor="FF" + _RED)
+_fill_orange = PatternFill("solid", fgColor="FF" + _ORANGE)
 
 def _fn(size=9, bold=False, color="000000"):
     return Font(name="Calibri", size=size, bold=bold, color=color)
@@ -113,7 +113,11 @@ def _cle_formula(param_row: int, base_surface, site_surface: float) -> str:
 
 # ── Paramètres sheet ──────────────────────────────────────────────────────────
 
-def build_parametres_sheet(ws, enriched: dict) -> dict:
+def build_parametres_sheet(
+    ws, enriched: dict,
+    recap_subtotals: dict | None = None,
+    recap_tab_name: str = "Récapitulatif",
+) -> dict:
     """
     Structure:
       Row 1   : title (navy)
@@ -123,6 +127,8 @@ def build_parametres_sheet(ws, enriched: dict) -> dict:
       Row 5   : blank
       Row 6   : column headers (navy)
       Row 7+  : one row per lot
+      blank
+      Poste header row + one row per poste (linked to Récapitulatif)
 
     Returns {lot_name: row_number}.
     """
@@ -150,7 +156,7 @@ def build_parametres_sheet(ws, enriched: dict) -> dict:
     _rh(ws, 5, 7.55)
 
     headers = ["Lot", "Statut", "Surface (m²)", "Bâtiment", "Locataire",
-               "Début de bail / MAD", "Fin de bail",
+               "Début de bail", "Fin de bail",
                f"Jours {year}", "Prorata"]
     for col, h in enumerate(headers, 1):
         _c(ws, 6, col, h, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
@@ -184,12 +190,12 @@ def build_parametres_sheet(ws, enriched: dict) -> dict:
                 cell.number_format = DATE_FMT
             cell.alignment = _AL_CTR
 
-        # Col H — computed days formula
+        # Col H — days formula (use ="" to detect empty, matching reference)
         days_formula = (
             f"=MAX(0,MIN(DATE({year},12,31),"
-            f"IF(G{idx}>0,G{idx},DATE({year},12,31)))"
+            f"IF(G{idx}=\"\",DATE({year},12,31),G{idx}))"
             f"-MAX(DATE({year},1,1),"
-            f"IF(F{idx}>0,F{idx},DATE({year},1,1)))+1)"
+            f"IF(F{idx}=\"\",DATE({year},1,1),F{idx}))+1)"
         )
         ch = ws.cell(row=idx, column=8, value=days_formula)
         ch.font = _fn(9, True, "000000")
@@ -202,6 +208,30 @@ def build_parametres_sheet(ws, enriched: dict) -> dict:
         ci.alignment = _AL_RIGHT
 
         _rh(ws, idx, 15.05)
+
+    # ── Poste reference table (linked to Récapitulatif) ───────────────────────
+    if recap_subtotals:
+        poste_hdr_row = 7 + len(lots) + 1  # blank row then header
+        _rh(ws, 7 + len(lots), 7.55)       # blank separator
+
+        ws.merge_cells(f"A{poste_hdr_row}:B{poste_hdr_row}")
+        _c(ws, poste_hdr_row, 1, "Poste (lié au Récapitulatif)",
+           font=F_HDR8, fill=_fill_blue, align=_AL_LEFT)
+        _c(ws, poste_hdr_row, 3, "Montant HT (€)",
+           font=F_HDR8, fill=_fill_blue, align=_AL_CTR)
+        _rh(ws, poste_hdr_row, 18.0)
+
+        for i, ((cat, poste), recap_row) in enumerate(recap_subtotals.items()):
+            r = poste_hdr_row + 1 + i
+            name_formula = (
+                f"=IFERROR(MID('{recap_tab_name}'!A{recap_row},"
+                f"FIND(\" — \",'{recap_tab_name}'!A{recap_row})+4,100),\"\")"
+            )
+            _c(ws, r, 1, name_formula,
+               font=_fn(9, False, "444444"), align=_AL_LEFT)
+            _c(ws, r, 3, f"='{recap_tab_name}'!E{recap_row}",
+               font=_fn(9, True, _NAVY), fmt=MONEY_FMT, align=_AL_RIGHT)
+            _rh(ws, r, 15.05)
 
     _set_col_widths(ws, {
         "A": 20, "B": 14, "C": 14, "D": 12, "E": 22,
@@ -342,6 +372,40 @@ def build_recapitulatif_sheet(ws, enriched: dict) -> dict:
         cat_upper = cat.upper()
         if any(ex in cat_upper for ex in _EXCL):
             nonrecup_subtotal_rows.append(st)
+
+    # ── Summary totals at end of Récapitulatif ────────────────────────────────
+    recup_rows    = [r for (c, _), r in poste_subtotal_rows.items()
+                     if not any(ex in c.upper() for ex in _EXCL)]
+    nonrecup_rows = nonrecup_subtotal_rows
+
+    if nonrecup_rows:
+        _rh(ws, current_row, 6.0)
+        current_row += 1
+        nr_row = current_row
+        ws.merge_cells(f"A{nr_row}:D{nr_row}")
+        _c(ws, nr_row, 1, "TOTAL — CHARGES NON RÉCUPÉRABLES",
+           font=F_CAT, fill=_fill_blue, align=_AL_LEFT)
+        nr_expr = "+".join(f"E{r}" for r in nonrecup_rows)
+        c = ws.cell(row=nr_row, column=5)
+        c.value = f"={nr_expr}"
+        c.font = F_CAT; c.fill = _fill_blue
+        c.number_format = MONEY_FMT; c.alignment = _AL_RIGHT
+        _rh(ws, nr_row, 19.55)
+        current_row += 1
+
+    if recup_rows:
+        _rh(ws, current_row, 6.0)
+        current_row += 1
+        tot_row = current_row
+        ws.merge_cells(f"A{tot_row}:D{tot_row}")
+        _c(ws, tot_row, 1, "TOTAL GÉNÉRAL — CHARGES RÉCUPÉRABLES",
+           font=F_TOTAL_WH, fill=_fill_navy, align=_AL_LEFT)
+        tot_expr = "+".join(f"E{r}" for r in recup_rows)
+        c = ws.cell(row=tot_row, column=5)
+        c.value = f"={tot_expr}"
+        c.font = F_TOTAL_WH; c.fill = _fill_navy
+        c.number_format = MONEY_FMT; c.alignment = _AL_RIGHT
+        _rh(ws, tot_row, 25.55)
 
     ws.freeze_panes = "A4"
     return {
@@ -680,11 +744,11 @@ def build_vacance_sheet(
         _c(ws, row, 5, f"=Paramètres!H{pr}/365",
            font=F_VAL, fmt=PERIOD_FMT, align=_AL_CTR)
 
-        # Coût vacance = portion des charges annuelles non récupérée
+        # Coût vacance: if Vacant = full QP, if Occupied = D-F (QP annuelle - part tenant)
         cost_formula = (
             f"=IF(Paramètres!B{pr}=\"Vacant\","
             f"'{tab}'!D{tr},"
-            f"'{tab}'!D{tr}*(1-Paramètres!H{pr}/365))"
+            f"'{tab}'!D{tr}-'{tab}'!F{tr})"
         )
         _c(ws, row, 6, cost_formula,
            font=F_VAL_BLD, fmt=MONEY_FMT, align=_AL_RIGHT)
@@ -818,11 +882,16 @@ def generate(enriched: dict, output_path: str | None = None) -> str:
     ws_recap = wb.create_sheet(recap_tab_name)
     recap_info        = build_recapitulatif_sheet(ws_recap, enriched)
 
-    # 2. Paramètres
-    ws_params = wb.create_sheet("Paramètres")
-    lot_rows = build_parametres_sheet(ws_params, enriched)
     recap_subtotals   = recap_info["subtotals"]
     nonrecup_sub_rows = recap_info["nonrecup_subtotal_rows"]
+
+    # 2. Paramètres (after Récapitulatif so we can link to its subtotal rows)
+    ws_params = wb.create_sheet("Paramètres")
+    lot_rows = build_parametres_sheet(
+        ws_params, enriched,
+        recap_subtotals=recap_subtotals,
+        recap_tab_name=recap_tab_name,
+    )
 
     # 3. One tab per lot (ALL lots, including vacant)
     lot_tab_names  = {}

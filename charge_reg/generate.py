@@ -1,78 +1,84 @@
 """
 Generate the multi-tab regularisation xlsx.
-Tabs: Paramètres | Récapitulatif {year} | one tab per occupied lot
-Styling matches the reference regularisation_charges_ormes_a_2025_v3.xlsx.
+Tabs: Paramètres | Récapitulatif {year} | one tab per lot (all lots) | Vacance Locative
+Styling and structure match the reference regularisation_charges_ormes_a_2025_v3.xlsx exactly.
 """
 
 import datetime
 from pathlib import Path
 import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
-# ── Colour palette (from reference file) ──────────────────────────────────────
-_NAVY   = "1B3A6B"   # dark navy  — title bg, header bg, section separators
-_BLUE   = "2E5FA3"   # medium blue — category rows, provisions header, solde
-_LBLUE  = "D0DDEF"   # light blue  — subtotals, subtitle rows
-_LGRAY  = "F2F4F8"   # very light grey — invoice rows in récap
-_GREEN  = "D5F5E3"   # light green — Occupé status
-_RED    = "FDECEA"   # light red   — Vacant status
+# ── Colour palette ────────────────────────────────────────────────────────────
+_NAVY   = "1B3A6B"
+_BLUE   = "2E5FA3"
+_LBLUE  = "D0DDEF"
+_LGRAY  = "F2F4F8"
+_GREEN  = "D5F5E3"
+_RED    = "FDECEA"
+_ORANGE = "E64A19"   # non-récupérables in Vacance tab
 
-# ── Pre-built fills ────────────────────────────────────────────────────────────
-_fill_navy  = PatternFill("solid", fgColor=_NAVY)
-_fill_blue  = PatternFill("solid", fgColor=_BLUE)
-_fill_lblue = PatternFill("solid", fgColor=_LBLUE)
-_fill_lgray = PatternFill("solid", fgColor=_LGRAY)
-_fill_green = PatternFill("solid", fgColor=_GREEN)
-_fill_red   = PatternFill("solid", fgColor=_RED)
+_fill_navy   = PatternFill("solid", fgColor=_NAVY)
+_fill_blue   = PatternFill("solid", fgColor=_BLUE)
+_fill_lblue  = PatternFill("solid", fgColor=_LBLUE)
+_fill_lgray  = PatternFill("solid", fgColor=_LGRAY)
+_fill_green  = PatternFill("solid", fgColor=_GREEN)
+_fill_red    = PatternFill("solid", fgColor=_RED)
+_fill_orange = PatternFill("solid", fgColor=_ORANGE)
 
-# ── Pre-built fonts ────────────────────────────────────────────────────────────
 def _fn(size=9, bold=False, color="000000"):
     return Font(name="Calibri", size=size, bold=bold, color=color)
 
-F_TITLE_RECAP = _fn(13, True, "FFFFFF")   # récap / paramètres main title
-F_TITLE_TENANT= _fn(12, True, "FFFFFF")   # tenant tab title
-F_HDRS        = _fn(8,  True, "FFFFFF")   # column headers (white on navy)
-F_CAT_RECAP   = _fn(11, True, "FFFFFF")   # ── CATEGORY ── in récap
-F_CAT_TENANT  = _fn(9,  True, "FFFFFF")   # category rows in tenant tab
-F_SUBTOT      = _fn(9,  True, _NAVY)      # subtotals (navy text)
-F_TOTAL_ROW   = _fn(10, True, "FFFFFF")   # grand total row (white on navy)
-F_SOLDE       = _fn(10, True, "FFFFFF")   # solde row (white on blue)
-F_NAVY_SM     = _fn(9,  False, _NAVY)     # subtitle / info text
-F_POSTE_A     = _fn(9,  False, "222222")  # poste name col A
-F_VAL         = _fn(9,  False, "000000")  # values / formulas
-F_GRAY        = _fn(9,  False, "AAAAAA")  # placeholder ("Aucune facture")
-F_BLUE_VAL    = _fn(9,  False, "000000")  # formula values (same as F_VAL)
+F_TITLE13  = _fn(13, True, "FFFFFF")
+F_TITLE12  = _fn(12, True, "FFFFFF")
+F_TITLE11  = _fn(11, True, "FFFFFF")
+F_TITLE10  = _fn(10, True, "FFFFFF")
+F_HDR8     = _fn(8,  True, "FFFFFF")
+F_CAT      = _fn(9,  True, "FFFFFF")
+F_SUBTOT   = _fn(9,  True, _NAVY)
+F_TOTAL_WH = _fn(10, True, "FFFFFF")
+F_SOLDE    = _fn(10, True, "FFFFFF")
+F_NAVY_SM  = _fn(9,  False, _NAVY)
+F_NAVY_BLD = _fn(9,  True,  _NAVY)
+F_POSTE_A  = _fn(9,  False, "222222")
+F_VAL      = _fn(9,  False, "000000")
+F_VAL_BLD  = _fn(9,  True,  _NAVY)   # bold navy for lot names in Vacance
+F_NOTE     = _fn(8,  False, "666666")
+F_LGRAY_PH = _fn(9,  False, "AAAAAA")
 
-# ── Number / date formats ──────────────────────────────────────────────────────
-MONEY_FMT = '#,##0.00;(#,##0.00)'
-DATE_FMT  = 'DD/MM/YYYY'
-PCT_FMT   = '0.00000'
+# ── Number / date formats ─────────────────────────────────────────────────────
+MONEY_FMT  = '#,##0.00" €"'
+SURF_FMT   = '#,##0.00'
+DATE_FMT   = 'DD/MM/YYYY'
+PCT_FMT    = '0.00%'
+PERIOD_FMT = '0.0000'
+INT_FMT    = '0'
 
-# ── Alignment shortcuts ────────────────────────────────────────────────────────
+# ── Alignment shortcuts ───────────────────────────────────────────────────────
 _AL_CTR   = Alignment(horizontal="center", vertical="center")
 _AL_LEFT  = Alignment(horizontal="left",   vertical="center")
 _AL_RIGHT = Alignment(horizontal="right",  vertical="center")
 _AL_WRAP  = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
 
-# ── Low-level helpers ──────────────────────────────────────────────────────────
+# ── Low-level cell helper ─────────────────────────────────────────────────────
 
 def _c(ws, row, col, value=None, font=None, fill=None, fmt=None, align=None):
-    c = ws.cell(row=row, column=col, value=value)
-    if font:  c.font  = font
-    if fill:  c.fill  = fill
-    if fmt:   c.number_format = fmt
-    if align: c.alignment = align
-    return c
+    cell = ws.cell(row=row, column=col, value=value)
+    if font:  cell.font  = font
+    if fill:  cell.fill  = fill
+    if fmt:   cell.number_format = fmt
+    if align: cell.alignment = align
+    return cell
 
 
-def _money(ws, row, col, value, font=None):
-    return _c(ws, row, col, value, font=font or F_VAL, fmt=MONEY_FMT,
-              align=_AL_RIGHT)
+def _money(ws, row, col, value, font=None, fill=None):
+    return _c(ws, row, col, value,
+              font=font or F_VAL, fill=fill, fmt=MONEY_FMT, align=_AL_RIGHT)
 
 
-def _to_excel_date(val):
+def _to_date(val):
     if val is None:
         return None
     if isinstance(val, datetime.datetime):
@@ -88,51 +94,37 @@ def _to_excel_date(val):
 
 
 def _set_col_widths(ws, widths: dict):
-    """widths = {"A": 28, "B": 13, ...}"""
     for col, w in widths.items():
         ws.column_dimensions[col].width = w
 
 
-def _row_h(ws, row, height):
+def _rh(ws, row, height):
     ws.row_dimensions[row].height = height
 
 
-# ── Formula builders ───────────────────────────────────────────────────────────
-
-def _prorata_formula(year: int, param_row: int, is_fluid: bool) -> str:
-    """Excel prorata formula. Fluids use col H (effective/MAD start), others use col F (bail start)."""
-    start_col = "H" if is_fluid else "F"
-    return (
-        f"=MAX(0,MIN(DATE({year},12,31),"
-        f"IF(Paramètres!$I${param_row}>0,Paramètres!$I${param_row},DATE({year},12,31)))"
-        f"-MAX(DATE({year},1,1),"
-        f"IF(Paramètres!${start_col}${param_row}>0,"
-        f"Paramètres!${start_col}${param_row},DATE({year},1,1)))+1)/365"
-    )
-
+# ── Clé formula ───────────────────────────────────────────────────────────────
 
 def _cle_formula(param_row: int, base_surface, site_surface: float) -> str:
-    """Clé = lot_surface / base_surface.  $C$3 = site total surface in Paramètres."""
+    """Clé = lot_surface / base_surface. $C$3 = site surface in Paramètres."""
     if base_surface is None or abs(float(base_surface) - float(site_surface)) < 10:
-        return f"=(Paramètres!$C${param_row}/Paramètres!$C$3)"
-    return f"=(Paramètres!$C${param_row}/{round(float(base_surface), 2)})"
+        return f"=Paramètres!$C${param_row}/Paramètres!$C$3"
+    return f"=Paramètres!$C${param_row}/{round(float(base_surface), 2)}"
 
 
-# ── Paramètres sheet ───────────────────────────────────────────────────────────
+# ── Paramètres sheet ──────────────────────────────────────────────────────────
 
 def build_parametres_sheet(ws, enriched: dict) -> dict:
     """
-    Build the Paramètres sheet.
-    Returns {lot_name: row_number} so lot tabs can reference surface/dates by row.
-
     Structure:
       Row 1   : title (navy)
-      Row 2   : Site  (blue label | value col C)
+      Row 2   : Site   (blue label | C value)
       Row 3   : Surface totale  ← $C$3 referenced by clé formula
       Row 4   : Année
-      Row 5   : (blank)
+      Row 5   : blank
       Row 6   : column headers (navy)
       Row 7+  : one row per lot
+
+    Returns {lot_name: row_number}.
     """
     site  = enriched["site"]
     year  = enriched.get("year", 2025)
@@ -141,82 +133,92 @@ def build_parametres_sheet(ws, enriched: dict) -> dict:
         info.get("surface") or 0 for info in lots.values()
     )
 
-    # Row 1 — title
     ws.merge_cells("A1:I1")
     _c(ws, 1, 1, f"{site} — PARAMÈTRES SITE {year}",
-       font=F_TITLE_RECAP, fill=_fill_navy, align=_AL_CTR)
-    _row_h(ws, 1, 27.75)
+       font=F_TITLE13, fill=_fill_navy, align=_AL_CTR)
+    _rh(ws, 1, 27.75)
 
-    # Rows 2-4 — site info
     for row, label, value in [
-        (2, "Site",                       site),
-        (3, "Surface totale site (m²)",   surface_totale),
-        (4, "Année",                      year),
+        (2, "Site",                     site),
+        (3, "Surface totale site (m²)", surface_totale),
+        (4, "Année",                    year),
     ]:
         _c(ws, row, 1, label, font=_fn(9, True, "FFFFFF"), fill=_fill_blue, align=_AL_LEFT)
         _c(ws, row, 3, value, font=_fn(9, True, "000000"), align=_AL_LEFT)
-        _row_h(ws, row, 15.8)
+        _rh(ws, row, 15.8)
 
-    # Row 5 — blank
-    _row_h(ws, 5, 7.55)
+    _rh(ws, 5, 7.55)
 
-    # Row 6 — column headers
-    headers = [
-        "Lot", "Statut", "Surface (m²)", "Bâtiment", "Locataire",
-        "Début de bail", "Fin de bail",
-        "Début effectif (MAD/bail)", "Fin effective",
-    ]
+    headers = ["Lot", "Statut", "Surface (m²)", "Bâtiment", "Locataire",
+               "Début de bail / MAD", "Fin de bail",
+               f"Jours {year}", "Prorata"]
     for col, h in enumerate(headers, 1):
-        _c(ws, 6, col, h, font=F_HDRS, fill=_fill_navy,
-           align=_AL_WRAP if col > 5 else _AL_CTR)
-    _row_h(ws, 6, 19.55)
+        _c(ws, 6, col, h, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
+    _rh(ws, 6, 19.55)
 
-    # Rows 7+ — one row per lot
     lot_rows: dict[str, int] = {}
-    for row_idx, (lot_name, info) in enumerate(lots.items(), start=7):
-        lot_rows[lot_name] = row_idx
+    for idx, (lot_name, info) in enumerate(lots.items(), start=7):
+        lot_rows[lot_name] = idx
 
-        _c(ws, row_idx, 1, lot_name, font=_fn(9, True, "000000"), align=_AL_LEFT)
+        _c(ws, idx, 1, lot_name, font=_fn(9, True, "000000"), align=_AL_LEFT)
 
         statut = info.get("statut", "Vacant")
-        stat_fill = _fill_green if statut == "Occupé" else _fill_red
-        _c(ws, row_idx, 2, statut, font=_fn(9, True, "000000"),
-           fill=stat_fill, align=_AL_CTR)
+        _c(ws, idx, 2, statut,
+           font=_fn(9, True, "000000"),
+           fill=_fill_green if statut == "Occupé" else _fill_red,
+           align=_AL_CTR)
 
-        _c(ws, row_idx, 3, info.get("surface"), font=F_VAL, align=_AL_RIGHT)
-        _c(ws, row_idx, 4, info.get("batiment") or "", font=F_VAL, align=_AL_CTR)
-        _c(ws, row_idx, 5, info.get("tenant") or "", font=F_VAL, align=_AL_LEFT)
+        _c(ws, idx, 3, info.get("surface"), font=F_VAL, align=_AL_RIGHT)
+        _c(ws, idx, 4, info.get("batiment") or "", font=F_VAL, align=_AL_CTR)
+        _c(ws, idx, 5, info.get("tenant") or "", font=F_VAL, align=_AL_LEFT)
 
-        bail_start      = _to_excel_date(info.get("bail_start"))
-        bail_end        = _to_excel_date(info.get("bail_end"))
-        mad_start       = _to_excel_date(info.get("mad_start"))
-        effective_start = mad_start or bail_start
+        bail_start  = _to_date(info.get("bail_start"))
+        bail_end    = _to_date(info.get("bail_end"))
+        mad_start   = _to_date(info.get("mad_start"))
+        eff_start   = mad_start or bail_start
 
-        for col, d in [(6, bail_start), (7, bail_end),
-                       (8, effective_start), (9, bail_end)]:
-            cell = ws.cell(row=row_idx, column=col, value=d)
+        for col, d in [(6, eff_start), (7, bail_end)]:
+            cell = ws.cell(row=idx, column=col, value=d)
             cell.font = F_VAL
             if d:
                 cell.number_format = DATE_FMT
             cell.alignment = _AL_CTR
 
-        _row_h(ws, row_idx, 15.05)
+        # Col H — computed days formula
+        days_formula = (
+            f"=MAX(0,MIN(DATE({year},12,31),"
+            f"IF(G{idx}>0,G{idx},DATE({year},12,31)))"
+            f"-MAX(DATE({year},1,1),"
+            f"IF(F{idx}>0,F{idx},DATE({year},1,1)))+1)"
+        )
+        ch = ws.cell(row=idx, column=8, value=days_formula)
+        ch.font = _fn(9, True, "000000")
+        ch.alignment = _AL_RIGHT
 
-    # Column widths
+        # Col I — prorata = H/365
+        ci = ws.cell(row=idx, column=9, value=f"=H{idx}/365")
+        ci.font = _fn(9, True, "000000")
+        ci.number_format = PERIOD_FMT
+        ci.alignment = _AL_RIGHT
+
+        _rh(ws, idx, 15.05)
+
     _set_col_widths(ws, {
         "A": 20, "B": 14, "C": 14, "D": 12, "E": 22,
-        "F": 16, "G": 16, "H": 16, "I": 16,
+        "F": 16, "G": 16, "H": 12, "I": 10,
     })
 
     return lot_rows
 
 
-# ── Récapitulatif sheet ────────────────────────────────────────────────────────
+# ── Récapitulatif sheet ───────────────────────────────────────────────────────
 
 def build_recapitulatif_sheet(ws, enriched: dict) -> dict:
     """
-    Build the Récapitulatif {year} sheet with all invoices and subtotals.
-    Returns {"subtotals": {(categorie, poste): subtotal_row}}
+    Returns {
+        "subtotals": {(cat, poste): subtotal_row},
+        "nonrecup_subtotal_rows": [row, ...],
+    }
     """
     year    = enriched.get("year", 2025)
     site    = enriched["site"]
@@ -226,22 +228,22 @@ def build_recapitulatif_sheet(ws, enriched: dict) -> dict:
     # Row 1 — title
     ws.merge_cells("A1:G1")
     _c(ws, 1, 1, f"{site} — RÉCAPITULATIF DES CHARGES {year}",
-       font=F_TITLE_RECAP, fill=_fill_navy, align=_AL_CTR)
-    _row_h(ws, 1, 27.75)
+       font=F_TITLE13, fill=_fill_navy, align=_AL_CTR)
+    _rh(ws, 1, 27.75)
 
     # Row 2 — subtitle
     ws.merge_cells("A2:G2")
-    _c(ws, 2, 1,
-       f"Site : {site}  |  Période : 01/01/{year} – 31/12/{year}",
+    _c(ws, 2, 1, f"Site : {site}  |  Période : 01/01/{year} – 31/12/{year}",
        font=F_NAVY_SM, fill=_fill_lblue, align=_AL_LEFT)
-    _row_h(ws, 2, 15.8)
+    _rh(ws, 2, 15.8)
 
     # Row 3 — column headers
-    hdr_labels = ["Fournisseur", "Date facture", "N° facture",
-                  "Description", "Montant HT (€)", "TVA (€)", "Montant TTC (€)"]
-    for col, lbl in enumerate(hdr_labels, 1):
-        _c(ws, 3, col, lbl, font=F_HDRS, fill=_fill_navy, align=_AL_WRAP)
-    _row_h(ws, 3, 19.55)
+    for col, lbl in enumerate(
+        ["Fournisseur", "Date facture", "N° facture",
+         "Description", "Montant HT (€)", "TVA (€)", "Montant TTC (€)"], 1
+    ):
+        _c(ws, 3, col, lbl, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
+    _rh(ws, 3, 19.55)
 
     _set_col_widths(ws, {
         "A": 28, "B": 13, "C": 22, "D": 45, "E": 14, "F": 12, "G": 14,
@@ -250,105 +252,107 @@ def build_recapitulatif_sheet(ws, enriched: dict) -> dict:
     current_row = 4
     current_cat = None
     poste_subtotal_rows: dict[tuple, int] = {}
+    nonrecup_subtotal_rows: list[int] = []
+
+    _EXCL = ("NON RECUP", "NON RÉCUP", "CAPEX", "FRAIS BANCAIRE")
 
     for charge in charges:
-        cat     = charge.get("categorie") or ""
-        poste   = charge.get("poste", "")
+        cat      = charge.get("categorie") or ""
+        poste    = charge.get("poste", "")
         invoices = charge.get("invoices", [])
         realise  = charge.get("realise_ht", 0) or 0
 
         if realise == 0 and not invoices:
             continue
 
-        # Category section separator (e.g. ── FLUIDES ──)
+        # Category section separator
         if cat != current_cat:
             current_cat = cat
             ws.merge_cells(f"A{current_row}:G{current_row}")
             _c(ws, current_row, 1, f"── {cat} ──",
-               font=F_CAT_RECAP, fill=_fill_navy, align=_AL_CTR)
-            _row_h(ws, current_row, 21.75)
+               font=F_CAT, fill=_fill_navy, align=_AL_CTR)
+            _rh(ws, current_row, 21.75)
             current_row += 1
 
         # Poste subheader
         _c(ws, current_row, 1, f"  {poste}",
            font=_fn(9, True, "FFFFFF"), fill=_fill_blue, align=_AL_LEFT)
-        _row_h(ws, current_row, 18.0)
+        _rh(ws, current_row, 18.0)
         current_row += 1
 
         if invoices:
-            first_inv_row = current_row
+            first_inv = current_row
             for inv in invoices:
                 _c(ws, current_row, 1, inv.get("fournisseur", ""),
                    font=F_VAL, fill=_fill_lgray, align=_AL_LEFT)
-                date_val = inv.get("date")
-                if date_val:
-                    dc = ws.cell(row=current_row, column=2, value=date_val)
-                    dc.font  = F_VAL
-                    dc.fill  = _fill_lgray
+                dv = inv.get("date")
+                dc = ws.cell(row=current_row, column=2, value=dv)
+                dc.font = F_VAL; dc.fill = _fill_lgray
+                if dv:
                     dc.number_format = DATE_FMT
-                    dc.alignment = _AL_CTR
-                else:
-                    _c(ws, current_row, 2, None, fill=_fill_lgray)
+                dc.alignment = _AL_CTR
                 _c(ws, current_row, 3, inv.get("num_facture", ""),
                    font=F_VAL, fill=_fill_lgray, align=_AL_LEFT)
                 _c(ws, current_row, 4, inv.get("description", ""),
                    font=F_VAL, fill=_fill_lgray, align=_AL_LEFT)
                 _money(ws, current_row, 5, inv.get("realise_ht", 0)).fill = _fill_lgray
                 tva = inv.get("tva") or 0
+                ttc = inv.get("ttc") or 0
                 if tva:
                     _money(ws, current_row, 6, tva).fill = _fill_lgray
                 else:
                     _c(ws, current_row, 6, None, fill=_fill_lgray)
-                ttc = inv.get("ttc") or 0
                 if ttc:
                     _money(ws, current_row, 7, ttc).fill = _fill_lgray
                 else:
                     _c(ws, current_row, 7, None, fill=_fill_lgray)
-                _row_h(ws, current_row, 15.05)
+                _rh(ws, current_row, 15.05)
                 current_row += 1
 
-            last_inv_row = current_row - 1
-            # Subtotal
-            st_row = current_row
-            ws.merge_cells(f"A{st_row}:D{st_row}")
-            _c(ws, st_row, 1, f"    Sous-total — {poste}",
+            last_inv = current_row - 1
+            st = current_row
+            ws.merge_cells(f"A{st}:D{st}")
+            _c(ws, st, 1, f"    Sous-total — {poste}",
                font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
-            for col, letter in [(5, "E"), (6, "F"), (7, "G")]:
-                c = ws.cell(row=st_row, column=col)
-                c.value         = f"=SUM({letter}{first_inv_row}:{letter}{last_inv_row})"
-                c.font          = F_SUBTOT
-                c.number_format = MONEY_FMT
-                c.fill          = _fill_lblue
-                c.alignment     = _AL_RIGHT
-            _row_h(ws, st_row, 15.8)
+            for col, ltr in [(5, "E"), (6, "F"), (7, "G")]:
+                c = ws.cell(row=st, column=col)
+                c.value = f"=SUM({ltr}{first_inv}:{ltr}{last_inv})"
+                c.font = F_SUBTOT; c.fill = _fill_lblue
+                c.number_format = MONEY_FMT; c.alignment = _AL_RIGHT
+            _rh(ws, st, 15.8)
             current_row += 1
 
         else:
-            # No invoices — placeholder + static subtotal
             _c(ws, current_row, 4, "— Aucune facture —",
-               font=F_GRAY, fill=_fill_lgray, align=_AL_LEFT)
-            _row_h(ws, current_row, 13.5)
+               font=F_LGRAY_PH, fill=_fill_lgray, align=_AL_LEFT)
+            _rh(ws, current_row, 13.5)
             current_row += 1
 
-            st_row = current_row
-            ws.merge_cells(f"A{st_row}:D{st_row}")
-            _c(ws, st_row, 1, f"    Sous-total — {poste}",
+            st = current_row
+            ws.merge_cells(f"A{st}:D{st}")
+            _c(ws, st, 1, f"    Sous-total — {poste}",
                font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
-            c5 = ws.cell(row=st_row, column=5, value=realise)
-            c5.font = F_SUBTOT; c5.number_format = MONEY_FMT
-            c5.fill = _fill_lblue; c5.alignment = _AL_RIGHT
-            _row_h(ws, st_row, 15.8)
+            c5 = ws.cell(row=st, column=5, value=realise)
+            c5.font = F_SUBTOT; c5.fill = _fill_lblue
+            c5.number_format = MONEY_FMT; c5.alignment = _AL_RIGHT
+            _rh(ws, st, 15.8)
             current_row += 1
 
-        poste_subtotal_rows[(cat, poste)] = st_row
+        poste_subtotal_rows[(cat, poste)] = st
+        cat_upper = cat.upper()
+        if any(ex in cat_upper for ex in _EXCL):
+            nonrecup_subtotal_rows.append(st)
 
     ws.freeze_panes = "A4"
-    return {"subtotals": poste_subtotal_rows}
+    return {
+        "subtotals": poste_subtotal_rows,
+        "nonrecup_subtotal_rows": nonrecup_subtotal_rows,
+    }
 
 
-# ── Per-lot (tenant) sheet ─────────────────────────────────────────────────────
+# ── Per-lot sheet (all lots, including vacant) ────────────────────────────────
 
-def build_tenant_sheet(
+def build_lot_sheet(
     ws,
     lot_name: str,
     lot_info: dict,
@@ -361,58 +365,60 @@ def build_tenant_sheet(
     site_surface: float,
     recap_tab_name: str,
     provisions_quarterly: dict | None = None,
-):
-    """Build one per-lot regularisation sheet with cross-tab formula references."""
-    tenant  = lot_info.get("tenant", "LOCATAIRE")
+) -> int:
+    """
+    Build one lot sheet. Returns the row number of the TOTAL row.
+    Structure matches the reference exactly (inline subtotals, info note at end).
+    """
+    tenant  = lot_info.get("tenant") or ""
     surface = lot_info.get("surface") or 0
+    is_occ  = lot_info.get("statut", "Vacant") == "Occupé"
 
-    # Column widths
     _set_col_widths(ws, {"A": 34, "B": 14, "C": 15, "E": 12, "F": 15})
 
     # Row 1 — title
     ws.merge_cells("A1:F1")
     _c(ws, 1, 1, f"RÉGULARISATION DE CHARGES — {lot_name.upper()}",
-       font=F_TITLE_TENANT, fill=_fill_navy, align=_AL_CTR)
-    _row_h(ws, 1, 25.55)
+       font=F_TITLE12, fill=_fill_navy, align=_AL_CTR)
+    _rh(ws, 1, 25.55)
 
     # Row 2 — static info
     ws.merge_cells("A2:F2")
     _c(ws, 2, 1,
-       f"Site : {site}  |  Année {year}  |  Lot : {lot_name}  |  "
-       f"Surface lot {lot_name} : {surface} m²  |  ",
+       f"Site : {site}  |  Année {year}",
        font=F_NAVY_SM, fill=_fill_lblue, align=_AL_LEFT)
-    _row_h(ws, 2, 15.8)
+    _rh(ws, 2, 15.8)
 
-    # Row 3 — tenant/status formula from Paramètres
+    # Row 3 — tenant/status formula
     ws.merge_cells("A3:F3")
     c3 = ws.cell(row=3, column=1)
-    c3.value     = (f"=Paramètres!$B${param_row}"
-                    f"&IF(Paramètres!$E${param_row}<>\"\","
-                    f"\" — \"&Paramètres!$E${param_row},\"\")")
-    c3.font      = F_NAVY_SM
-    c3.fill      = _fill_lblue
-    c3.alignment = _AL_LEFT
-    _row_h(ws, 3, 15.8)
+    c3.value = (
+        f"=Paramètres!$B${param_row}"
+        f"&IF(Paramètres!$E${param_row}<>\"\","
+        f"\" — \"&Paramètres!$E${param_row},\"\")"
+    )
+    c3.font = F_NAVY_SM; c3.fill = _fill_lblue; c3.alignment = _AL_LEFT
+    _rh(ws, 3, 15.8)
 
     # Row 4 — column headers
-    hdr_labels = ["Poste", "Clé répartition",
-                  "Total site HT", "QP annuelle", "Période", "QP locataire"]
-    for col, lbl in enumerate(hdr_labels, 1):
-        _c(ws, 4, col, lbl, font=F_HDRS, fill=_fill_navy, align=_AL_WRAP)
-    _row_h(ws, 4, 19.55)
+    for col, lbl in enumerate(
+        ["Poste", "Clé répartition", "Total site HT",
+         "QP annuelle", "Période", "QP locataire"], 1
+    ):
+        _c(ws, 4, col, lbl, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
+    _rh(ws, 4, 19.55)
 
     current_row = 5
-    current_cat = None
-    category_rows: dict[str, dict] = {}
+    _EXCL = ("NON RECUP", "NON RÉCUP", "CAPEX", "FRAIS BANCAIRE")
+    category_start: dict[str, int] = {}   # cat -> first detail row
+    category_end:   dict[str, int] = {}   # cat -> last detail row
+    subtotal_rows:  list[int] = []         # for TOTAL formula
 
-    _EXCL = ("NON RECUP", "NON RÉCUP", "CAPEX")
-
-    # ── Charge rows ────────────────────────────────────────────────────────────
+    # ── Inline category → postes → subtotal blocks ────────────────────────────
     for charge in charges:
         cat      = charge.get("categorie") or ""
         poste    = charge.get("poste", "")
         realise  = charge.get("realise_ht", 0) or 0
-        is_fluid = charge.get("is_fluid", False)
         base_surface = charge.get("base_surface")
 
         cat_upper = cat.upper()
@@ -421,122 +427,102 @@ def build_tenant_sheet(
         if realise == 0 and not charge.get("invoices"):
             continue
 
-        # Category header
-        if cat != current_cat:
-            current_cat = cat
+        # Category header (flushed subtotal of previous cat if needed)
+        if cat not in category_start:
+            # Flush previous category's subtotal
+            if category_end:
+                prev_cat = list(category_end.keys())[-1]
+                _flush_subtotal(ws, prev_cat, category_start[prev_cat],
+                                category_end[prev_cat], current_row, subtotal_rows)
+                current_row += 1
+
             ws.merge_cells(f"A{current_row}:F{current_row}")
             _c(ws, current_row, 1, cat,
-               font=F_CAT_TENANT, fill=_fill_blue, align=_AL_LEFT)
-            _row_h(ws, current_row, 18.0)
-            category_rows[cat] = {"header_row": current_row, "detail_rows": []}
+               font=F_CAT, fill=_fill_blue, align=_AL_LEFT)
+            _rh(ws, current_row, 18.0)
             current_row += 1
+            category_start[cat] = current_row
 
         det_row = current_row
-        category_rows[cat]["detail_rows"].append(det_row)
+        category_end[cat] = det_row
 
-        # Col A — poste name
-        _c(ws, det_row, 1, f"  {poste}", font=F_POSTE_A, align=_AL_LEFT)
+        _c(ws, det_row, 1, poste, font=F_POSTE_A, align=_AL_LEFT)
 
-        # Col B — Clé de répartition
         cb = ws.cell(row=det_row, column=2)
-        cb.value         = _cle_formula(param_row, base_surface, site_surface)
-        cb.font          = F_VAL
-        cb.number_format = PCT_FMT
-        cb.alignment     = _AL_CTR
+        cb.value = _cle_formula(param_row, base_surface, site_surface)
+        cb.font  = F_VAL; cb.number_format = PCT_FMT; cb.alignment = _AL_CTR
 
-        # Col C — Total site HT (references Récapitulatif subtotal)
-        recap_key = (cat, poste)
         cc = ws.cell(row=det_row, column=3)
-        if recap_key in recap_subtotals:
-            cc.value = f"='{recap_tab_name}'!E{recap_subtotals[recap_key]}"
+        rk = (cat, poste)
+        if rk in recap_subtotals:
+            cc.value = f"='{recap_tab_name}'!E{recap_subtotals[rk]}"
         else:
             cc.value = realise
-        cc.font          = F_VAL
-        cc.number_format = MONEY_FMT
-        cc.alignment     = _AL_RIGHT
+        cc.font = F_VAL; cc.number_format = MONEY_FMT; cc.alignment = _AL_RIGHT
 
-        # Col D — QP annuelle = B × C
         cd = ws.cell(row=det_row, column=4)
         cd.value = f"=B{det_row}*C{det_row}"
         cd.font  = F_VAL; cd.number_format = MONEY_FMT; cd.alignment = _AL_RIGHT
 
-        # Col E — Prorata
         ce = ws.cell(row=det_row, column=5)
-        ce.value = _prorata_formula(year, param_row, is_fluid)
-        ce.font  = F_VAL; ce.number_format = "0.00000000"; ce.alignment = _AL_CTR
+        ce.value = f"=Paramètres!$H${param_row}/365"
+        ce.font  = F_VAL; ce.number_format = PERIOD_FMT; ce.alignment = _AL_CTR
 
-        # Col F — QP locataire = D × E
         cf = ws.cell(row=det_row, column=6)
         cf.value = f"=D{det_row}*E{det_row}"
         cf.font  = F_VAL; cf.number_format = MONEY_FMT; cf.alignment = _AL_RIGHT
 
-        _row_h(ws, det_row, 15.05)
+        _rh(ws, det_row, 15.05)
         current_row += 1
 
-    # ── Subtotals per category ─────────────────────────────────────────────────
-    subtotal_rows: list[int] = []
-    current_row += 1   # blank line
-    for cat, info in category_rows.items():
-        if not info["detail_rows"]:
-            continue
-        st_row = current_row
-        cat_upper = cat.upper()
-        if not any(ex in cat_upper for ex in _EXCL):
-            subtotal_rows.append(st_row)
-        first = info["detail_rows"][0]
-        last  = info["detail_rows"][-1]
-
-        ws.merge_cells(f"A{st_row}:B{st_row}")
-        _c(ws, st_row, 1, f"Sous-total — {cat}",
-           font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
-        for col, src in [(3, "C"), (4, "D"), (6, "F")]:
-            c = ws.cell(row=st_row, column=col)
-            c.value         = f"=SUM({src}{first}:{src}{last})"
-            c.font          = F_SUBTOT
-            c.number_format = MONEY_FMT
-            c.fill          = _fill_lblue
-            c.alignment     = _AL_RIGHT
-        _row_h(ws, st_row, 18.0)
+    # Flush last category subtotal
+    if category_end:
+        last_cat = list(category_end.keys())[-1]
+        _flush_subtotal(ws, last_cat, category_start[last_cat],
+                        category_end[last_cat], current_row, subtotal_rows)
         current_row += 1
 
-    # ── Grand total ────────────────────────────────────────────────────────────
+    # ── Blank row before TOTAL ────────────────────────────────────────────────
+    _rh(ws, current_row, 7.55)
     current_row += 1
-    total_row = current_row
-    _row_h(ws, total_row - 1, 7.55)   # blank spacer
 
+    # ── TOTAL row ─────────────────────────────────────────────────────────────
+    total_row = current_row
     ws.merge_cells(f"A{total_row}:B{total_row}")
     _c(ws, total_row, 1,
        "TOTAL CHARGES RÉCUPÉRABLES RÉELLES (€ HT)",
-       font=F_TOTAL_ROW, fill=_fill_navy, align=_AL_LEFT)
+       font=F_TOTAL_WH, fill=_fill_navy, align=_AL_LEFT)
+
     if subtotal_rows:
         refs_c = "+".join(f"C{r}" for r in subtotal_rows)
         refs_d = "+".join(f"D{r}" for r in subtotal_rows)
         refs_f = "+".join(f"F{r}" for r in subtotal_rows)
         for col, expr in [(3, refs_c), (4, refs_d), (6, refs_f)]:
             c = ws.cell(row=total_row, column=col)
-            c.value         = f"={expr}"
-            c.font          = F_TOTAL_ROW
-            c.number_format = MONEY_FMT
-            c.fill          = _fill_navy
-            c.alignment     = _AL_RIGHT
-    # Navy fill on empty cells too (cols 5 & empty cols)
-    for col in [5]:
-        ws.cell(row=total_row, column=col).fill = _fill_navy
-    _row_h(ws, total_row, 21.75)
+            c.value = f"={expr}"
+            c.font  = F_TOTAL_WH; c.fill = _fill_navy
+            c.number_format = MONEY_FMT; c.alignment = _AL_RIGHT
+    # Col 5 — empty but navy fill
+    ws.cell(row=total_row, column=5).fill = _fill_navy
+    _rh(ws, total_row, 21.75)
+    current_row += 1
 
-    # ── Provisions section ─────────────────────────────────────────────────────
-    current_row += 2
-    _row_h(ws, current_row - 1, 7.55)   # blank spacer
+    # ── Blank row ─────────────────────────────────────────────────────────────
+    _rh(ws, current_row, 7.55)
+    current_row += 1
 
+    # ── Provisions section ────────────────────────────────────────────────────
     prov_hdr = current_row
     ws.merge_cells(f"A{prov_hdr}:B{prov_hdr}")
     _c(ws, prov_hdr, 1, "Provisions pour charges versées",
-       font=_fn(9, True, "FFFFFF"), fill=_fill_blue, align=_AL_LEFT)
+       font=F_CAT, fill=_fill_blue, align=_AL_LEFT)
+    _c(ws, prov_hdr, 3, None, fill=_fill_blue)
     _c(ws, prov_hdr, 4, "Montant annuel (€)",
-       font=F_HDRS, fill=_fill_blue, align=_AL_CTR)
+       font=F_HDR8, fill=_fill_blue, align=_AL_CTR)
+    _c(ws, prov_hdr, 5, None, fill=_fill_blue)
     _c(ws, prov_hdr, 6, "Montant locataire (€)",
-       font=F_HDRS, fill=_fill_blue, align=_AL_CTR)
-    _row_h(ws, prov_hdr, 18.0)
+       font=F_HDR8, fill=_fill_blue, align=_AL_CTR)
+    _rh(ws, prov_hdr, 19.55)
     current_row += 1
 
     q_labels = ["  1er trimestre (T1)", "  2e trimestre (T2)",
@@ -546,106 +532,326 @@ def build_tenant_sheet(
     for i, label in enumerate(q_labels):
         qr = current_row
         q_rows.append(qr)
-        ws.merge_cells(f"A{qr}:B{qr}")
         _c(ws, qr, 1, label, font=F_VAL, align=_AL_LEFT)
-        # Write provision amount only to col F (QP locataire)
-        if provisions_quarterly and q_keys[i] in provisions_quarterly:
-            q_val = provisions_quarterly[q_keys[i]]
-            if q_val:
-                _money(ws, qr, 6, q_val)
-        elif i == 0 and provisions_ht and not provisions_quarterly:
-            _money(ws, qr, 6, provisions_ht)
-        _row_h(ws, qr, 15.8)
+        if is_occ:
+            if provisions_quarterly and q_keys[i] in provisions_quarterly:
+                qv = provisions_quarterly[q_keys[i]]
+                if qv:
+                    _money(ws, qr, 6, qv)
+            elif i == 0 and provisions_ht and not provisions_quarterly:
+                _money(ws, qr, 6, provisions_ht)
+        _rh(ws, qr, 15.8)
         current_row += 1
 
     # Provisions total
-    prov_total_row = current_row
-    ws.merge_cells(f"A{prov_total_row}:C{prov_total_row}")
-    _c(ws, prov_total_row, 1, "Total provisions pour charges versées →",
+    prov_total = current_row
+    ws.merge_cells(f"A{prov_total}:C{prov_total}")
+    _c(ws, prov_total, 1, "Total provisions pour charges versées →",
        font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
-    c6 = ws.cell(row=prov_total_row, column=6)
-    c6.value         = f"=SUM(F{q_rows[0]}:F{q_rows[-1]})"
-    c6.font          = F_SUBTOT
-    c6.number_format = MONEY_FMT
-    c6.fill          = _fill_lblue
-    c6.alignment     = _AL_RIGHT
-    _row_h(ws, prov_total_row, 18.0)
-    current_row += 2
+    _c(ws, prov_total, 4,
+       f"=SUM(D{q_rows[0]}:D{q_rows[-1]})",
+       font=F_SUBTOT, fill=_fill_lblue, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _c(ws, prov_total, 5, None, fill=_fill_lblue)
+    _c(ws, prov_total, 6,
+       f"=SUM(F{q_rows[0]}:F{q_rows[-1]})",
+       font=F_SUBTOT, fill=_fill_lblue, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _rh(ws, prov_total, 18.0)
+    current_row += 1
+
+    # ── Blank row ─────────────────────────────────────────────────────────────
+    _rh(ws, current_row, 7.55)
+    current_row += 1
 
     # ── Solde ─────────────────────────────────────────────────────────────────
-    _row_h(ws, current_row - 1, 7.55)
-
     solde_row = current_row
     ws.merge_cells(f"A{solde_row}:C{solde_row}")
     c_lbl = ws.cell(row=solde_row, column=1)
-    c_lbl.value     = (f"=IF(F{total_row}-F{prov_total_row}>0,"
-                       f"\"SOLDE DÉBITEUR\",\"SOLDE CRÉDITEUR\")")
-    c_lbl.font      = F_SOLDE
-    c_lbl.fill      = _fill_blue
-    c_lbl.alignment = _AL_LEFT
+    c_lbl.value = (
+        f"=IF(F{total_row}-F{prov_total}>0,"
+        f"\"SOLDE DÉBITEUR\",\"SOLDE CRÉDITEUR\")"
+    )
+    c_lbl.font = F_SOLDE; c_lbl.fill = _fill_blue; c_lbl.alignment = _AL_LEFT
 
-    c_f = ws.cell(row=solde_row, column=6)
-    c_f.value         = f"=F{total_row}-F{prov_total_row}"
-    c_f.font          = F_SOLDE
-    c_f.number_format = MONEY_FMT
-    c_f.fill          = _fill_blue
-    c_f.alignment     = _AL_RIGHT
-    _row_h(ws, solde_row, 21.75)
+    _c(ws, solde_row, 4,
+       f"=D{total_row}-D{prov_total}",
+       font=F_SOLDE, fill=_fill_blue, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _c(ws, solde_row, 5, None, fill=_fill_blue)
+    _c(ws, solde_row, 6,
+       f"=F{total_row}-F{prov_total}",
+       font=F_SOLDE, fill=_fill_blue, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _rh(ws, solde_row, 21.75)
+    current_row += 2
+
+    # ── Info note ─────────────────────────────────────────────────────────────
+    note_row = current_row
+    ws.merge_cells(f"A{note_row}:F{note_row}")
+    _c(ws, note_row, 1,
+       f"ℹ  Clé répartition = surface lot ÷ surface totale site. "
+       f"Période = nombre de jours d'occupation ÷ 365.",
+       font=F_NOTE, fill=_fill_lblue, align=_AL_LEFT)
+    _rh(ws, note_row, 27.75)
 
     ws.freeze_panes = "A5"
+    return total_row
 
 
-# ── Top-level generate() ───────────────────────────────────────────────────────
+def _flush_subtotal(ws, cat, first_row, last_row, current_row, subtotal_rows):
+    """Write the inline subtotal row for a category block."""
+    st = current_row
+    ws.merge_cells(f"A{st}:B{st}")
+    _c(ws, st, 1, f"Sous-total — {cat}",
+       font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
+    for col, src in [(3, "C"), (4, "D"), (6, "F")]:
+        c = ws.cell(row=st, column=col)
+        c.value         = f"=SUM({src}{first_row}:{src}{last_row})"
+        c.font          = F_SUBTOT
+        c.fill          = _fill_lblue
+        c.number_format = MONEY_FMT
+        c.alignment     = _AL_RIGHT
+    _c(ws, st, 5, None, fill=_fill_lblue)
+    _rh(ws, st, 18.0)
+    subtotal_rows.append(st)
+
+
+# ── Vacance Locative sheet ────────────────────────────────────────────────────
+
+def build_vacance_sheet(
+    ws,
+    enriched: dict,
+    lot_rows: dict,
+    lot_tab_names: dict,
+    lot_total_rows: dict,
+    nonrecup_subtotal_rows: list,
+    recap_tab_name: str,
+):
+    """
+    Build the 'Vacance Locative' sheet.
+    lot_rows        : {lot_name: param_row}
+    lot_tab_names   : {lot_name: sheet_name}
+    lot_total_rows  : {lot_name: total_row_in_lot_tab}
+    nonrecup_subtotal_rows : list of E-col row nums in Recap for non-récup postes
+    """
+    site  = enriched["site"]
+    year  = enriched.get("year", 2025)
+    lots  = enriched["lots"]
+
+    _set_col_widths(ws, {"A": 32, "B": 14, "C": 16, "D": 18, "E": 15, "F": 18})
+
+    # Row 1 — title
+    ws.merge_cells("A1:F1")
+    _c(ws, 1, 1, f"{site} — COÛT DE LA VACANCE LOCATIVE {year}",
+       font=F_TITLE12, fill=_fill_navy, align=_AL_CTR)
+    _rh(ws, 1, 25.55)
+
+    # Row 2 — subtitle
+    ws.merge_cells("A2:F2")
+    _c(ws, 2, 1,
+       "Estimation de la perte de charges non récupérées sur les lots vacants",
+       font=F_NAVY_SM, fill=_fill_lblue, align=_AL_LEFT)
+    _rh(ws, 2, 15.8)
+
+    # Row 3 — blank
+    _rh(ws, 3, 6.0)
+
+    # Row 4 — column headers
+    for col, lbl in enumerate(
+        ["Lot", "Statut", "Surface (m²)",
+         "QP annuelle (€ HT)", "Période (j/365)", "Coût vacance (€ HT)"], 1
+    ):
+        _c(ws, 4, col, lbl, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
+    _rh(ws, 4, 24.0)
+
+    # Rows 5+ — one per lot
+    lot_data_rows = []
+    row = 5
+    for lot_name, info in lots.items():
+        pr    = lot_rows[lot_name]
+        tab   = lot_tab_names[lot_name]
+        tr    = lot_total_rows[lot_name]
+
+        _c(ws, row, 1, f"=Paramètres!A{pr}",
+           font=F_VAL_BLD, align=_AL_LEFT)
+        _c(ws, row, 2, f"=Paramètres!B{pr}",
+           font=F_VAL, align=_AL_CTR)
+        _c(ws, row, 3, f"=Paramètres!C{pr}",
+           font=F_VAL, fmt=SURF_FMT, align=_AL_RIGHT)
+        _c(ws, row, 4, f"='{tab}'!D{tr}",
+           font=F_VAL, fmt=MONEY_FMT, align=_AL_RIGHT)
+        _c(ws, row, 5, f"=Paramètres!H{pr}/365",
+           font=F_VAL, fmt=PERIOD_FMT, align=_AL_CTR)
+
+        # Coût vacance = portion des charges annuelles non récupérée
+        cost_formula = (
+            f"=IF(Paramètres!B{pr}=\"Vacant\","
+            f"'{tab}'!D{tr},"
+            f"'{tab}'!D{tr}*(1-Paramètres!H{pr}/365))"
+        )
+        _c(ws, row, 6, cost_formula,
+           font=F_VAL_BLD, fmt=MONEY_FMT, align=_AL_RIGHT)
+
+        lot_data_rows.append(row)
+        _rh(ws, row, 18.0)
+        row += 1
+
+    first_lot_row = lot_data_rows[0]
+    last_lot_row  = lot_data_rows[-1]
+
+    # Row blank
+    _rh(ws, row, 6.0)
+    row += 1
+
+    # Total QP + nombre lots vacants
+    total_qp_row = row
+    ws.merge_cells(f"A{total_qp_row}:C{total_qp_row}")
+    _c(ws, total_qp_row, 1, "Total QP charges (tous lots)",
+       font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
+    _c(ws, total_qp_row, 4,
+       f"=SUM(D{first_lot_row}:D{last_lot_row})",
+       font=F_SUBTOT, fill=_fill_lblue, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _c(ws, total_qp_row, 5, None, fill=_fill_lblue)
+    _c(ws, total_qp_row, 6, None, fill=_fill_lblue)
+    _rh(ws, total_qp_row, 18.0)
+    row += 1
+
+    nb_vac_row = row
+    ws.merge_cells(f"A{nb_vac_row}:C{nb_vac_row}")
+    _c(ws, nb_vac_row, 1, "Nombre de lots vacants",
+       font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
+    _c(ws, nb_vac_row, 4,
+       f"=COUNTIF(B{first_lot_row}:B{last_lot_row},\"Vacant\")",
+       font=F_SUBTOT, fill=_fill_lblue, fmt=INT_FMT, align=_AL_CTR)
+    _c(ws, nb_vac_row, 5, None, fill=_fill_lblue)
+    _c(ws, nb_vac_row, 6, None, fill=_fill_lblue)
+    _rh(ws, nb_vac_row, 18.0)
+    row += 1
+
+    # Row blank
+    _rh(ws, row, 6.0)
+    row += 1
+
+    # Charges non récupérables
+    nonrecup_row = row
+    ws.merge_cells(f"A{nonrecup_row}:E{nonrecup_row}")
+    _c(ws, nonrecup_row, 1,
+       "Charges non récupérables (Frais Bancaires + CAPEX)",
+       font=F_CAT, fill=_fill_orange, align=_AL_LEFT)
+    if nonrecup_subtotal_rows:
+        nr_expr = "+".join(
+            f"'{recap_tab_name}'!E{r}" for r in nonrecup_subtotal_rows
+        )
+        _c(ws, nonrecup_row, 6, f"={nr_expr}",
+           font=F_CAT, fill=_fill_orange, fmt=MONEY_FMT, align=_AL_RIGHT)
+    else:
+        _c(ws, nonrecup_row, 6, 0,
+           font=F_CAT, fill=_fill_orange, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _rh(ws, nonrecup_row, 19.55)
+    row += 1
+
+    # Row blank
+    _rh(ws, row, 6.0)
+    row += 1
+
+    # TOTAL COÛT VACANCE
+    total_vac_row = row
+    ws.merge_cells(f"A{total_vac_row}:E{total_vac_row}")
+    _c(ws, total_vac_row, 1, "TOTAL COÛT DE LA VACANCE LOCATIVE (€ HT)",
+       font=F_TITLE11, fill=_fill_navy, align=_AL_LEFT)
+    lot_f_refs = "+".join(f"F{r}" for r in lot_data_rows)
+    _c(ws, total_vac_row, 6,
+       f"={lot_f_refs}+F{nonrecup_row}",
+       font=F_TITLE11, fill=_fill_navy, fmt=MONEY_FMT, align=_AL_RIGHT)
+    _rh(ws, total_vac_row, 25.55)
+    row += 1
+
+    # Row blank
+    _rh(ws, row, 6.0)
+    row += 1
+
+    # Part vacance
+    part_row = row
+    ws.merge_cells(f"A{part_row}:E{part_row}")
+    _c(ws, part_row, 1, "Part vacance sur total charges site",
+       font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
+    _c(ws, part_row, 6,
+       f"=IF(D{total_qp_row}>0,F{total_vac_row}/D{total_qp_row},0)",
+       font=F_SUBTOT, fill=_fill_lblue, fmt="0.0%", align=_AL_RIGHT)
+    _rh(ws, part_row, 19.55)
+    row += 1
+
+    # Row blank
+    _rh(ws, row, 6.0)
+    row += 1
+
+    # Info note
+    ws.merge_cells(f"A{row}:F{row}")
+    _c(ws, row, 1,
+       "ℹ  QP annuelle = Total site HT × clé de répartition. "
+       "Coût vacance = QP annuelle × fraction de l'année non occupée.",
+       font=F_NOTE, fill=_fill_lblue, align=_AL_LEFT)
+    _rh(ws, row, 27.75)
+
+
+# ── Top-level generate() ──────────────────────────────────────────────────────
 
 def generate(enriched: dict, output_path: str | None = None) -> str:
-    site   = enriched["site"]
-    year   = enriched.get("year", 2025)
-    charges = enriched["charges"]
-    provisions = enriched.get("provisions", {})
-    lots   = enriched["lots"]
+    site           = enriched["site"]
+    year           = enriched.get("year", 2025)
+    charges        = enriched["charges"]
+    provisions     = enriched.get("provisions", {})
+    lots           = enriched["lots"]
     surface_totale = enriched.get("surface_totale") or sum(
         info.get("surface") or 0 for info in lots.values()
     )
 
     if output_path is None:
         out_dir = Path(enriched["filepath"]).parent
-        output_path = str(out_dir / f"regularisation_{site.replace(' ', '_')}_{year}.xlsx")
+        output_path = str(
+            out_dir / f"regularisation_{site.replace(' ', '_')}_{year}.xlsx"
+        )
 
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
     recap_tab_name = f"Récapitulatif {year}"
 
+    # 1. Récapitulatif (first tab, matching reference order)
+    ws_recap = wb.create_sheet(recap_tab_name)
+    recap_info        = build_recapitulatif_sheet(ws_recap, enriched)
+
+    # 2. Paramètres
     ws_params = wb.create_sheet("Paramètres")
     lot_rows = build_parametres_sheet(ws_params, enriched)
+    recap_subtotals   = recap_info["subtotals"]
+    nonrecup_sub_rows = recap_info["nonrecup_subtotal_rows"]
 
-    ws_recap = wb.create_sheet(recap_tab_name)
-    recap_info = build_recapitulatif_sheet(ws_recap, enriched)
-    recap_subtotals = recap_info["subtotals"]
+    # 3. One tab per lot (ALL lots, including vacant)
+    lot_tab_names  = {}
+    lot_total_rows = {}
 
-    occupied_lots = {
-        name: info
-        for name, info in lots.items()
-        if info.get("tenant") and info.get("statut", "Occupé") == "Occupé"
-    }
+    for lot_name, lot_info in lots.items():
+        sheet_name = lot_name[:31]
+        lot_tab_names[lot_name] = sheet_name
+        ws = wb.create_sheet(sheet_name)
+        tenant       = lot_info.get("tenant") or ""
+        prov_ht      = provisions.get(tenant, 0.0)
+        param_row    = lot_rows.get(lot_name, 7)
+        prov_q       = enriched.get("provisions_detail", {}).get(tenant)
+        total_row    = build_lot_sheet(
+            ws, lot_name, lot_info, charges, prov_ht,
+            year, site, param_row, recap_subtotals,
+            site_surface=float(surface_totale),
+            recap_tab_name=recap_tab_name,
+            provisions_quarterly=prov_q,
+        )
+        lot_total_rows[lot_name] = total_row
 
-    if not occupied_lots:
-        ws_empty = wb.create_sheet("Résumé")
-        ws_empty["A1"] = f"Aucun lot occupé trouvé pour {site} {year}"
-    else:
-        for lot_name, lot_info in occupied_lots.items():
-            ws = wb.create_sheet(lot_name[:31])
-            tenant       = lot_info.get("tenant", "")
-            prov_ht      = provisions.get(tenant, 0.0)
-            param_row    = lot_rows.get(lot_name, 7)
-            prov_quarterly = enriched.get("provisions_detail", {}).get(tenant)
-            build_tenant_sheet(
-                ws, lot_name, lot_info, charges, prov_ht,
-                year, site, param_row, recap_subtotals,
-                site_surface=float(surface_totale),
-                recap_tab_name=recap_tab_name,
-                provisions_quarterly=prov_quarterly,
-            )
+    # 4. Vacance Locative
+    ws_vac = wb.create_sheet("Vacance Locative")
+    build_vacance_sheet(
+        ws_vac, enriched,
+        lot_rows, lot_tab_names, lot_total_rows,
+        nonrecup_sub_rows, recap_tab_name,
+    )
 
     wb.save(output_path)
     return output_path

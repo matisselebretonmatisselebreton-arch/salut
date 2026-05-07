@@ -546,6 +546,37 @@ def build_lot_sheet(
                         category_end[last_cat], current_row, subtotal_rows)
         current_row += 1
 
+    # ── HONORAIRES — always present for manual entry ──────────────────────────
+    # Only add if not already in the data (avoids duplicate sections)
+    if "HONORAIRES" not in category_start:
+        _rh(ws, current_row, 6.0)
+        current_row += 1
+
+        ws.merge_cells(f"A{current_row}:F{current_row}")
+        _c(ws, current_row, 1, "HONORAIRES", font=F_CAT, fill=_fill_blue, align=_AL_LEFT)
+        _rh(ws, current_row, 18.0)
+        current_row += 1
+
+        hon_first = current_row
+        hon_row   = current_row
+        _c(ws, hon_row, 1, "Honoraires Gestion Technique", font=F_POSTE_A, align=_AL_LEFT)
+        # Col D — empty, user fills manually
+        cd = ws.cell(row=hon_row, column=4)
+        cd.number_format = MONEY_FMT; cd.alignment = _AL_RIGHT
+        # Col E — prorata = 1 (management fee applies to full year)
+        ce = ws.cell(row=hon_row, column=5)
+        ce.value = 1; ce.number_format = PERIOD_FMT; ce.alignment = _AL_CTR
+        # Col F — D × E
+        cf = ws.cell(row=hon_row, column=6)
+        cf.value = f"=IF(D{hon_row}=\"\",\"\",D{hon_row}*E{hon_row})"
+        cf.font = F_VAL; cf.number_format = MONEY_FMT; cf.alignment = _AL_RIGHT
+        _rh(ws, hon_row, 15.05)
+        hon_last = current_row
+        current_row += 1
+
+        _flush_subtotal(ws, "HONORAIRES", hon_first, hon_last, current_row, subtotal_rows)
+        current_row += 1
+
     # ── Blank row before TOTAL ────────────────────────────────────────────────
     _rh(ws, current_row, 7.55)
     current_row += 1

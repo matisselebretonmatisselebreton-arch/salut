@@ -51,7 +51,7 @@ def _deep_merge(base: dict, update: dict) -> None:
 def merge_parsed_with_stored(parsed: dict, stored: dict) -> dict:
     """
     Combine fresh parse result with stored site config.
-    Stored values fill gaps (tenants, provisions, surfaces).
+    Stored values fill gaps (tenants, provisions, surfaces, dates, batiment).
     Returns enriched dict ready for generate.py.
     """
     stored_lots = stored.get("lots", {})
@@ -64,7 +64,15 @@ def merge_parsed_with_stored(parsed: dict, stored: dict) -> dict:
             "surface": lot_data.get("surface") or stored_lot.get("surface"),
             "tenant": lot_data.get("tenant") or stored_lot.get("tenant"),
             "days": lot_data.get("days") or stored_lot.get("days", 365),
-            "statut": stored_lot.get("statut", "Occupé" if (lot_data.get("tenant") or stored_lot.get("tenant")) else "Vacant"),
+            "statut": stored_lot.get(
+                "statut",
+                "Occupé" if (lot_data.get("tenant") or stored_lot.get("tenant")) else "Vacant"
+            ),
+            # New fields — stored config only (not auto-detected from relevé)
+            "bail_start": stored_lot.get("bail_start"),
+            "bail_end": stored_lot.get("bail_end"),
+            "mad_start": stored_lot.get("mad_start"),
+            "batiment": stored_lot.get("batiment"),
         }
 
     # Build per-tenant provisions
@@ -74,6 +82,11 @@ def merge_parsed_with_stored(parsed: dict, stored: dict) -> dict:
         if tenant:
             provisions_out[tenant] = stored_provisions.get(tenant, 0.0)
 
+    # Compute site total surface
+    surface_totale = stored.get("surface_totale") or sum(
+        info.get("surface") or 0 for info in lots_out.values()
+    )
+
     return {
         "site": parsed["site"],
         "filepath": parsed["filepath"],
@@ -81,6 +94,7 @@ def merge_parsed_with_stored(parsed: dict, stored: dict) -> dict:
         "lots": lots_out,
         "charges": parsed["charges"],
         "provisions": provisions_out,
+        "surface_totale": surface_totale,
     }
 
 
@@ -90,13 +104,18 @@ def update_from_answers(site_name: str, answers: dict) -> None:
     answers format:
     {
       "lots": {
-        "lot A1": {"tenant": "...", "surface": 824, "statut": "Occupé"},
+        "lot A1": {
+          "tenant": "...", "surface": 824, "statut": "Occupé",
+          "days": 365, "bail_start": "2023-01-01", "bail_end": "2028-12-31",
+          "mad_start": null, "batiment": "A"
+        },
         ...
       },
       "provisions": {
         "GALAXIE GREEN": 5000.0,
         ...
-      }
+      },
+      "surface_totale": 44723  # optional override
     }
     """
     save_site(site_name, answers)

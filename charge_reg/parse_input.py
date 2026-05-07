@@ -146,15 +146,65 @@ def _get(row, idx, default=None):
         return default
 
 
-def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict) -> list:
+def _finalize_poste(current_poste: dict, invoice_pcts: dict, current_invoices: list,
+                    lots: dict, lot_surfaces: dict) -> dict:
+    """Compute lot QPs, base_surface, invoices, is_fluid and return finalized poste dict."""
+    realise = current_poste["realise_ht"]
+    qps = {}
+    lot_pct = {}
+    for lot_name, (pct_col, qp_col) in lots.items():
+        pcts = invoice_pcts.get(lot_name, [])
+        if pcts:
+            avg_pct = sum(pcts) / len(pcts)
+            qps[lot_name] = round(realise * avg_pct, 2)
+            lot_pct[lot_name] = avg_pct
+        else:
+            qps[lot_name] = 0.0
+            lot_pct[lot_name] = 0.0
+
+    current_poste["lot_qp"] = qps
+    current_poste["lot_pct"] = lot_pct
+
+    # Auto-detect implied base surface: median(lot_surface / pct)
+    implied_bases = []
+    for lot_name, pct in lot_pct.items():
+        surface = lot_surfaces.get(lot_name)
+        if surface and pct > 0:
+            implied_bases.append(surface / pct)
+
+    if implied_bases:
+        median_base = sorted(implied_bases)[len(implied_bases) // 2]
+        base = round(median_base / 5) * 5
+        current_poste["base_surface"] = float(base)
+    else:
+        current_poste["base_surface"] = None  # will use site total
+
+    # Attach collected invoices
+    current_poste["invoices"] = list(current_invoices)
+
+    # Tag whether this poste belongs to FLUIDES category
+    current_poste["is_fluid"] = (
+        (current_poste.get("categorie") or "").upper() == "FLUIDES"
+    )
+
+    return current_poste
+
+
+def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict,
+                  lot_surfaces: dict | None = None) -> list:
     """
     Parse charge rows. Returns list of poste dicts:
-      {categorie, poste, realise_ht, provision_ht, lot_qp: {name: float}}
+      {categorie, poste, realise_ht, provision_ht, lot_qp, lot_pct,
+       base_surface, invoices, is_fluid}
     """
+    if lot_surfaces is None:
+        lot_surfaces = {}
+
     charges = []
     current_category = None
     current_poste = None
-    invoice_pcts = {}   # lot_name -> [pct values from invoices]
+    invoice_pcts: dict = {}   # lot_name -> [pct values from invoices]
+    current_invoices: list = []  # invoice dicts for current poste
 
     rnr_col = col_map.get("rnr", 0)
     type_col = col_map.get("type_depense", 1)
@@ -164,24 +214,15 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict) -> list:
     all_rows = list(ws.iter_rows(values_only=True))
 
     def _flush():
-        nonlocal current_poste, invoice_pcts
+        nonlocal current_poste, invoice_pcts, current_invoices
         if current_poste is None:
             return
-        # Determine QP per lot
-        realise = current_poste["realise_ht"]
-        qps = {}
-        for lot_name, (pct_col, qp_col) in lots.items():
-            # Try using % from invoices × total realise_ht
-            pcts = invoice_pcts.get(lot_name, [])
-            if pcts:
-                avg_pct = sum(pcts) / len(pcts)
-                qps[lot_name] = round(realise * avg_pct, 2)
-            else:
-                qps[lot_name] = 0.0
-        current_poste["lot_qp"] = qps
-        charges.append(current_poste)
+        finalized = _finalize_poste(current_poste, invoice_pcts, current_invoices,
+                                    lots, lot_surfaces)
+        charges.append(finalized)
         current_poste = None
         invoice_pcts = {}
+        current_invoices = []
 
     for row_idx in range(header_row_idx + 1, len(all_rows)):
         row = all_rows[row_idx]
@@ -211,14 +252,34 @@ def parse_charges(ws, header_row_idx: int, col_map: dict, lots: dict) -> list:
                 "provision_ht": provision if isinstance(provision, (int, float)) else 0.0,
             }
             invoice_pcts = {}
+            current_invoices = []
             continue
 
-        # Invoice row: extract % per lot
+        # Invoice / detail row (rnr is None)
         if current_poste is not None and rnr is None:
+            # Extract % per lot
             for lot_name, (pct_col, _) in lots.items():
                 pct_val = _get(row, pct_col)
                 if isinstance(pct_val, (int, float)) and 0 < pct_val <= 1:
                     invoice_pcts.setdefault(lot_name, []).append(pct_val)
+
+            # Detect invoice row: fournisseur present (col 3) + realise_ht > 0
+            fournisseur = _get(row, 3)
+            inv_realise = _get(row, real_col)
+            if (fournisseur is not None
+                    and isinstance(inv_realise, (int, float))
+                    and inv_realise > 0):
+                tva_val = _get(row, 12)
+                ttc_val = _get(row, 13)
+                current_invoices.append({
+                    "fournisseur": str(fournisseur),
+                    "date": _get(row, 5),
+                    "num_facture": str(_get(row, 6)) if _get(row, 6) is not None else "",
+                    "description": str(_get(row, 7)) if _get(row, 7) is not None else "",
+                    "realise_ht": float(inv_realise),
+                    "tva": float(tva_val) if isinstance(tva_val, (int, float)) else 0.0,
+                    "ttc": float(ttc_val) if isinstance(ttc_val, (int, float)) else 0.0,
+                })
 
     _flush()
     return charges
@@ -230,7 +291,8 @@ def parse_releve(filepath: str) -> dict:
     {
       site, filepath, year,
       lots: {name: {surface, tenant, days, pct_cols}},
-      charges: [{categorie, poste, realise_ht, provision_ht, lot_qp}],
+      charges: [{categorie, poste, realise_ht, provision_ht, lot_qp, lot_pct,
+                 base_surface, invoices, is_fluid}],
       missing: [list of param names the caller should ask for]
     }
     """
@@ -248,7 +310,7 @@ def parse_releve(filepath: str) -> dict:
     lots = find_lot_headers(ws, header_row_idx, first_pct_col)
     surfaces, tenants = find_surfaces_and_tenants(ws, header_row_idx, lots)
     periods = find_periods(ws, header_row_idx, lots)
-    charges = parse_charges(ws, header_row_idx, col_map, lots)
+    charges = parse_charges(ws, header_row_idx, col_map, lots, lot_surfaces=surfaces)
 
     wb.close()
 

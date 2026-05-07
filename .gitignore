@@ -1,0 +1,5 @@
+charge_reg/data/sites_config.json
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store

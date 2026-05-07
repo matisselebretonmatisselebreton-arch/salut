@@ -144,6 +144,130 @@ def _merge_charges(charges: list) -> list:
     return [v for _, v in sorted(seen.items(), key=sort_key)]
 
 
+# ── Assign charges to scope (site vs bâtiment) ────────────────────────────────
+
+def _assign_charges_to_scopes(
+    charges: list, site_surface: float, bat_surfaces: dict
+) -> dict:
+    """
+    Assign each charge to 'site' or a batiment name based on base_surface.
+    bat_surfaces: {bat_name: total_surface_m2}
+    Returns {scope: [charges]}.
+    """
+    scopes: dict[str, list] = {"site": []}
+    for bat in bat_surfaces:
+        scopes[bat] = []
+
+    for charge in charges:
+        base = charge.get("base_surface")
+        if base is None:
+            scopes["site"].append(charge)
+            continue
+
+        assigned = None
+        for bat, surf in bat_surfaces.items():
+            if surf > 0 and abs(base - surf) / surf < 0.02:
+                assigned = bat
+                break
+
+        scopes[assigned if assigned else "site"].append(charge)
+
+    return scopes
+
+
+# ── Lot charge section renderer ───────────────────────────────────────────────
+
+def _render_lot_charges(
+    ws, charges: list, start_row: int, param_row: int, site_surface: float,
+    recap_refs: dict, subtotal_rows: list,
+    section_label: str | None = None,
+) -> tuple[int, set]:
+    """
+    Render a block of charge postes in a lot sheet.
+    Returns (next_row, set_of_category_names_used).
+    """
+    _EXCL = ("NON RECUP", "NON RÉCUP", "CAPEX", "FRAIS BANCAIRE")
+    current_row = start_row
+
+    if section_label:
+        ws.merge_cells(f"A{current_row}:F{current_row}")
+        _c(ws, current_row, 1, section_label,
+           font=F_TITLE10, fill=_fill_navy, align=_AL_LEFT)
+        _rh(ws, current_row, 20.0)
+        current_row += 1
+
+    category_start: dict[str, int] = {}
+    category_end:   dict[str, int] = {}
+
+    for charge in _merge_charges(charges):
+        cat   = charge.get("categorie") or ""
+        poste = charge.get("poste", "")
+        realise      = charge.get("realise_ht", 0) or 0
+        base_surface = charge.get("base_surface")
+
+        cat_upper = cat.upper()
+        if any(ex in cat_upper for ex in _EXCL):
+            continue
+        if realise == 0 and not charge.get("invoices"):
+            continue
+
+        if cat not in category_start:
+            if category_end:
+                prev_cat = list(category_end.keys())[-1]
+                _flush_subtotal(ws, prev_cat, category_start[prev_cat],
+                                category_end[prev_cat], current_row, subtotal_rows)
+                current_row += 1
+
+            ws.merge_cells(f"A{current_row}:F{current_row}")
+            _c(ws, current_row, 1, cat,
+               font=F_CAT, fill=_fill_blue, align=_AL_LEFT)
+            _rh(ws, current_row, 18.0)
+            current_row += 1
+            category_start[cat] = current_row
+
+        det_row = current_row
+        category_end[cat] = det_row
+
+        _c(ws, det_row, 1, poste, font=F_POSTE_A, align=_AL_LEFT)
+
+        cb = ws.cell(row=det_row, column=2)
+        cb.value = _cle_formula(param_row, base_surface, site_surface)
+        cb.font = F_VAL; cb.number_format = PCT_FMT; cb.alignment = _AL_CTR
+
+        cc = ws.cell(row=det_row, column=3)
+        rk = (cat, poste)
+        if rk in recap_refs:
+            tab_name, tab_row = recap_refs[rk]
+            cc.value = f"='{tab_name}'!E{tab_row}"
+        else:
+            cc.value = realise
+        cc.font = F_VAL; cc.number_format = MONEY_FMT; cc.alignment = _AL_RIGHT
+
+        cd = ws.cell(row=det_row, column=4)
+        cd.value = f"=B{det_row}*C{det_row}"
+        cd.font = F_VAL; cd.number_format = MONEY_FMT; cd.alignment = _AL_RIGHT
+
+        ce = ws.cell(row=det_row, column=5)
+        period_col = "H" if "FLUIDE" in cat.upper() else "J"
+        ce.value = f"=Paramètres!${period_col}${param_row}/365"
+        ce.font = F_VAL; ce.number_format = PERIOD_FMT; ce.alignment = _AL_CTR
+
+        cf = ws.cell(row=det_row, column=6)
+        cf.value = f"=D{det_row}*E{det_row}"
+        cf.font = F_VAL; cf.number_format = MONEY_FMT; cf.alignment = _AL_RIGHT
+
+        _rh(ws, det_row, 15.05)
+        current_row += 1
+
+    if category_end:
+        last_cat = list(category_end.keys())[-1]
+        _flush_subtotal(ws, last_cat, category_start[last_cat],
+                        category_end[last_cat], current_row, subtotal_rows)
+        current_row += 1
+
+    return current_row, set(category_start.keys())
+
+
 # ── Clé formula ───────────────────────────────────────────────────────────────
 
 def _cle_formula(param_row: int, base_surface, site_surface: float) -> str:
@@ -159,6 +283,7 @@ def build_parametres_sheet(
     ws, enriched: dict,
     recap_subtotals: dict | None = None,
     recap_tab_name: str = "Récapitulatif",
+    recap_refs: dict | None = None,
 ) -> dict:
     """
     Structure:
@@ -273,27 +398,31 @@ def build_parametres_sheet(
 
         _rh(ws, idx, 15.05)
 
-    # ── Poste reference table (linked to Récapitulatif) ───────────────────────
-    if recap_subtotals:
+    # ── Poste reference table (linked to Récapitulatif sheets) ───────────────
+    effective_refs = recap_refs or (
+        {k: (recap_tab_name, v) for k, v in recap_subtotals.items()}
+        if recap_subtotals else None
+    )
+    if effective_refs:
         poste_hdr_row = 7 + len(lots) + 1  # blank row then header
         _rh(ws, 7 + len(lots), 7.55)       # blank separator
 
         ws.merge_cells(f"A{poste_hdr_row}:B{poste_hdr_row}")
-        _c(ws, poste_hdr_row, 1, "Poste (lié au Récapitulatif)",
+        _c(ws, poste_hdr_row, 1, "Poste (lié aux Récapitulatifs)",
            font=F_HDR8, fill=_fill_blue, align=_AL_LEFT)
         _c(ws, poste_hdr_row, 3, "Montant HT (€)",
            font=F_HDR8, fill=_fill_blue, align=_AL_CTR)
         _rh(ws, poste_hdr_row, 18.0)
 
-        for i, ((cat, poste), recap_row) in enumerate(recap_subtotals.items()):
+        for i, ((cat, poste), (tab_name, recap_row)) in enumerate(effective_refs.items()):
             r = poste_hdr_row + 1 + i
             name_formula = (
-                f"=IFERROR(MID('{recap_tab_name}'!A{recap_row},"
-                f"FIND(\" — \",'{recap_tab_name}'!A{recap_row})+4,100),\"\")"
+                f"=IFERROR(MID('{tab_name}'!A{recap_row},"
+                f"FIND(\" — \",'{tab_name}'!A{recap_row})+4,100),\"\")"
             )
             _c(ws, r, 1, name_formula,
                font=_fn(9, False, "444444"), align=_AL_LEFT)
-            _c(ws, r, 3, f"='{recap_tab_name}'!E{recap_row}",
+            _c(ws, r, 3, f"='{tab_name}'!E{recap_row}",
                font=_fn(9, True, _NAVY), fmt=MONEY_FMT, align=_AL_RIGHT)
             _rh(ws, r, 15.05)
 
@@ -307,23 +436,30 @@ def build_parametres_sheet(
 
 # ── Récapitulatif sheet ───────────────────────────────────────────────────────
 
-def build_recapitulatif_sheet(ws, enriched: dict) -> dict:
+def build_recapitulatif_sheet(
+    ws, enriched: dict,
+    charges_override: list | None = None,
+    title_override: str | None = None,
+) -> dict:
     """
     Returns {
         "subtotals": {(cat, poste): subtotal_row},
         "nonrecup_subtotal_rows": [row, ...],
     }
+    charges_override: if provided, use these charges instead of enriched["charges"]
+    title_override:   custom sheet title
     """
     year    = enriched.get("year", 2025)
     site    = enriched["site"]
+    src     = charges_override if charges_override is not None else enriched["charges"]
     charges = _merge_charges([
-        c for c in enriched["charges"]
-        if (c.get("realise_ht") or 0) > 0 or c.get("invoices")
+        c for c in src if (c.get("realise_ht") or 0) > 0 or c.get("invoices")
     ])
+    title   = title_override or f"{site} — RÉCAPITULATIF DES CHARGES {year}"
 
     # Row 1 — title
     ws.merge_cells("A1:G1")
-    _c(ws, 1, 1, f"{site} — RÉCAPITULATIF DES CHARGES {year}",
+    _c(ws, 1, 1, title,
        font=F_TITLE13, fill=_fill_navy, align=_AL_CTR)
     _rh(ws, 1, 27.75)
 
@@ -495,14 +631,22 @@ def build_lot_sheet(
     site_surface: float,
     recap_tab_name: str,
     provisions_quarterly: dict | None = None,
+    recap_refs: dict | None = None,
+    sections: list | None = None,
 ) -> int:
     """
     Build one lot sheet. Returns the row number of the TOTAL row.
-    Structure matches the reference exactly (inline subtotals, info note at end).
+
+    recap_refs:  {(cat, poste): (tab_name, row)} — preferred over recap_subtotals
+    sections:    [(label, [charges])] for multi-building mode (site + bat sections)
+                 When None, renders charges as a flat list (single-building mode).
     """
-    tenant  = lot_info.get("tenant") or ""
-    surface = lot_info.get("surface") or 0
     is_occ  = lot_info.get("statut", "Vacant") == "Occupé"
+
+    # Build effective recap_refs from legacy params if not provided
+    eff_refs: dict = recap_refs or {
+        k: (recap_tab_name, v) for k, v in (recap_subtotals or {}).items()
+    }
 
     _set_col_widths(ws, {"A": 34, "B": 14, "C": 15, "E": 12, "F": 15})
 
@@ -532,93 +676,35 @@ def build_lot_sheet(
 
     # Row 4 — column headers
     for col, lbl in enumerate(
-        ["Poste", "Clé répartition", "Total site HT",
+        ["Poste", "Clé répartition", "Total HT",
          "QP annuelle", "Période", "QP locataire"], 1
     ):
         _c(ws, 4, col, lbl, font=F_HDR8, fill=_fill_navy, align=_AL_WRAP)
     _rh(ws, 4, 19.55)
 
     current_row = 5
-    _EXCL = ("NON RECUP", "NON RÉCUP", "CAPEX", "FRAIS BANCAIRE")
-    category_start: dict[str, int] = {}   # cat -> first detail row
-    category_end:   dict[str, int] = {}   # cat -> last detail row
-    subtotal_rows:  list[int] = []         # for TOTAL formula
+    subtotal_rows: list[int] = []
+    all_cats: set[str] = set()
 
-    charges = _merge_charges(charges)
-
-    # ── Inline category → postes → subtotal blocks ────────────────────────────
-    for charge in charges:
-        cat      = charge.get("categorie") or ""
-        poste    = charge.get("poste", "")
-        realise  = charge.get("realise_ht", 0) or 0
-        base_surface = charge.get("base_surface")
-
-        cat_upper = cat.upper()
-        if any(ex in cat_upper for ex in _EXCL):
-            continue
-        if realise == 0 and not charge.get("invoices"):
-            continue
-
-        # Category header (flushed subtotal of previous cat if needed)
-        if cat not in category_start:
-            # Flush previous category's subtotal
-            if category_end:
-                prev_cat = list(category_end.keys())[-1]
-                _flush_subtotal(ws, prev_cat, category_start[prev_cat],
-                                category_end[prev_cat], current_row, subtotal_rows)
-                current_row += 1
-
-            ws.merge_cells(f"A{current_row}:F{current_row}")
-            _c(ws, current_row, 1, cat,
-               font=F_CAT, fill=_fill_blue, align=_AL_LEFT)
-            _rh(ws, current_row, 18.0)
+    if sections:
+        # Multi-building: render each section (site, then bat) with a header
+        for section_label, section_charges in sections:
+            current_row, cats = _render_lot_charges(
+                ws, section_charges, current_row, param_row, site_surface,
+                eff_refs, subtotal_rows, section_label=section_label,
+            )
+            all_cats |= cats
+            _rh(ws, current_row, 6.0)
             current_row += 1
-            category_start[cat] = current_row
-
-        det_row = current_row
-        category_end[cat] = det_row
-
-        _c(ws, det_row, 1, poste, font=F_POSTE_A, align=_AL_LEFT)
-
-        cb = ws.cell(row=det_row, column=2)
-        cb.value = _cle_formula(param_row, base_surface, site_surface)
-        cb.font  = F_VAL; cb.number_format = PCT_FMT; cb.alignment = _AL_CTR
-
-        cc = ws.cell(row=det_row, column=3)
-        rk = (cat, poste)
-        if rk in recap_subtotals:
-            cc.value = f"='{recap_tab_name}'!E{recap_subtotals[rk]}"
-        else:
-            cc.value = realise
-        cc.font = F_VAL; cc.number_format = MONEY_FMT; cc.alignment = _AL_RIGHT
-
-        cd = ws.cell(row=det_row, column=4)
-        cd.value = f"=B{det_row}*C{det_row}"
-        cd.font  = F_VAL; cd.number_format = MONEY_FMT; cd.alignment = _AL_RIGHT
-
-        # Col E — Période : Fluides → col H, Autres → col J
-        ce = ws.cell(row=det_row, column=5)
-        period_col = "H" if "FLUIDE" in cat.upper() else "J"
-        ce.value = f"=Paramètres!${period_col}${param_row}/365"
-        ce.font  = F_VAL; ce.number_format = PERIOD_FMT; ce.alignment = _AL_CTR
-
-        cf = ws.cell(row=det_row, column=6)
-        cf.value = f"=D{det_row}*E{det_row}"
-        cf.font  = F_VAL; cf.number_format = MONEY_FMT; cf.alignment = _AL_RIGHT
-
-        _rh(ws, det_row, 15.05)
-        current_row += 1
-
-    # Flush last category subtotal
-    if category_end:
-        last_cat = list(category_end.keys())[-1]
-        _flush_subtotal(ws, last_cat, category_start[last_cat],
-                        category_end[last_cat], current_row, subtotal_rows)
-        current_row += 1
+    else:
+        # Single-building: flat list
+        current_row, all_cats = _render_lot_charges(
+            ws, charges, current_row, param_row, site_surface,
+            eff_refs, subtotal_rows,
+        )
 
     # ── HONORAIRES — always present for manual entry ──────────────────────────
-    # Only add if not already in the data (avoids duplicate sections)
-    if "HONORAIRES" not in category_start:
+    if "HONORAIRES" not in all_cats:
         _rh(ws, current_row, 6.0)
         current_row += 1
 
@@ -788,6 +874,7 @@ def build_vacance_sheet(
     lot_total_rows: dict,
     nonrecup_subtotal_rows: list,
     recap_tab_name: str,
+    nonrecup_refs: list | None = None,
 ):
     """
     Build the 'Vacance Locative' sheet.
@@ -900,10 +987,11 @@ def build_vacance_sheet(
     _c(ws, nonrecup_row, 1,
        "Charges non récupérables (Frais Bancaires + CAPEX)",
        font=F_CAT, fill=_fill_orange, align=_AL_LEFT)
-    if nonrecup_subtotal_rows:
-        nr_expr = "+".join(
-            f"'{recap_tab_name}'!E{r}" for r in nonrecup_subtotal_rows
-        )
+    effective_nonrecup = nonrecup_refs or [
+        (recap_tab_name, r) for r in nonrecup_subtotal_rows
+    ]
+    if effective_nonrecup:
+        nr_expr = "+".join(f"'{t}'!E{r}" for t, r in effective_nonrecup)
         _c(ws, nonrecup_row, 6, f"={nr_expr}",
            font=F_CAT, fill=_fill_orange, fmt=MONEY_FMT, align=_AL_RIGHT)
     else:
@@ -961,12 +1049,12 @@ def build_vacance_sheet(
 def generate(enriched: dict, output_path: str | None = None) -> str:
     site           = enriched["site"]
     year           = enriched.get("year", 2025)
-    charges        = enriched["charges"]
+    charges_all    = enriched["charges"]
     provisions     = enriched.get("provisions", {})
     lots           = enriched["lots"]
-    surface_totale = enriched.get("surface_totale") or sum(
+    surface_totale = float(enriched.get("surface_totale") or sum(
         info.get("surface") or 0 for info in lots.values()
-    )
+    ))
 
     if output_path is None:
         out_dir = Path(enriched["filepath"]).parent
@@ -974,53 +1062,144 @@ def generate(enriched: dict, output_path: str | None = None) -> str:
             out_dir / f"regularisation_{site.replace(' ', '_')}_{year}.xlsx"
         )
 
+    # ── Detect multi-building ─────────────────────────────────────────────────
+    bat_surfaces: dict[str, float] = {}
+    for info in lots.values():
+        bat = info.get("batiment")
+        if bat:
+            bat_surfaces[bat] = bat_surfaces.get(bat, 0.0) + (info.get("surface") or 0.0)
+
+    is_multi_bat = len(bat_surfaces) > 1
+    bat_order    = list(dict.fromkeys(
+        info.get("batiment") for info in lots.values()
+        if info.get("batiment")
+    ))
+
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
-    recap_tab_name = f"Récapitulatif {year}"
+    recap_refs:    dict[tuple, tuple] = {}   # (cat, poste) → (tab_name, row)
+    nonrecup_refs: list[tuple]        = []   # (tab_name, row)
 
-    # 1. Récapitulatif (first tab, matching reference order)
-    ws_recap = wb.create_sheet(recap_tab_name)
-    recap_info        = build_recapitulatif_sheet(ws_recap, enriched)
+    if is_multi_bat:
+        # ── 1a. Récap Site ────────────────────────────────────────────────────
+        scopes = _assign_charges_to_scopes(charges_all, surface_totale, bat_surfaces)
 
-    recap_subtotals   = recap_info["subtotals"]
-    nonrecup_sub_rows = recap_info["nonrecup_subtotal_rows"]
-
-    # 2. Paramètres (after Récapitulatif so we can link to its subtotal rows)
-    ws_params = wb.create_sheet("Paramètres")
-    lot_rows = build_parametres_sheet(
-        ws_params, enriched,
-        recap_subtotals=recap_subtotals,
-        recap_tab_name=recap_tab_name,
-    )
-
-    # 3. One tab per lot (ALL lots, including vacant)
-    lot_tab_names  = {}
-    lot_total_rows = {}
-
-    for lot_name, lot_info in lots.items():
-        sheet_name = lot_name[:31]
-        lot_tab_names[lot_name] = sheet_name
-        ws = wb.create_sheet(sheet_name)
-        tenant       = lot_info.get("tenant") or ""
-        prov_ht      = provisions.get(tenant, 0.0)
-        param_row    = lot_rows.get(lot_name, 7)
-        prov_q       = enriched.get("provisions_detail", {}).get(tenant)
-        total_row    = build_lot_sheet(
-            ws, lot_name, lot_info, charges, prov_ht,
-            year, site, param_row, recap_subtotals,
-            site_surface=float(surface_totale),
-            recap_tab_name=recap_tab_name,
-            provisions_quarterly=prov_q,
+        site_tab = f"Récap Site {year}"
+        ws_site  = wb.create_sheet(site_tab)
+        site_info = build_recapitulatif_sheet(
+            ws_site, enriched,
+            charges_override=scopes["site"],
+            title_override=f"{site} — CHARGES SITE {year}",
         )
-        lot_total_rows[lot_name] = total_row
+        for k, row in site_info["subtotals"].items():
+            recap_refs[k] = (site_tab, row)
+        for row in site_info["nonrecup_subtotal_rows"]:
+            nonrecup_refs.append((site_tab, row))
 
-    # 4. Vacance Locative
+        # ── 1b. Récap par bâtiment ────────────────────────────────────────────
+        for bat in bat_order:
+            bat_tab  = f"Récap {bat} {year}"
+            ws_bat   = wb.create_sheet(bat_tab)
+            bat_info = build_recapitulatif_sheet(
+                ws_bat, enriched,
+                charges_override=scopes.get(bat, []),
+                title_override=f"{site} — {bat} {year}",
+            )
+            for k, row in bat_info["subtotals"].items():
+                recap_refs[k] = (bat_tab, row)
+
+        # ── 2. Paramètres ────────────────────────────────────────────────────
+        ws_params = wb.create_sheet("Paramètres")
+        lot_rows  = build_parametres_sheet(
+            ws_params, enriched, recap_refs=recap_refs,
+        )
+
+        # ── 3. One tab per lot ───────────────────────────────────────────────
+        lot_tab_names:  dict[str, str] = {}
+        lot_total_rows: dict[str, int] = {}
+
+        for lot_name, lot_info in lots.items():
+            sheet_name = lot_name[:31]
+            lot_tab_names[lot_name] = sheet_name
+            ws = wb.create_sheet(sheet_name)
+
+            tenant    = lot_info.get("tenant") or ""
+            prov_ht   = provisions.get(tenant, 0.0)
+            param_row = lot_rows.get(lot_name, 7)
+            prov_q    = enriched.get("provisions_detail", {}).get(tenant)
+            lot_bat   = lot_info.get("batiment")
+
+            site_charges = scopes["site"]
+            bat_charges  = scopes.get(lot_bat, []) if lot_bat else []
+
+            sections = []
+            if site_charges:
+                sections.append((f"CHARGES SITE — {site}", site_charges))
+            if bat_charges:
+                sections.append((f"CHARGES BÂTIMENT — {lot_bat}", bat_charges))
+
+            total_row = build_lot_sheet(
+                ws, lot_name, lot_info,
+                charges=site_charges + bat_charges,
+                provisions_ht=prov_ht,
+                year=year, site=site, param_row=param_row,
+                recap_subtotals={},
+                site_surface=surface_totale,
+                recap_tab_name=site_tab,
+                provisions_quarterly=prov_q,
+                recap_refs=recap_refs,
+                sections=sections if sections else None,
+            )
+            lot_total_rows[lot_name] = total_row
+
+    else:
+        # ── Single-building flow (original) ───────────────────────────────────
+        recap_tab_name = f"Récapitulatif {year}"
+
+        ws_recap   = wb.create_sheet(recap_tab_name)
+        recap_info = build_recapitulatif_sheet(ws_recap, enriched)
+        for k, row in recap_info["subtotals"].items():
+            recap_refs[k] = (recap_tab_name, row)
+        for row in recap_info["nonrecup_subtotal_rows"]:
+            nonrecup_refs.append((recap_tab_name, row))
+
+        ws_params = wb.create_sheet("Paramètres")
+        lot_rows  = build_parametres_sheet(
+            ws_params, enriched, recap_refs=recap_refs,
+        )
+
+        lot_tab_names:  dict[str, str] = {}
+        lot_total_rows: dict[str, int] = {}
+
+        for lot_name, lot_info in lots.items():
+            sheet_name = lot_name[:31]
+            lot_tab_names[lot_name] = sheet_name
+            ws = wb.create_sheet(sheet_name)
+            tenant    = lot_info.get("tenant") or ""
+            prov_ht   = provisions.get(tenant, 0.0)
+            param_row = lot_rows.get(lot_name, 7)
+            prov_q    = enriched.get("provisions_detail", {}).get(tenant)
+            total_row = build_lot_sheet(
+                ws, lot_name, lot_info, charges_all, prov_ht,
+                year, site, param_row, {},
+                site_surface=surface_totale,
+                recap_tab_name=recap_tab_name,
+                provisions_quarterly=prov_q,
+                recap_refs=recap_refs,
+            )
+            lot_total_rows[lot_name] = total_row
+
+        site_tab = recap_tab_name
+
+    # ── 4. Vacance Locative ───────────────────────────────────────────────────
     ws_vac = wb.create_sheet("Vacance Locative")
     build_vacance_sheet(
         ws_vac, enriched,
         lot_rows, lot_tab_names, lot_total_rows,
-        nonrecup_sub_rows, recap_tab_name,
+        nonrecup_subtotal_rows=[],
+        recap_tab_name=site_tab,
+        nonrecup_refs=nonrecup_refs,
     )
 
     wb.save(output_path)

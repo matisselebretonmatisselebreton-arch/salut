@@ -320,6 +320,7 @@ def build_tenant_sheet(
     recap_subtotals: dict,
     site_surface: float,
     recap_tab_name: str,
+    provisions_quarterly: dict | None = None,
 ):
     """Build one per-lot regularisation sheet with cross-tab formula references."""
     tenant  = lot_info.get("tenant", "LOCATAIRE")
@@ -493,14 +494,20 @@ def build_tenant_sheet(
         "  3e trimestre (T3)",
         "  4e trimestre (T4)",
     ]
+    q_keys = ["Q1", "Q2", "Q3", "Q4"]
     q_rows = []
     for i, label in enumerate(quarter_labels):
         qr = current_row
         q_rows.append(qr)
         ws.merge_cells(f"A{qr}:B{qr}")
         _cell(ws, qr, 1, label, font=FONT_BODY)
-        # Pre-fill T1 with the total provision; leave T2-T4 blank
-        if i == 0 and provisions_ht:
+        # Pre-fill with quarterly breakdown if available, else T1 = total
+        if provisions_quarterly and q_keys[i] in provisions_quarterly:
+            q_val = provisions_quarterly[q_keys[i]]
+            if q_val:
+                _money(ws, qr, 3, q_val)
+                _money(ws, qr, 6, q_val)
+        elif i == 0 and provisions_ht and not provisions_quarterly:
             _money(ws, qr, 3, provisions_ht)
             _money(ws, qr, 6, provisions_ht)
         current_row += 1
@@ -594,11 +601,13 @@ def generate(enriched: dict, output_path: str | None = None) -> str:
             tenant    = lot_info.get("tenant", "")
             prov_ht   = provisions.get(tenant, 0.0)
             param_row = lot_rows.get(lot_name, 5)
+            prov_quarterly = enriched.get("provisions_detail", {}).get(tenant)
             build_tenant_sheet(
                 ws, lot_name, lot_info, charges, prov_ht,
                 year, site, param_row, recap_subtotals,
                 site_surface=float(surface_totale),
                 recap_tab_name=recap_tab_name,
+                provisions_quarterly=prov_quarterly,
             )
 
     wb.save(output_path)

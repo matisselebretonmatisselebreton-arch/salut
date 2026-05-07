@@ -88,12 +88,13 @@ def merge_parsed_with_stored(parsed: dict, stored: dict) -> dict:
     )
 
     return {
-        "site": parsed["site"],
+        "site": stored.get("site_name") or parsed["site"],
         "filepath": parsed["filepath"],
         "year": parsed.get("year", 2025),
         "lots": lots_out,
         "charges": parsed["charges"],
         "provisions": provisions_out,
+        "provisions_detail": stored.get("provisions_detail", {}),
         "surface_totale": surface_totale,
     }
 

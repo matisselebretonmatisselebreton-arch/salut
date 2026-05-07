@@ -80,6 +80,17 @@ def _audit(filepath: str):
         for n in needs:
             print(f"       • {n}")
 
+    # MAD warning for partial-year tenants
+    for lot, info in merged["lots"].items():
+        tenant = info.get("tenant")
+        days   = info.get("days", 365)
+        if tenant and 0 < days < 365:
+            print(
+                f"\n  ⚠️  Locataire {tenant} sur lot {lot} : {days} jours d'occupation.\n"
+                f"      → Y a-t-il une mise à disposition anticipée (MAD) pour les fluides ?\n"
+                f"         Si oui, ajoutez 'mad_start': 'YYYY-MM-DD' dans le params JSON du lot."
+            )
+
     print()
     return merged
 

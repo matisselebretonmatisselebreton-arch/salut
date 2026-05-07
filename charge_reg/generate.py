@@ -458,6 +458,7 @@ def build_recapitulatif_sheet(
     ws, enriched: dict,
     charges_override: list | None = None,
     title_override: str | None = None,
+    add_assurance_taxes: bool = False,
 ) -> dict:
     """
     Returns {
@@ -628,6 +629,48 @@ def build_recapitulatif_sheet(
         _rh(ws, tot_row, 25.55)
 
     ws.freeze_panes = "A4"
+
+    # ── Manual ASSURANCE / TAXES section (bat recap sheets only) ─────────────
+    if add_assurance_taxes:
+        _rh(ws, current_row, 6.0)
+        current_row += 1
+
+        ws.merge_cells(f"A{current_row}:G{current_row}")
+        _c(ws, current_row, 1, "── ASSURANCE / TAXES ──",
+           font=F_CAT, fill=_fill_navy, align=_AL_CTR)
+        _rh(ws, current_row, 21.75)
+        current_row += 1
+
+        for label in ("Assurance", "Taxe foncière", "Autres taxes"):
+            _c(ws, current_row, 1, f"  {label}",
+               font=_fn(9, True, "FFFFFF"), fill=_fill_blue, align=_AL_LEFT)
+            _rh(ws, current_row, 18.0)
+            current_row += 1
+            detail_row = current_row
+            _c(ws, detail_row, 1, "",
+               font=F_VAL, fill=_fill_lgray, align=_AL_LEFT)
+            for col in [2, 3, 4]:
+                _c(ws, detail_row, col, None, fill=_fill_lgray)
+            _c(ws, detail_row, 5, None,
+               font=F_VAL, fill=_fill_lgray, fmt=MONEY_FMT, align=_AL_RIGHT)
+            _c(ws, detail_row, 6, None,
+               font=F_VAL, fill=_fill_lgray, fmt=MONEY_FMT, align=_AL_RIGHT)
+            _c(ws, detail_row, 7, None,
+               font=F_VAL, fill=_fill_lgray, fmt=MONEY_FMT, align=_AL_RIGHT)
+            _rh(ws, detail_row, 15.05)
+            current_row += 1
+
+            st = current_row
+            ws.merge_cells(f"A{st}:D{st}")
+            _c(ws, st, 1, f"    Sous-total — {label}",
+               font=F_SUBTOT, fill=_fill_lblue, align=_AL_LEFT)
+            c5 = ws.cell(row=st, column=5)
+            c5.value = f"=E{detail_row}"
+            c5.font = F_SUBTOT; c5.fill = _fill_lblue
+            c5.number_format = MONEY_FMT; c5.alignment = _AL_RIGHT
+            _rh(ws, st, 15.8)
+            current_row += 1
+
     return {
         "subtotals": poste_subtotal_rows,
         "nonrecup_subtotal_rows": nonrecup_subtotal_rows,
@@ -1123,6 +1166,7 @@ def generate(enriched: dict, output_path: str | None = None) -> str:
                 ws_bat, enriched,
                 charges_override=scopes.get(bat, []),
                 title_override=f"{site} — {bat} {year}",
+                add_assurance_taxes=True,
             )
             for k, row in bat_info["subtotals"].items():
                 recap_refs[k] = (bat_tab, row)

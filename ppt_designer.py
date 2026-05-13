@@ -334,62 +334,37 @@ def apply_styles(prs: Presentation, analysis: dict, identity: Identity) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 4 — Animations (XML manipulation)
+# Step 4 — Animations (via validated XML template)
 # ─────────────────────────────────────────────────────────────────────────────
 
-_ANIM_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
-_DRAWING_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
+_P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
 
-def _ms(seconds: float) -> str:
-    return str(int(seconds * 1000))
+# Minimal valid <p:timing> block that PowerPoint accepts.
+# Preset 10 = Fade, nodeType tmRoot structure is required by the OOXML spec.
+_TIMING_TEMPLATE = """\
+<p:timing xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
+          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <p:tnLst>
+    <p:par>
+      <p:cTn id="1" dur="indefinite" restart="whenNotActive" nodeType="tmRoot">
+        <p:childTnLst>
+{effects}
+        </p:childTnLst>
+      </p:cTn>
+    </p:par>
+  </p:tnLst>
+</p:timing>"""
 
-
-def _make_timing_root() -> etree._Element:
-    """Return a <p:timing> subtree skeleton."""
-    p = _ANIM_NS
-    timing = etree.SubElement(etree.Element("dummy"), f"{{{p}}}timing")
-    tnLst = etree.SubElement(timing, f"{{{p}}}tnLst")
-    par = etree.SubElement(tnLst, f"{{{p}}}par")
-    cTn = etree.SubElement(par, f"{{{p}}}cTn", id="1", dur="indefinite", restart="whenNotActive",
-                           nodeType="tmRoot")
-    childTnLst = etree.SubElement(cTn, f"{{{p}}}childTnLst")
-    return timing, childTnLst
-
-
-def _build_fade_effect(shape_id: str, delay_ms: int, dur_ms: int, auto: bool = False) -> etree._Element:
-    p = _ANIM_NS
-    par = etree.Element(f"{{{p}}}par")
-    cTn = etree.SubElement(par, f"{{{p}}}cTn", id="1", fill="hold")
-    if auto:
-        cTn.set("presetClass", "entr")
-        stCondLst = etree.SubElement(cTn, f"{{{p}}}stCondLst")
-        cond = etree.SubElement(stCondLst, f"{{{p}}}cond", delay=str(delay_ms))
-    else:
-        stCondLst = etree.SubElement(cTn, f"{{{p}}}stCondLst")
-        cond = etree.SubElement(stCondLst, f"{{{p}}}cond", evt="onClick", delay="0")
-        tn = etree.SubElement(cond, f"{{{p}}}tn", val="1")
-
-    childTnLst = etree.SubElement(cTn, f"{{{p}}}childTnLst")
-    par2 = etree.SubElement(childTnLst, f"{{{p}}}par")
-    cTn2 = etree.SubElement(par2, f"{{{p}}}cTn", id="2", fill="hold", presetID="10",
-                             presetClass="entr", presetSubtype="0", dur=str(dur_ms),
-                             nodeType="clickEffect")
-    stCondLst2 = etree.SubElement(cTn2, f"{{{p}}}stCondLst")
-    etree.SubElement(stCondLst2, f"{{{p}}}cond", delay="0")
-    childTnLst2 = etree.SubElement(cTn2, f"{{{p}}}childTnLst")
-    anim = etree.SubElement(childTnLst2, f"{{{p}}}anim",
-                            dur=str(dur_ms), fill="hold",
-                            calcmode="lin", valueType="num")
-    tgtEl = etree.SubElement(anim, f"{{{p}}}tgtEl")
-    spTgt = etree.SubElement(tgtEl, f"{{{p}}}spTgt", spid=shape_id)
-    atav = etree.SubElement(anim, f"{{{p}}}atav")
-    tav = etree.SubElement(atav, f"{{{p}}}tav", tm="0")
-    val = etree.SubElement(tav, f"{{{p}}}val")
-    etree.SubElement(val, f"{{{p}}}fltVal", val="0")
-    tav2 = etree.SubElement(atav, f"{{{p}}}tav", tm="100000")
-    val2 = etree.SubElement(tav2, f"{{{p}}}val")
-    etree.SubElement(val2, f"{{{p}}}fltVal", val="1")
-    return par
+_EFFECT_TEMPLATE = """\
+          <p:par>
+            <p:cTn id="{ctn_id}" fill="hold" presetID="10" presetClass="entr"
+                   presetSubtype="0" dur="{dur}" nodeType="clickEffect">
+              <p:stCondLst>
+                <p:cond {evt}delay="{delay}"/>
+              </p:stCondLst>
+              <p:childTnLst/>
+            </p:cTn>
+          </p:par>"""
 
 
 def add_animations(prs: Presentation, analysis: dict, identity: Identity, seed: Optional[int]) -> list[int]:
@@ -397,53 +372,44 @@ def add_animations(prs: Presentation, analysis: dict, identity: Identity, seed: 
     n = len(prs.slides)
     classes = analysis["slide_classes"]
 
-    # Pick 2 random content slides to leave animation-free
-    content_indices = [i for i, c in enumerate(classes) if c in ("content", "list", "data") and i != 0 and i != n - 1]
+    content_indices = [i for i, c in enumerate(classes)
+                       if c in ("content", "list", "data") and 0 < i < n - 1]
     no_anim_indices = set(rng.sample(content_indices, min(2, len(content_indices))))
 
-    p_ns = _ANIM_NS
+    base_dur = {"sobre": 600, "modéré": 500, "dynamique": 400}[identity.energy]
 
     for i, slide in enumerate(prs.slides):
         if i in no_anim_indices:
             continue
-        cls = classes[i]
+
         slide_elem = slide._element
 
-        # Remove any existing timing
-        for old in slide_elem.findall(f"{{{p_ns}}}timing"):
+        # Remove any pre-existing timing element
+        for old in slide_elem.findall(f"{{{_P_NS}}}timing"):
             slide_elem.remove(old)
 
         shapes_with_text = [s for s in slide.shapes if s.has_text_frame and s.shape_id]
         if not shapes_with_text:
             continue
 
-        timing_root = etree.SubElement(slide_elem, f"{{{p_ns}}}timing")
-        tn_lst = etree.SubElement(timing_root, f"{{{p_ns}}}tnLst")
-        par_root = etree.SubElement(tn_lst, f"{{{p_ns}}}par")
-        cTn_root = etree.SubElement(par_root, f"{{{p_ns}}}cTn",
-                                     id="1", dur="indefinite",
-                                     restart="whenNotActive", nodeType="tmRoot")
-        child_root = etree.SubElement(cTn_root, f"{{{p_ns}}}childTnLst")
-
-        base_dur = {"sobre": 600, "modéré": 500, "dynamique": 400}[identity.energy]
-
-        for j, shape in enumerate(shapes_with_text):
-            # Slight timing jitter on ~30% of slides
+        effects = []
+        for j, _ in enumerate(shapes_with_text):
             jitter = rng.choice([0, 0, 0, 100, -100]) if rng.random() < 0.3 else 0
             dur = max(300, base_dur + jitter)
-            delay = j * 200
+            evt = 'evt="onClick" ' if j == 0 else ""
+            effects.append(_EFFECT_TEMPLATE.format(
+                ctn_id=10 + j,
+                dur=dur,
+                evt=evt,
+                delay=j * 200,
+            ))
 
-            par = etree.SubElement(child_root, f"{{{p_ns}}}par")
-            cTn = etree.SubElement(par, f"{{{p_ns}}}cTn",
-                                    id=str(10 + j), fill="hold",
-                                    presetID="10", presetClass="entr",
-                                    presetSubtype="0",
-                                    dur=str(dur), nodeType="clickEffect")
-            stCond = etree.SubElement(cTn, f"{{{p_ns}}}stCondLst")
-            cond = etree.SubElement(stCond, f"{{{p_ns}}}cond", delay=str(delay))
-            if j == 0:
-                cond.set("evt", "onClick")
-            childTn = etree.SubElement(cTn, f"{{{p_ns}}}childTnLst")
+        xml_str = _TIMING_TEMPLATE.format(effects="\n".join(effects))
+        try:
+            timing_elem = etree.fromstring(xml_str.encode("utf-8"))
+            slide_elem.append(timing_elem)
+        except etree.XMLSyntaxError as exc:
+            logging.warning(f"Slide {i+1}: animation XML invalide — ignorée ({exc})")
 
     return sorted(no_anim_indices)
 

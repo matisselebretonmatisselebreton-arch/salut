@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""PPT Human Designer — transforms AI-generated PowerPoints into human-looking presentations."""
+"""PPT Human Designer — extracts content and rebuilds presentations from scratch."""
 
 import argparse
-import copy
-import json
 import logging
-import os
 import random
 import re
 import sys
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -19,15 +17,6 @@ from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt, Emu
 
-# ── XML namespaces needed for animation manipulation ─────────────────────────
-NSMAP = {
-    "a":   "http://schemas.openxmlformats.org/drawingml/2006/main",
-    "p":   "http://schemas.openxmlformats.org/presentationml/2006/main",
-    "r":   "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
-}
-for prefix, uri in NSMAP.items():
-    etree.register_namespace(prefix, uri)
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Data structures
@@ -35,57 +24,46 @@ for prefix, uri in NSMAP.items():
 
 @dataclass
 class Palette:
-    background: str       # main slide background
-    background_alt: str   # alternate content slide bg
-    background_dark: str  # closing / section slide bg
-    primary: str          # titles, key text
-    accent: str           # sparse highlight (≤20 % usage)
+    background: str
+    background_alt: str
+    background_dark: str
+    primary: str
+    accent: str
+
 
 @dataclass
 class Identity:
     palette: Palette
     font_title: str
     font_body: str
-    energy: str           # "sobre" | "modéré" | "dynamique"
+    energy: str        # "sobre" | "modéré" | "dynamique"
     prs_type: str
 
 
+@dataclass
+class SlideContent:
+    kind: str          # "title" | "section" | "content" | "closing"
+    title: str
+    bodies: list       # list of str paragraphs / bullet lines
+    notes: str = ""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Palettes & fonts
+# ─────────────────────────────────────────────────────────────────────────────
+
 PALETTES: dict[str, Palette] = {
-    "corporate": Palette(
-        background="#F5F5F0",
-        background_alt="#ECEAE3",
-        background_dark="#1C2B3A",
-        primary="#1C2B3A",
-        accent="#C8A84B",
-    ),
-    "academic": Palette(
-        background="#F7F4EE",
-        background_alt="#EDE9E0",
-        background_dark="#1A1A2E",
-        primary="#2C2C4A",
-        accent="#8B2635",
-    ),
-    "pitch": Palette(
-        background="#0D0D0D",
-        background_alt="#121212",
-        background_dark="#050505",
-        primary="#FFFFFF",
-        accent="#00E5FF",
-    ),
-    "creative": Palette(
-        background="#F2EBE0",
-        background_alt="#E8DDD0",
-        background_dark="#2C2416",
-        primary="#2C2416",
-        accent="#B05A2F",
-    ),
+    "corporate": Palette("#F5F4EF", "#ECEAE0", "#1C2B3A", "#1C2B3A", "#C8A84B"),
+    "academic":  Palette("#F7F4EE", "#EDE9E0", "#1A1A2E", "#2C2C4A", "#8B2635"),
+    "pitch":     Palette("#0D0D0D", "#111111", "#050505", "#FFFFFF", "#00E5FF"),
+    "creative":  Palette("#F2EBE0", "#E8DDD0", "#2C2416", "#2C2416", "#B05A2F"),
 }
 
 FONTS: dict[str, tuple[str, str]] = {
-    "corporate": ("Georgia",       "Trebuchet MS"),
+    "corporate": ("Georgia",           "Trebuchet MS"),
     "academic":  ("Palatino Linotype", "Gill Sans MT"),
-    "pitch":     ("Impact",        "Segoe UI"),
-    "creative":  ("Garamond",      "Century Gothic"),
+    "pitch":     ("Impact",            "Segoe UI"),
+    "creative":  ("Garamond",          "Century Gothic"),
 }
 
 ENERGY: dict[str, str] = {
@@ -94,11 +72,6 @@ ENERGY: dict[str, str] = {
     "pitch":     "dynamique",
     "creative":  "modéré",
 }
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 1 — Analysis
-# ─────────────────────────────────────────────────────────────────────────────
 
 KEYWORDS: dict[str, list[str]] = {
     "corporate": ["kpi", "revenue", "profit", "budget", "strategy", "quarter",
@@ -112,60 +85,87 @@ KEYWORDS: dict[str, list[str]] = {
 }
 
 
-def _extract_text(prs: Presentation) -> str:
-    parts = []
-    for slide in prs.slides:
-        for shape in slide.shapes:
-            if shape.has_text_frame:
-                parts.append(shape.text_frame.text)
-    return " ".join(parts).lower()
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 1 — Extract content from source .pptx
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _shape_texts(slide) -> list[str]:
+    texts = []
+    for shape in slide.shapes:
+        if not shape.has_text_frame:
+            continue
+        t = shape.text_frame.text.strip()
+        if t:
+            texts.append(t)
+    return texts
 
 
-def detect_type(prs: Presentation) -> str:
-    text = _extract_text(prs)
-    scores = {t: sum(text.count(w) for w in words) for t, words in KEYWORDS.items()}
+def _detect_type(all_text: str) -> str:
+    scores = {t: sum(all_text.lower().count(w) for w in words)
+              for t, words in KEYWORDS.items()}
     return max(scores, key=scores.get)
 
 
-def classify_slide(slide) -> str:
-    """Return 'title' | 'section' | 'data' | 'list' | 'content'."""
-    texts = [s.text_frame.text.strip() for s in slide.shapes if s.has_text_frame]
-    full = " ".join(texts).lower()
-    if len(texts) <= 1:
+def _classify_slide(texts: list[str], index: int, total: int) -> str:
+    if index == 0:
+        return "title"
+    if index == total - 1:
+        return "closing"
+    joined = " ".join(texts).lower()
+    if len(texts) <= 1 or len(joined) < 80:
         return "section"
-    if any(c.isdigit() for c in full) and len(full) < 200:
-        return "data"
-    bullet_count = sum(1 for t in texts for line in t.splitlines() if line.strip().startswith(("•", "-", "*")))
-    if bullet_count >= 3:
-        return "list"
     return "content"
 
 
-def analyze(prs: Presentation) -> dict:
-    n = len(prs.slides)
-    prs_type = detect_type(prs)
-    slide_classes = [classify_slide(s) for s in prs.slides]
-    first_slide = prs.slides[0]
-    first_texts = [sh.text_frame.text for sh in first_slide.shapes if sh.has_text_frame and sh.text_frame.text.strip()]
-    slide_classes[0] = "title"
+def extract(prs: Presentation) -> tuple[list[SlideContent], dict]:
+    total = len(prs.slides)
+    all_text = " ".join(
+        sh.text_frame.text for sl in prs.slides
+        for sh in sl.shapes if sh.has_text_frame
+    )
+    prs_type = _detect_type(all_text)
+    slides: list[SlideContent] = []
 
-    report = {
-        "slide_count": n,
+    for i, slide in enumerate(prs.slides):
+        texts = _shape_texts(slide)
+        kind = _classify_slide(texts, i, total)
+        title = texts[0] if texts else ""
+        bodies = texts[1:] if len(texts) > 1 else []
+
+        # Flatten bullet lines within body blocks
+        flat_bodies = []
+        for block in bodies:
+            for line in block.splitlines():
+                line = line.strip()
+                if line:
+                    flat_bodies.append(line)
+
+        notes = ""
+        try:
+            notes = slide.notes_slide.notes_text_frame.text.strip()
+        except Exception:
+            pass
+
+        slides.append(SlideContent(kind=kind, title=title, bodies=flat_bodies, notes=notes))
+
+    analysis = {
+        "slide_count": total,
         "type": prs_type,
         "energy": ENERGY[prs_type],
-        "slide_classes": slide_classes,
+        "slide_classes": [s.kind for s in slides],
     }
+
     print("\n=== ANALYSE DU FICHIER SOURCE ===")
-    print(f"  Nombre de slides  : {n}")
+    print(f"  Slides extraites  : {total}")
     print(f"  Type détecté      : {prs_type}")
-    print(f"  Niveau d'énergie  : {ENERGY[prs_type]}")
-    print(f"  Titre             : {first_texts[0] if first_texts else '(vide)'}")
+    print(f"  Énergie           : {ENERGY[prs_type]}")
+    print(f"  Titre             : {slides[0].title if slides else '(vide)'}")
     print("=================================\n")
-    return report
+    return slides, analysis
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 2 — Identity
+# Step 2 — Build identity
 # ─────────────────────────────────────────────────────────────────────────────
 
 def build_identity(
@@ -178,7 +178,6 @@ def build_identity(
 ) -> Identity:
     if seed is not None:
         random.seed(seed)
-
     prs_type = analysis["type"]
     palette_key = override_palette if override_palette in PALETTES else prs_type
     ft, fb = FONTS[prs_type]
@@ -191,360 +190,318 @@ def build_identity(
     )
 
 
-def _hex(h: str) -> RGBColor:
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 3 — Build new presentation from scratch
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _rgb(h: str) -> RGBColor:
     h = h.lstrip("#")
     return RGBColor(int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
 
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 3 — Slide-by-slide styling
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Imposed typography scale — overrides original sizes for visual consistency
-FONT_SIZES = {
-    "title_cover":   52,
-    "title_main":    36,
-    "title_section": 48,
-    "subtitle":      22,
-    "body":          18,
-    "body_small":    15,
-}
-
-
-def _set_background(slide, hex_color: str) -> None:
-    bg = slide.background
-    fill = bg.fill
+def _set_bg(slide, hex_color: str) -> None:
+    fill = slide.background.fill
     fill.solid()
-    fill.fore_color.rgb = _hex(hex_color)
+    fill.fore_color.rgb = _rgb(hex_color)
 
 
-def _style_run(run, font_name: str, size_pt: int, color_hex: str, bold: Optional[bool] = None) -> None:
-    run.font.name = font_name
-    run.font.size = Pt(size_pt)
-    run.font.color.rgb = _hex(color_hex)
-    if bold is not None:
+def _rect(slide, left, top, width, height, fill_hex: str, z_bottom: bool = False):
+    shape = slide.shapes.add_shape(1, Emu(int(left)), Emu(int(top)),
+                                   Emu(int(width)), Emu(int(height)))
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = _rgb(fill_hex)
+    shape.line.fill.background()
+    if z_bottom:
+        sp = slide.shapes._spTree
+        sp.remove(shape._element)
+        sp.insert(2, shape._element)
+    return shape
+
+
+def _textbox(slide, left, top, width, height,
+             text: str, font: str, size: int, color_hex: str,
+             bold: bool = False, align: PP_ALIGN = PP_ALIGN.LEFT,
+             wrap: bool = True, italic: bool = False) -> None:
+    if not text.strip():
+        return
+    txBox = slide.shapes.add_textbox(Emu(int(left)), Emu(int(top)),
+                                     Emu(int(width)), Emu(int(height)))
+    tf = txBox.text_frame
+    tf.word_wrap = wrap
+    tf.auto_size = None
+
+    p = tf.paragraphs[0]
+    p.alignment = align
+    run = p.add_run()
+    run.text = text
+    run.font.name = font
+    run.font.size = Pt(size)
+    run.font.color.rgb = _rgb(color_hex)
+    run.font.bold = bold
+    run.font.italic = italic
+
+
+def _multiline_textbox(slide, left, top, width, height,
+                       lines: list[str], font: str, size: int, color_hex: str,
+                       bold: bool = False, align: PP_ALIGN = PP_ALIGN.LEFT,
+                       line_spacing_pt: float = 6.0) -> None:
+    if not lines:
+        return
+    txBox = slide.shapes.add_textbox(Emu(int(left)), Emu(int(top)),
+                                     Emu(int(width)), Emu(int(height)))
+    tf = txBox.text_frame
+    tf.word_wrap = True
+    tf.auto_size = None
+
+    for idx, line in enumerate(lines):
+        if idx == 0:
+            p = tf.paragraphs[0]
+        else:
+            p = tf.add_paragraph()
+        p.alignment = align
+        p.space_before = Pt(line_spacing_pt if idx > 0 else 0)
+
+        # Replace bullet glyphs
+        clean = re.sub(r"^[•●▪▸\-]\s*", "— ", line.strip())
+        run = p.add_run()
+        run.text = clean
+        run.font.name = font
+        run.font.size = Pt(size)
+        run.font.color.rgb = _rgb(color_hex)
         run.font.bold = bold
 
 
-def _is_title_shape(shape, shape_index: int) -> bool:
-    try:
-        ph = shape.placeholder_format
-        if ph is not None and ph.idx == 0:
-            return True
-    except Exception:
-        pass
-    return shape_index == 0 and shape.has_text_frame
+# ── Layout constants (widescreen 10×7.5 in = 9144000×6858000 EMU) ────────────
+W = Inches(10)
+H = Inches(7.5)
+MARGIN_X = Inches(0.65)
+MARGIN_Y = Inches(0.5)
+TITLE_BAND_H = Inches(1.55)
+CONTENT_TOP = TITLE_BAND_H + Inches(0.3)
+CONTENT_H = H - CONTENT_TOP - Inches(0.5)
+CONTENT_W = W - 2 * MARGIN_X
+STRIP_W = Inches(0.07)    # vertical left accent strip
+RULE_H = Emu(76200)       # 1 mm bottom rule
 
 
-def _replace_bullets(tf) -> None:
-    """Replace only the bullet glyph with an em-dash on the first run of each para."""
-    for para in tf.paragraphs:
-        if not para.runs:
-            continue
-        run = para.runs[0]
-        if run.text.startswith("\u2022"):
-            run.text = "\u2014 " + run.text[1:].lstrip()
-
-
-def _add_filled_rect(slide, left: Emu, top: Emu, width: Emu, height: Emu,
-                     fill_hex: str, behind: bool = False) -> None:
-    shape = slide.shapes.add_shape(1, left, top, width, height)
-    shape.fill.solid()
-    shape.fill.fore_color.rgb = _hex(fill_hex)
-    shape.line.fill.background()
-    if behind:
-        sp_tree = slide.shapes._spTree
-        sp_tree.remove(shape._element)
-        sp_tree.insert(2, shape._element)
-
-
-def style_title_slide(slide, identity: Identity, W: Emu, H: Emu) -> None:
+def build_title_slide(prs: Presentation, content: SlideContent, identity: Identity) -> None:
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
     p = identity.palette
-    _set_background(slide, p.background_dark)
-    # Vertical accent strip on left edge
-    _add_filled_rect(slide, Emu(0), Emu(0), Emu(int(W * 0.012)), H, p.accent)
+    _set_bg(slide, p.background_dark)
+
+    # Left vertical accent strip
+    _rect(slide, 0, 0, STRIP_W, H, p.accent)
     # Bottom rule
-    _add_filled_rect(slide, Emu(0), Emu(int(H - 76200)), W, Emu(76200), p.accent)
+    _rect(slide, 0, H - RULE_H * 2, W, RULE_H * 2, p.accent)
+    # Horizontal line above title
+    line_top = H * 0.42
+    _rect(slide, MARGIN_X + STRIP_W + Inches(0.2), line_top,
+          Inches(4.5), RULE_H * 2, p.accent)
 
-    for i, shape in enumerate(slide.shapes):
-        if not shape.has_text_frame:
-            continue
-        for para in shape.text_frame.paragraphs:
-            for run in para.runs:
-                if _is_title_shape(shape, i):
-                    _style_run(run, identity.font_title, FONT_SIZES["title_cover"], p.accent, bold=True)
-                else:
-                    _style_run(run, identity.font_body, FONT_SIZES["subtitle"], "#FFFFFF")
+    text_left = MARGIN_X + STRIP_W + Inches(0.35)
+    text_w = W - text_left - MARGIN_X
+
+    # Main title
+    _textbox(slide, text_left, line_top + RULE_H * 2 + Inches(0.15),
+             text_w, Inches(2.2),
+             content.title, identity.font_title, 48, p.accent, bold=True)
+
+    # Subtitle(s)
+    if content.bodies:
+        sub = " · ".join(content.bodies[:3])
+        _textbox(slide, text_left, line_top + RULE_H * 2 + Inches(2.5),
+                 text_w, Inches(0.8),
+                 sub, identity.font_body, 20, "#CCCCCC")
 
 
-def style_section_slide(slide, identity: Identity, W: Emu, H: Emu) -> None:
+def build_section_slide(prs: Presentation, content: SlideContent, identity: Identity, idx: int) -> None:
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
     p = identity.palette
-    _set_background(slide, p.primary)
-    # Accent band at bottom
-    _add_filled_rect(slide, Emu(0), Emu(int(H - 76200 * 4)), W, Emu(76200 * 4), p.accent)
+    _set_bg(slide, p.primary)
 
-    for i, shape in enumerate(slide.shapes):
-        if not shape.has_text_frame:
-            continue
-        for j, para in enumerate(shape.text_frame.paragraphs):
-            for run in para.runs:
-                size = FONT_SIZES["title_section"] if (_is_title_shape(shape, i) and j == 0) else FONT_SIZES["subtitle"]
-                bold = True if (_is_title_shape(shape, i) and j == 0) else None
-                _style_run(run, identity.font_title if j == 0 else identity.font_body, size, "#FFFFFF", bold=bold)
+    # Full-width accent band at bottom 18%
+    band_h = H * 0.18
+    _rect(slide, 0, H - band_h, W, band_h, p.accent)
+
+    # Section number circle
+    circle_r = Inches(0.55)
+    _rect(slide, MARGIN_X, H * 0.25, circle_r, circle_r, p.accent)
+    _textbox(slide, MARGIN_X, H * 0.25, circle_r, circle_r,
+             str(idx), identity.font_title, 26, p.primary, bold=True, align=PP_ALIGN.CENTER)
+
+    # Section title
+    _textbox(slide, MARGIN_X + circle_r + Inches(0.3), H * 0.22,
+             W - MARGIN_X * 2 - circle_r - Inches(0.3), Inches(1.6),
+             content.title, identity.font_title, 44, p.accent, bold=True)
+
+    # Body line
+    if content.bodies:
+        _textbox(slide, MARGIN_X, H * 0.62,
+                 W - MARGIN_X * 2, Inches(0.9),
+                 content.bodies[0], identity.font_body, 20, "#FFFFFF", italic=True)
 
 
-def style_content_slide(slide, slide_index: int, identity: Identity, W: Emu, H: Emu) -> None:
+def build_content_slide(prs: Presentation, content: SlideContent, identity: Identity, slide_index: int) -> None:
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
     p = identity.palette
     bg = p.background if slide_index % 2 == 0 else p.background_alt
-    _set_background(slide, bg)
+    _set_bg(slide, bg)
 
-    # Colored title band (top 20 % of slide) placed BEHIND existing shapes
-    band_h = Emu(int(H * 0.20))
-    _add_filled_rect(slide, Emu(0), Emu(0), W, band_h, p.primary, behind=True)
+    # Title band (top 21%)
+    _rect(slide, 0, 0, W, TITLE_BAND_H, p.primary, z_bottom=True)
+    # Left accent strip in title band
+    _rect(slide, 0, 0, STRIP_W, TITLE_BAND_H, p.accent)
+    # Bottom rule
+    _rect(slide, 0, H - RULE_H * 2, W, RULE_H * 2, p.accent)
 
-    # Bottom accent rule
-    _add_filled_rect(slide, Emu(0), Emu(int(H - 76200)), W, Emu(76200), p.accent)
+    # Slide title
+    _textbox(slide, MARGIN_X + STRIP_W + Inches(0.25), Inches(0.22),
+             W - MARGIN_X - STRIP_W - Inches(0.5), Inches(1.1),
+             content.title, identity.font_title, 32, "#FFFFFF", bold=True)
 
-    for i, shape in enumerate(slide.shapes):
-        if not shape.has_text_frame:
-            continue
-        tf = shape.text_frame
-        _replace_bullets(tf)
-        if _is_title_shape(shape, i):
-            for para in tf.paragraphs:
-                for run in para.runs:
-                    _style_run(run, identity.font_title, FONT_SIZES["title_main"], "#FFFFFF", bold=True)
-        elif i <= 2:
-            for para in tf.paragraphs:
-                for run in para.runs:
-                    _style_run(run, identity.font_body, FONT_SIZES["body"], p.primary)
-        else:
-            for para in tf.paragraphs:
-                for run in para.runs:
-                    _style_run(run, identity.font_body, FONT_SIZES["body_small"], p.primary)
+    # Decide layout: single column vs two columns
+    bodies = content.bodies
+    if not bodies:
+        return
+
+    # Two-column layout if 4+ body lines, else single
+    if len(bodies) >= 4:
+        mid = len(bodies) // 2
+        col_w = (CONTENT_W - Inches(0.4)) / 2
+        # Left column
+        _multiline_textbox(slide, MARGIN_X, CONTENT_TOP,
+                           col_w, CONTENT_H,
+                           bodies[:mid], identity.font_body, 17, p.primary)
+        # Thin separator
+        _rect(slide, MARGIN_X + col_w + Inches(0.18),
+              CONTENT_TOP + Inches(0.1), RULE_H, CONTENT_H - Inches(0.2), p.accent)
+        # Right column
+        _multiline_textbox(slide, MARGIN_X + col_w + Inches(0.4), CONTENT_TOP,
+                           col_w, CONTENT_H,
+                           bodies[mid:], identity.font_body, 17, p.primary)
+    else:
+        _multiline_textbox(slide, MARGIN_X + STRIP_W + Inches(0.25), CONTENT_TOP,
+                           CONTENT_W, CONTENT_H,
+                           bodies, identity.font_body, 18, p.primary, line_spacing_pt=8)
 
 
-def style_closing_slide(slide, identity: Identity, W: Emu, H: Emu) -> None:
+def build_closing_slide(prs: Presentation, content: SlideContent, identity: Identity) -> None:
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
     p = identity.palette
-    _set_background(slide, p.background_dark)
-    _add_filled_rect(slide, Emu(0), Emu(0), Emu(int(W * 0.012)), H, p.accent)
-    _add_filled_rect(slide, Emu(0), Emu(int(H - 76200)), W, Emu(76200), p.accent)
+    _set_bg(slide, p.background_dark)
 
-    for i, shape in enumerate(slide.shapes):
-        if not shape.has_text_frame:
-            continue
-        for para in shape.text_frame.paragraphs:
-            for run in para.runs:
-                if _is_title_shape(shape, i):
-                    _style_run(run, identity.font_title, FONT_SIZES["title_cover"], p.accent, bold=True)
-                else:
-                    _style_run(run, identity.font_body, FONT_SIZES["subtitle"], "#FFFFFF")
+    # Full-width accent band top 8%
+    _rect(slide, 0, 0, W, H * 0.08, p.accent)
+    # Left vertical strip
+    _rect(slide, 0, 0, STRIP_W, H, p.accent)
+    # Centered accent bar mid-slide
+    bar_w = Inches(5)
+    _rect(slide, (W - bar_w) / 2, H * 0.42, bar_w, RULE_H * 3, p.accent)
+
+    text_left = MARGIN_X + STRIP_W + Inches(0.4)
+    text_w = W - text_left - MARGIN_X
+
+    _textbox(slide, text_left, H * 0.44 + RULE_H * 3 + Inches(0.1),
+             text_w, Inches(1.8),
+             content.title or "Merci",
+             identity.font_title, 48, p.accent, bold=True, align=PP_ALIGN.CENTER)
+
+    if content.bodies:
+        _textbox(slide, text_left, H * 0.75, text_w, Inches(0.8),
+                 content.bodies[0], identity.font_body, 18, "#CCCCCC",
+                 align=PP_ALIGN.CENTER)
 
 
-def apply_styles(prs: Presentation, analysis: dict, identity: Identity) -> None:
-    n = len(prs.slides)
-    classes = analysis["slide_classes"]
-    W = prs.slide_width
-    H = prs.slide_height
-    for i, slide in enumerate(prs.slides):
-        cls = classes[i]
+def build_presentation(slides_content: list[SlideContent], identity: Identity) -> Presentation:
+    prs = Presentation()
+    prs.slide_width = W
+    prs.slide_height = H
+
+    section_counter = 0
+    for i, sc in enumerate(slides_content):
         try:
-            if cls == "title":
-                style_title_slide(slide, identity, W, H)
-            elif cls == "section":
-                style_section_slide(slide, identity, W, H)
-            elif i == n - 1:
-                style_closing_slide(slide, identity, W, H)
+            if sc.kind == "title":
+                build_title_slide(prs, sc, identity)
+            elif sc.kind == "section":
+                section_counter += 1
+                build_section_slide(prs, sc, identity, section_counter)
+            elif sc.kind == "closing":
+                build_closing_slide(prs, sc, identity)
             else:
-                style_content_slide(slide, i, identity, W, H)
+                build_content_slide(prs, sc, identity, i)
         except Exception as exc:
-            logging.warning(f"Slide {i+1} styling error: {exc}")
+            logging.warning(f"Slide {i+1} ({sc.kind}) build error: {exc}")
+            # fallback: add a blank slide to preserve slide count
+            prs.slides.add_slide(prs.slide_layouts[6])
 
+    return prs
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 4 — Animations
-# Injecting custom timing XML into an existing .pptx is unreliable across
-# PowerPoint versions (namespace ordering, schema validation). Transitions
-# are applied instead — python-pptx handles their XML safely.
+# Step 4 — Transitions
 # ─────────────────────────────────────────────────────────────────────────────
 
-from pptx.enum.action import PP_ACTION
-from pptx.oxml.ns import qn
-
-
-def add_animations(prs: Presentation, analysis: dict, identity: Identity, seed: Optional[int]) -> list[int]:
-    """Apply slide transitions instead of per-shape animations (safe path)."""
-    from pptx.oxml import parse_xml
-    from pptx.oxml.ns import nsmap
-
-    rng = random.Random(seed)
-    n = len(prs.slides)
-    classes = analysis["slide_classes"]
-
-    content_indices = [i for i, c in enumerate(classes)
-                       if c in ("content", "list", "data") and 0 < i < n - 1]
-    no_anim_indices = set(rng.sample(content_indices, min(2, len(content_indices))))
-
-    # transition type per energy level: fade (10), push (21), wipe (30)
-    energy_transitions = {
-        "sobre":     ["fade"],
-        "modéré":    ["fade", "push"],
-        "dynamique": ["fade", "push", "wipe"],
-    }
-    choices = energy_transitions[identity.energy]
-
-    for i, slide in enumerate(prs.slides):
-        if i in no_anim_indices:
-            continue
-        t = rng.choice(choices)
-        dur = rng.randint(400, 700)
-        try:
-            _apply_transition(slide, t, dur)
-        except Exception as exc:
-            logging.debug(f"Slide {i+1} transition skipped: {exc}")
-
-    return sorted(no_anim_indices)
+_P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
 
 
 def _apply_transition(slide, kind: str, dur_ms: int) -> None:
-    """Write a minimal <p:transition> element onto a slide."""
-    p_ns = "http://schemas.openxmlformats.org/presentationml/2006/main"
     slide_elem = slide._element
-
-    # Remove any existing transition
-    for old in slide_elem.findall(f"{{{p_ns}}}transition"):
+    for old in slide_elem.findall(f"{{{_P_NS}}}transition"):
         slide_elem.remove(old)
 
     if kind == "fade":
-        inner = '<p:fade xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>'
+        inner = f'<p:fade xmlns:p="{_P_NS}"/>'
     elif kind == "push":
-        inner = '<p:push xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" dir="l"/>'
+        inner = f'<p:push xmlns:p="{_P_NS}" dir="l"/>'
     else:
-        inner = '<p:wipe xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" dir="l"/>'
+        inner = f'<p:wipe xmlns:p="{_P_NS}" dir="l"/>'
 
-    xml = (
-        f'<p:transition xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
-        f' spd="med" dur="{dur_ms}">'
-        f'{inner}'
-        f'</p:transition>'
-    )
+    xml = f'<p:transition xmlns:p="{_P_NS}" spd="med" dur="{dur_ms}">{inner}</p:transition>'
     trans_elem = etree.fromstring(xml.encode("utf-8"))
 
-    # Insert at correct position: after clrMapOvr, before extLst
-    ref_tags = [
-        f"{{{p_ns}}}extLst",
-        f"{{{p_ns}}}timing",
-    ]
     insert_pos = len(slide_elem)
     for idx, child in enumerate(slide_elem):
-        if child.tag in ref_tags:
+        if child.tag in (f"{{{_P_NS}}}extLst", f"{{{_P_NS}}}timing"):
             insert_pos = idx
             break
     slide_elem.insert(insert_pos, trans_elem)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Step 5 — Anti-AI verification
-# ─────────────────────────────────────────────────────────────────────────────
+def add_transitions(prs: Presentation, identity: Identity, seed: Optional[int]) -> None:
+    rng = random.Random(seed)
+    choices = {
+        "sobre":     ["fade"],
+        "modéré":    ["fade", "push"],
+        "dynamique": ["fade", "push", "wipe"],
+    }[identity.energy]
 
-def verify(prs: Presentation, identity: Identity, analysis: dict) -> tuple[int, list[str]]:
-    checks = []
-    score = 0
-
-    # 1. Background not pure white on >30% slides
-    pure_white = sum(1 for s in prs.slides
-                     if s.background.fill.type is not None and
-                     str(s.background.fill.fore_color.rgb).upper() == "FFFFFF")
-    threshold = len(prs.slides) * 0.3
-    if pure_white <= threshold:
-        score += 1
-        checks.append("[OK] Fonds non-blanc sur ≥70 % des slides")
-    else:
-        checks.append("[NG] Trop de fonds blancs purs")
-
-    # 2. No standard bullet glyphs
-    bullet_found = any(
-        "•" in (sh.text_frame.text if sh.has_text_frame else "")
-        for slide in prs.slides for sh in slide.shapes
-    )
-    if not bullet_found:
-        score += 1
-        checks.append("[OK] Aucune puce standard (•)")
-    else:
-        checks.append("[NG] Des puces • sont encore présentes")
-
-    # 3. Fonts not all Calibri/Arial/Times
-    banned = {"calibri", "arial", "times new roman"}
-    fonts_used = {
-        run.font.name.lower() for slide in prs.slides
-        for sh in slide.shapes if sh.has_text_frame
-        for para in sh.text_frame.paragraphs
-        for run in para.runs if run.font.name
-    }
-    if not fonts_used.issubset(banned):
-        score += 1
-        checks.append(f"[OK] Polices personnalisées utilisées : {fonts_used - banned}")
-    else:
-        checks.append("[NG] Seulement des polices banales détectées")
-
-    # 4. At least one section slide with colored background
-    section_slides = [i for i, c in enumerate(analysis["slide_classes"]) if c == "section"]
-    if section_slides:
-        score += 1
-        checks.append("[OK] Slide(s) de section à fond coloré présentes")
-    else:
-        checks.append("[WARN] Aucune slide de section détectée")
-        score += 1  # not the agent's fault
-
-    # 5. Title slide is distinct (dark background)
-    score += 1
-    checks.append("[OK] Slide titre traitée distinctement")
-
-    # 6 - 8: structural checks (approximated)
-    score += 1
-    checks.append("[OK] Animations variées appliquées")
-    score += 1
-    checks.append("[OK] Alignements non-uniformes")
-    score += 1
-    checks.append("[OK] Listes reformatées avec tirets longs")
-
-    return score, checks
+    for slide in prs.slides:
+        try:
+            _apply_transition(slide, rng.choice(choices), rng.randint(400, 700))
+        except Exception as exc:
+            logging.debug(f"Transition skipped: {exc}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 6 — Output & report
+# Step 5 — Report
 # ─────────────────────────────────────────────────────────────────────────────
 
-def save_and_report(
-    prs: Presentation,
-    input_path: Path,
-    identity: Identity,
-    analysis: dict,
-    no_anim_slides: list[int],
-    score: int,
-    checks: list[str],
-) -> Path:
+def report_and_save(prs: Presentation, input_path: Path,
+                    identity: Identity, analysis: dict) -> Path:
     stem = input_path.stem
     out_path = input_path.parent / f"{stem}_redesigned.pptx"
     prs.save(str(out_path))
 
-    palette = identity.palette
+    pal = identity.palette
     print("\n=== RAPPORT DE TRANSFORMATION ===")
-    print(f"  Type détecté        : {identity.prs_type}")
-    print(f"  Niveau d'énergie    : {identity.energy}")
-    print(f"  Nombre de slides    : {analysis['slide_count']}")
-    print(f"  Palette appliquée   : BG={palette.background}  Primary={palette.primary}  Accent={palette.accent}")
-    print(f"  Polices             : {identity.font_title} (titres) + {identity.font_body} (corps)")
-    print(f"  Modifications style : fonds personnalisés, tirets longs, barres d'accent, alignements variés")
-    print(f"  Animations ajoutées : fade, wipe, fly-in (variés)")
-    print(f"  Slides sans anim.   : {[i+1 for i in no_anim_slides] or 'aucune'}")
-    print(f"  Score anti-IA       : {score}/8 points de vérification passés")
-    print("=================================")
-    for c in checks:
-        print(f"    {c}")
-    print(f"\nFichier enregistré : {out_path}\n")
+    print(f"  Type              : {identity.prs_type}")
+    print(f"  Énergie           : {identity.energy}")
+    print(f"  Slides            : {analysis['slide_count']}")
+    print(f"  Palette           : BG {pal.background} | Primary {pal.primary} | Accent {pal.accent}")
+    print(f"  Polices           : {identity.font_title} (titres) / {identity.font_body} (corps)")
+    print(f"  Méthode           : reconstruction from scratch (contenu extrait + mise en page neuve)")
+    print(f"  Fichier           : {out_path}")
+    print("=================================\n")
     return out_path
 
 
@@ -560,37 +517,28 @@ def process(
     override_energy: Optional[str] = None,
     seed: Optional[int] = None,
 ) -> Path:
-    prs = Presentation(str(input_path))
-    analysis = analyze(prs)
-    identity = build_identity(
-        analysis,
-        override_palette=override_palette,
-        override_font_title=override_font_title,
-        override_font_body=override_font_body,
-        override_energy=override_energy,
-        seed=seed,
-    )
-    apply_styles(prs, analysis, identity)
-    no_anim = add_animations(prs, analysis, identity, seed)
-    score, checks = verify(prs, identity, analysis)
-    return save_and_report(prs, input_path, identity, analysis, no_anim, score, checks)
+    src = Presentation(str(input_path))
+    slides_content, analysis = extract(src)
+    identity = build_identity(analysis, override_palette, override_font_title,
+                               override_font_body, override_energy, seed)
+    prs = build_presentation(slides_content, identity)
+    add_transitions(prs, identity, seed)
+    return report_and_save(prs, input_path, identity, analysis)
 
 
 def _watch(folder: Path, **kwargs) -> None:
-    """Watch a directory and process any new .pptx files dropped into it."""
-    import time
     seen: set[str] = set()
-    print(f"Mode surveillance actif sur : {folder}  (Ctrl+C pour arrêter)\n")
+    print(f"Surveillance : {folder}  (Ctrl+C pour arrêter)\n")
     try:
         while True:
             for f in folder.glob("*.pptx"):
                 if f.name not in seen and not f.name.endswith("_redesigned.pptx"):
                     seen.add(f.name)
-                    print(f"  → Nouveau fichier détecté : {f.name}")
+                    print(f"  → {f.name}")
                     try:
                         process(f, **kwargs)
                     except Exception as exc:
-                        logging.error(f"Erreur sur {f.name}: {exc}")
+                        logging.error(f"Erreur {f.name}: {exc}")
             time.sleep(2)
     except KeyboardInterrupt:
         print("\nSurveillance arrêtée.")
@@ -603,62 +551,45 @@ def _watch(folder: Path, **kwargs) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="ppt_designer",
-        description="PPT Human Designer — transforms AI-generated slides into human-looking presentations.",
+        description="PPT Human Designer — extrait le contenu et reconstruit la présentation from scratch.",
     )
     parser.add_argument("input", nargs="?", type=Path,
-                        help="Fichier .pptx source (ou dossier avec --watch)")
+                        help="Fichier .pptx source")
     parser.add_argument("--palette", choices=list(PALETTES.keys()),
                         help="Forcer une palette : corporate | academic | pitch | creative")
-    parser.add_argument("--font-title", metavar="FONT",
-                        help="Police de titre (ex: 'Georgia')")
-    parser.add_argument("--font-body", metavar="FONT",
-                        help="Police de corps (ex: 'Trebuchet MS')")
-    parser.add_argument("--energy", choices=["sobre", "modéré", "dynamique"],
-                        help="Niveau d'énergie des animations")
-    parser.add_argument("--seed", type=int,
-                        help="Graine aléatoire pour un résultat reproductible")
-    parser.add_argument("--watch", action="store_true",
-                        help="Surveiller le dossier et traiter automatiquement les nouveaux .pptx")
+    parser.add_argument("--font-title", metavar="FONT")
+    parser.add_argument("--font-body",  metavar="FONT")
+    parser.add_argument("--energy", choices=["sobre", "modéré", "dynamique"])
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--watch", action="store_true")
     parser.add_argument("--log-level", default="WARNING",
-                        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
-                        help="Verbosité des logs (défaut: WARNING)")
+                        choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     args = parser.parse_args()
 
     logging.basicConfig(level=getattr(logging, args.log_level),
                         format="%(levelname)s: %(message)s")
 
-    kwargs = dict(
-        override_palette=args.palette,
-        override_font_title=args.font_title,
-        override_font_body=args.font_body,
-        override_energy=args.energy,
-        seed=args.seed,
-    )
+    kwargs = dict(override_palette=args.palette, override_font_title=args.font_title,
+                  override_font_body=args.font_body, override_energy=args.energy,
+                  seed=args.seed)
 
     if args.watch:
-        target = args.input or Path(".")
-        if not target.is_dir():
-            parser.error("--watch requiert un dossier comme argument (ou aucun argument pour le dossier courant)")
-        _watch(target, **kwargs)
+        _watch(args.input or Path("."), **kwargs)
     elif args.input:
         if not args.input.exists():
             parser.error(f"Fichier introuvable : {args.input}")
-        if args.input.suffix.lower() != ".pptx":
-            parser.error("Le fichier doit être un .pptx")
         process(args.input, **kwargs)
     else:
-        # Auto-detect: process any .pptx in current directory
-        files = [f for f in Path(".").glob("*.pptx") if not f.name.endswith("_redesigned.pptx")]
+        files = [f for f in Path(".").glob("*.pptx")
+                 if not f.name.endswith("_redesigned.pptx")]
         if not files:
             parser.print_help()
-            print("\nAucun fichier .pptx trouvé dans le dossier courant.")
             sys.exit(1)
         for f in files:
-            print(f"Traitement de : {f.name}")
             try:
                 process(f, **kwargs)
             except Exception as exc:
-                logging.error(f"Erreur sur {f.name}: {exc}")
+                logging.error(f"Erreur {f.name}: {exc}")
 
 
 if __name__ == "__main__":

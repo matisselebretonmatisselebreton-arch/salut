@@ -1,0 +1,40 @@
+name: PPT Human Designer
+
+on:
+  push:
+    paths:
+      - "input/*.pptx"
+
+jobs:
+  redesign:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Process new .pptx files
+        run: |
+          for f in input/*.pptx; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f" .pptx)
+            echo "Processing: $f"
+            python3 ppt_designer.py "$f"
+            mv "input/${base}_redesigned.pptx" "output/${base}_redesigned.pptx"
+          done
+
+      - name: Commit redesigned files
+        run: |
+          git config user.name  "PPT Designer Bot"
+          git config user.email "bot@ppt-designer"
+          git add output/
+          git diff --cached --quiet || git commit -m "chore: add redesigned presentations"
+          git push

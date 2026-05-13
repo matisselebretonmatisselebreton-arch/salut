@@ -334,40 +334,21 @@ def apply_styles(prs: Presentation, analysis: dict, identity: Identity) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 4 — Animations (via validated XML template)
+# Step 4 — Animations
+# Injecting custom timing XML into an existing .pptx is unreliable across
+# PowerPoint versions (namespace ordering, schema validation). Transitions
+# are applied instead — python-pptx handles their XML safely.
 # ─────────────────────────────────────────────────────────────────────────────
 
-_P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
-
-# Minimal valid <p:timing> block that PowerPoint accepts.
-# Preset 10 = Fade, nodeType tmRoot structure is required by the OOXML spec.
-_TIMING_TEMPLATE = """\
-<p:timing xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"
-          xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-  <p:tnLst>
-    <p:par>
-      <p:cTn id="1" dur="indefinite" restart="whenNotActive" nodeType="tmRoot">
-        <p:childTnLst>
-{effects}
-        </p:childTnLst>
-      </p:cTn>
-    </p:par>
-  </p:tnLst>
-</p:timing>"""
-
-_EFFECT_TEMPLATE = """\
-          <p:par>
-            <p:cTn id="{ctn_id}" fill="hold" presetID="10" presetClass="entr"
-                   presetSubtype="0" dur="{dur}" nodeType="clickEffect">
-              <p:stCondLst>
-                <p:cond {evt}delay="{delay}"/>
-              </p:stCondLst>
-              <p:childTnLst/>
-            </p:cTn>
-          </p:par>"""
+from pptx.enum.action import PP_ACTION
+from pptx.oxml.ns import qn
 
 
 def add_animations(prs: Presentation, analysis: dict, identity: Identity, seed: Optional[int]) -> list[int]:
+    """Apply slide transitions instead of per-shape animations (safe path)."""
+    from pptx.oxml import parse_xml
+    from pptx.oxml.ns import nsmap
+
     rng = random.Random(seed)
     n = len(prs.slides)
     classes = analysis["slide_classes"]
@@ -376,42 +357,62 @@ def add_animations(prs: Presentation, analysis: dict, identity: Identity, seed: 
                        if c in ("content", "list", "data") and 0 < i < n - 1]
     no_anim_indices = set(rng.sample(content_indices, min(2, len(content_indices))))
 
-    base_dur = {"sobre": 600, "modéré": 500, "dynamique": 400}[identity.energy]
+    # transition type per energy level: fade (10), push (21), wipe (30)
+    energy_transitions = {
+        "sobre":     ["fade"],
+        "modéré":    ["fade", "push"],
+        "dynamique": ["fade", "push", "wipe"],
+    }
+    choices = energy_transitions[identity.energy]
 
     for i, slide in enumerate(prs.slides):
         if i in no_anim_indices:
             continue
-
-        slide_elem = slide._element
-
-        # Remove any pre-existing timing element
-        for old in slide_elem.findall(f"{{{_P_NS}}}timing"):
-            slide_elem.remove(old)
-
-        shapes_with_text = [s for s in slide.shapes if s.has_text_frame and s.shape_id]
-        if not shapes_with_text:
-            continue
-
-        effects = []
-        for j, _ in enumerate(shapes_with_text):
-            jitter = rng.choice([0, 0, 0, 100, -100]) if rng.random() < 0.3 else 0
-            dur = max(300, base_dur + jitter)
-            evt = 'evt="onClick" ' if j == 0 else ""
-            effects.append(_EFFECT_TEMPLATE.format(
-                ctn_id=10 + j,
-                dur=dur,
-                evt=evt,
-                delay=j * 200,
-            ))
-
-        xml_str = _TIMING_TEMPLATE.format(effects="\n".join(effects))
+        t = rng.choice(choices)
+        dur = rng.randint(400, 700)
         try:
-            timing_elem = etree.fromstring(xml_str.encode("utf-8"))
-            slide_elem.append(timing_elem)
-        except etree.XMLSyntaxError as exc:
-            logging.warning(f"Slide {i+1}: animation XML invalide — ignorée ({exc})")
+            _apply_transition(slide, t, dur)
+        except Exception as exc:
+            logging.debug(f"Slide {i+1} transition skipped: {exc}")
 
     return sorted(no_anim_indices)
+
+
+def _apply_transition(slide, kind: str, dur_ms: int) -> None:
+    """Write a minimal <p:transition> element onto a slide."""
+    p_ns = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    slide_elem = slide._element
+
+    # Remove any existing transition
+    for old in slide_elem.findall(f"{{{p_ns}}}transition"):
+        slide_elem.remove(old)
+
+    if kind == "fade":
+        inner = '<p:fade xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"/>'
+    elif kind == "push":
+        inner = '<p:push xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" dir="l"/>'
+    else:
+        inner = '<p:wipe xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" dir="l"/>'
+
+    xml = (
+        f'<p:transition xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
+        f' spd="med" dur="{dur_ms}">'
+        f'{inner}'
+        f'</p:transition>'
+    )
+    trans_elem = etree.fromstring(xml.encode("utf-8"))
+
+    # Insert at correct position: after clrMapOvr, before extLst
+    ref_tags = [
+        f"{{{p_ns}}}extLst",
+        f"{{{p_ns}}}timing",
+    ]
+    insert_pos = len(slide_elem)
+    for idx, child in enumerate(slide_elem):
+        if child.tag in ref_tags:
+            insert_pos = idx
+            break
+    slide_elem.insert(insert_pos, trans_elem)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -201,115 +201,114 @@ def _hex(h: str) -> RGBColor:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _set_background(slide, hex_color: str) -> None:
-    from pptx.oxml.ns import qn
     bg = slide.background
     fill = bg.fill
     fill.solid()
     fill.fore_color.rgb = _hex(hex_color)
 
 
-def _apply_text_run(run, font_name: str, size_pt: int, color_hex: str, bold: bool = False) -> None:
+def _style_run(run, font_name: str, size_pt: Optional[int], color_hex: str, bold: Optional[bool] = None) -> None:
+    """Apply font/color to a run without touching underline, italic, or bold unless explicitly passed."""
     run.font.name = font_name
-    run.font.size = Pt(size_pt)
+    if size_pt is not None:
+        run.font.size = Pt(size_pt)
     run.font.color.rgb = _hex(color_hex)
-    run.font.bold = bold
-    run.font.underline = False
+    if bold is not None:
+        run.font.bold = bold
+
+
+def _is_title_shape(shape, shape_index: int) -> bool:
+    """Best-effort title detection without relying solely on position."""
+    from pptx.enum.shapes import PP_PLACEHOLDER
+    try:
+        ph = shape.placeholder_format
+        if ph is not None and ph.idx == 0:
+            return True
+    except Exception:
+        pass
+    return shape_index == 0 and shape.has_text_frame
 
 
 def _replace_bullets(tf) -> None:
-    """Replace standard bullet glyphs with em-dashes."""
+    """Replace only the • glyph with an em-dash, on the first run of each para."""
     for para in tf.paragraphs:
-        for run in para.runs:
-            run.text = re.sub(r"^[•\-\*]\s*", "— ", run.text)
-
-
-def _randomise_alignment(slide_index: int) -> PP_ALIGN:
-    return PP_ALIGN.LEFT if slide_index % 3 != 1 else PP_ALIGN.CENTER
+        if not para.runs:
+            continue
+        run = para.runs[0]
+        if run.text.startswith("•"):
+            run.text = "— " + run.text[1:].lstrip()
 
 
 def style_title_slide(slide, identity: Identity) -> None:
     _set_background(slide, identity.palette.background_dark)
     p = identity.palette
-    shapes = list(slide.shapes)
-    for i, shape in enumerate(shapes):
+    title_color = "#FFFFFF" if p.background_dark in ("#0D0D0D", "#050505", "#121212") else p.accent
+    for i, shape in enumerate(slide.shapes):
         if not shape.has_text_frame:
             continue
-        tf = shape.text_frame
-        tf.word_wrap = True
-        for para in tf.paragraphs:
-            para.alignment = PP_ALIGN.LEFT
+        for para in shape.text_frame.paragraphs:
             for run in para.runs:
-                if i == 0:
-                    _apply_text_run(run, identity.font_title, 44, p.primary if p.primary != "#FFFFFF" else "#FFFFFF", bold=True)
+                if _is_title_shape(shape, i):
+                    _style_run(run, identity.font_title, None, title_color, bold=True)
                 else:
-                    _apply_text_run(run, identity.font_body, 22, p.accent)
-        # Shift title text box to left third of the slide
-        if i == 0:
-            shape.left = Inches(0.6)
-            shape.width = Inches(7.5)
+                    _style_run(run, identity.font_body, None, p.accent)
 
 
 def style_section_slide(slide, identity: Identity) -> None:
     _set_background(slide, identity.palette.primary)
     p = identity.palette
-    for shape in slide.shapes:
+    for i, shape in enumerate(slide.shapes):
         if not shape.has_text_frame:
             continue
-        tf = shape.text_frame
-        for para in tf.paragraphs:
-            para.alignment = PP_ALIGN.LEFT
+        for para in shape.text_frame.paragraphs:
             for run in para.runs:
-                _apply_text_run(run, identity.font_title, 40, p.accent, bold=True)
+                _style_run(run, identity.font_title, None, p.accent)
 
 
-def style_content_slide(slide, slide_index: int, identity: Identity, slide_class: str) -> None:
+def style_content_slide(slide, slide_index: int, identity: Identity) -> None:
     p = identity.palette
     bg = p.background if slide_index % 2 == 0 else p.background_alt
     _set_background(slide, bg)
-    alignment = _randomise_alignment(slide_index)
 
-    for shape_i, shape in enumerate(slide.shapes):
+    for i, shape in enumerate(slide.shapes):
         if not shape.has_text_frame:
             continue
         tf = shape.text_frame
         _replace_bullets(tf)
-        for para_i, para in enumerate(tf.paragraphs):
-            para.alignment = alignment
-            for run in para.runs:
-                if para_i == 0 and shape_i == 0:
-                    # Title of the slide
-                    size = random.choice([28, 30, 32])
-                    _apply_text_run(run, identity.font_title, size, p.primary, bold=True)
-                else:
-                    _apply_text_run(run, identity.font_body, 20, p.primary)
-
-    # Decorative accent bar on 60 % of content slides
-    if slide_index % 5 != 0:
-        _add_accent_bar(slide, p.accent)
+        if _is_title_shape(shape, i):
+            for para in tf.paragraphs:
+                for run in para.runs:
+                    _style_run(run, identity.font_title, None, p.primary, bold=True)
+        else:
+            for para in tf.paragraphs:
+                for run in para.runs:
+                    _style_run(run, identity.font_body, None, p.primary)
 
 
 def style_closing_slide(slide, identity: Identity) -> None:
     _set_background(slide, identity.palette.background_dark)
     p = identity.palette
-    for shape in slide.shapes:
+    title_color = "#FFFFFF" if p.background_dark in ("#0D0D0D", "#050505") else p.accent
+    for i, shape in enumerate(slide.shapes):
         if not shape.has_text_frame:
             continue
         for para in shape.text_frame.paragraphs:
-            para.alignment = PP_ALIGN.CENTER
             for run in para.runs:
-                _apply_text_run(run, identity.font_title, 36, p.accent, bold=True)
+                if _is_title_shape(shape, i):
+                    _style_run(run, identity.font_title, None, title_color, bold=True)
+                else:
+                    _style_run(run, identity.font_body, None, p.accent)
 
 
-def _add_accent_bar(slide, hex_color: str) -> None:
-    from pptx.util import Inches, Pt
-    from pptx.oxml.ns import qn
-    # Thin horizontal bar at random vertical position
-    y_offset = random.uniform(0.08, 0.15)
-    left = Inches(random.uniform(0.5, 1.0))
-    top = Inches(y_offset)
-    width = Inches(random.uniform(1.5, 3.5))
-    height = Inches(0.04)
-    shape = slide.shapes.add_shape(1, left, top, width, height)  # MSO_SHAPE_TYPE.RECTANGLE = 1
+def _add_accent_bar(slide, hex_color: str, slide_width: Emu) -> None:
+    """Thin decorative bar at the very top edge of the slide (y=0)."""
+    shape = slide.shapes.add_shape(
+        1,           # MSO_AUTO_SHAPE_TYPE.RECTANGLE
+        Emu(0),      # left: flush left
+        Emu(0),      # top: absolute top edge
+        slide_width, # full slide width
+        Emu(76200),  # height: ~2 mm — purely decorative
+    )
     shape.fill.solid()
     shape.fill.fore_color.rgb = _hex(hex_color)
     shape.line.fill.background()
@@ -318,6 +317,7 @@ def _add_accent_bar(slide, hex_color: str) -> None:
 def apply_styles(prs: Presentation, analysis: dict, identity: Identity) -> None:
     n = len(prs.slides)
     classes = analysis["slide_classes"]
+    slide_width = prs.slide_width
     for i, slide in enumerate(prs.slides):
         cls = classes[i]
         try:
@@ -328,7 +328,10 @@ def apply_styles(prs: Presentation, analysis: dict, identity: Identity) -> None:
             elif i == n - 1:
                 style_closing_slide(slide, identity)
             else:
-                style_content_slide(slide, i, identity, cls)
+                style_content_slide(slide, i, identity)
+            # Accent bar on every slide except title
+            if cls != "title":
+                _add_accent_bar(slide, identity.palette.accent, slide_width)
         except Exception as exc:
             logging.warning(f"Slide {i+1} styling error: {exc}")
 

@@ -1,10 +1,11 @@
 (function () {
     var state = {
         exercises: 0, scores: [], streak: 0, bestScore: 0, history: [],
-        screeningDecision: null,
+        screeningDecision: null, scpiDecision: null,
         quizCurrent: 0, quizCorrect: 0, quizAnswered: 0, quizQuestions: [],
-        valLoaded: false, scpiLoaded: false,
+        valLoaded: false, scpiLoaded: false, screeningLoaded: false,
         valSeenIndices: [], scpiSeenIndices: [], screeningSeenIndices: [],
+        timerInterval: null, timerSeconds: 0, timerTotal: 0
     };
 
     function loadStats() {
@@ -61,7 +62,7 @@
         document.querySelectorAll("[data-section]").forEach(function (a) { a.classList.toggle("active", a.dataset.section === id); });
         if (id === "valuation" && !state.valLoaded) { generateValuation(); state.valLoaded = true; }
         if (id === "scpi" && !state.scpiLoaded) { generateSCPI(); state.scpiLoaded = true; }
-        if (id === "screening") generateScreening();
+        if (id === "screening" && !state.screeningLoaded) { generateScreening(); state.screeningLoaded = true; }
         if (id === "quiz") startQuiz();
         if (id === "history") renderHistory();
         if (id === "home") updateStatsDisplay();
@@ -75,12 +76,59 @@
         var idx = avail[Math.floor(Math.random()*avail.length)];
         state[seenKey].push(idx); return scenarios[idx];
     }
+    function pickNextFiltered(scenarios, seenKey, difficulty) {
+        var filtered = [];
+        for (var i = 0; i < scenarios.length; i++) {
+            if (!difficulty || difficulty === "all" || scenarios[i].difficulty === difficulty) filtered.push(i);
+        }
+        if (!filtered.length) filtered = scenarios.map(function(_, i) { return i; });
+        var avail = filtered.filter(function(i) { return state[seenKey].indexOf(i) === -1; });
+        if (!avail.length) { state[seenKey] = []; avail = filtered; }
+        var idx = avail[Math.floor(Math.random() * avail.length)];
+        state[seenKey].push(idx);
+        return scenarios[idx];
+    }
+
+    // ===== TIMER =====
+    function startTimer() {
+        stopTimer();
+        var mins = parseInt(document.getElementById("val-timer-duration").value) || 20;
+        state.timerTotal = mins * 60;
+        state.timerSeconds = state.timerTotal;
+        var bar = document.getElementById("timer-bar");
+        bar.classList.remove("hidden");
+        updateTimerDisplay();
+        state.timerInterval = setInterval(function () {
+            state.timerSeconds--;
+            updateTimerDisplay();
+            if (state.timerSeconds <= 0) { stopTimer(); alert("Temps écoulé !"); }
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+        document.getElementById("timer-bar").classList.add("hidden");
+    }
+
+    function updateTimerDisplay() {
+        var m = Math.floor(state.timerSeconds / 60), s = state.timerSeconds % 60;
+        document.getElementById("timer-display").textContent = m + ":" + (s < 10 ? "0" : "") + s;
+        var pct = (state.timerSeconds / state.timerTotal) * 100;
+        var fill = document.getElementById("timer-fill");
+        fill.style.width = pct + "%";
+        fill.style.background = pct > 25 ? "var(--accent)" : pct > 10 ? "var(--warning)" : "var(--error)";
+    }
+
+    document.getElementById("val-timer-toggle").addEventListener("change", function () {
+        if (this.checked) startTimer(); else stopTimer();
+    });
 
     // ===== VALUATION =====
     var currentVal = null;
 
     function generateValuation() {
-        currentVal = pickNext(RE_VALUATION_SCENARIOS, "valSeenIndices");
+        var diff = document.getElementById("val-difficulty").value;
+        currentVal = pickNextFiltered(RE_VALUATION_SCENARIOS, "valSeenIndices", diff);
         var s = currentVal;
         var loyerEffectif = s.loyerTotal * (s.tof / 100);
         var peersHtml = "<table style='width:100%;font-size:0.85rem;border-collapse:collapse;margin-top:0.5rem'><tr><th>Comparable</th><th>Taux de capi</th></tr>";
@@ -89,7 +137,9 @@
         var fcfHtml = s.cashflows.map(function(f,i){return "Année "+(i+1)+": "+f.toLocaleString("fr-FR")+"€";}).join(" | ");
 
         document.getElementById("val-scenario").innerHTML =
-            "<h3>"+s.name+" — "+s.type+"</h3><p>"+s.description+"</p>" +
+            "<h3>"+s.name+" — "+s.type+"</h3>" +
+            "<p><em>"+s.location+"</em></p>" +
+            "<p>"+s.description+"</p>" +
             "<p><span class='kpi'>Surface: "+s.surface.toLocaleString("fr-FR")+" m²</span> " +
             "<span class='kpi'>Loyer: "+s.loyer_m2+"€/m²/an</span> " +
             "<span class='kpi'>TOF: "+s.tof+"%</span> " +
@@ -102,7 +152,10 @@
 
         document.getElementById("val-results").classList.add("hidden");
         document.getElementById("val-hints").classList.add("hidden");
+        document.getElementById("val-sensitivity").classList.add("hidden");
         ["val-cap-rate","val-loyer-net","val-valeur","val-prix-m2","dcf-re-wacc","dcf-re-terminal-cap","dcf-re-terminal-value","dcf-re-ev"].forEach(function(id){document.getElementById(id).value="";});
+
+        if (document.getElementById("val-timer-toggle").checked) startTimer();
     }
 
     document.getElementById("val-hint").addEventListener("click", function () {
@@ -110,6 +163,29 @@
         box.innerHTML = "<strong>Indice :</strong> " + currentVal.hint;
         box.classList.toggle("hidden");
     });
+
+    function buildSensitivityTable(loyerNet, medCapRate, surface) {
+        var capRates = [medCapRate - 1, medCapRate - 0.5, medCapRate, medCapRate + 0.5, medCapRate + 1];
+        var loyerVars = [-10, -5, 0, 5, 10];
+        var html = "<h4 style='margin-top:1rem'>Table de sensibilité (Valeur en M€)</h4>";
+        html += "<table class='sensitivity-table'><thead><tr><th>Loyer \\ Cap Rate</th>";
+        capRates.forEach(function(cr) { html += "<th>"+cr.toFixed(1)+"%</th>"; });
+        html += "</tr></thead><tbody>";
+        loyerVars.forEach(function(lv) {
+            var adjLoyer = loyerNet * (1 + lv / 100);
+            html += "<tr><td>Loyer "+(lv >= 0 ? "+" : "")+lv+"%</td>";
+            capRates.forEach(function(cr) {
+                var val = adjLoyer / (cr / 100);
+                var valM = (val / 1000000).toFixed(1);
+                var pM2 = Math.round(val / surface);
+                var isMed = Math.abs(cr - medCapRate) < 0.01 && lv === 0;
+                html += "<td"+(isMed ? " class='highlight'" : "")+">"+valM+"M<br><small>"+pM2.toLocaleString("fr-FR")+"€/m²</small></td>";
+            });
+            html += "</tr>";
+        });
+        html += "</tbody></table>";
+        return html;
+    }
 
     document.getElementById("val-check-caprate").addEventListener("click", function () {
         var s = currentVal;
@@ -152,6 +228,12 @@
 
         var box = document.getElementById("val-results");
         box.innerHTML = html; box.className = "results-box "+cls; box.classList.remove("hidden");
+
+        var sensBox = document.getElementById("val-sensitivity");
+        sensBox.innerHTML = buildSensitivityTable(loyerNet, medCapRate, s.surface);
+        sensBox.classList.remove("hidden");
+
+        stopTimer();
         recordResult(score, "Valorisation (Cap Rate)", s.name);
     });
 
@@ -190,6 +272,7 @@
 
         var box = document.getElementById("val-results");
         box.innerHTML = html; box.className = "results-box "+cls; box.classList.remove("hidden");
+        stopTimer();
         recordResult(score, "Valorisation (DCF Immo)", s.name);
     });
 
@@ -249,32 +332,54 @@
         if (selects.some(function(id){return document.getElementById(id).value==="";})) { alert("Remplissez tous les critères."); return; }
 
         var s = currentSCPI;
-        var isGood = s.rendement >= 5 && s.tof >= 93 && s.evolution3ans >= -5 && s.endettement <= 25 && s.collecte > 0;
-        var correctDecision = isGood ? "ACHETER" : "ÉVITER";
+        var correctDecision = s.recommendation;
         var correct = state.scpiDecision === correctDecision;
 
-        var score = correct ? 80 : 30;
+        var userRendNet = parseFloat(document.getElementById("scpi-rendement-net").value);
+        var realRendNet = s.rendement - (s.fraisGestion * s.rendement / 100);
+        var rendNetScore = 0;
+        if (!isNaN(userRendNet)) {
+            var rendDiff = Math.abs(userRendNet - realRendNet);
+            if (rendDiff < 0.3) rendNetScore = 15;
+            else if (rendDiff < 0.8) rendNetScore = 8;
+        }
+
+        var score = correct ? 65 : 20;
+        score += rendNetScore;
         if (document.getElementById("scpi-rationale").value.trim().length > 30) score += 20;
         score = Math.min(100, score);
 
         var analysis = "";
         if (s.rendement >= 5) analysis += "<li class='correct'>Rendement attractif ("+s.rendement+"%)</li>";
+        else if (s.rendement >= 4) analysis += "<li>Rendement correct ("+s.rendement+"%)</li>";
         else analysis += "<li class='incorrect'>Rendement faible ("+s.rendement+"%)</li>";
+
         if (s.tof >= 95) analysis += "<li class='correct'>TOF excellent ("+s.tof+"%)</li>";
         else if (s.tof >= 90) analysis += "<li>TOF correct ("+s.tof+"%)</li>";
         else analysis += "<li class='incorrect'>TOF préoccupant ("+s.tof+"%)</li>";
-        if (s.evolution3ans >= 0) analysis += "<li class='correct'>Prix de part stable/en hausse sur 3 ans</li>";
-        else if (s.evolution3ans >= -10) analysis += "<li>Baisse modérée du prix de part ("+s.evolution3ans+"%)</li>";
+
+        if (s.evolution3ans >= 0) analysis += "<li class='correct'>Prix de part stable/en hausse sur 3 ans ("+s.evolution3ans+"%)</li>";
+        else if (s.evolution3ans >= -10) analysis += "<li>Baisse modérée du prix de part ("+s.evolution3ans+"% sur 3 ans)</li>";
         else analysis += "<li class='incorrect'>Forte baisse du prix de part ("+s.evolution3ans+"% sur 3 ans)</li>";
+
         if (s.endettement <= 15) analysis += "<li class='correct'>Endettement maîtrisé ("+s.endettement+"%)</li>";
         else if (s.endettement <= 25) analysis += "<li>Endettement modéré ("+s.endettement+"%)</li>";
         else analysis += "<li class='incorrect'>Endettement élevé ("+s.endettement+"%)</li>";
-        if (s.collecte > 0) analysis += "<li class='correct'>Collecte positive ("+s.collecte+" M€)</li>";
+
+        if (s.collecte > 100) analysis += "<li class='correct'>Collecte forte (+"+s.collecte+" M€)</li>";
+        else if (s.collecte > 0) analysis += "<li>Collecte positive (+"+s.collecte+" M€)</li>";
         else analysis += "<li class='incorrect'>Collecte négative ("+s.collecte+" M€) — signal d'alarme</li>";
+
+        var rendNetHtml = "";
+        if (!isNaN(userRendNet)) {
+            rendNetHtml = "<div class='result-row'><span class='label'>Rendement net réel (après frais gestion "+s.fraisGestion+"%)</span><span class='value'>"+realRendNet.toFixed(2)+"%</span></div>" +
+                "<div class='result-row'><span class='label'>Votre estimation du rendement net</span><span class='value "+(Math.abs(userRendNet - realRendNet) < 0.5 ? "correct" : "incorrect")+"'>"+userRendNet.toFixed(2)+"%</span></div>";
+        }
 
         var html = "<h4>"+(correct?"Bonne analyse !":"Analyse incorrecte")+"</h4>" +
             "<div class='result-row'><span class='label'>Votre décision</span><span class='value "+(correct?"correct":"incorrect")+"'>"+state.scpiDecision+"</span></div>" +
             "<div class='result-row'><span class='label'>Décision recommandée</span><span class='value'>"+correctDecision+"</span></div>" +
+            rendNetHtml +
             "<hr style='margin:0.5rem 0'><h4>Analyse détaillée</h4><ul>"+analysis+"</ul>" +
             "<p style='margin-top:0.5rem'><em>"+s.hint+"</em></p>" +
             "<p style='margin-top:0.8rem'><strong>Score : "+score+"/100</strong></p>";
@@ -292,12 +397,14 @@
     function generateScreening() {
         currentDeal = pickNext(RE_SCREENING_DEALS, "screeningSeenIndices");
         var d = currentDeal;
+        var prixM2 = Math.round(d.askingPrice / d.surface);
         document.getElementById("screening-scenario").innerHTML =
             "<h3>"+d.name+" — "+d.type+"</h3><p>"+d.description+"</p>" +
             "<p><span class='kpi'>Surface: "+d.surface.toLocaleString("fr-FR")+" m²</span> " +
             "<span class='kpi'>Loyer net: "+d.loyerNet.toLocaleString("fr-FR")+"€</span> " +
             "<span class='kpi'>TOF: "+d.tof+"%</span> " +
             "<span class='kpi'>Prix demandé: "+d.askingPrice.toLocaleString("fr-FR")+"€</span> " +
+            "<span class='kpi'>Prix/m²: "+prixM2.toLocaleString("fr-FR")+"€/m²</span> " +
             "<span class='kpi'>Rendement: "+d.askingYield.toFixed(2)+"%</span></p>" +
             "<h4>Points forts</h4><ul>"+d.strengths.map(function(s){return "<li>"+s+"</li>";}).join("")+"</ul>" +
             "<h4>Points faibles / Risques</h4><ul>"+d.weaknesses.map(function(w){return "<li>"+w+"</li>";}).join("")+"</ul>";
@@ -307,6 +414,7 @@
         document.getElementById("screen-nogo").classList.remove("selected");
         document.getElementById("screen-rationale").value = "";
         document.getElementById("screening-results").classList.add("hidden");
+        document.getElementById("screening-hints").classList.add("hidden");
         ["screen-location","screen-tenant","screen-asset","screen-market","screen-esg","screen-valuation"].forEach(function(id){document.getElementById(id).value="";});
     }
 
@@ -315,6 +423,12 @@
     });
     document.getElementById("screen-nogo").addEventListener("click", function () {
         state.screeningDecision = "NO-GO"; this.classList.add("selected"); document.getElementById("screen-go").classList.remove("selected");
+    });
+
+    document.getElementById("screen-hint").addEventListener("click", function () {
+        var box = document.getElementById("screening-hints");
+        box.innerHTML = "<strong>Indice :</strong> " + currentDeal.hint;
+        box.classList.toggle("hidden");
     });
 
     document.getElementById("screen-submit").addEventListener("click", function () {
@@ -339,7 +453,7 @@
         recordResult(score, "Screening Immo", d.name);
     });
 
-    document.getElementById("screening-next").addEventListener("click", generateScreening);
+    document.getElementById("screening-next").addEventListener("click", function () { state.screeningLoaded=false; generateScreening(); state.screeningLoaded=true; });
 
     // ===== QUIZ =====
     function startQuiz() {

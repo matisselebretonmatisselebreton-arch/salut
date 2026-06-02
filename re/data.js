@@ -125,6 +125,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "France 70%, Europe 30%",
         typologies: "Bureaux 55%, Commerce 20%, Logistique 15%, Santé 10%",
         endettement: 18,
+        recommendation: "ACHETER",
         hint: "SCPI de grande taille avec bonne diversification. Le rendement de 5.28% est attractif. Le TOF de 93.7% est correct. Attention à la baisse du prix de part sur 3 ans."
     },
     {
@@ -138,6 +139,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "Pays-Bas 20%, Irlande 15%, Italie 12%, Finlande 10%, Autres 43%",
         typologies: "Bureaux 45%, Commerce 30%, Logistique 15%, Hôtels 10%",
         endettement: 8,
+        recommendation: "ACHETER",
         hint: "Rendement élevé grâce à la diversification européenne. Prix de part stable. Frais élevés (12%) mais rendement net attractif. Faible endettement."
     },
     {
@@ -151,6 +153,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "France 75%, Europe 25%",
         typologies: "Commerce 65%, Bureaux 20%, Hôtels 10%, Autres 5%",
         endettement: 15,
+        recommendation: "ACHETER",
         hint: "SCPI historique solide mais le poids du commerce pèse. La baisse du prix de part reflète la correction du marché retail. Le rendement reste correct grâce aux loyers de centre-ville."
     },
     {
@@ -164,6 +167,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "Île-de-France 85%, Régions 15%",
         typologies: "Bureaux 90%, Activité 10%",
         endettement: 25,
+        recommendation: "ÉVITER",
         hint: "SCPI en difficulté : baisse massive du prix de part (-22% sur 5 ans), TOF faible (88.5%), endettement élevé (25%). La concentration sur les bureaux IDF hors QCA est un risque."
     },
     {
@@ -177,6 +181,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "France 55%, Irlande 15%, Allemagne 12%, Autres 18%",
         typologies: "Cliniques 40%, EHPAD 25%, Cabinets médicaux 20%, Autres santé 15%",
         endettement: 12,
+        recommendation: "ACHETER",
         hint: "Thématique défensive par excellence. Le TOF de 98.2% est excellent (baux longs en santé). Prix de part en hausse. Bonne diversification géographique."
     },
     {
@@ -190,6 +195,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "France 90%, Europe 10%",
         typologies: "Logistique 60%, Locaux d'activité 30%, Messagerie 10%",
         endettement: 20,
+        recommendation: "ACHETER",
         hint: "Thématique porteuse (logistique / e-commerce). Rendement élevé, TOF excellent. Attention à l'endettement de 20% et à la concentration France."
     },
     {
@@ -203,6 +209,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "France 100%",
         typologies: "Bureaux en transformation 50%, Résidentiel 30%, Mixte 20%",
         endettement: 30,
+        recommendation: "ACHETER",
         hint: "Modèle innovant (0% frais d'entrée). Rendement très élevé mais risque de transformation. L'endettement de 30% est élevé. Frais de gestion de 15% pour compenser l'absence de frais d'entrée."
     },
     {
@@ -216,6 +223,7 @@ var SCPI_SCENARIOS = [
         zoneGeo: "France 100%",
         typologies: "Commerce centre-ville 80%, Retail park 15%, Autres 5%",
         endettement: 22,
+        recommendation: "ÉVITER",
         hint: "SCPI en grande difficulté. Collecte négative, prix en chute libre, TOF faible. Le commerce physique de centre-ville souffre structurellement. Rendement faible ne compensant pas la perte en capital."
     }
 ];
@@ -230,7 +238,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Emplacement prime (Défense)", "Locataire unique investment grade", "Bail résiduel de 5 ans", "Immeuble rénové récemment"],
         weaknesses: ["Risque de vacance à l'échéance du bail", "Loyer au-dessus du marché (risque de réversion négative)", "Taille importante (>300M€) limitant la liquidité", "Marché de La Défense concurrentiel"],
         recommendation: "GO",
-        rationale: "L'emplacement et la qualité du locataire justifient l'investissement. Le risque à l'échéance est réel mais 5 ans de cash flows sécurisés permettent de préparer un repositionnement. Le rendement de 4.35% est conforme au marché prime."
+        rationale: "L'emplacement et la qualité du locataire justifient l'investissement. Le risque à l'échéance est réel mais 5 ans de cash flows sécurisés permettent de préparer un repositionnement. Le rendement de 4.35% est conforme au marché prime.",
+        hint: "Un locataire investment grade avec bail résiduel de 5 ans sécurise les cash flows. La Défense reste un emplacement prime. Comparez le rendement au prime yield du marché."
     },
     {
         name: "Galerie Marchande Le Mérignac",
@@ -241,7 +250,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Rendement élevé (8.18%)", "Prix d'entrée bas (1 467 €/m²)", "Zone de chalandise dense", "Possibilité de repositionnement"],
         weaknesses: ["Perte de la locomotive alimentaire", "TOF très faible (78%)", "8 cellules vacantes", "Travaux importants à prévoir", "Commerce périphérique en difficulté structurelle"],
         recommendation: "NO-GO",
-        rationale: "La perte de la locomotive alimentaire est un signal très négatif. Sans elle, le flux client s'effondre et la vacance risque de s'aggraver. Le rendement élevé est un piège : les travaux de repositionnement et la vacance absorberont le différentiel de rendement."
+        rationale: "La perte de la locomotive alimentaire est un signal très négatif. Sans elle, le flux client s'effondre et la vacance risque de s'aggraver. Le rendement élevé est un piège : les travaux de repositionnement et la vacance absorberont le différentiel de rendement.",
+        hint: "La perte de la locomotive alimentaire est un événement majeur pour un centre commercial. Un TOF de 78% indique une vacance structurelle. Un rendement élevé peut être un piège (value trap)."
     },
     {
         name: "Campus Green Office — Nantes",
@@ -252,7 +262,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Neuf avec meilleures certifications (RE2020, BREEAM)", "Marché nantais dynamique", "Locataires tech en croissance", "Baux fermes 6 ans", "Faibles charges (neuf)"],
         weaknesses: ["Marché régional (moins liquide)", "Rendement un peu tendu pour la province", "Risque de dépendance au secteur tech", "Taille modeste limitant l'intérêt institutionnel"],
         recommendation: "GO",
-        rationale: "L'actif coche toutes les cases ESG (RE2020, BREEAM Outstanding) ce qui le rend très attractif pour les investisseurs institutionnels. Les baux fermes sécurisent les cash flows. Nantes est l'un des marchés régionaux les plus dynamiques."
+        rationale: "L'actif coche toutes les cases ESG (RE2020, BREEAM Outstanding) ce qui le rend très attractif pour les investisseurs institutionnels. Les baux fermes sécurisent les cash flows. Nantes est l'un des marchés régionaux les plus dynamiques.",
+        hint: "Les certifications RE2020 et BREEAM Outstanding sont des atouts majeurs pour la liquidité future. Les baux fermes 6 ans sécurisent le rendement. Nantes est un marché régional dynamique."
     },
     {
         name: "Murs de boutiques — Rue de Rivoli, Paris",
@@ -263,7 +274,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Emplacement ultra-prime Paris centre", "Rareté du foncier (irremplaçable)", "Locataires solides", "Valeur patrimoniale forte"],
         weaknesses: ["Rendement très faible (3.43%)", "Prix au m² très élevé (35 000€/m²)", "Risque retail de luxe en cas de récession", "Liquidité limitée (actif atypique)"],
         recommendation: "GO",
-        rationale: "Les murs de boutiques ultra-prime Paris sont une classe d'actifs à part. Le rendement faible est compensé par la sécurité et le potentiel de revalorisation à long terme. L'emplacement est irremplaçable. Actif patrimonial par excellence."
+        rationale: "Les murs de boutiques ultra-prime Paris sont une classe d'actifs à part. Le rendement faible est compensé par la sécurité et le potentiel de revalorisation à long terme. L'emplacement est irremplaçable. Actif patrimonial par excellence.",
+        hint: "Les murs de commerce ultra-prime Paris sont irremplaçables. Le rendement faible est typique de cette classe d'actifs (3-4%). Pensez valeur patrimoniale plutôt que rendement courant."
     },
     {
         name: "Parc Logistique Sénart",
@@ -274,7 +286,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Classe d'actifs en forte demande", "Bail ferme 9 ans", "Emplacement IDF premium", "Actif récent, peu de capex", "Secteur porté par le e-commerce"],
         weaknesses: ["Rendement compressé (4.33%)", "Risque de concentration sur un locataire", "Actif à usage unique (reconversion difficile)", "Valorisation élevée pour de la logistique"],
         recommendation: "GO",
-        rationale: "La logistique IDF est l'une des classes d'actifs les plus recherchées. Le bail ferme 9 ans et la qualité de l'actif justifient le rendement compressé. Le risque de locataire unique est mitigé par la demande structurelle du secteur en IDF."
+        rationale: "La logistique IDF est l'une des classes d'actifs les plus recherchées. Le bail ferme 9 ans et la qualité de l'actif justifient le rendement compressé. Le risque de locataire unique est mitigé par la demande structurelle du secteur en IDF.",
+        hint: "La logistique est la classe d'actifs la plus recherchée post-Covid. Un bail ferme 9 ans sécurise les cash flows. L'IDF est l'emplacement premium pour la logistique française."
     },
     {
         name: "Centre commercial régional en déclin",
@@ -285,7 +298,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Rendement attractif (8.75%)", "Locomotive alimentaire en place", "Surface importante", "Prix bas (1 371€/m²)"],
         weaknesses: ["TOF en baisse (82%)", "Ville moyenne avec pouvoir d'achat limité", "Actif vieillissant (travaux lourds nécessaires)", "Concurrence e-commerce et retail parks", "Risque de départ de la locomotive", "Tendance structurelle négative pour les CC régionaux"],
         recommendation: "NO-GO",
-        rationale: "Les centres commerciaux de ville moyenne sont la classe d'actifs la plus à risque. La vacance structurelle va s'aggraver (e-commerce, retail parks). Les travaux de rénovation nécessaires (actif de 1995) vont absorber une grande partie du rendement apparent. Le risque de perte en capital est élevé."
+        rationale: "Les centres commerciaux de ville moyenne sont la classe d'actifs la plus à risque. La vacance structurelle va s'aggraver (e-commerce, retail parks). Les travaux de rénovation nécessaires (actif de 1995) vont absorber une grande partie du rendement apparent. Le risque de perte en capital est élevé.",
+        hint: "Un actif de 1995 en ville moyenne nécessite des travaux lourds. Le TOF de 82% est en baisse tendancielle. Le rendement élevé reflète le risque, pas l'opportunité. Attention à la tendance structurelle du commerce physique."
     },
     {
         name: "Résidence de co-living — Lyon",
@@ -296,7 +310,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Thématique porteuse (co-living)", "Bail de 10 ans", "Lyon 7ème, bon quartier étudiant/jeune actif", "Rendement correct pour du résidentiel géré"],
         weaknesses: ["Classe d'actifs récente, peu de track record", "Dépendance à l'opérateur", "Risque réglementaire (statut juridique flou)", "Marché niche, faible liquidité", "Risque de saturation du marché co-living"],
         recommendation: "GO",
-        rationale: "Le co-living répond à une tendance structurelle (mobilité, prix du logement, sociabilité). Le bail de 10 ans sécurise les cash flows. Lyon 7ème est bien positionné pour cette cible. Le risque opérateur est le principal point de vigilance."
+        rationale: "Le co-living répond à une tendance structurelle (mobilité, prix du logement, sociabilité). Le bail de 10 ans sécurise les cash flows. Lyon 7ème est bien positionné pour cette cible. Le risque opérateur est le principal point de vigilance.",
+        hint: "Le co-living est une tendance émergente soutenue par la mobilité et les prix du logement. Un bail de 10 ans est sécurisant. Lyon 7ème est un quartier adapté à la cible (étudiants, jeunes actifs). Le risque principal est la dépendance à l'opérateur."
     },
     {
         name: "Immeuble de bureaux obsolète — Créteil",
@@ -307,7 +322,8 @@ var RE_SCREENING_DEALS = [
         strengths: ["Rendement très élevé (9.17%)", "Prix d'entrée bas (1 200€/m²)", "Potentiel de transformation (résidentiel ?)", "Grand parking valorisable"],
         weaknesses: ["Obsolescence technique et environnementale (DPE E)", "TOF catastrophique (55%)", "Travaux de rénovation massifs nécessaires", "Décret tertiaire : obligation de réduire les consommations", "Localisation secondaire (Créteil)", "Aucune certif environnementale"],
         recommendation: "NO-GO",
-        rationale: "L'obsolescence technique (DPE E) et le décret tertiaire rendent une rénovation obligatoire et coûteuse. Avec un TOF de 55% et une localisation secondaire, le risque de vacance structurelle est très élevé. Le coût de remise aux normes (estimé 2 000-3 000€/m², soit 20-30M€) dépasse largement le prix d'acquisition. Seul un projet de transformation urbaine (logement) pourrait avoir du sens, mais c'est un autre métier."
+        rationale: "L'obsolescence technique (DPE E) et le décret tertiaire rendent une rénovation obligatoire et coûteuse. Avec un TOF de 55% et une localisation secondaire, le risque de vacance structurelle est très élevé. Le coût de remise aux normes (estimé 2 000-3 000€/m², soit 20-30M€) dépasse largement le prix d'acquisition. Seul un projet de transformation urbaine (logement) pourrait avoir du sens, mais c'est un autre métier.",
+        hint: "Un DPE E est rédhibitoire avec le décret tertiaire (obligation de -40% de consommation d'ici 2030). Le TOF de 55% indique une vacance structurelle. Estimez le coût de rénovation (2 000-3 000€/m²) et comparez-le au prix d'acquisition."
     }
 ];
 
@@ -326,34 +342,34 @@ var RE_QUIZ_QUESTIONS = [
     {
         question: "Qu'est-ce que le TOF en immobilier ?",
         options: [
-            "Le Taux d'Occupation Financier, soit le ratio loyers perçus / loyers potentiels",
             "Le Taux d'Offre Foncière",
+            "Le Taux d'Occupation Financier, soit le ratio loyers perçus / loyers potentiels",
             "Le Total des Obligations Financières",
             "Le Taux d'Opérations Futures"
         ],
-        correct: 0,
+        correct: 1,
         explanation: "Le TOF (Taux d'Occupation Financier) mesure le pourcentage des loyers effectivement perçus par rapport aux loyers théoriques si l'immeuble était occupé à 100%. Un TOF de 95%+ est considéré comme bon."
     },
     {
         question: "Que signifie un bail \"3/6/9\" en immobilier commercial français ?",
         options: [
-            "Un bail de 9 ans avec possibilité de résiliation par le locataire tous les 3 ans",
             "Un bail de 3 ans renouvelable 6 fois",
             "Un loyer révisé tous les 3, 6 et 9 mois",
+            "Un bail de 9 ans avec possibilité de résiliation par le locataire tous les 3 ans",
             "3 mois de préavis, 6 mois de franchise, 9 ans de durée"
         ],
-        correct: 0,
+        correct: 2,
         explanation: "Le bail 3/6/9 est le bail commercial standard en France. Durée de 9 ans, avec la faculté pour le locataire de donner congé à chaque période triennale (3 ans, 6 ans). Le bailleur, lui, ne peut résilier qu'à l'échéance de 9 ans."
     },
     {
         question: "Qu'est-ce qu'une SCPI ?",
         options: [
-            "Une Société Civile de Placement Immobilier, véhicule collectif d'investissement en immobilier",
             "Un Syndicat de Copropriété pour l'Immobilier",
             "Une Structure Commerciale de Promotion Immobilière",
-            "Un Schéma de Contrôle du Patrimoine Immobilier"
+            "Un Schéma de Contrôle du Patrimoine Immobilier",
+            "Une Société Civile de Placement Immobilier, véhicule collectif d'investissement en immobilier"
         ],
-        correct: 0,
+        correct: 3,
         explanation: "La SCPI permet à des épargnants d'investir collectivement dans un patrimoine immobilier diversifié. Les investisseurs achètent des parts et perçoivent des revenus (dividendes) issus des loyers collectés, net de frais de gestion."
     },
     {
@@ -381,34 +397,34 @@ var RE_QUIZ_QUESTIONS = [
     {
         question: "Qu'est-ce que le \"triple net\" (NNN) en immobilier ?",
         options: [
-            "Un bail où le locataire paie le loyer, les charges, les taxes ET les gros travaux",
             "Un rendement calculé net de 3 types de frais",
             "Un bail de 3 ans net de franchise",
-            "Une transaction sans frais de notaire, d'agence ni de mutation"
+            "Une transaction sans frais de notaire, d'agence ni de mutation",
+            "Un bail où le locataire paie le loyer, les charges, les taxes ET les gros travaux"
         ],
-        correct: 0,
+        correct: 3,
         explanation: "Dans un bail triple net (NNN), le locataire supporte l'intégralité des charges : charges courantes, taxes foncières, et gros travaux/entretien. Le propriétaire perçoit un loyer \"net\" de toute charge. Fréquent en santé et logistique."
     },
     {
         question: "Qu'est-ce que le \"spread\" immobilier ?",
         options: [
-            "La différence entre le cap rate immobilier et le taux sans risque (OAT 10 ans)",
             "L'écart de loyer entre deux quartiers",
             "La commission de l'agent immobilier",
+            "La différence entre le cap rate immobilier et le taux sans risque (OAT 10 ans)",
             "La surface utile vs. la surface brute"
         ],
-        correct: 0,
+        correct: 2,
         explanation: "Le spread = Cap rate - Taux sans risque (OAT 10 ans). Il mesure la prime de risque immobilière. Un spread élevé rend l'immobilier attractif vs. les obligations. Historiquement autour de 200-300 bps pour le prime."
     },
     {
         question: "Qu'est-ce que le décret tertiaire (décret éco-énergie) ?",
         options: [
-            "Une obligation de performance énergétique imposant -40% de consommation d'ici 2030 et -60% d'ici 2050 pour les bâtiments tertiaires > 1000 m²",
             "Un décret fixant le loyer maximum des bureaux",
+            "Une obligation de performance énergétique imposant -40% de consommation d'ici 2030 et -60% d'ici 2050 pour les bâtiments tertiaires > 1000 m²",
             "Une taxe sur les bâtiments de plus de 10 étages",
             "Un label environnemental volontaire"
         ],
-        correct: 0,
+        correct: 1,
         explanation: "Le décret tertiaire impose aux bâtiments tertiaires > 1000 m² de réduire leur consommation énergétique de -40% d'ici 2030, -50% d'ici 2040, et -60% d'ici 2050. C'est un facteur majeur d'obsolescence pour les immeubles anciens non rénovés."
     },
     {
@@ -447,12 +463,12 @@ var RE_QUIZ_QUESTIONS = [
     {
         question: "Qu'est-ce que l'ILAT (Indice des Loyers des Activités Tertiaires) ?",
         options: [
-            "L'indice de révision des loyers des bureaux et activités tertiaires, publié par l'INSEE",
             "L'Indice de Liquidité des Actifs Tertiaires",
             "L'indicateur de localisation des actifs tertiaires",
-            "L'Indice des Loyers d'Ateliers et Terrains"
+            "L'Indice des Loyers d'Ateliers et Terrains",
+            "L'indice de révision des loyers des bureaux et activités tertiaires, publié par l'INSEE"
         ],
-        correct: 0,
+        correct: 3,
         explanation: "L'ILAT est l'indice de référence pour la révision annuelle des loyers de bureaux en France. Composé d'indices de prix à la consommation, du coût de la construction et du PIB. Il protège contre l'inflation tout en limitant les hausses excessives."
     },
     {
@@ -469,12 +485,12 @@ var RE_QUIZ_QUESTIONS = [
     {
         question: "Qu'est-ce qu'un fonds OPCI ?",
         options: [
-            "Un fonds immobilier non coté détenant au moins 60% d'immobilier et jusqu'à 40% d'actifs financiers",
             "Un organisme de promotion de la construction immobilière",
             "Un fonds de placement dans le commerce international",
+            "Un fonds immobilier non coté détenant au moins 60% d'immobilier et jusqu'à 40% d'actifs financiers",
             "Un outil de planification du capital immobilier"
         ],
-        correct: 0,
+        correct: 2,
         explanation: "L'OPCI (Organisme de Placement Collectif Immobilier) est un véhicule hybride : minimum 60% d'immobilier, maximum 40% de valeurs mobilières. Plus liquide qu'une SCPI car il peut détenir des actifs financiers et offre des rachats réguliers."
     },
     {
@@ -491,23 +507,23 @@ var RE_QUIZ_QUESTIONS = [
     {
         question: "Qu'est-ce que le ratio LTV (Loan-to-Value) en financement immobilier ?",
         options: [
-            "Le ratio entre le montant du prêt et la valeur de l'actif",
             "Le ratio entre le loyer et la valeur",
+            "Le ratio entre le montant du prêt et la valeur de l'actif",
             "Le taux de vacance acceptable",
             "Le ratio de liquidité des transactions"
         ],
-        correct: 0,
+        correct: 1,
         explanation: "LTV = Montant de la dette / Valeur de l'actif. Un LTV de 60% signifie que la dette représente 60% de la valeur. Les banques financent typiquement à 50-65% de LTV pour l'immobilier commercial. Au-delà, le risque augmente significativement."
     },
     {
         question: "Qu'est-ce que la certification BREEAM en immobilier ?",
         options: [
-            "Un label de performance environnementale évaluant l'impact écologique des bâtiments, noté de Pass à Outstanding",
             "Un permis de construire britannique",
             "Un standard de sécurité incendie",
+            "Un label de performance environnementale évaluant l'impact écologique des bâtiments, noté de Pass à Outstanding",
             "Un label d'accessibilité handicapé"
         ],
-        correct: 0,
+        correct: 2,
         explanation: "BREEAM (Building Research Establishment Environmental Assessment Method) est le label environnemental le plus utilisé en immobilier commercial en Europe. Les niveaux vont de Pass à Outstanding. Il est devenu quasi-obligatoire pour les investisseurs institutionnels."
     },
     {
@@ -524,12 +540,12 @@ var RE_QUIZ_QUESTIONS = [
     {
         question: "Qu'est-ce que la réversion locative ?",
         options: [
-            "La différence entre le loyer en place et le loyer de marché (ERV)",
             "Le remboursement du dépôt de garantie",
             "Le retour du bien au propriétaire à la fin du bail",
-            "Le reversement des charges au locataire"
+            "Le reversement des charges au locataire",
+            "La différence entre le loyer en place et le loyer de marché (ERV)"
         ],
-        correct: 0,
+        correct: 3,
         explanation: "La réversion locative = ERV - Loyer en place. Positive si le loyer de marché est supérieur au loyer en place (potentiel de hausse à la relocation). Négative si le loyer en place est au-dessus du marché (risque de baisse). C'est un indicateur clé de la valorisation future."
     }
 ];

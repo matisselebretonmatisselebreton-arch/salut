@@ -65,7 +65,31 @@
 
         <!-- VALUATION -->
         <section id="valuation" class="section">
-            <div class="section-header"><h2>Valorisation d'actifs immobiliers</h2></div>
+            <div class="section-header">
+                <h2>Valorisation d'actifs immobiliers</h2>
+                <div class="section-controls">
+                    <div class="difficulty-selector">
+                        <label>Niveau :</label>
+                        <select id="val-difficulty">
+                            <option value="beginner">Débutant</option>
+                            <option value="intermediate" selected>Intermédiaire</option>
+                            <option value="advanced">Avancé</option>
+                        </select>
+                    </div>
+                    <div class="timer-toggle">
+                        <label><input type="checkbox" id="val-timer-toggle"> Chrono</label>
+                        <select id="val-timer-duration" class="timer-select">
+                            <option value="10">10 min</option>
+                            <option value="20" selected>20 min</option>
+                            <option value="30">30 min</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="timer-bar" class="timer-bar hidden">
+                <span id="timer-display">20:00</span>
+                <div class="timer-progress"><div id="timer-fill" class="timer-fill"></div></div>
+            </div>
             <div class="tab-bar">
                 <button class="tab active" data-tab="caprate">Taux de capitalisation</button>
                 <button class="tab" data-tab="dcfre">DCF immobilier</button>
@@ -98,6 +122,7 @@
                 </div>
 
                 <div id="val-results" class="results-box hidden"></div>
+                <div id="val-sensitivity" class="sensitivity-container hidden"></div>
                 <button id="val-next" class="btn-secondary">Nouvel actif</button>
             </div>
         </section>
@@ -135,6 +160,7 @@
             <h2>Screening d'acquisitions immobilières</h2>
             <div class="exercise-container">
                 <div id="screening-scenario" class="scenario-box"></div>
+                <div id="screening-hints" class="hints-box hidden"></div>
                 <div class="screening-criteria">
                     <h3>Critères d'évaluation</h3>
                     <div class="criteria-grid">
@@ -151,7 +177,10 @@
                         <button id="screen-nogo" class="btn-nogo">NO-GO</button>
                     </div>
                     <textarea id="screen-rationale" rows="3" placeholder="Justifiez votre décision en 2-3 phrases..."></textarea>
-                    <button id="screen-submit" class="btn-primary">Soumettre</button>
+                    <div class="btn-row">
+                        <button id="screen-submit" class="btn-primary">Soumettre</button>
+                        <button id="screen-hint" class="btn-ghost">Indice</button>
+                    </div>
                 </div>
                 <div id="screening-results" class="results-box hidden"></div>
                 <button id="screening-next" class="btn-secondary">Nouveau deal</button>

@@ -558,6 +558,128 @@ footer {
     border-top: 1px solid var(--border);
 }
 
+/* Landing page */
+.landing-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--bg);
+}
+
+.landing-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    position: relative;
+}
+
+.landing-header h1 { font-size: 2.8rem; color: var(--primary); margin-bottom: 0.5rem; }
+.landing-subtitle { color: var(--text-muted); font-size: 1.2rem; }
+
+.landing-dark-toggle {
+    position: absolute;
+    top: 0;
+    right: -60px;
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+.landing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    max-width: 800px;
+    width: 100%;
+}
+
+.landing-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    text-decoration: none;
+    color: var(--text);
+    border: 2px solid var(--border);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.landing-pe:hover { border-color: #2b6cb0; }
+.landing-re:hover { border-color: #c05621; }
+
+.landing-card-icon { font-size: 3rem; margin-bottom: 0.8rem; }
+
+.landing-card h2 { font-size: 1.4rem; margin-bottom: 0.3rem; color: var(--primary); }
+.landing-card-desc { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
+
+.landing-features {
+    list-style: none;
+    margin-bottom: 1.2rem;
+    flex: 1;
+}
+
+.landing-features li {
+    padding: 0.3rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.landing-features li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: 700;
+}
+
+.landing-badge {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.landing-cta {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--accent);
+    transition: color 0.2s;
+}
+
+.landing-re .landing-cta { color: #c05621; }
+.landing-card:hover .landing-cta { text-decoration: underline; }
+
+.landing-footer { margin-top: 3rem; color: var(--text-muted); font-size: 0.85rem; }
+
+/* RE color overrides */
+.re-theme #navbar { background: #7b341e; }
+[data-theme="dark"] .re-theme #navbar { background: #171923; }
+.re-theme .scenario-box { border-left-color: #c05621; }
+.re-theme .btn-primary { background: #c05621; }
+.re-theme .btn-primary:hover { background: #dd6b20; }
+.re-theme .btn-secondary { color: #c05621; border-color: #c05621; }
+.re-theme .btn-secondary:hover { background: #c05621; color: white; }
+.re-theme .module-badge { background: #c05621; }
+.re-theme .nav-brand { color: white; }
+.re-theme h2 { color: #7b341e; }
+[data-theme="dark"] .re-theme h2 { color: #ed8936; }
+.re-theme .module-card:hover { border-color: #c05621; }
+.re-theme .stat span { color: #c05621; }
+.re-theme .progress-fill { background: #c05621; }
+.re-theme .tab.active { background: #c05621; border-color: #c05621; }
+
 @media (max-width: 600px) {
     #navbar { flex-direction: column; height: auto; padding: 0.8rem; gap: 0.5rem; }
     .nav-links { flex-wrap: wrap; justify-content: center; }
@@ -568,4 +690,7 @@ footer {
     .section-header { flex-direction: column; }
     .section-controls { width: 100%; }
     .sensitivity-table { font-size: 0.7rem; }
+    .landing-header h1 { font-size: 2rem; }
+    .landing-grid { grid-template-columns: 1fr; }
+    .landing-dark-toggle { position: static; margin-top: 1rem; }
 }

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RE Training Lab - Asset Management Immobilier</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body class="re-theme">
+    <nav id="navbar">
+        <div class="nav-brand"><a href="../index.html" style="color:white;text-decoration:none">Finance Training Lab</a> &rsaquo; RE Training</div>
+        <div class="nav-links">
+            <a href="#" data-section="home" class="active">Accueil</a>
+            <a href="#" data-section="valuation">Valorisation</a>
+            <a href="#" data-section="scpi">Analyse SCPI</a>
+            <a href="#" data-section="screening">Screening</a>
+            <a href="#" data-section="quiz">Quiz Immo</a>
+            <a href="#" data-section="history">Historique</a>
+        </div>
+        <div class="nav-actions">
+            <button id="dark-mode-toggle" class="icon-btn" title="Mode sombre">&#9790;</button>
+        </div>
+    </nav>
+
+    <main id="app">
+        <!-- HOME -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1>RE Training Lab</h1>
+                <p class="subtitle">Asset Management Immobilier — Tertiaire & Commerce</p>
+                <div class="stats-bar">
+                    <div class="stat"><span id="stat-exercises">0</span><label>Exercices complétés</label></div>
+                    <div class="stat"><span id="stat-score">0%</span><label>Score moyen</label></div>
+                    <div class="stat"><span id="stat-streak">0</span><label>Série en cours</label></div>
+                    <div class="stat"><span id="stat-best">0%</span><label>Meilleur score</label></div>
+                </div>
+                <div class="module-grid">
+                    <div class="module-card" data-target="valuation">
+                        <div class="module-icon">🏢</div>
+                        <h3>Valorisation d'actifs</h3>
+                        <p>Taux de capitalisation, DCF immobilier, prix au m² — bureaux, commerce, logistique</p>
+                        <span class="module-badge">8 actifs</span>
+                    </div>
+                    <div class="module-card" data-target="scpi">
+                        <div class="module-icon">📈</div>
+                        <h3>Analyse SCPI</h3>
+                        <p>Évaluez des SCPI : rendement, TOF, collecte, endettement, évolution du prix de part</p>
+                        <span class="module-badge">8 SCPI</span>
+                    </div>
+                    <div class="module-card" data-target="screening">
+                        <div class="module-icon">🔍</div>
+                        <h3>Screening d'acquisitions</h3>
+                        <p>Analysez des opportunités d'acquisition immobilière — Go ou No-Go ?</p>
+                        <span class="module-badge">8 deals</span>
+                    </div>
+                    <div class="module-card" data-target="quiz">
+                        <div class="module-icon">🧠</div>
+                        <h3>Quiz Immobilier</h3>
+                        <p>Testez vos connaissances en immobilier tertiaire, commerce et asset management</p>
+                        <span class="module-badge">20 questions</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VALUATION -->
+        <section id="valuation" class="section">
+            <div class="section-header"><h2>Valorisation d'actifs immobiliers</h2></div>
+            <div class="tab-bar">
+                <button class="tab active" data-tab="caprate">Taux de capitalisation</button>
+                <button class="tab" data-tab="dcfre">DCF immobilier</button>
+            </div>
+            <div class="exercise-container">
+                <div id="val-scenario" class="scenario-box"></div>
+                <div id="val-hints" class="hints-box hidden"></div>
+
+                <div id="tab-caprate" class="tab-content active">
+                    <div class="input-grid">
+                        <div class="input-group"><label>Taux de capitalisation retenu (%)</label><input type="number" id="val-cap-rate" step="0.1" placeholder="ex: 5.0"></div>
+                        <div class="input-group"><label>Loyer net annuel (€)</label><input type="number" id="val-loyer-net" step="1000" placeholder="Loyer - charges - capex - frais"></div>
+                        <div class="input-group"><label>Valeur de l'actif (€)</label><input type="number" id="val-valeur" step="100000" placeholder="Loyer net / Cap rate"></div>
+                        <div class="input-group"><label>Prix au m² (€/m²)</label><input type="number" id="val-prix-m2" step="10" placeholder="Valeur / Surface"></div>
+                    </div>
+                    <div class="btn-row">
+                        <button id="val-check-caprate" class="btn-primary">Vérifier</button>
+                        <button id="val-hint" class="btn-ghost">Indice</button>
+                    </div>
+                </div>
+
+                <div id="tab-dcfre" class="tab-content">
+                    <div class="input-grid">
+                        <div class="input-group"><label>Taux d'actualisation (%)</label><input type="number" id="dcf-re-wacc" step="0.1" placeholder="ex: 6.0"></div>
+                        <div class="input-group"><label>Taux de capi terminal (%)</label><input type="number" id="dcf-re-terminal-cap" step="0.1" placeholder="ex: 5.0"></div>
+                        <div class="input-group"><label>Valeur terminale (€)</label><input type="number" id="dcf-re-terminal-value" step="100000" placeholder="Dernier CF / Cap rate terminal"></div>
+                        <div class="input-group"><label>Valeur DCF de l'actif (€)</label><input type="number" id="dcf-re-ev" step="100000" placeholder="VA CF + VA valeur terminale"></div>
+                    </div>
+                    <button id="dcf-re-check" class="btn-primary">Vérifier</button>
+                </div>
+
+                <div id="val-results" class="results-box hidden"></div>
+                <button id="val-next" class="btn-secondary">Nouvel actif</button>
+            </div>
+        </section>
+
+        <!-- SCPI -->
+        <section id="scpi" class="section">
+            <h2>Analyse de SCPI</h2>
+            <div class="exercise-container">
+                <div id="scpi-scenario" class="scenario-box"></div>
+                <div class="screening-criteria">
+                    <h3>Votre analyse</h3>
+                    <div class="input-grid">
+                        <div class="input-group"><label>Rendement net estimé après frais (%)</label><input type="number" id="scpi-rendement-net" step="0.1" placeholder="Rendement - frais gestion"></div>
+                    </div>
+                    <div class="criteria-grid">
+                        <div class="criteria-item"><label>Qualité du patrimoine</label><select id="scpi-qualite"><option value="">--</option><option value="1">Faible</option><option value="2">Moyen</option><option value="3">Bon</option><option value="4">Excellent</option></select></div>
+                        <div class="criteria-item"><label>Niveau de risque</label><select id="scpi-risque"><option value="">--</option><option value="1">Très élevé</option><option value="2">Élevé</option><option value="3">Modéré</option><option value="4">Faible</option></select></div>
+                        <div class="criteria-item"><label>Horizon recommandé</label><select id="scpi-horizon"><option value="">--</option><option value="1">&lt; 3 ans</option><option value="2">3-5 ans</option><option value="3">5-8 ans</option><option value="4">&gt; 8 ans</option></select></div>
+                    </div>
+                    <div class="decision-row">
+                        <label>Votre recommandation :</label>
+                        <button id="scpi-buy" class="btn-go">ACHETER</button>
+                        <button id="scpi-avoid" class="btn-nogo">ÉVITER</button>
+                    </div>
+                    <textarea id="scpi-rationale" rows="3" placeholder="Justifiez votre analyse en 2-3 phrases..."></textarea>
+                    <button id="scpi-submit" class="btn-primary">Soumettre</button>
+                </div>
+                <div id="scpi-results" class="results-box hidden"></div>
+                <button id="scpi-next" class="btn-secondary">Nouvelle SCPI</button>
+            </div>
+        </section>
+
+        <!-- SCREENING -->
+        <section id="screening" class="section">
+            <h2>Screening d'acquisitions immobilières</h2>
+            <div class="exercise-container">
+                <div id="screening-scenario" class="scenario-box"></div>
+                <div class="screening-criteria">
+                    <h3>Critères d'évaluation</h3>
+                    <div class="criteria-grid">
+                        <div class="criteria-item"><label>Localisation</label><select id="screen-location"><option value="">--</option><option value="1">Secondaire</option><option value="2">Correcte</option><option value="3">Bonne</option><option value="4">Prime</option></select></div>
+                        <div class="criteria-item"><label>Qualité locataire</label><select id="screen-tenant"><option value="">--</option><option value="1">Fragile</option><option value="2">Acceptable</option><option value="3">Solide</option><option value="4">Investment grade</option></select></div>
+                        <div class="criteria-item"><label>État de l'actif</label><select id="screen-asset"><option value="">--</option><option value="1">Obsolète</option><option value="2">Correct</option><option value="3">Bon</option><option value="4">Neuf/rénové</option></select></div>
+                        <div class="criteria-item"><label>Dynamique de marché</label><select id="screen-market"><option value="">--</option><option value="1">Baisse</option><option value="2">Stable</option><option value="3">Croissance</option><option value="4">Forte demande</option></select></div>
+                        <div class="criteria-item"><label>Conformité ESG/environnement</label><select id="screen-esg"><option value="">--</option><option value="1">Non conforme</option><option value="2">À améliorer</option><option value="3">Conforme</option><option value="4">Exemplaire</option></select></div>
+                        <div class="criteria-item"><label>Rendement / Prix</label><select id="screen-valuation"><option value="">--</option><option value="1">Surévalué</option><option value="2">Marché</option><option value="3">Attractif</option><option value="4">Très attractif</option></select></div>
+                    </div>
+                    <div class="decision-row">
+                        <label>Votre décision :</label>
+                        <button id="screen-go" class="btn-go">GO</button>
+                        <button id="screen-nogo" class="btn-nogo">NO-GO</button>
+                    </div>
+                    <textarea id="screen-rationale" rows="3" placeholder="Justifiez votre décision en 2-3 phrases..."></textarea>
+                    <button id="screen-submit" class="btn-primary">Soumettre</button>
+                </div>
+                <div id="screening-results" class="results-box hidden"></div>
+                <button id="screening-next" class="btn-secondary">Nouveau deal</button>
+            </div>
+        </section>
+
+        <!-- QUIZ -->
+        <section id="quiz" class="section">
+            <h2>Quiz Immobilier</h2>
+            <div class="exercise-container">
+                <div class="quiz-progress">
+                    <span id="quiz-counter">Question 1/10</span>
+                    <div class="progress-bar"><div id="quiz-progress-fill" class="progress-fill"></div></div>
+                    <span id="quiz-score-display">Score: 0/0</span>
+                </div>
+                <div id="quiz-question" class="scenario-box"></div>
+                <div id="quiz-options" class="quiz-options"></div>
+                <div id="quiz-feedback" class="results-box hidden"></div>
+                <button id="quiz-next" class="btn-secondary hidden">Question suivante</button>
+                <div id="quiz-final" class="results-box hidden"></div>
+                <button id="quiz-restart" class="btn-primary hidden">Recommencer</button>
+            </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="history" class="section">
+            <div class="section-header">
+                <h2>Historique des exercices</h2>
+                <button id="history-clear" class="btn-ghost">Effacer l'historique</button>
+            </div>
+            <div id="history-list" class="history-list"></div>
+            <div id="history-empty" class="empty-state"><p>Aucun exercice complété pour l'instant.</p></div>
+        </section>
+    </main>
+
+    <footer><p>RE Training Lab &mdash; <a href="../index.html" style="color:#c05621">Retour à l'accueil</a></p></footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

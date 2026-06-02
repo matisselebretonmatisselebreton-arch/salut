@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PE Training Lab - Exercices Private Equity</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav id="navbar">
+        <div class="nav-brand">PE Training Lab</div>
+        <div class="nav-links">
+            <a href="#" data-section="home" class="active">Accueil</a>
+            <a href="#" data-section="lbo">Modèle LBO</a>
+            <a href="#" data-section="valuation">Valorisation</a>
+            <a href="#" data-section="screening">Deal Screening</a>
+            <a href="#" data-section="quiz">Quiz PE</a>
+        </div>
+    </nav>
+
+    <main id="app">
+        <!-- HOME -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1>PE Training Lab</h1>
+                <p class="subtitle">Entraînez-vous aux compétences clés du Private Equity</p>
+                <div class="stats-bar">
+                    <div class="stat"><span id="stat-exercises">0</span><label>Exercices complétés</label></div>
+                    <div class="stat"><span id="stat-score">0%</span><label>Score moyen</label></div>
+                    <div class="stat"><span id="stat-streak">0</span><label>Série en cours</label></div>
+                </div>
+                <div class="module-grid">
+                    <div class="module-card" data-target="lbo">
+                        <div class="module-icon">📊</div>
+                        <h3>Modèle LBO</h3>
+                        <p>Construisez des modèles de Leveraged Buyout : dette, equity, rendement, sensibilité</p>
+                    </div>
+                    <div class="module-card" data-target="valuation">
+                        <div class="module-icon">💰</div>
+                        <h3>Valorisation</h3>
+                        <p>Pratiquez DCF, multiples de transaction, et comparables boursiers</p>
+                    </div>
+                    <div class="module-card" data-target="screening">
+                        <div class="module-icon">🔍</div>
+                        <h3>Deal Screening</h3>
+                        <p>Analysez des opportunités d'investissement et prenez des décisions Go/No-Go</p>
+                    </div>
+                    <div class="module-card" data-target="quiz">
+                        <div class="module-icon">🧠</div>
+                        <h3>Quiz PE</h3>
+                        <p>Testez vos connaissances en Private Equity, finance et stratégie</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LBO MODULE -->
+        <section id="lbo" class="section">
+            <h2>Modélisation LBO</h2>
+            <div class="exercise-container">
+                <div id="lbo-scenario" class="scenario-box"></div>
+                <div class="lbo-inputs">
+                    <h3>Votre analyse</h3>
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>Prix d'acquisition (x EBITDA)</label>
+                            <input type="number" id="lbo-entry-multiple" step="0.1" placeholder="ex: 8.0x">
+                        </div>
+                        <div class="input-group">
+                            <label>Levier (Dette / EBITDA)</label>
+                            <input type="number" id="lbo-leverage" step="0.1" placeholder="ex: 5.0x">
+                        </div>
+                        <div class="input-group">
+                            <label>Taux d'intérêt moyen (%)</label>
+                            <input type="number" id="lbo-interest-rate" step="0.1" placeholder="ex: 6.0">
+                        </div>
+                        <div class="input-group">
+                            <label>Multiple de sortie (x EBITDA)</label>
+                            <input type="number" id="lbo-exit-multiple" step="0.1" placeholder="ex: 9.0x">
+                        </div>
+                        <div class="input-group">
+                            <label>Croissance EBITDA annuelle (%)</label>
+                            <input type="number" id="lbo-ebitda-growth" step="0.1" placeholder="ex: 5.0">
+                        </div>
+                        <div class="input-group">
+                            <label>Horizon d'investissement (années)</label>
+                            <input type="number" id="lbo-hold-period" step="1" min="1" max="10" placeholder="ex: 5">
+                        </div>
+                    </div>
+                    <button id="lbo-calculate" class="btn-primary">Calculer le rendement</button>
+                    <div id="lbo-results" class="results-box hidden"></div>
+                    <button id="lbo-next" class="btn-secondary">Nouvel exercice</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VALUATION MODULE -->
+        <section id="valuation" class="section">
+            <h2>Exercices de Valorisation</h2>
+            <div class="tab-bar">
+                <button class="tab active" data-tab="multiples">Multiples</button>
+                <button class="tab" data-tab="dcf">DCF simplifié</button>
+            </div>
+            <div class="exercise-container">
+                <div id="valuation-scenario" class="scenario-box"></div>
+
+                <!-- Multiples -->
+                <div id="tab-multiples" class="tab-content active">
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>EV/EBITDA estimé</label>
+                            <input type="number" id="val-ev-ebitda" step="0.1" placeholder="ex: 10.0x">
+                        </div>
+                        <div class="input-group">
+                            <label>EV/Revenue estimé</label>
+                            <input type="number" id="val-ev-revenue" step="0.1" placeholder="ex: 2.5x">
+                        </div>
+                        <div class="input-group">
+                            <label>Valeur d'entreprise (M€)</label>
+                            <input type="number" id="val-ev" step="1" placeholder="Votre estimation">
+                        </div>
+                        <div class="input-group">
+                            <label>Valeur des fonds propres (M€)</label>
+                            <input type="number" id="val-equity" step="1" placeholder="EV - dette nette">
+                        </div>
+                    </div>
+                    <button id="val-check-multiples" class="btn-primary">Vérifier</button>
+                </div>
+
+                <!-- DCF -->
+                <div id="tab-dcf" class="tab-content">
+                    <div class="input-grid">
+                        <div class="input-group">
+                            <label>WACC (%)</label>
+                            <input type="number" id="dcf-wacc" step="0.1" placeholder="ex: 10.0">
+                        </div>
+                        <div class="input-group">
+                            <label>Taux de croissance terminal (%)</label>
+                            <input type="number" id="dcf-terminal-growth" step="0.1" placeholder="ex: 2.0">
+                        </div>
+                        <div class="input-group">
+                            <label>Valeur terminale (M€)</label>
+                            <input type="number" id="dcf-terminal-value" step="1" placeholder="Votre calcul">
+                        </div>
+                        <div class="input-group">
+                            <label>Valeur d'entreprise DCF (M€)</label>
+                            <input type="number" id="dcf-ev" step="1" placeholder="Votre estimation">
+                        </div>
+                    </div>
+                    <button id="dcf-check" class="btn-primary">Vérifier</button>
+                </div>
+
+                <div id="valuation-results" class="results-box hidden"></div>
+                <button id="valuation-next" class="btn-secondary">Nouvel exercice</button>
+            </div>
+        </section>
+
+        <!-- SCREENING MODULE -->
+        <section id="screening" class="section">
+            <h2>Deal Screening</h2>
+            <div class="exercise-container">
+                <div id="screening-scenario" class="scenario-box"></div>
+                <div class="screening-criteria">
+                    <h3>Critères d'évaluation</h3>
+                    <div class="criteria-grid">
+                        <div class="criteria-item">
+                            <label>Qualité du business model</label>
+                            <select id="screen-business"><option value="">--</option><option value="1">Faible</option><option value="2">Moyen</option><option value="3">Bon</option><option value="4">Excellent</option></select>
+                        </div>
+                        <div class="criteria-item">
+                            <label>Barrières à l'entrée</label>
+                            <select id="screen-barriers"><option value="">--</option><option value="1">Faibles</option><option value="2">Moyennes</option><option value="3">Élevées</option><option value="4">Très élevées</option></select>
+                        </div>
+                        <div class="criteria-item">
+                            <label>Croissance du marché</label>
+                            <select id="screen-growth"><option value="">--</option><option value="1">Déclin</option><option value="2">Stable</option><option value="3">Croissance</option><option value="4">Forte croissance</option></select>
+                        </div>
+                        <div class="criteria-item">
+                            <label>Potentiel d'amélioration opérationnelle</label>
+                            <select id="screen-ops"><option value="">--</option><option value="1">Limité</option><option value="2">Modéré</option><option value="3">Significatif</option><option value="4">Très significatif</option></select>
+                        </div>
+                        <div class="criteria-item">
+                            <label>Management</label>
+                            <select id="screen-mgmt"><option value="">--</option><option value="1">À remplacer</option><option value="2">Acceptable</option><option value="3">Bon</option><option value="4">Excellent</option></select>
+                        </div>
+                        <div class="criteria-item">
+                            <label>Valorisation</label>
+                            <select id="screen-valuation"><option value="">--</option><option value="1">Chère</option><option value="2">Correcte</option><option value="3">Attractive</option><option value="4">Très attractive</option></select>
+                        </div>
+                    </div>
+                    <div class="decision-row">
+                        <label>Votre décision :</label>
+                        <button id="screen-go" class="btn-go">GO</button>
+                        <button id="screen-nogo" class="btn-nogo">NO-GO</button>
+                    </div>
+                    <textarea id="screen-rationale" rows="3" placeholder="Justifiez votre décision en 2-3 phrases..."></textarea>
+                    <button id="screen-submit" class="btn-primary">Soumettre l'analyse</button>
+                </div>
+                <div id="screening-results" class="results-box hidden"></div>
+                <button id="screening-next" class="btn-secondary">Nouveau deal</button>
+            </div>
+        </section>
+
+        <!-- QUIZ MODULE -->
+        <section id="quiz" class="section">
+            <h2>Quiz Private Equity</h2>
+            <div class="exercise-container">
+                <div class="quiz-progress">
+                    <span id="quiz-counter">Question 1/10</span>
+                    <div class="progress-bar"><div id="quiz-progress-fill" class="progress-fill"></div></div>
+                    <span id="quiz-score-display">Score: 0/0</span>
+                </div>
+                <div id="quiz-question" class="scenario-box"></div>
+                <div id="quiz-options" class="quiz-options"></div>
+                <div id="quiz-feedback" class="results-box hidden"></div>
+                <button id="quiz-next" class="btn-secondary hidden">Question suivante</button>
+                <div id="quiz-final" class="results-box hidden"></div>
+                <button id="quiz-restart" class="btn-primary hidden">Recommencer</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>PE Training Lab &mdash; Outil de formation au Private Equity</p>
+    </footer>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

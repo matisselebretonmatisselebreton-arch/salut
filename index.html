@@ -15,6 +15,10 @@
             <a href="#" data-section="valuation">Valorisation</a>
             <a href="#" data-section="screening">Deal Screening</a>
             <a href="#" data-section="quiz">Quiz PE</a>
+            <a href="#" data-section="history">Historique</a>
+        </div>
+        <div class="nav-actions">
+            <button id="dark-mode-toggle" class="icon-btn" title="Mode sombre">&#9790;</button>
         </div>
     </nav>
 
@@ -28,27 +32,32 @@
                     <div class="stat"><span id="stat-exercises">0</span><label>Exercices complétés</label></div>
                     <div class="stat"><span id="stat-score">0%</span><label>Score moyen</label></div>
                     <div class="stat"><span id="stat-streak">0</span><label>Série en cours</label></div>
+                    <div class="stat"><span id="stat-best">0%</span><label>Meilleur score</label></div>
                 </div>
                 <div class="module-grid">
                     <div class="module-card" data-target="lbo">
                         <div class="module-icon">📊</div>
                         <h3>Modèle LBO</h3>
                         <p>Construisez des modèles de Leveraged Buyout : dette, equity, rendement, sensibilité</p>
+                        <span class="module-badge">8 scénarios</span>
                     </div>
                     <div class="module-card" data-target="valuation">
                         <div class="module-icon">💰</div>
                         <h3>Valorisation</h3>
                         <p>Pratiquez DCF, multiples de transaction, et comparables boursiers</p>
+                        <span class="module-badge">5 scénarios</span>
                     </div>
                     <div class="module-card" data-target="screening">
                         <div class="module-icon">🔍</div>
                         <h3>Deal Screening</h3>
                         <p>Analysez des opportunités d'investissement et prenez des décisions Go/No-Go</p>
+                        <span class="module-badge">6 deals</span>
                     </div>
                     <div class="module-card" data-target="quiz">
                         <div class="module-icon">🧠</div>
                         <h3>Quiz PE</h3>
                         <p>Testez vos connaissances en Private Equity, finance et stratégie</p>
+                        <span class="module-badge">20 questions</span>
                     </div>
                 </div>
             </div>
@@ -56,9 +65,34 @@
 
         <!-- LBO MODULE -->
         <section id="lbo" class="section">
-            <h2>Modélisation LBO</h2>
+            <div class="section-header">
+                <h2>Modélisation LBO</h2>
+                <div class="section-controls">
+                    <div class="difficulty-selector">
+                        <label>Niveau :</label>
+                        <select id="lbo-difficulty">
+                            <option value="beginner">Débutant</option>
+                            <option value="intermediate" selected>Intermédiaire</option>
+                            <option value="advanced">Avancé</option>
+                        </select>
+                    </div>
+                    <div class="timer-toggle">
+                        <label><input type="checkbox" id="lbo-timer-toggle"> Chrono</label>
+                        <select id="lbo-timer-duration" class="timer-select">
+                            <option value="10">10 min</option>
+                            <option value="20">20 min</option>
+                            <option value="30" selected>30 min</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div id="timer-bar" class="timer-bar hidden">
+                <span id="timer-display">30:00</span>
+                <div class="timer-progress"><div id="timer-fill" class="timer-fill"></div></div>
+            </div>
             <div class="exercise-container">
                 <div id="lbo-scenario" class="scenario-box"></div>
+                <div id="lbo-hints" class="hints-box hidden"></div>
                 <div class="lbo-inputs">
                     <h3>Votre analyse</h3>
                     <div class="input-grid">
@@ -87,8 +121,12 @@
                             <input type="number" id="lbo-hold-period" step="1" min="1" max="10" placeholder="ex: 5">
                         </div>
                     </div>
-                    <button id="lbo-calculate" class="btn-primary">Calculer le rendement</button>
+                    <div class="btn-row">
+                        <button id="lbo-calculate" class="btn-primary">Calculer le rendement</button>
+                        <button id="lbo-hint" class="btn-ghost">Indice</button>
+                    </div>
                     <div id="lbo-results" class="results-box hidden"></div>
+                    <div id="lbo-sensitivity" class="sensitivity-container hidden"></div>
                     <button id="lbo-next" class="btn-secondary">Nouvel exercice</button>
                 </div>
             </div>
@@ -96,7 +134,9 @@
 
         <!-- VALUATION MODULE -->
         <section id="valuation" class="section">
-            <h2>Exercices de Valorisation</h2>
+            <div class="section-header">
+                <h2>Exercices de Valorisation</h2>
+            </div>
             <div class="tab-bar">
                 <button class="tab active" data-tab="multiples">Multiples</button>
                 <button class="tab" data-tab="dcf">DCF simplifié</button>
@@ -216,6 +256,18 @@
                 <button id="quiz-next" class="btn-secondary hidden">Question suivante</button>
                 <div id="quiz-final" class="results-box hidden"></div>
                 <button id="quiz-restart" class="btn-primary hidden">Recommencer</button>
+            </div>
+        </section>
+
+        <!-- HISTORY MODULE -->
+        <section id="history" class="section">
+            <div class="section-header">
+                <h2>Historique des exercices</h2>
+                <button id="history-clear" class="btn-ghost">Effacer l'historique</button>
+            </div>
+            <div id="history-list" class="history-list"></div>
+            <div id="history-empty" class="empty-state">
+                <p>Aucun exercice complété pour l'instant. Lancez-vous !</p>
             </div>
         </section>
     </main>

@@ -1,49 +1,91 @@
 (function () {
-    const state = {
+    var state = {
         exercises: 0,
         scores: [],
         streak: 0,
+        bestScore: 0,
+        history: [],
         screeningDecision: null,
         quizCurrent: 0,
         quizCorrect: 0,
         quizAnswered: 0,
         quizQuestions: [],
+        lboLoaded: false,
+        valLoaded: false,
+        screeningSeenIndices: [],
+        lboSeenIndices: [],
+        valSeenIndices: [],
+        timerInterval: null,
+        timerRemaining: 0,
+        timerTotal: 0,
     };
 
+    // ===== PERSISTENCE =====
     function loadStats() {
         try {
-            const saved = JSON.parse(localStorage.getItem("pe_stats"));
+            var saved = JSON.parse(localStorage.getItem("pe_stats_v2"));
             if (saved) {
                 state.exercises = saved.exercises || 0;
                 state.scores = saved.scores || [];
                 state.streak = saved.streak || 0;
+                state.bestScore = saved.bestScore || 0;
+                state.history = saved.history || [];
             }
         } catch (_) {}
+        var theme = localStorage.getItem("pe_theme");
+        if (theme === "dark") document.body.setAttribute("data-theme", "dark");
         updateStatsDisplay();
     }
 
     function saveStats() {
-        localStorage.setItem("pe_stats", JSON.stringify({ exercises: state.exercises, scores: state.scores, streak: state.streak }));
+        localStorage.setItem("pe_stats_v2", JSON.stringify({
+            exercises: state.exercises,
+            scores: state.scores,
+            streak: state.streak,
+            bestScore: state.bestScore,
+            history: state.history,
+        }));
     }
 
     function updateStatsDisplay() {
         document.getElementById("stat-exercises").textContent = state.exercises;
-        const avg = state.scores.length ? Math.round(state.scores.reduce((a, b) => a + b, 0) / state.scores.length) : 0;
+        var avg = state.scores.length ? Math.round(state.scores.reduce(function (a, b) { return a + b; }, 0) / state.scores.length) : 0;
         document.getElementById("stat-score").textContent = avg + "%";
         document.getElementById("stat-streak").textContent = state.streak;
+        document.getElementById("stat-best").textContent = state.bestScore + "%";
     }
 
-    function recordResult(scorePercent) {
+    function recordResult(scorePercent, module, title) {
         state.exercises++;
         state.scores.push(scorePercent);
-        if (state.scores.length > 50) state.scores.shift();
+        if (state.scores.length > 100) state.scores.shift();
         if (scorePercent >= 60) state.streak++;
         else state.streak = 0;
+        if (scorePercent > state.bestScore) state.bestScore = scorePercent;
+        state.history.unshift({
+            date: new Date().toISOString(),
+            module: module,
+            title: title,
+            score: scorePercent,
+        });
+        if (state.history.length > 50) state.history.pop();
         saveStats();
         updateStatsDisplay();
     }
 
-    // Navigation
+    // ===== DARK MODE =====
+    document.getElementById("dark-mode-toggle").addEventListener("click", function () {
+        var isDark = document.body.getAttribute("data-theme") === "dark";
+        if (isDark) {
+            document.body.removeAttribute("data-theme");
+            localStorage.setItem("pe_theme", "light");
+        } else {
+            document.body.setAttribute("data-theme", "dark");
+            localStorage.setItem("pe_theme", "dark");
+        }
+    });
+
+    // ===== NAVIGATION =====
     document.querySelectorAll("[data-section]").forEach(function (link) {
         link.addEventListener("click", function (e) {
             e.preventDefault();
@@ -63,19 +105,115 @@
         document.querySelectorAll("[data-section]").forEach(function (a) {
             a.classList.toggle("active", a.dataset.section === id);
         });
-        if (id === "lbo") generateLBO();
-        if (id === "valuation") generateValuation();
+        if (id === "lbo" && !state.lboLoaded) { generateLBO(); state.lboLoaded = true; }
+        if (id === "valuation" && !state.valLoaded) { generateValuation(); state.valLoaded = true; }
         if (id === "screening") generateScreening();
         if (id === "quiz") startQuiz();
+        if (id === "history") renderHistory();
+        if (id === "home") updateStatsDisplay();
+    }
+
+    // ===== UTILS =====
+    function shuffle(arr) {
+        for (var i = arr.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+        }
+        return arr;
+    }
+
+    function pickNext(scenarios, seenKey) {
+        if (state[seenKey].length >= scenarios.length) state[seenKey] = [];
+        var available = [];
+        for (var i = 0; i < scenarios.length; i++) {
+            if (state[seenKey].indexOf(i) === -1) available.push(i);
+        }
+        var idx = available[Math.floor(Math.random() * available.length)];
+        state[seenKey].push(idx);
+        return scenarios[idx];
+    }
+
+    function median(arr) {
+        var sorted = arr.slice().sort(function (a, b) { return a - b; });
+        var mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+    }
+
+    // ===== TIMER =====
+    function startTimer() {
+        stopTimer();
+        var checkbox = document.getElementById("lbo-timer-toggle");
+        if (!checkbox.checked) {
+            document.getElementById("timer-bar").classList.add("hidden");
+            return;
+        }
+        var minutes = parseInt(document.getElementById("lbo-timer-duration").value);
+        state.timerTotal = minutes * 60;
+        state.timerRemaining = state.timerTotal;
+        var bar = document.getElementById("timer-bar");
+        bar.classList.remove("hidden");
+        bar.classList.remove("urgent");
+        updateTimerDisplay();
+        state.timerInterval = setInterval(function () {
+            state.timerRemaining--;
+            if (state.timerRemaining <= 0) {
+                stopTimer();
+                state.timerRemaining = 0;
+                updateTimerDisplay();
+                alert("Temps écoulé ! Soumettez votre réponse.");
+                return;
+            }
+            if (state.timerRemaining <= 60) {
+                document.getElementById("timer-bar").classList.add("urgent");
+            }
+            updateTimerDisplay();
+        }, 1000);
+    }
+
+    function stopTimer() {
+        if (state.timerInterval) {
+            clearInterval(state.timerInterval);
+            state.timerInterval = null;
+        }
+    }
+
+    function updateTimerDisplay() {
+        var m = Math.floor(state.timerRemaining / 60);
+        var s = state.timerRemaining % 60;
+        document.getElementById("timer-display").textContent = m + ":" + (s < 10 ? "0" : "") + s;
+        var pct = (state.timerRemaining / state.timerTotal) * 100;
+        document.getElementById("timer-fill").style.width = pct + "%";
     }
 
     // ===== LBO MODULE =====
-    let currentLBO = null;
+    var currentLBO = null;
 
     function generateLBO() {
-        currentLBO = LBO_SCENARIOS[Math.floor(Math.random() * LBO_SCENARIOS.length)];
-        const s = currentLBO;
-        document.getElementById("lbo-scenario").innerHTML =
+        var difficulty = document.getElementById("lbo-difficulty").value;
+        var filtered = LBO_SCENARIOS.filter(function (s) {
+            if (difficulty === "beginner") return s.difficulty === "beginner";
+            if (difficulty === "intermediate") return s.difficulty !== "advanced";
+            return true;
+        });
+        if (filtered.length === 0) filtered = LBO_SCENARIOS;
+
+        var filteredIndices = [];
+        for (var i = 0; i < LBO_SCENARIOS.length; i++) {
+            if (filtered.indexOf(LBO_SCENARIOS[i]) !== -1) filteredIndices.push(i);
+        }
+        var availableIndices = filteredIndices.filter(function (idx) {
+            return state.lboSeenIndices.indexOf(idx) === -1;
+        });
+        if (availableIndices.length === 0) {
+            state.lboSeenIndices = [];
+            availableIndices = filteredIndices;
+        }
+        var idx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        state.lboSeenIndices.push(idx);
+        currentLBO = LBO_SCENARIOS[idx];
+
+        var s = currentLBO;
+        var scenarioHtml =
             "<h3>" + s.name + " — " + s.sector + "</h3>" +
             "<p>" + s.description + "</p>" +
             "<p><span class='kpi'>CA: " + s.revenue + "M€</span> " +
@@ -83,18 +221,33 @@
             "<span class='kpi'>Marge: " + s.ebitdaMargin + "%</span> " +
             "<span class='kpi'>Dette nette: " + s.netDebt + "M€</span> " +
             "<span class='kpi'>Capex: " + s.capexPercent + "% du CA</span> " +
-            "<span class='kpi'>BFR: " + s.nwcPercent + "% du CA</span></p>" +
-            "<p><em>" + s.hint + "</em></p>";
+            "<span class='kpi'>BFR: " + s.nwcPercent + "% du CA</span> " +
+            "<span class='kpi'>Taux IS: " + s.taxRate + "%</span></p>";
+
+        document.getElementById("lbo-scenario").innerHTML = scenarioHtml;
         document.getElementById("lbo-results").classList.add("hidden");
+        document.getElementById("lbo-sensitivity").classList.add("hidden");
+        document.getElementById("lbo-hints").classList.add("hidden");
         ["lbo-entry-multiple", "lbo-leverage", "lbo-interest-rate", "lbo-exit-multiple", "lbo-ebitda-growth", "lbo-hold-period"].forEach(function (id) {
             document.getElementById(id).value = "";
         });
+        startTimer();
     }
 
     document.getElementById("lbo-calculate").addEventListener("click", calculateLBO);
-    document.getElementById("lbo-next").addEventListener("click", generateLBO);
+    document.getElementById("lbo-next").addEventListener("click", function () {
+        state.lboLoaded = false;
+        generateLBO();
+        state.lboLoaded = true;
+    });
+    document.getElementById("lbo-hint").addEventListener("click", function () {
+        var box = document.getElementById("lbo-hints");
+        box.innerHTML = "<strong>Indice :</strong> " + currentLBO.hint;
+        box.classList.toggle("hidden");
+    });
 
     function calculateLBO() {
+        stopTimer();
         var s = currentLBO;
         var entryMult = parseFloat(document.getElementById("lbo-entry-multiple").value);
         var leverage = parseFloat(document.getElementById("lbo-leverage").value);
@@ -109,34 +262,38 @@
         }
 
         var ev = entryMult * s.ebitda;
-        var debt = leverage * s.ebitda;
-        var equity = ev - debt;
+        var lboDebt = leverage * s.ebitda;
+        var totalDebtAtClose = lboDebt + s.netDebt;
+        var equity = ev - lboDebt;
         if (equity <= 0) {
             showLBOResult("Erreur : le levier est trop élevé, les fonds propres sont négatifs.", "error", 0);
             return;
         }
 
         var ebitda = s.ebitda;
-        var totalDebtRepaid = 0;
+        var currentDebt = totalDebtAtClose;
         var yearlyData = [];
+        var prevRevenue = s.revenue;
 
         for (var y = 1; y <= years; y++) {
             ebitda = ebitda * (1 + growth);
             var revenue = s.revenue * Math.pow(1 + growth, y);
-            var interest = (debt - totalDebtRepaid) * rate;
+            var interest = currentDebt * rate;
             var capex = revenue * (s.capexPercent / 100);
+            var deltaNWC = (revenue - prevRevenue) * (s.nwcPercent / 100);
             var taxableIncome = ebitda - interest - capex;
             var tax = Math.max(0, taxableIncome * s.taxRate / 100);
-            var fcf = ebitda - interest - tax - capex;
-            totalDebtRepaid += Math.max(0, Math.min(fcf * 0.7, debt - totalDebtRepaid));
-            yearlyData.push({ year: y, ebitda: ebitda.toFixed(1), fcf: fcf.toFixed(1), debtRemaining: (debt - totalDebtRepaid).toFixed(1) });
+            var fcf = ebitda - interest - tax - capex - deltaNWC;
+            var debtRepayment = Math.max(0, Math.min(fcf * 0.7, currentDebt));
+            currentDebt -= debtRepayment;
+            prevRevenue = revenue;
+            yearlyData.push({ year: y, ebitda: ebitda.toFixed(1), fcf: fcf.toFixed(1), debtRemaining: currentDebt.toFixed(1), interest: interest.toFixed(1) });
         }
 
         var exitEV = exitMult * ebitda;
-        var remainingDebt = debt - totalDebtRepaid;
-        var exitEquity = exitEV - remainingDebt;
+        var exitEquity = exitEV - currentDebt;
         var moic = exitEquity / equity;
-        var irr = (Math.pow(moic, 1 / years) - 1) * 100;
+        var irr = (Math.pow(Math.max(0, moic), 1 / years) - 1) * 100;
 
         var score = 0;
         if (irr >= 25) score = 100;
@@ -144,36 +301,49 @@
         else if (irr >= 15) score = 60;
         else if (irr >= 10) score = 40;
         else score = 20;
-
         if (leverage > 6) score = Math.max(0, score - 20);
+        if (moic < 0) score = 0;
 
         var html = "<h4>Résultats de votre LBO</h4>" +
             "<div class='result-row'><span class='label'>Valeur d'entreprise (entrée)</span><span class='value'>" + ev.toFixed(0) + "M€</span></div>" +
-            "<div class='result-row'><span class='label'>Dette initiale</span><span class='value'>" + debt.toFixed(0) + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>Dette LBO</span><span class='value'>" + lboDebt.toFixed(0) + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>+ Dette nette existante</span><span class='value'>" + s.netDebt + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>= Dette totale au closing</span><span class='value'>" + totalDebtAtClose.toFixed(0) + "M€</span></div>" +
             "<div class='result-row'><span class='label'>Equity investi</span><span class='value'>" + equity.toFixed(0) + "M€</span></div>" +
+            "<hr style='margin:0.5rem 0'>" +
             "<div class='result-row'><span class='label'>EBITDA de sortie</span><span class='value'>" + ebitda.toFixed(1) + "M€</span></div>" +
             "<div class='result-row'><span class='label'>EV de sortie</span><span class='value'>" + exitEV.toFixed(0) + "M€</span></div>" +
-            "<div class='result-row'><span class='label'>Dette résiduelle</span><span class='value'>" + remainingDebt.toFixed(0) + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>Dette résiduelle</span><span class='value'>" + currentDebt.toFixed(0) + "M€</span></div>" +
             "<div class='result-row'><span class='label'>Equity de sortie</span><span class='value'>" + exitEquity.toFixed(0) + "M€</span></div>" +
             "<div class='result-row'><span class='label'>MOIC</span><span class='value " + (moic >= 2.5 ? "correct" : moic >= 2 ? "" : "incorrect") + "'>" + moic.toFixed(2) + "x</span></div>" +
             "<div class='result-row'><span class='label'>TRI (IRR)</span><span class='value " + (irr >= 20 ? "correct" : irr >= 15 ? "" : "incorrect") + "'>" + irr.toFixed(1) + "%</span></div>" +
-            "<hr style='margin:0.8rem 0'>" +
+            "<hr style='margin:0.5rem 0'>" +
             "<h4>Évolution annuelle</h4>" +
-            "<table style='width:100%;font-size:0.85rem;border-collapse:collapse'><tr><th>Année</th><th>EBITDA</th><th>FCF</th><th>Dette restante</th></tr>";
+            "<table style='width:100%;font-size:0.8rem;border-collapse:collapse'>" +
+            "<tr style='border-bottom:2px solid var(--border)'><th>Année</th><th>EBITDA</th><th>Intérêts</th><th>FCF</th><th>Dette</th></tr>";
         yearlyData.forEach(function (d) {
-            html += "<tr><td>" + d.year + "</td><td>" + d.ebitda + "M€</td><td>" + d.fcf + "M€</td><td>" + d.debtRemaining + "M€</td></tr>";
+            html += "<tr><td>" + d.year + "</td><td>" + d.ebitda + "M€</td><td>" + d.interest + "M€</td><td>" + d.fcf + "M€</td><td>" + d.debtRemaining + "M€</td></tr>";
         });
-        html += "</table><hr style='margin:0.8rem 0'>";
+        html += "</table><hr style='margin:0.5rem 0'>";
+
+        var deleverage = ((totalDebtAtClose - currentDebt) / equity * (exitMult / entryMult)).toFixed(1);
+        html += "<h4>Décomposition de la création de valeur</h4>" +
+            "<div class='result-row'><span class='label'>Croissance EBITDA</span><span class='value'>+" + ((ebitda / s.ebitda - 1) * 100).toFixed(0) + "%</span></div>" +
+            "<div class='result-row'><span class='label'>Désendettement</span><span class='value'>" + (totalDebtAtClose - currentDebt).toFixed(0) + "M€ remboursés</span></div>" +
+            "<div class='result-row'><span class='label'>Multiple expansion</span><span class='value'>" + (exitMult > entryMult ? "+" : "") + (exitMult - entryMult).toFixed(1) + "x</span></div>";
 
         if (irr >= 25) html += "<p class='correct'><strong>Excellent !</strong> Ce LBO génère un TRI supérieur à 25%. Le deal est très attractif pour un fonds PE.</p>";
         else if (irr >= 20) html += "<p class='correct'><strong>Bon rendement.</strong> Un TRI de ~20% atteint le seuil minimum pour la plupart des fonds PE.</p>";
-        else if (irr >= 15) html += "<p><strong>Rendement modéré.</strong> Un TRI de 15-20% peut être insuffisant pour un fonds PE classique.</p>";
+        else if (irr >= 15) html += "<p><strong>Rendement modéré.</strong> Un TRI de 15-20% peut être insuffisant pour un fonds PE classique. Explorez les leviers d'amélioration via la table de sensibilité.</p>";
         else html += "<p class='incorrect'><strong>Rendement insuffisant.</strong> Un TRI inférieur à 15% ne justifie généralement pas le risque d'un LBO.</p>";
 
         if (leverage > 5.5) html += "<p class='incorrect'>Attention : un levier de " + leverage.toFixed(1) + "x est agressif. Les prêteurs pourraient refuser ce niveau d'endettement.</p>";
+        if (totalDebtAtClose / s.ebitda > 6) html += "<p class='incorrect'>La dette totale / EBITDA de " + (totalDebtAtClose / s.ebitda).toFixed(1) + "x dépasse le seuil usuel de 6x (covenant classique).</p>";
 
         var cls = irr >= 20 ? "success" : irr >= 15 ? "warning" : "error";
         showLBOResult(html, cls, score);
+        buildSensitivityTable(s, entryMult, leverage, rate, growth, years);
+        recordResult(score, "LBO", s.name);
     }
 
     function showLBOResult(html, cls, score) {
@@ -181,13 +351,62 @@
         box.innerHTML = html;
         box.className = "results-box " + cls;
         box.classList.remove("hidden");
-        if (score > 0) recordResult(score);
+    }
+
+    function buildSensitivityTable(scenario, entryMult, leverage, rate, growth, years) {
+        var exitMultiples = [entryMult - 2, entryMult - 1, entryMult, entryMult + 1, entryMult + 2];
+        var growthRates = [growth - 0.03, growth - 0.015, growth, growth + 0.015, growth + 0.03];
+
+        var html = "<h4>Table de sensibilité du TRI</h4>" +
+            "<p style='font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem'>Multiple de sortie (colonnes) vs. Croissance EBITDA (lignes)</p>" +
+            "<table class='sensitivity-table'><tr><th class='header-cell'>TRI</th>";
+        exitMultiples.forEach(function (em) {
+            html += "<th>" + em.toFixed(1) + "x</th>";
+        });
+        html += "</tr>";
+
+        growthRates.forEach(function (gr) {
+            html += "<tr><th>" + (gr * 100).toFixed(1) + "%</th>";
+            exitMultiples.forEach(function (em) {
+                var ebitda = scenario.ebitda;
+                var ev = entryMult * ebitda;
+                var lboDebt = leverage * ebitda;
+                var totalDebt = lboDebt + scenario.netDebt;
+                var eq = ev - lboDebt;
+                if (eq <= 0) { html += "<td class='bad'>N/A</td>"; return; }
+                var debt = totalDebt;
+                var prevRev = scenario.revenue;
+                for (var y = 1; y <= years; y++) {
+                    ebitda = ebitda * (1 + gr);
+                    var rev = scenario.revenue * Math.pow(1 + gr, y);
+                    var interest = debt * rate;
+                    var capex = rev * (scenario.capexPercent / 100);
+                    var dNWC = (rev - prevRev) * (scenario.nwcPercent / 100);
+                    var taxable = ebitda - interest - capex;
+                    var tax = Math.max(0, taxable * scenario.taxRate / 100);
+                    var fcf = ebitda - interest - tax - capex - dNWC;
+                    debt -= Math.max(0, Math.min(fcf * 0.7, debt));
+                    prevRev = rev;
+                }
+                var exitEquity = em * ebitda - debt;
+                var moic = exitEquity / eq;
+                var tri = (Math.pow(Math.max(0, moic), 1 / years) - 1) * 100;
+                var isCurrent = Math.abs(em - entryMult) < 0.01 && Math.abs(gr - growth) < 0.001;
+                var cellCls = isCurrent ? "current" : tri >= 20 ? "good" : tri >= 15 ? "ok" : "bad";
+                html += "<td class='" + cellCls + "'>" + tri.toFixed(1) + "%</td>";
+            });
+            html += "</tr>";
+        });
+        html += "</table>";
+
+        var container = document.getElementById("lbo-sensitivity");
+        container.innerHTML = html;
+        container.classList.remove("hidden");
     }
 
     // ===== VALUATION MODULE =====
-    let currentVal = null;
+    var currentVal = null;
 
-    // Tabs
     document.querySelectorAll(".tab").forEach(function (tab) {
         tab.addEventListener("click", function () {
             document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("active"); });
@@ -198,7 +417,7 @@
     });
 
     function generateValuation() {
-        currentVal = VALUATION_SCENARIOS[Math.floor(Math.random() * VALUATION_SCENARIOS.length)];
+        currentVal = pickNext(VALUATION_SCENARIOS, "valSeenIndices");
         var s = currentVal;
         var peersHtml = "<table style='width:100%;font-size:0.85rem;border-collapse:collapse;margin-top:0.5rem'>" +
             "<tr><th>Comparable</th><th>EV/EBITDA</th><th>EV/Revenue</th></tr>";
@@ -228,7 +447,11 @@
 
     document.getElementById("val-check-multiples").addEventListener("click", checkMultiples);
     document.getElementById("dcf-check").addEventListener("click", checkDCF);
-    document.getElementById("valuation-next").addEventListener("click", generateValuation);
+    document.getElementById("valuation-next").addEventListener("click", function () {
+        state.valLoaded = false;
+        generateValuation();
+        state.valLoaded = true;
+    });
 
     function checkMultiples() {
         var s = currentVal;
@@ -242,31 +465,32 @@
             return;
         }
 
-        var avgEvEbitda = s.peerEvEbitda.reduce(function (a, b) { return a + b; }, 0) / s.peerEvEbitda.length;
-        var avgEvRev = s.peerEvRevenue.reduce(function (a, b) { return a + b; }, 0) / s.peerEvRevenue.length;
-        var impliedEV_ebitda = avgEvEbitda * s.ebitda;
-        var impliedEV_rev = avgEvRev * s.revenue;
+        var medEvEbitda = median(s.peerEvEbitda);
+        var medEvRev = median(s.peerEvRevenue);
+        var impliedEV_ebitda = medEvEbitda * s.ebitda;
+        var impliedEV_rev = medEvRev * s.revenue;
         var impliedEV = (impliedEV_ebitda + impliedEV_rev) / 2;
         var impliedEquity = impliedEV - s.netDebt;
 
         var evDiff = Math.abs(userEV - impliedEV) / impliedEV * 100;
-        var eqDiff = Math.abs(userEquity - impliedEquity) / impliedEquity * 100;
-        var multDiff1 = Math.abs(userEvEbitda - avgEvEbitda) / avgEvEbitda * 100;
-        var multDiff2 = Math.abs(userEvRev - avgEvRev) / avgEvRev * 100;
+        var eqDiff = Math.abs(userEquity - impliedEquity) / Math.abs(impliedEquity) * 100;
+        var multDiff1 = Math.abs(userEvEbitda - medEvEbitda) / medEvEbitda * 100;
+        var multDiff2 = Math.abs(userEvRev - medEvRev) / medEvRev * 100;
 
         var score = 100 - (evDiff + eqDiff + multDiff1 + multDiff2) / 4;
         score = Math.max(0, Math.min(100, Math.round(score)));
-
         var cls = score >= 70 ? "success" : score >= 40 ? "warning" : "error";
 
         var html = "<h4>Résultats — Méthode des Multiples</h4>" +
-            "<div class='result-row'><span class='label'>EV/EBITDA médian des peers</span><span class='value'>" + avgEvEbitda.toFixed(1) + "x</span></div>" +
+            "<div class='result-row'><span class='label'>EV/EBITDA médian des peers</span><span class='value'>" + medEvEbitda.toFixed(1) + "x</span></div>" +
             "<div class='result-row'><span class='label'>Votre EV/EBITDA</span><span class='value " + (multDiff1 < 15 ? "correct" : "incorrect") + "'>" + userEvEbitda.toFixed(1) + "x</span></div>" +
-            "<div class='result-row'><span class='label'>EV/Revenue médian des peers</span><span class='value'>" + avgEvRev.toFixed(1) + "x</span></div>" +
+            "<div class='result-row'><span class='label'>EV/Revenue médian des peers</span><span class='value'>" + medEvRev.toFixed(1) + "x</span></div>" +
             "<div class='result-row'><span class='label'>Votre EV/Revenue</span><span class='value " + (multDiff2 < 15 ? "correct" : "incorrect") + "'>" + userEvRev.toFixed(1) + "x</span></div>" +
-            "<hr style='margin:0.8rem 0'>" +
-            "<div class='result-row'><span class='label'>EV implicite (moyenne méthodes)</span><span class='value'>" + impliedEV.toFixed(0) + "M€</span></div>" +
-            "<div class='result-row'><span class='label'>Votre EV</span><span class='value " + (evDiff < 15 ? "correct" : "incorrect") + "'>" + userEV.toFixed(0) + "M€ (" + (evDiff < 15 ? "±" + evDiff.toFixed(0) + "%" : "écart de " + evDiff.toFixed(0) + "%") + ")</span></div>" +
+            "<hr style='margin:0.5rem 0'>" +
+            "<div class='result-row'><span class='label'>EV implicite (EV/EBITDA)</span><span class='value'>" + impliedEV_ebitda.toFixed(0) + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>EV implicite (EV/Revenue)</span><span class='value'>" + impliedEV_rev.toFixed(0) + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>EV implicite (moyenne)</span><span class='value'>" + impliedEV.toFixed(0) + "M€</span></div>" +
+            "<div class='result-row'><span class='label'>Votre EV</span><span class='value " + (evDiff < 15 ? "correct" : "incorrect") + "'>" + userEV.toFixed(0) + "M€ (±" + evDiff.toFixed(0) + "%)</span></div>" +
             "<div class='result-row'><span class='label'>Equity Value implicite</span><span class='value'>" + impliedEquity.toFixed(0) + "M€</span></div>" +
             "<div class='result-row'><span class='label'>Votre Equity Value</span><span class='value " + (eqDiff < 15 ? "correct" : "incorrect") + "'>" + userEquity.toFixed(0) + "M€</span></div>" +
             "<p style='margin-top:0.8rem'><strong>Score : " + score + "/100</strong></p>";
@@ -275,7 +499,7 @@
         box.innerHTML = html;
         box.className = "results-box " + cls;
         box.classList.remove("hidden");
-        recordResult(score);
+        recordResult(score, "Valorisation (Multiples)", s.name);
     }
 
     function checkDCF() {
@@ -326,14 +550,14 @@
         box.innerHTML = html;
         box.className = "results-box " + cls;
         box.classList.remove("hidden");
-        recordResult(score);
+        recordResult(score, "Valorisation (DCF)", s.name);
     }
 
     // ===== SCREENING MODULE =====
-    let currentDeal = null;
+    var currentDeal = null;
 
     function generateScreening() {
-        currentDeal = SCREENING_DEALS[Math.floor(Math.random() * SCREENING_DEALS.length)];
+        currentDeal = pickNext(SCREENING_DEALS, "screeningSeenIndices");
         var d = currentDeal;
         document.getElementById("screening-scenario").innerHTML =
             "<h3>" + d.name + " — " + d.sector + "</h3>" +
@@ -394,7 +618,7 @@
         var html = "<h4>" + (correct ? "Bonne décision !" : "Décision incorrecte") + "</h4>" +
             "<div class='result-row'><span class='label'>Votre décision</span><span class='value " + (correct ? "correct" : "incorrect") + "'>" + state.screeningDecision + "</span></div>" +
             "<div class='result-row'><span class='label'>Décision recommandée</span><span class='value'>" + d.recommendation + "</span></div>" +
-            "<hr style='margin:0.8rem 0'>" +
+            "<hr style='margin:0.5rem 0'>" +
             "<h4>Analyse de référence</h4>" +
             "<p>" + d.rationale + "</p>" +
             "<p style='margin-top:0.8rem'><strong>Score : " + score + "/100</strong></p>";
@@ -403,7 +627,7 @@
         box.innerHTML = html;
         box.className = "results-box " + (correct ? "success" : "error");
         box.classList.remove("hidden");
-        recordResult(score);
+        recordResult(score, "Screening", d.name);
     }
 
     // ===== QUIZ MODULE =====
@@ -411,18 +635,27 @@
         state.quizCurrent = 0;
         state.quizCorrect = 0;
         state.quizAnswered = 0;
-        state.quizQuestions = shuffle(QUIZ_QUESTIONS.slice()).slice(0, 10);
+        state.quizQuestions = prepareQuizQuestions();
         document.getElementById("quiz-final").classList.add("hidden");
         document.getElementById("quiz-restart").classList.add("hidden");
         showQuizQuestion();
     }
 
-    function shuffle(arr) {
-        for (var i = arr.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
-        }
-        return arr;
+    function prepareQuizQuestions() {
+        var questions = shuffle(QUIZ_QUESTIONS.slice()).slice(0, 10);
+        return questions.map(function (q) {
+            var indices = [];
+            for (var i = 0; i < q.options.length; i++) indices.push(i);
+            shuffle(indices);
+            var newOptions = indices.map(function (i) { return q.options[i]; });
+            var newCorrect = indices.indexOf(q.correct);
+            return {
+                question: q.question,
+                options: newOptions,
+                correct: newCorrect,
+                explanation: q.explanation,
+            };
+        });
     }
 
     function showQuizQuestion() {
@@ -500,9 +733,50 @@
         document.getElementById("quiz-final").className = "results-box " + (pct >= 60 ? "success" : pct >= 40 ? "warning" : "error");
         document.getElementById("quiz-final").classList.remove("hidden");
         document.getElementById("quiz-restart").classList.remove("hidden");
-        recordResult(pct);
+        recordResult(pct, "Quiz PE", pct + "% (" + state.quizCorrect + "/" + state.quizQuestions.length + ")");
     }
 
-    // Init
+    // ===== HISTORY =====
+    function renderHistory() {
+        var list = document.getElementById("history-list");
+        var empty = document.getElementById("history-empty");
+
+        if (!state.history.length) {
+            list.innerHTML = "";
+            empty.classList.remove("hidden");
+            return;
+        }
+
+        empty.classList.add("hidden");
+        list.innerHTML = state.history.map(function (h) {
+            var cls = h.score >= 70 ? "score-high" : h.score >= 40 ? "score-mid" : "score-low";
+            var date = new Date(h.date);
+            var dateStr = date.toLocaleDateString("fr-FR") + " " + date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+            var scoreColor = h.score >= 70 ? "var(--success)" : h.score >= 40 ? "var(--warning)" : "var(--error)";
+            return "<div class='history-item " + cls + "'>" +
+                "<div class='history-meta'>" +
+                "<span class='history-module'>" + h.module + "</span>" +
+                "<span class='history-title'>" + h.title + "</span>" +
+                "<span class='history-date'>" + dateStr + "</span>" +
+                "</div>" +
+                "<span class='history-score' style='color:" + scoreColor + "'>" + h.score + "%</span>" +
+                "</div>";
+        }).join("");
+    }
+
+    document.getElementById("history-clear").addEventListener("click", function () {
+        if (confirm("Effacer tout l'historique ?")) {
+            state.history = [];
+            state.exercises = 0;
+            state.scores = [];
+            state.streak = 0;
+            state.bestScore = 0;
+            saveStats();
+            updateStatsDisplay();
+            renderHistory();
+        }
+    });
+
+    // ===== INIT =====
     loadStats();
 })();

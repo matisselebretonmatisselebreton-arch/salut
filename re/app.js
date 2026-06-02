@@ -3,7 +3,7 @@
         exercises: 0, scores: [], streak: 0, bestScore: 0, history: [],
         screeningDecision: null, scpiDecision: null,
         quizCurrent: 0, quizCorrect: 0, quizAnswered: 0, quizQuestions: [],
-        valLoaded: false, scpiLoaded: false, screeningLoaded: false,
+        valLoaded: false, scpiLoaded: false, screeningLoaded: false, quizStarted: false,
         valSeenIndices: [], scpiSeenIndices: [], screeningSeenIndices: [],
         timerInterval: null, timerSeconds: 0, timerTotal: 0
     };
@@ -63,7 +63,7 @@
         if (id === "valuation" && !state.valLoaded) { generateValuation(); state.valLoaded = true; }
         if (id === "scpi" && !state.scpiLoaded) { generateSCPI(); state.scpiLoaded = true; }
         if (id === "screening" && !state.screeningLoaded) { generateScreening(); state.screeningLoaded = true; }
-        if (id === "quiz") startQuiz();
+        if (id === "quiz" && !state.quizStarted) { startQuiz(); state.quizStarted = true; }
         if (id === "history") renderHistory();
         if (id === "home") updateStatsDisplay();
     }
@@ -121,6 +121,12 @@
 
     document.getElementById("val-timer-toggle").addEventListener("change", function () {
         if (this.checked) startTimer(); else stopTimer();
+    });
+
+    document.getElementById("val-difficulty").addEventListener("change", function () {
+        state.valLoaded = false;
+        generateValuation();
+        state.valLoaded = true;
     });
 
     // ===== VALUATION =====
@@ -505,7 +511,7 @@
     }
 
     document.getElementById("quiz-next").addEventListener("click", function(){state.quizCurrent++;showQuizQuestion();});
-    document.getElementById("quiz-restart").addEventListener("click", startQuiz);
+    document.getElementById("quiz-restart").addEventListener("click", function () { state.quizStarted = false; startQuiz(); state.quizStarted = true; });
 
     function showQuizFinal() {
         var pct=Math.round(state.quizCorrect/state.quizQuestions.length*100);

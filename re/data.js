@@ -110,6 +110,118 @@ var RE_VALUATION_SCENARIOS = [
         cashflows: [2200000, 2350000, 2500000, 2600000, 2700000],
         difficulty: "advanced",
         hint: "Bordeaux est un marché dynamique mais le TOF de 85% pèse. Le potentiel de reversion à la hausse et les certifications environnementales sont des atouts. Taux de capi : 5.5-6%."
+    },
+    {
+        name: "Hôtel 4 étoiles Opéra",
+        type: "Hôtellerie",
+        location: "Paris 9ème",
+        description: "Hôtel 4* de 120 chambres (5 500 m²) proche Opéra Garnier. Exploité par un groupe hôtelier international. Bail de 12 ans avec loyer variable (fixe + % CA). Rénové en 2019.",
+        surface: 5500, loyer_m2: 400, tof: 100, charges_m2: 50,
+        loyerTotal: 2200000, chargesTotal: 275000,
+        capexAnnuel: 180000, fraisGestion: 4,
+        peerCapRates: [4.0, 4.5, 4.8, 4.2],
+        peerNames: ["Hôtel Scribe-like", "W Paris-like", "Hilton Opéra-like", "Marriott Champs-Élysées-like"],
+        cashflows: [1800000, 1900000, 2000000, 2100000, 2200000],
+        difficulty: "advanced",
+        hint: "L'hôtellerie parisienne prime bénéficie du tourisme international. Les baux hôteliers sont souvent longs (12+ ans) avec une composante variable liée au CA. Les taux de capi hôteliers prime Paris sont autour de 4-5%."
+    },
+    {
+        name: "Résidence étudiante Montpellier",
+        type: "Résidentiel géré",
+        location: "Montpellier (Port Marianne)",
+        description: "Résidence étudiante neuve de 180 studios (4 200 m²). Exploitée par un opérateur national. Bail commercial de 11 ans. Proche universités et tramway.",
+        surface: 4200, loyer_m2: 170, tof: 98, charges_m2: 20,
+        loyerTotal: 699720, chargesTotal: 84000,
+        capexAnnuel: 40000, fraisGestion: 4,
+        peerCapRates: [4.8, 5.0, 5.3, 4.5],
+        peerNames: ["Résidence Nemea Montpellier", "Studelites-like", "Nexity Studéa-like", "Cardinal Campus-like"],
+        cashflows: [580000, 590000, 600000, 610000, 620000],
+        difficulty: "beginner",
+        hint: "Les résidences étudiantes sont un actif défensif (demande structurelle forte en France). Les baux sont longs et les charges faibles sur du neuf. Taux de capi autour de 4.5-5.5%."
+    },
+    {
+        name: "Bureaux Euroméditerranée",
+        type: "Bureaux",
+        location: "Marseille (Euroméditerranée)",
+        description: "Immeuble de bureaux de 10 000 m² livré en 2022. Certifié HQE et BREEAM Very Good. 5 locataires (services, tech, maritime). TOF de 90%.",
+        surface: 10000, loyer_m2: 220, tof: 90, charges_m2: 40,
+        loyerTotal: 1980000, chargesTotal: 400000,
+        capexAnnuel: 120000, fraisGestion: 5,
+        peerCapRates: [5.8, 6.0, 6.3, 5.5],
+        peerNames: ["Tour La Marseillaise-like", "Euromed Center-like", "Les Docks-like", "Parc du Canal-like"],
+        cashflows: [1500000, 1550000, 1600000, 1650000, 1700000],
+        difficulty: "intermediate",
+        hint: "Marseille Euroméditerranée est le plus grand projet de rénovation urbaine d'Europe du Sud. Le marché est dynamique mais les taux de capi restent plus élevés que Lyon ou Paris (5.5-6.5%). Le TOF de 90% laisse un potentiel de hausse."
+    },
+    {
+        name: "Data Center Tier III",
+        type: "Infrastructure",
+        location: "Pantin (Seine-Saint-Denis)",
+        description: "Data center Tier III de 3 000 m² IT utile (8 000 m² brut). Locataire unique (opérateur cloud), bail ferme 15 ans. Alimenté en énergie renouvelable.",
+        surface: 8000, loyer_m2: 500, tof: 100, charges_m2: 0,
+        loyerTotal: 4000000, chargesTotal: 0,
+        capexAnnuel: 400000, fraisGestion: 3,
+        peerCapRates: [5.0, 5.5, 5.8, 4.8],
+        peerNames: ["Equinix PA-like", "Digital Realty-like", "Interxion-like", "Data4-like"],
+        cashflows: [3600000, 3700000, 3800000, 3900000, 4000000],
+        difficulty: "advanced",
+        hint: "Les data centers sont une classe d'actifs en forte demande (cloud, IA, 5G). Les baux sont très longs et triple net. Les taux de capi sont autour de 5-6% en IDF. Attention : c'est un actif technique avec des capex importants."
+    },
+    {
+        name: "Outlet Village",
+        type: "Commerce",
+        location: "Troyes (La Voie des Marques)",
+        description: "Village de marques de 22 000 m² avec 85 boutiques. Mix premium (luxe accessible 40%, sport 25%, mode 35%). 3,5 millions de visiteurs/an.",
+        surface: 22000, loyer_m2: 180, tof: 94, charges_m2: 35,
+        loyerTotal: 3722400, chargesTotal: 770000,
+        capexAnnuel: 350000, fraisGestion: 6,
+        peerCapRates: [5.5, 5.8, 6.2, 5.2],
+        peerNames: ["La Vallée Village-like", "Roppenheim-like", "Nailloux-like", "Honfleur Normandy-like"],
+        cashflows: [2700000, 2750000, 2800000, 2850000, 2900000],
+        difficulty: "advanced",
+        hint: "Les outlets résistent bien au e-commerce grâce au positionnement prix et à l'expérience shopping. Les taux de capi sont entre ceux du retail classique et du prime. Troyes est la destination outlet historique en France."
+    },
+    {
+        name: "Parking souterrain Opéra",
+        type: "Parking",
+        location: "Paris 2ème",
+        description: "Parking souterrain de 450 places (12 000 m²) en plein centre de Paris. Exploité par un opérateur national. Bail de 20 ans. Revenus stables et prévisibles.",
+        surface: 12000, loyer_m2: 75, tof: 100, charges_m2: 10,
+        loyerTotal: 900000, chargesTotal: 120000,
+        capexAnnuel: 50000, fraisGestion: 3,
+        peerCapRates: [4.5, 4.8, 5.0, 4.2],
+        peerNames: ["Parking Indigo Madeleine", "Q-Park Bourse-like", "Saemes Opéra-like", "Vinci Park Vendôme-like"],
+        cashflows: [740000, 750000, 760000, 770000, 780000],
+        difficulty: "beginner",
+        hint: "Les parkings de centre-ville sont des actifs très défensifs avec des baux très longs. Les revenus sont stables et les capex faibles. Les taux de capi sont autour de 4.5-5% pour le premium Paris."
+    },
+    {
+        name: "Immeuble mixte Strasbourg",
+        type: "Mixte bureaux/commerce",
+        location: "Strasbourg (Presqu'île Malraux)",
+        description: "Immeuble mixte de 6 500 m² : commerces en RDC (1 500 m²) et bureaux aux étages (5 000 m²). Livré en 2020. 8 locataires. Quartier en développement.",
+        surface: 6500, loyer_m2: 210, tof: 91, charges_m2: 40,
+        loyerTotal: 1241550, chargesTotal: 260000,
+        capexAnnuel: 100000, fraisGestion: 5.5,
+        peerCapRates: [5.5, 5.8, 6.0, 5.3],
+        peerNames: ["Rivétoile-like", "Place des Halles-like", "Wacken Europe-like", "Archipel-like"],
+        cashflows: [900000, 920000, 950000, 980000, 1000000],
+        difficulty: "intermediate",
+        hint: "L'immeuble mixte offre une diversification des revenus (commerce + bureaux). Strasbourg Presqu'île Malraux est un quartier en développement. Le TOF de 91% laisse un potentiel de hausse. Taux de capi entre 5.5% et 6%."
+    },
+    {
+        name: "Entrepôt frigorifique Rungis",
+        type: "Logistique froid",
+        location: "Rungis (Val-de-Marne)",
+        description: "Plateforme frigorifique de 15 000 m² (froid positif et négatif). Construite en 2018. Locataire unique (distributeur alimentaire), bail ferme 10 ans. Classé Seveso seuil bas.",
+        surface: 15000, loyer_m2: 110, tof: 100, charges_m2: 25,
+        loyerTotal: 1650000, chargesTotal: 375000,
+        capexAnnuel: 200000, fraisGestion: 4,
+        peerCapRates: [5.5, 5.8, 6.0, 5.2],
+        peerNames: ["Stef Rungis-like", "Linevia Orly-like", "Frigologistic-like", "ID Logistics froid-like"],
+        cashflows: [1100000, 1120000, 1140000, 1160000, 1180000],
+        difficulty: "intermediate",
+        hint: "La logistique du froid est une niche avec des barrières à l'entrée élevées (investissement technique important). Les taux de capi sont légèrement supérieurs à la logistique classique (5.5-6%). Le bail long sécurise les revenus."
     }
 ];
 
@@ -225,6 +337,104 @@ var SCPI_SCENARIOS = [
         endettement: 22,
         recommendation: "ÉVITER",
         hint: "SCPI en grande difficulté. Collecte négative, prix en chute libre, TOF faible. Le commerce physique de centre-ville souffre structurellement. Rendement faible ne compensant pas la perte en capital."
+    },
+    {
+        name: "Remake Live",
+        type: "Diversifiée européenne",
+        description: "SCPI récente (2022) sans frais d'entrée, investie en Europe. Stratégie opportuniste orientée ISR. Gestion par Remake AM.",
+        capitalisation: 800, prixPart: 204, rendement: 7.79, tof: 99.5,
+        collecte: 500, distribution: 15.89, patrimoine: 45,
+        evolution1an: 2, evolution3ans: 3, evolution5ans: 0,
+        fraisSouscription: 0, fraisGestion: 18,
+        zoneGeo: "France 35%, Royaume-Uni 20%, Espagne 15%, Irlande 15%, Autres 15%",
+        typologies: "Bureaux 40%, Commerce 25%, Logistique 20%, Mixte 15%",
+        endettement: 22,
+        recommendation: "ACHETER",
+        hint: "Rendement exceptionnel (7.79%) et prix de part en hausse. Pas de frais d'entrée (compensé par frais de gestion de 18%). SCPI récente donc track record court. L'endettement de 22% et la diversification européenne sont à surveiller."
+    },
+    {
+        name: "Iroko Zen",
+        type: "Diversifiée sans frais",
+        description: "SCPI sans frais d'entrée investie en France et Europe. Positionnement responsable (label ISR). Gestion par Iroko.",
+        capitalisation: 400, prixPart: 200, rendement: 7.12, tof: 100,
+        collecte: 250, distribution: 14.24, patrimoine: 60,
+        evolution1an: 0, evolution3ans: 0, evolution5ans: 0,
+        fraisSouscription: 0, fraisGestion: 14,
+        zoneGeo: "France 60%, Espagne 15%, Pays-Bas 10%, Autres 15%",
+        typologies: "Bureaux 30%, Commerce 25%, Logistique 20%, Résidentiel 15%, Santé 10%",
+        endettement: 15,
+        recommendation: "ACHETER",
+        hint: "Rendement très attractif (7.12%) et TOF de 100%. Pas de frais d'entrée mais frais de gestion de 14%. Bonne diversification. SCPI jeune avec peu de recul historique. Prix de part stable."
+    },
+    {
+        name: "Vendôme Régions",
+        type: "Bureaux régionaux",
+        description: "SCPI investie uniquement dans des bureaux en régions françaises. Patrimoine de 80 actifs dans les grandes métropoles hors IDF.",
+        capitalisation: 900, prixPart: 720, rendement: 5.45, tof: 91.2,
+        collecte: 80, distribution: 39.24, patrimoine: 80,
+        evolution1an: -3, evolution3ans: -6, evolution5ans: -4,
+        fraisSouscription: 9.5, fraisGestion: 10,
+        zoneGeo: "Lyon 25%, Marseille 18%, Bordeaux 15%, Nantes 12%, Lille 12%, Autres régions 18%",
+        typologies: "Bureaux 100%",
+        endettement: 14,
+        recommendation: "ACHETER",
+        hint: "Bonne exposition aux métropoles régionales dynamiques. Rendement correct. Le TOF de 91.2% est un peu faible mais les régions sont résilientes. Baisse modérée du prix de part. Monoexposition bureaux à surveiller."
+    },
+    {
+        name: "Atream Hôtels",
+        type: "Hôtellerie",
+        description: "SCPI thématique investie dans l'hôtellerie européenne (3* à 5*). Patrimoine de 25 hôtels. Baux longs avec composante variable.",
+        capitalisation: 700, prixPart: 315, rendement: 5.05, tof: 100,
+        collecte: 120, distribution: 15.91, patrimoine: 25,
+        evolution1an: 3, evolution3ans: 5, evolution5ans: 8,
+        fraisSouscription: 11, fraisGestion: 10,
+        zoneGeo: "France 50%, Espagne 20%, Portugal 15%, Belgique 15%",
+        typologies: "Hôtels 3* 30%, Hôtels 4* 45%, Hôtels 5* 15%, Résidences tourisme 10%",
+        endettement: 10,
+        recommendation: "ACHETER",
+        hint: "L'hôtellerie européenne bénéficie du rebond du tourisme post-Covid. Le prix de part est en hausse (+8% sur 5 ans). Faible endettement. Les baux longs sécurisent les revenus. Risque cyclique lié au tourisme."
+    },
+    {
+        name: "LF Grand Paris Patrimoine",
+        type: "Bureaux Grand Paris",
+        description: "SCPI investie dans les bureaux du Grand Paris. Patrimoine concentré sur les lignes du Grand Paris Express. Gérée par La Française.",
+        capitalisation: 1500, prixPart: 265, rendement: 3.95, tof: 86.5,
+        collecte: -80, distribution: 10.47, patrimoine: 40,
+        evolution1an: -12, evolution3ans: -25, evolution5ans: -30,
+        fraisSouscription: 10, fraisGestion: 12,
+        zoneGeo: "Île-de-France 100%",
+        typologies: "Bureaux 85%, Activité 10%, Autres 5%",
+        endettement: 28,
+        recommendation: "ÉVITER",
+        hint: "SCPI en grande difficulté : collecte négative, prix en chute (-30% sur 5 ans), TOF très faible (86.5%), endettement élevé (28%). La concentration 100% IDF bureaux est le problème. Le Grand Paris Express ne suffit pas à compenser la crise des bureaux."
+    },
+    {
+        name: "Cristal Rente",
+        type: "Commerce/Bureaux",
+        description: "SCPI mixte investie en commerce et bureaux, principalement en centres-villes de grandes villes françaises. Gérée par Inter Gestion.",
+        capitalisation: 350, prixPart: 255, rendement: 5.15, tof: 94.8,
+        collecte: 60, distribution: 13.13, patrimoine: 35,
+        evolution1an: -1, evolution3ans: -3, evolution5ans: 0,
+        fraisSouscription: 11, fraisGestion: 10,
+        zoneGeo: "France 85%, Europe 15%",
+        typologies: "Commerce centre-ville 45%, Bureaux 35%, Activité 10%, Autres 10%",
+        endettement: 16,
+        recommendation: "ACHETER",
+        hint: "SCPI de taille moyenne avec un rendement correct (5.15%) et un TOF solide. La diversification commerce/bureaux est un atout. Taille modeste limitant la liquidité mais aussi le risque de concentration."
+    },
+    {
+        name: "Sofidy Europe Invest",
+        type: "Diversifiée européenne",
+        description: "SCPI européenne gérée par Sofidy. Investie dans 8 pays. Stratégie de rendement avec une approche value-add sur certains actifs.",
+        capitalisation: 650, prixPart: 230, rendement: 4.65, tof: 93.0,
+        collecte: 100, distribution: 10.70, patrimoine: 50,
+        evolution1an: -2, evolution3ans: -8, evolution5ans: -5,
+        fraisSouscription: 10, fraisGestion: 11,
+        zoneGeo: "Allemagne 25%, Pays-Bas 20%, Espagne 15%, Italie 15%, Autres 25%",
+        typologies: "Bureaux 50%, Commerce 25%, Logistique 15%, Autres 10%",
+        endettement: 20,
+        recommendation: "ÉVITER",
+        hint: "Rendement insuffisant (4.65%) pour une SCPI européenne. Baisse du prix de part (-8% sur 3 ans). Le TOF de 93% est moyen. L'exposition à l'Allemagne (25%) est un risque (marché bureaux en difficulté). Frais élevés."
     }
 ];
 
@@ -324,6 +534,78 @@ var RE_SCREENING_DEALS = [
         recommendation: "NO-GO",
         rationale: "L'obsolescence technique (DPE E) et le décret tertiaire rendent une rénovation obligatoire et coûteuse. Avec un TOF de 55% et une localisation secondaire, le risque de vacance structurelle est très élevé. Le coût de remise aux normes (estimé 2 000-3 000€/m², soit 20-30M€) dépasse largement le prix d'acquisition. Seul un projet de transformation urbaine (logement) pourrait avoir du sens, mais c'est un autre métier.",
         hint: "Un DPE E est rédhibitoire avec le décret tertiaire (obligation de -40% de consommation d'ici 2030). Le TOF de 55% indique une vacance structurelle. Estimez le coût de rénovation (2 000-3 000€/m²) et comparez-le au prix d'acquisition."
+    },
+    {
+        name: "Clinique privée — Nice",
+        type: "Santé",
+        description: "Clinique privée MCO (médecine-chirurgie-obstétrique) de 8 000 m² à Nice. Exploitée par un grand groupe de santé. Bail triple net de 12 ans (8 ans restant). Récemment agrandie.",
+        surface: 8000, loyerNet: 1440000, tof: 100,
+        askingPrice: 25000000, askingYield: 5.76,
+        strengths: ["Bail triple net 12 ans (8 ans restant)", "Exploitant solide (groupe de santé coté)", "Thématique santé défensive", "Nice : forte demande de soins (population âgée)", "Aucun capex propriétaire (triple net)"],
+        weaknesses: ["Actif mono-locataire", "Reconversion difficile si départ", "Risque réglementaire santé", "Rendement modéré pour un actif régional"],
+        recommendation: "GO",
+        rationale: "L'immobilier de santé est l'une des classes d'actifs les plus défensives. Le bail triple net long et l'exploitant solide sécurisent les revenus. Nice est un marché porteur pour la santé (démographie vieillissante). Le rendement de 5.76% est attractif pour du triple net.",
+        hint: "L'immobilier de santé est défensif avec des baux longs et triple net. Un exploitant coté réduit le risque de défaut. Nice a une démographie favorable pour la santé. Le triple net signifie zéro charge pour le propriétaire."
+    },
+    {
+        name: "Résidence étudiante — Toulouse",
+        type: "Résidentiel géré",
+        description: "Résidence étudiante de 200 studios (5 000 m²) proche campus universitaire. Construite en 2018. Exploitée par un opérateur national. Bail de 9 ans (5 ans restant).",
+        surface: 5000, loyerNet: 700000, tof: 97,
+        askingPrice: 13500000, askingYield: 5.19,
+        strengths: ["Toulouse = 2ème ville étudiante de France", "Proximité campus (Rangueil)", "Actif récent (2018)", "Demande structurelle forte", "Rendement correct"],
+        weaknesses: ["Bail résiduel court (5 ans)", "Dépendance opérateur", "Offre étudiante croissante à Toulouse", "Studios petits (25 m² moyen)", "Risque de renégociation du loyer à l'échéance"],
+        recommendation: "GO",
+        rationale: "Toulouse est un marché étudiant structurellement porteur (130 000 étudiants). La proximité du campus sécurise la demande. Le principal risque est le bail résiduel court — il faudra anticiper le renouvellement. Le rendement de 5.19% est cohérent pour du résidentiel géré.",
+        hint: "Toulouse est la 2ème ville étudiante de France avec 130 000 étudiants. La proximité du campus est un avantage décisif. Le bail résiduel de 5 ans est le point d'attention : anticipez la renégociation."
+    },
+    {
+        name: "Espace de coworking — Paris 10ème",
+        type: "Bureaux flex",
+        description: "Immeuble de 3 000 m² transformé en espace de coworking dans le 10ème arrondissement (Canal Saint-Martin). Exploité par un opérateur de flex office. Bail de 9 ans, 3 ans restant.",
+        surface: 3000, loyerNet: 750000, tof: 100,
+        askingPrice: 18000000, askingYield: 4.17,
+        strengths: ["Emplacement tendance (Canal Saint-Martin)", "Marché du flex office en croissance", "Quartier attractif pour les startups", "Immeuble rénové avec charme"],
+        weaknesses: ["Bail résiduel très court (3 ans)", "Opérateur flex office fragile financièrement", "Rendement faible (4.17%)", "Risque de vacance longue si départ opérateur", "Reconversion coûteuse vers bureau classique"],
+        recommendation: "NO-GO",
+        rationale: "Le bail résiduel de 3 ans est trop court et expose à un risque majeur. Les opérateurs de flex office ont des modèles économiques fragiles (WeWork). Le rendement de 4.17% ne rémunère pas suffisamment le risque opérateur. Le coût de reconversion vers du bureau classique serait élevé.",
+        hint: "Un bail résiduel de 3 ans est un signal d'alerte. Les opérateurs de flex office ont historiquement des difficultés (cf. WeWork). Le rendement faible ne compense pas le risque. Évaluez le scénario de sortie de l'opérateur."
+    },
+    {
+        name: "Entrepôt logistique — Corridor rhodanien",
+        type: "Logistique",
+        description: "Entrepôt logistique classe A de 25 000 m² sur l'axe Lyon-Marseille (Valence). Construit en 2022. 2 locataires (3PL et agroalimentaire). Baux fermes de 6 ans.",
+        surface: 25000, loyerNet: 1375000, tof: 100,
+        askingPrice: 24000000, askingYield: 5.73,
+        strengths: ["Axe logistique stratégique (Lyon-Marseille)", "Actif neuf classe A", "2 locataires (diversification)", "Baux fermes 6 ans", "Rendement attractif pour de la logistique"],
+        weaknesses: ["Localisation secondaire (Valence)", "Marché régional moins profond", "Risque de vacance en cas de départ", "Prix au m² élevé pour la zone"],
+        recommendation: "GO",
+        rationale: "Le corridor rhodanien est l'un des axes logistiques les plus importants de France. L'actif neuf classe A et les baux fermes sécurisent l'investissement. Le rendement de 5.73% est attractif. Valence est secondaire mais bénéficie du flux Lyon-Marseille.",
+        hint: "Le corridor rhodanien est un axe logistique majeur en France. Un actif neuf classe A attire les meilleurs locataires. Les baux fermes 6 ans sécurisent les cash flows. Valence est secondaire mais stratégiquement positionnée."
+    },
+    {
+        name: "Hôtel 3 étoiles — La Rochelle",
+        type: "Hôtellerie",
+        description: "Hôtel 3* de 65 chambres (2 800 m²) en bord de mer à La Rochelle. Exploité en propre par un indépendant. Pas de bail, murs et fonds proposés ensemble. Forte saisonnalité.",
+        surface: 2800, loyerNet: 350000, tof: 100,
+        askingPrice: 5500000, askingYield: 6.36,
+        strengths: ["Emplacement bord de mer attractif", "Prix d'entrée raisonnable", "Rendement correct", "La Rochelle : destination touristique majeure"],
+        weaknesses: ["Pas de bail commercial (exploitation directe)", "Forte saisonnalité (4 mois haute saison)", "Exploitant indépendant (pas de chaîne)", "Travaux de rénovation probables", "Changement de métier (gestion hôtelière)", "Risque météo et tourisme"],
+        recommendation: "NO-GO",
+        rationale: "Sans bail commercial, l'investisseur doit exploiter l'hôtel lui-même ou trouver un preneur. La forte saisonnalité (été uniquement) et l'absence de chaîne hôtelière rendent les revenus incertains. C'est un changement de métier par rapport à l'investissement immobilier pur. Le risque opérationnel est trop élevé.",
+        hint: "L'absence de bail commercial change fondamentalement la nature de l'investissement : vous achetez un fonds de commerce, pas un actif immobilier locatif. La saisonnalité forte et l'exploitation directe ajoutent du risque opérationnel."
+    },
+    {
+        name: "Immeuble de bureaux flex — Lille",
+        type: "Bureaux value-add",
+        description: "Immeuble de bureaux de 7 000 m² à Euralille. Construit en 2005, DPE C. Occupé à 75% par 4 locataires PME/ETI. Loyers sous le marché de 15%.",
+        surface: 7000, loyerNet: 1155000, tof: 75,
+        askingPrice: 16000000, askingYield: 7.22,
+        strengths: ["Euralille : emplacement prime de Lille", "Réversion locative positive (+15%)", "Rendement attractif (7.22%)", "DPE C correct", "Potentiel d'amélioration du TOF"],
+        weaknesses: ["TOF de 75% à améliorer", "Locataires PME (risque de défaut)", "Travaux de modernisation nécessaires", "Marché lillois compétitif", "Pas de certif environnementale premium"],
+        recommendation: "GO",
+        rationale: "L'emplacement Euralille est prime pour Lille et la réversion positive de 15% offre un vrai upside. Le TOF de 75% laisse un potentiel d'amélioration significatif. Le DPE C est convenable. C'est un vrai profil value-add avec un rendement d'entrée attractif.",
+        hint: "La réversion positive signifie que les loyers actuels sont 15% sous le marché — potentiel de hausse à la relocation. Le TOF de 75% est un défi mais aussi une opportunité (potentiel de remplissage). Euralille est le meilleur emplacement de Lille."
     }
 ];
 
@@ -547,5 +829,159 @@ var RE_QUIZ_QUESTIONS = [
         ],
         correct: 3,
         explanation: "La réversion locative = ERV - Loyer en place. Positive si le loyer de marché est supérieur au loyer en place (potentiel de hausse à la relocation). Négative si le loyer en place est au-dessus du marché (risque de baisse). C'est un indicateur clé de la valorisation future."
+    },
+    {
+        question: "Qu'est-ce que le DSCR (Debt Service Coverage Ratio) en financement immobilier ?",
+        options: [
+            "Le ratio entre les revenus locatifs nets et le service de la dette (intérêts + remboursement)",
+            "Le taux de défaut des crédits immobiliers",
+            "Le ratio dette / surface",
+            "Le coût de la dette rapporté au chiffre d'affaires"
+        ],
+        correct: 0,
+        explanation: "Le DSCR = Revenus locatifs nets / Service annuel de la dette. Un DSCR de 1.3x signifie que les revenus couvrent 1,3 fois la dette. Les banques exigent généralement un DSCR minimum de 1.2x-1.4x. En dessous de 1x, l'emprunteur ne peut pas rembourser sa dette."
+    },
+    {
+        question: "Qu'est-ce qu'une franchise de loyer en immobilier commercial ?",
+        options: [
+            "Une licence d'exploitation d'une enseigne",
+            "Un impôt sur les loyers perçus",
+            "Une période pendant laquelle le locataire ne paie pas de loyer, accordée lors de la prise à bail",
+            "La part du loyer reversée au franchiseur"
+        ],
+        correct: 2,
+        explanation: "La franchise de loyer est une période (souvent 3 à 12 mois) où le locataire est exempté de loyer. Elle est négociée lors de la signature du bail pour compenser les travaux d'aménagement. Pour l'investisseur, elle réduit le rendement effectif de la première année."
+    },
+    {
+        question: "Qu'est-ce que le taux de vacance structurelle ?",
+        options: [
+            "Le taux de vacance incompressible d'un marché, lié à la friction (déménagements, travaux, commercialisation)",
+            "Le pourcentage de bureaux fermés le week-end",
+            "Le nombre de jours fériés par an",
+            "Le taux de rotation des locataires"
+        ],
+        correct: 0,
+        explanation: "La vacance structurelle (ou frictionnelle) est le taux de vacance minimum incompressible, même dans un marché sain. Pour les bureaux, elle est généralement de 4-7%. Au-dessous, le marché est en surchauffe. Au-dessus de 10%, il y a suroffre."
+    },
+    {
+        question: "Qu'est-ce que la SIIC (Société d'Investissement Immobilier Cotée) ?",
+        options: [
+            "Le régime fiscal français des foncières cotées, équivalent du REIT, avec obligation de distribuer 85-100% des bénéfices",
+            "Un syndicat d'investisseurs immobiliers",
+            "Un certificat d'investissement en immobilier commercial",
+            "Une société de conseil en investissement immobilier"
+        ],
+        correct: 0,
+        explanation: "Les SIIC sont les foncières cotées françaises (Unibail, Gecina, Klépierre...). Elles bénéficient d'une exonération d'IS en contrepartie d'une obligation de distribution massive : 95% des revenus locatifs et 70% des plus-values. Équivalent français des REITs."
+    },
+    {
+        question: "Qu'est-ce que le concept de 'highest and best use' en évaluation immobilière ?",
+        options: [
+            "L'utilisation du dernier étage d'un immeuble",
+            "L'usage le plus intensif possible d'un terrain",
+            "L'utilisation la plus rentable et légalement autorisée d'un bien, maximisant sa valeur",
+            "L'optimisation énergétique d'un bâtiment"
+        ],
+        correct: 2,
+        explanation: "Le 'highest and best use' est un principe d'évaluation qui détermine l'utilisation la plus profitable d'un bien, à condition qu'elle soit physiquement possible, légalement autorisée et financièrement viable. Par exemple, un parking de centre-ville pourrait valoir plus en immeuble de logements."
+    },
+    {
+        question: "Qu'est-ce que le ICR (Interest Coverage Ratio) en financement immobilier ?",
+        options: [
+            "Le ratio revenus locatifs / intérêts de la dette uniquement",
+            "Le taux d'intérêt intercalaire de construction",
+            "L'indice de couverture des risques",
+            "Le ratio entre le cap rate et le taux d'emprunt"
+        ],
+        correct: 0,
+        explanation: "L'ICR = Revenus locatifs nets / Intérêts annuels. C'est un ratio de couverture plus simple que le DSCR car il ne prend en compte que les intérêts (pas le remboursement du capital). Les banques exigent typiquement un ICR > 2x."
+    },
+    {
+        question: "Qu'est-ce que la 'green premium' en immobilier ?",
+        options: [
+            "Une taxe sur les bâtiments non certifiés",
+            "Le surloyer ou la survaleur obtenue par un actif certifié environnementalement par rapport à un actif non certifié",
+            "La prime d'assurance verte",
+            "Le coût additionnel de la construction verte"
+        ],
+        correct: 1,
+        explanation: "La green premium est le surplus de valeur (ou de loyer) qu'un actif certifié (BREEAM, HQE, LEED) obtient par rapport à un actif comparable non certifié. Elle peut représenter 5-15% de plus-value. Inversement, la 'brown discount' est la décote des actifs non certifiés."
+    },
+    {
+        question: "Qu'est-ce qu'un sale-and-leaseback en immobilier ?",
+        options: [
+            "La vente d'un bien avec une clause de rachat",
+            "Quand une entreprise vend son immobilier à un investisseur et le reprend immédiatement en location",
+            "La location d'un bien avant sa construction",
+            "Le remboursement anticipé d'un crédit immobilier"
+        ],
+        correct: 1,
+        explanation: "Le sale-and-leaseback est une opération où une entreprise vend ses murs à un investisseur et signe simultanément un bail pour continuer à occuper les locaux. L'entreprise libère du capital (bilan allégé) et l'investisseur sécurise un locataire et un bail long. Courant en logistique et santé."
+    },
+    {
+        question: "Qu'est-ce que le rendement 'prime' pour les bureaux à Paris QCA en 2024-2025 ?",
+        options: [
+            "Environ 8-9%",
+            "Environ 5-6%",
+            "Environ 3-3.5%",
+            "Environ 1-2%"
+        ],
+        correct: 2,
+        explanation: "Le rendement prime (cap rate) pour les meilleurs bureaux du QCA de Paris tourne autour de 3-3.5% en 2024-2025, après la décompression post-hausse des taux. C'est le taux plancher du marché français. Lyon prime est à 4.5-5%, et les régions à 5.5-6.5%."
+    },
+    {
+        question: "Qu'est-ce que le 'cap rate spread' entre bureaux et logistique a fait depuis 2020 ?",
+        options: [
+            "Le spread s'est élargi (logistique devenue moins chère)",
+            "Le spread s'est compressé (logistique devenue aussi chère que les bureaux)",
+            "Aucun changement significatif",
+            "La logistique a dépassé les bureaux en prix"
+        ],
+        correct: 1,
+        explanation: "Depuis 2020, les cap rates logistiques se sont fortement compressés (de 5-6% à 4-4.5% en IDF) grâce au boom du e-commerce, tandis que les bureaux subissaient une décompression (télétravail). Le spread entre les deux s'est considérablement réduit, un phénomène historique."
+    },
+    {
+        question: "Qu'est-ce que le NOI (Net Operating Income) en immobilier ?",
+        options: [
+            "Le bénéfice net après impôts",
+            "Le revenu locatif brut moins toutes les charges d'exploitation (hors dette)",
+            "Le chiffre d'affaires total de l'immeuble",
+            "Le loyer net de TVA"
+        ],
+        correct: 1,
+        explanation: "Le NOI = Revenus locatifs bruts - Vacance - Charges d'exploitation (entretien, gestion, assurance, taxes foncières). Il exclut le service de la dette et l'amortissement. C'est le numérateur du cap rate : Cap Rate = NOI / Valeur de l'actif."
+    },
+    {
+        question: "Qu'est-ce que le 'covenant' de dette en financement immobilier ?",
+        options: [
+            "Un contrat d'assurance obligatoire",
+            "Des engagements financiers (ratios à respecter) que l'emprunteur doit maintenir sous peine de défaut technique",
+            "Le taux d'intérêt contractuel",
+            "La garantie hypothécaire"
+        ],
+        correct: 1,
+        explanation: "Les covenants sont des clauses financières du contrat de prêt : LTV max, DSCR min, ICR min. Si l'emprunteur les enfreint (ex: LTV dépasse 65%), c'est un défaut technique (covenant breach) qui peut déclencher un remboursement anticipé ou une renégociation forcée."
+    },
+    {
+        question: "Qu'est-ce que le 'cap rate de sortie' dans un business plan immobilier ?",
+        options: [
+            "Le taux de capitalisation auquel on prévoit de revendre l'actif à la fin de la période de détention",
+            "Le cap rate le plus bas du marché",
+            "Le rendement garanti à la sortie",
+            "Le cap rate moins les frais de transaction"
+        ],
+        correct: 0,
+        explanation: "Le cap rate de sortie (exit cap rate) est le taux de capitalisation hypothétique appliqué pour estimer le prix de revente futur d'un actif. Il est généralement supérieur au cap rate d'entrée de 25-75 bps pour refléter le vieillissement de l'actif. C'est un paramètre crucial du DCF immobilier."
+    },
+    {
+        question: "Qu'est-ce que le 'wault' (Weighted Average Unexpired Lease Term) ?",
+        options: [
+            "La durée résiduelle moyenne pondérée des baux d'un immeuble ou portefeuille",
+            "Le temps de construction moyen",
+            "La durée de validité d'un permis de construire",
+            "Le délai moyen de commercialisation d'un actif"
+        ],
+        correct: 0,
+        explanation: "Le WAULT est la moyenne pondérée (par loyer) des durées résiduelles de tous les baux. Un WAULT élevé (>5 ans) sécurise les cash flows. Un WAULT faible (<3 ans) indique un risque de vacance proche. C'est un indicateur clé pour les investisseurs institutionnels."
     }
 ];

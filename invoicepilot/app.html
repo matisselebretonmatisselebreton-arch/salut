@@ -331,6 +331,27 @@
                             <label>Mentions légales supplémentaires</label>
                             <textarea id="prof-mentions" rows="3" placeholder="Ex: TVA non applicable, art. 293 B du CGI"></textarea>
                         </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Coordonnées bancaires (RIB)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Titulaire du compte</label>
+                                <input type="text" id="prof-bank-holder" placeholder="Nom du titulaire">
+                            </div>
+                            <div class="form-group">
+                                <label>Banque</label>
+                                <input type="text" id="prof-bank-name" placeholder="Ex: Crédit Mutuel">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>IBAN</label>
+                                <input type="text" id="prof-iban" placeholder="FR76 1234 5678 9012 3456 7890 123">
+                            </div>
+                            <div class="form-group">
+                                <label>BIC / SWIFT</label>
+                                <input type="text" id="prof-bic" placeholder="CMCIFRPP">
+                            </div>
+                        </div>
                         <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Statut & cotisations URSSAF</h3>
                         <div class="form-row">
                             <div class="form-group">
@@ -402,8 +423,7 @@
                     </div>
                     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                         <div id="acct-range" class="range-controls"></div>
-                        <button class="btn btn-outline btn-sm" onclick="exportAccounting()">Export CSV</button>
-                        <button class="btn btn-outline btn-sm" onclick="exportAccountingFull()">Export complet</button>
+                        <button class="btn btn-outline btn-sm" onclick="openExportModal()">Export comptable</button>
                     </div>
                 </div>
                 <div id="accounting-pro-gate" style="display:none"></div>
@@ -901,23 +921,68 @@
                 <div>
                     <div class="stat-label" id="rev-total-label">CA</div>
                     <div class="stat-value" id="rev-total" style="font-size:1.8rem">0 €</div>
+                    <div id="rev-compare" style="font-size:.82rem;color:var(--text-muted);margin-top:2px"></div>
                 </div>
-                <div style="display:flex;gap:10px;align-items:center">
-                    <select id="rev-mode" onchange="renderRevenueChartFromUI()" style="padding:8px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                    <select id="rev-mode" onchange="renderRevenueChartFromUI()" class="range-sel">
                         <option value="month">Par mois</option>
+                        <option value="quarter">Par trimestre</option>
                         <option value="year">Par année</option>
                     </select>
-                    <select id="rev-year" onchange="renderRevenueChartFromUI()" style="padding:8px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem"></select>
+                    <select id="rev-year" onchange="renderRevenueChartFromUI()" class="range-sel"></select>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text-muted);cursor:pointer">
+                        <input type="checkbox" id="rev-compare-toggle" onchange="renderRevenueChartFromUI()"> N-1
+                    </label>
                 </div>
             </div>
-            <div id="rev-chart" style="min-height:240px"></div>
+            <div id="rev-chart" style="min-height:280px;position:relative"></div>
+            <div id="rev-chart-tooltip" class="chart-tooltip" style="display:none"></div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-revenue')">Fermer</button>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Export comptable -->
+    <div class="modal-overlay" id="modal-export">
+        <div class="modal">
+            <h2>Exporter les documents comptables</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Sélectionnez les documents à inclure dans l'export (format Excel .xlsx)</p>
+            <div class="export-options">
+                <label class="export-opt"><input type="checkbox" value="income" checked> Compte de résultat</label>
+                <label class="export-opt"><input type="checkbox" value="balance" checked> Bilan simplifié</label>
+                <label class="export-opt"><input type="checkbox" value="sales"> Journal des ventes</label>
+                <label class="export-opt"><input type="checkbox" value="purchases"> Journal des achats</label>
+                <label class="export-opt"><input type="checkbox" value="aged"> Balance âgée clients</label>
+                <label class="export-opt"><input type="checkbox" value="vat"> Détail TVA</label>
+                <label class="export-opt"><input type="checkbox" value="urssaf"> Récapitulatif URSSAF</label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-export')">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="doExportXLSX()">Télécharger .xlsx</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Upload devis signé -->
+    <div class="modal-overlay" id="modal-signed-quote">
+        <div class="modal">
+            <h2>Devis signé requis</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Pour convertir ce devis en facture, veuillez joindre le devis signé par le client.</p>
+            <input type="hidden" id="sq-quote-id">
+            <div class="form-group">
+                <label>Document signé (PDF ou image)</label>
+                <input type="file" id="sq-file" accept=".pdf,image/jpeg,image/png,image/webp" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-signed-quote')">Annuler</button>
+                <button type="button" class="btn btn-primary" id="sq-submit" onclick="submitSignedAndConvert()">Convertir en facture</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
 </body>

@@ -362,23 +362,44 @@
         return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none">'
             + '<polyline fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="' + pts + '"/></svg>';
     }
-    function barChartSVG(values, labels) {
-        var w = 640, h = 240, pad = 30, n = values.length;
-        var max = Math.max.apply(null, values.concat([1]));
-        var bw = (w - pad * 2) / n * 0.62;
+    function barChartSVG(values, labels, prevValues) {
+        var w = 640, h = 280, pad = 36, topPad = 24, n = values.length;
+        var allVals = values.concat(prevValues || []);
+        var max = Math.max.apply(null, allVals.concat([1]));
+        var bw = (w - pad * 2) / n * (prevValues ? 0.4 : 0.55);
         var gap = (w - pad * 2) / n;
-        var bars = "", lbls = "";
+        var bars = "", lbls = "", valLabels = "";
+        var gridLines = "";
+        for (var g = 0; g <= 4; g++) {
+            var gy = h - pad - (g / 4) * (h - pad - topPad);
+            var gv = max * g / 4;
+            gridLines += '<line x1="' + pad + '" y1="' + gy.toFixed(1) + '" x2="' + (w - pad) + '" y2="' + gy.toFixed(1) + '" stroke="#E2E8F0" stroke-dasharray="4,3"/>';
+            gridLines += '<text x="' + (pad - 4) + '" y="' + (gy + 3) + '" text-anchor="end" font-size="9" fill="#94A3B8">' + formatCompact(gv) + '</text>';
+        }
         values.forEach(function (v, i) {
-            var bh = max > 0 ? (v / max) * (h - pad * 2) : 0;
-            var x = pad + i * gap + (gap - bw) / 2;
+            var bh = max > 0 ? (v / max) * (h - pad - topPad) : 0;
+            var xOffset = prevValues ? gap * 0.08 : 0;
+            var x = pad + i * gap + (gap - bw * (prevValues ? 2.2 : 1)) / 2 + xOffset;
             var y = h - pad - bh;
-            bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="3" fill="url(#barGrad)"><title>' + esc(labels[i]) + ' : ' + formatMoney(v) + '</title></rect>';
-            lbls += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (h - pad + 14) + '" text-anchor="middle" font-size="10" fill="#94A3B8">' + esc(labels[i]) + '</text>';
+            bars += '<rect class="chart-bar" data-idx="' + i + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(bh, 0).toFixed(1) + '" rx="3" fill="url(#barGrad)" style="cursor:pointer"/>';
+            if (v > 0) {
+                valLabels += '<text class="bar-label" x="' + (x + bw / 2).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '">' + formatCompact(v) + '</text>';
+            }
+            if (prevValues) {
+                var pbh = max > 0 ? ((prevValues[i] || 0) / max) * (h - pad - topPad) : 0;
+                var px = x + bw * 1.15;
+                var py = h - pad - pbh;
+                bars += '<rect x="' + px.toFixed(1) + '" y="' + py.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(pbh, 0).toFixed(1) + '" rx="3" fill="#CBD5E1" opacity=".6"/>';
+            }
+            lbls += '<text x="' + (pad + i * gap + gap / 2).toFixed(1) + '" y="' + (h - pad + 16) + '" text-anchor="middle" font-size="10" fill="#94A3B8">' + esc(labels[i]) + '</text>';
         });
-        return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" preserveAspectRatio="xMidYMid meet">'
+        return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" preserveAspectRatio="xMidYMid meet" id="rev-svg">'
             + '<defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366F1"/><stop offset="100%" stop-color="#A5B4FC"/></linearGradient></defs>'
-            + '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#E2E8F0"/>'
-            + bars + lbls + '</svg>';
+            + gridLines + bars + valLabels + lbls + '</svg>';
+    }
+    function formatCompact(v) {
+        if (v >= 1000) return (v / 1000).toFixed(v >= 10000 ? 0 : 1) + "k";
+        return v === 0 ? "0" : v.toFixed(0);
     }
 
     function openRevenueModal() {
@@ -396,30 +417,78 @@
         openModal("modal-revenue");
     }
     window.renderRevenueChartFromUI = function () { renderRevenueChart(); };
+    function quarterlyRevenueForYear(year) {
+        var monthly = monthlyRevenueForYear(year);
+        return [
+            monthly[0] + monthly[1] + monthly[2],
+            monthly[3] + monthly[4] + monthly[5],
+            monthly[6] + monthly[7] + monthly[8],
+            monthly[9] + monthly[10] + monthly[11]
+        ];
+    }
     function renderRevenueChart() {
         var mode = document.getElementById("rev-mode").value;
+        var showN1 = document.getElementById("rev-compare-toggle").checked;
         document.getElementById("rev-year").style.display = mode === "year" ? "none" : "";
         var container = document.getElementById("rev-chart");
         var totalEl = document.getElementById("rev-total");
         var labelEl = document.getElementById("rev-total-label");
+        var compareEl = document.getElementById("rev-compare");
+        var labels, data, prevData = null, totalCA, prevTotalCA = 0;
+
         if (mode === "year") {
-            // Revenu par année (5 dernières années).
-            var years = [], vals = [];
+            labels = []; data = [];
             var cy = new Date().getFullYear();
             for (var y = cy - 4; y <= cy; y++) {
-                years.push(String(y));
-                vals.push(monthlyRevenueForYear(y).reduce(function (s, v) { return s + v; }, 0));
+                labels.push(String(y));
+                data.push(monthlyRevenueForYear(y).reduce(function (s, v) { return s + v; }, 0));
             }
-            container.innerHTML = barChartSVG(vals, years);
-            totalEl.textContent = formatMoney(vals[vals.length - 1]);
+            totalCA = data[data.length - 1];
             labelEl.textContent = "CA " + cy;
+        } else if (mode === "quarter") {
+            var year = document.getElementById("rev-year").value || String(new Date().getFullYear());
+            labels = ["T1", "T2", "T3", "T4"];
+            data = quarterlyRevenueForYear(year);
+            if (showN1) prevData = quarterlyRevenueForYear(String(Number(year) - 1));
+            totalCA = data.reduce(function (s, v) { return s + v; }, 0);
+            if (prevData) prevTotalCA = prevData.reduce(function (s, v) { return s + v; }, 0);
+            labelEl.textContent = "CA " + year;
         } else {
             var year = document.getElementById("rev-year").value || String(new Date().getFullYear());
-            var months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
-            var data = monthlyRevenueForYear(year);
-            container.innerHTML = barChartSVG(data, months);
-            totalEl.textContent = formatMoney(data.reduce(function (s, v) { return s + v; }, 0));
+            labels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+            data = monthlyRevenueForYear(year);
+            if (showN1) prevData = monthlyRevenueForYear(String(Number(year) - 1));
+            totalCA = data.reduce(function (s, v) { return s + v; }, 0);
+            if (prevData) prevTotalCA = prevData.reduce(function (s, v) { return s + v; }, 0);
             labelEl.textContent = "CA " + year;
+        }
+        totalEl.textContent = formatMoney(totalCA);
+        if (showN1 && prevTotalCA > 0 && mode !== "year") {
+            var delta = Math.round((totalCA - prevTotalCA) / prevTotalCA * 100);
+            compareEl.innerHTML = '<span style="color:' + (delta >= 0 ? "var(--success)" : "var(--danger)") + ';font-weight:700">'
+                + (delta >= 0 ? "+" : "") + delta + '%</span> vs N-1 (' + formatMoney(prevTotalCA) + ')';
+        } else {
+            compareEl.textContent = "";
+        }
+
+        container.innerHTML = barChartSVG(data, labels, showN1 ? prevData : null);
+
+        // Tooltip interactif
+        var svg = container.querySelector("svg");
+        var tooltip = document.getElementById("rev-chart-tooltip");
+        if (svg && tooltip) {
+            svg.addEventListener("mousemove", function (e) {
+                var bar = e.target.closest(".chart-bar");
+                if (!bar) { tooltip.style.display = "none"; return; }
+                var idx = parseInt(bar.getAttribute("data-idx"));
+                var rect = container.getBoundingClientRect();
+                tooltip.innerHTML = '<strong>' + labels[idx] + '</strong><br>' + formatMoney(data[idx])
+                    + (prevData ? '<br><span style="opacity:.7">N-1 : ' + formatMoney(prevData[idx] || 0) + '</span>' : '');
+                tooltip.style.display = "block";
+                tooltip.style.left = (e.clientX - rect.left) + "px";
+                tooltip.style.top = (e.clientY - rect.top - 12) + "px";
+            });
+            svg.addEventListener("mouseleave", function () { tooltip.style.display = "none"; });
         }
     }
 
@@ -814,6 +883,11 @@
             + 'table.totals td{padding:6px 10px;}'
             + 'table.totals .grand td{font-weight:800;font-size:15px;border-top:2px solid #1E293B;}'
             + '.mentions{margin-top:40px;padding-top:16px;border-top:1px solid #E2E8F0;color:#94A3B8;font-size:11px;}'
+            + '.bank{margin-top:24px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:11px;color:#475569;}'
+            + '.bank strong{display:block;font-size:12px;color:#1E293B;margin-bottom:4px;}'
+            + '.bank .row{display:flex;gap:24px;flex-wrap:wrap;}'
+            + '.bank .field{}'
+            + '.bank .label{color:#94A3B8;font-size:10px;text-transform:uppercase;letter-spacing:.03em;}'
             + '.footer{margin-top:8px;color:#94A3B8;font-size:11px;}'
             + '@media print{body{padding:0;}}'
             + '</style></head><body>'
@@ -839,8 +913,18 @@
             + '<tr><td>Sous-total HT</td><td class="r">' + formatMoney(Number(doc.subtotal_ht)) + '</td></tr>'
             + tvaLine
             + '<tr class="grand"><td>Total TTC</td><td class="r">' + formatMoney(Number(doc.total_ttc)) + '</td></tr>'
-            + '</table>'
-            + mentions
+            + '</table>';
+
+        if (p.iban) {
+            html += '<div class="bank"><strong>Règlement par virement</strong><div class="row">'
+                + (p.bank_holder ? '<div class="field"><div class="label">Titulaire</div>' + esc(p.bank_holder) + '</div>' : '')
+                + (p.bank_name ? '<div class="field"><div class="label">Banque</div>' + esc(p.bank_name) + '</div>' : '')
+                + '<div class="field"><div class="label">IBAN</div>' + esc(p.iban) + '</div>'
+                + (p.bic ? '<div class="field"><div class="label">BIC</div>' + esc(p.bic) + '</div>' : '')
+                + '</div></div>';
+        }
+
+        html += mentions
             + '<p class="footer">' + esc(opts.footerNote) + '</p>'
             + '</body></html>';
 
@@ -953,6 +1037,9 @@
             }
             if (q.status === "invoiced") {
                 html += '<span style="color:var(--text-muted);font-size:.8rem">→ facture créée</span> ';
+                if (q.signed_document_url) {
+                    html += '<a href="#" class="receipt-link" onclick="viewSignedQuote(\'' + esc(q.signed_document_url) + '\');return false">Devis signé</a> ';
+                }
             }
             html += '<button class="btn btn-sm btn-outline" onclick="deleteQuote(\'' + q.id + '\')">Suppr.</button>';
             html += '</td></tr>';
@@ -976,39 +1063,64 @@
         renderQuotes();
     };
 
-    window.convertToInvoice = async function (id) {
+    window.convertToInvoice = function (id) {
         var q = state.quotes.find(function (x) { return x.id === id; });
         if (!q) return;
         if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
-        if (!confirm("Convertir ce devis en facture ?")) return;
+        document.getElementById("sq-quote-id").value = id;
+        document.getElementById("sq-file").value = "";
+        openModal("modal-signed-quote");
+    };
 
-        var today = new Date().toISOString().slice(0, 10);
-        var due = new Date(); due.setDate(due.getDate() + 30);
+    window.submitSignedAndConvert = async function () {
+        var id = document.getElementById("sq-quote-id").value;
+        var file = document.getElementById("sq-file").files[0];
+        if (!file) { alert("Veuillez joindre le devis signé."); return; }
+        var q = state.quotes.find(function (x) { return x.id === id; });
+        if (!q) return;
 
-        var invoicePayload = {
-            user_id: state.user.id,
-            number: nextInvoiceNumber(),
-            client_id: q.client_id,
-            date: today,
-            due_date: due.toISOString().slice(0, 10),
-            items: q.items,
-            subtotal_ht: q.subtotal_ht,
-            tva_rate: q.tva_rate,
-            tva_amount: q.tva_amount,
-            total_ttc: q.total_ttc,
-            status: "pending"
-        };
-        var insertRes = await sb.from("invoices").insert(invoicePayload).select().single();
-        if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
+        var btn = document.getElementById("sq-submit");
+        btn.disabled = true; btn.textContent = "Envoi en cours…";
 
-        var updateRes = await sb.from("quotes")
-            .update({ status: "invoiced", converted_invoice_id: insertRes.data.id })
-            .eq("id", id);
-        if (updateRes.error) { alert("Erreur : " + updateRes.error.message); return; }
+        try {
+            var ext = file.name.split(".").pop();
+            var path = state.user.id + "/devis-signe-" + q.number + "." + ext;
+            var uploadRes = await sb.storage.from("signed_quotes").upload(path, file, { upsert: true });
+            if (uploadRes.error) { alert("Erreur upload : " + uploadRes.error.message); return; }
+            var signedUrl = uploadRes.data.path;
 
-        await refreshData();
-        closeModal("modal-newdoc");
-        navigate("invoices");
+            var today = new Date().toISOString().slice(0, 10);
+            var due = new Date(); due.setDate(due.getDate() + 30);
+
+            var invoicePayload = {
+                user_id: state.user.id,
+                number: nextInvoiceNumber(),
+                client_id: q.client_id,
+                date: today,
+                due_date: due.toISOString().slice(0, 10),
+                items: q.items,
+                subtotal_ht: q.subtotal_ht,
+                tva_rate: q.tva_rate,
+                tva_amount: q.tva_amount,
+                total_ttc: q.total_ttc,
+                status: "pending"
+            };
+            var insertRes = await sb.from("invoices").insert(invoicePayload).select().single();
+            if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
+
+            await sb.from("quotes")
+                .update({ status: "invoiced", converted_invoice_id: insertRes.data.id, signed_document_url: signedUrl, signed_at: new Date().toISOString() })
+                .eq("id", id);
+
+            await refreshData();
+            closeModal("modal-signed-quote");
+            closeModal("modal-newdoc");
+            navigate("invoices");
+        } catch (err) {
+            alert("Erreur : " + err.message);
+        } finally {
+            btn.disabled = false; btn.textContent = "Convertir en facture";
+        }
     };
 
     window.downloadQuotePDF = function (id) {
@@ -1684,8 +1796,12 @@
         var rows = exp.length === 0
             ? '<div class="row"><span style="color:var(--text-muted)">Aucune dépense</span></div>'
             : exp.map(function (x) {
+                var receiptLink = "";
+                if (x.receipt_url) {
+                    receiptLink = ' <a href="#" class="receipt-link" onclick="viewReceipt(\'' + esc(x.receipt_url) + '\');return false">Justificatif</a>';
+                }
                 return '<div class="row"><span>' + formatDate(x.date) + ' — ' + esc(EXP_CAT_LABEL[x.category] || x.category)
-                    + (x.note ? ' <span style="color:var(--text-muted)">' + esc(x.note) + '</span>' : '') + '</span><span>' + formatMoney(Number(x.amount_ttc)) + '</span></div>';
+                    + (x.note ? ' <span style="color:var(--text-muted)">' + esc(x.note) + '</span>' : '') + receiptLink + '</span><span>' + formatMoney(Number(x.amount_ttc)) + '</span></div>';
             }).join("");
         document.getElementById("supplier-detail-body").innerHTML =
             '<div class="detail-section"><p style="color:var(--text-muted);font-size:.88rem">' + contact + '</p></div>'
@@ -1695,6 +1811,18 @@
             + '</div></div>'
             + '<div class="detail-section"><h3>Historique des achats</h3><div class="detail-list">' + rows + '</div></div>';
         openModal("modal-supplier-detail");
+    };
+
+    window.viewReceipt = async function (path) {
+        var res = await sb.storage.from("receipts").createSignedUrl(path, 3600);
+        if (res.error || !res.data) { alert("Impossible d'ouvrir le justificatif."); return; }
+        window.open(res.data.signedUrl, "_blank");
+    };
+
+    window.viewSignedQuote = async function (path) {
+        var res = await sb.storage.from("signed_quotes").createSignedUrl(path, 3600);
+        if (res.error || !res.data) { alert("Impossible d'ouvrir le document signé."); return; }
+        window.open(res.data.signedUrl, "_blank");
     };
 
     // --- Performance (analytics devis) ---
@@ -2315,82 +2443,222 @@
     };
     window.goProfile = function () { navigate("profile"); };
 
-    // Export comptable CSV (factures, avoirs, dépenses) de l'année sélectionnée.
-    window.exportAccounting = function () {
-        var b = rangeBounds(rangeState.accounting);
-        var tag = b.label.replace(/[^0-9A-Za-z]+/g, "-");
-        var rows = [["Type", "Date", "Numero", "Tiers", "HT", "TVA", "TTC", "Statut"]];
-        function csvCell(v) { var s = String(v == null ? "" : v); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
-        state.invoices.forEach(function (inv) {
-            if (!dateInBounds(inv.date, b)) return;
-            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
-            rows.push(["Facture", inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht).toFixed(2), Number(inv.tva_amount).toFixed(2), Number(inv.total_ttc).toFixed(2), invoiceStatusOf(inv)]);
-        });
-        state.creditNotes.forEach(function (cn) {
-            if (!dateInBounds(cn.date, b)) return;
-            var c = state.clients.find(function (x) { return x.id === cn.client_id; });
-            rows.push(["Avoir", cn.date, cn.number, c ? c.name : "", (-Number(cn.subtotal_ht)).toFixed(2), (-Number(cn.tva_amount)).toFixed(2), (-Number(cn.total_ttc)).toFixed(2), "avoir"]);
-        });
-        state.expenses.forEach(function (x) {
-            if (!dateInBounds(x.date, b)) return;
-            rows.push(["Depense", x.date, "", x.supplier || "", (-Number(x.amount_ht)).toFixed(2), (-Number(x.tva_amount)).toFixed(2), (-Number(x.amount_ttc)).toFixed(2), EXP_CAT_LABEL[x.category] || x.category]);
-        });
-        var csv = rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
-        var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url; a.download = "comptabilite-" + tag + ".csv";
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    // --- Export XLSX esthétique ---
+    window.openExportModal = function () {
+        if (!acctView) renderAccounting();
+        openModal("modal-export");
     };
 
-    // Export complet : écritures + synthèse (résultat, trésorerie, BFR, DSO, TVA).
-    window.exportAccountingFull = function () {
-        if (!acctView) { renderAccounting(); }
-        var v = acctView, b = v.bounds;
-        var tag = b.label.replace(/[^0-9A-Za-z]+/g, "-");
-        function csvCell(val) { var s = String(val == null ? "" : val); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
-        var rows = [["Type", "Date", "Numero", "Tiers", "HT", "TVA", "TTC", "Statut"]];
-        v.paidInvoices.concat(state.invoices.filter(function (i) { return !i.credit_note_id && i.status !== "paid" && dateInBounds(i.date, b); }))
-            .forEach(function (inv) {
-                var c = state.clients.find(function (x) { return x.id === inv.client_id; });
-                rows.push(["Facture", inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht).toFixed(2), Number(inv.tva_amount).toFixed(2), Number(inv.total_ttc).toFixed(2), invoiceStatusOf(inv)]);
-            });
-        v.credits.forEach(function (cn) {
-            var c = state.clients.find(function (x) { return x.id === cn.client_id; });
-            rows.push(["Avoir", cn.date, cn.number, c ? c.name : "", (-Number(cn.subtotal_ht)).toFixed(2), (-Number(cn.tva_amount)).toFixed(2), (-Number(cn.total_ttc)).toFixed(2), "avoir"]);
-        });
-        v.expenses.forEach(function (x) {
-            rows.push(["Depense", x.date, "", x.supplier || "", (-Number(x.amount_ht)).toFixed(2), (-Number(x.tva_amount)).toFixed(2), (-Number(x.amount_ttc)).toFixed(2), EXP_CAT_LABEL[x.category] || x.category]);
-        });
+    function xlsxHeader(ws, p, label) {
+        var name = p.name || "Mon Entreprise";
+        var info = [p.siret ? "SIRET : " + p.siret : "", p.tva_number || "", p.address || "", p.city || ""].filter(Boolean).join(" — ");
+        XLSX.utils.sheet_add_aoa(ws, [[name], [info], ["Période : " + label], []], { origin: "A1" });
+        ws["!merges"] = ws["!merges"] || [];
+        ws["!merges"].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } });
+        ws["!merges"].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 6 } });
+        return 4;
+    }
 
-        // Synthèse
-        var tvaCollected = v.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
-        var tvaDeductible = v.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
+    function applyColWidths(ws, widths) {
+        ws["!cols"] = widths.map(function (w) { return { wch: w }; });
+    }
+
+    function styleCurrency(ws, row, cols) {
+        cols.forEach(function (c) {
+            var addr = XLSX.utils.encode_cell({ r: row, c: c });
+            if (ws[addr]) ws[addr].z = '#,##0.00 €';
+        });
+    }
+
+    function buildIncomeSheet(v, p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var r = xlsxHeader(ws, p, v.bounds.label);
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["COMPTE DE RÉSULTAT"],
+            [],
+            ["Poste", "Montant HT"],
+            ["Produits d'exploitation (factures encaissées)", v.productsHT],
+            [],
+            ["Charges d'exploitation", ""],
+        ], { origin: "A" + (r + 1) });
+        r += 6;
+        var catTotals = {};
+        v.expenses.forEach(function (x) {
+            var cat = EXP_CAT_LABEL[x.category] || x.category;
+            catTotals[cat] = (catTotals[cat] || 0) + Number(x.amount_ht);
+        });
+        Object.keys(catTotals).forEach(function (cat) {
+            r++;
+            XLSX.utils.sheet_add_aoa(ws, [["  " + cat, catTotals[cat]]], { origin: "A" + (r + 1) });
+        });
+        r += 2;
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["Total charges", v.chargesHT],
+            [],
+            ["RÉSULTAT NET", v.result]
+        ], { origin: "A" + (r + 1) });
+        applyColWidths(ws, [42, 18]);
+        return ws;
+    }
+
+    function buildBalanceSheet(v, p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var r = xlsxHeader(ws, p, v.bounds.label);
         var cashIn = v.paidInvoices.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0) - v.credits.reduce(function (s, cn) { return s + Number(cn.total_ttc); }, 0);
         var cashOut = v.expenses.reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
         var outstanding = v.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
-        var dsoDays = 0, dsoCount = 0;
-        v.paidInvoices.forEach(function (inv) { if (inv.paid_at) { var d = (new Date(inv.paid_at) - new Date(inv.date)) / 86400000; if (d >= 0) { dsoDays += d; dsoCount++; } } });
-        rows.push([], ["SYNTHESE", b.label]);
-        rows.push(["Produits encaisses (HT)", v.productsHT.toFixed(2)]);
-        rows.push(["Charges (HT)", v.chargesHT.toFixed(2)]);
-        rows.push(["Resultat net (HT)", v.result.toFixed(2)]);
-        rows.push(["Tresorerie nette (TTC)", (cashIn - cashOut).toFixed(2)]);
-        rows.push(["Creances clients (TTC)", outstanding.toFixed(2)]);
-        rows.push(["BFR (TTC)", outstanding.toFixed(2)]);
-        rows.push(["DSO (jours)", dsoCount ? Math.round(dsoDays / dsoCount) : "n/d"]);
-        rows.push(["TVA collectee", tvaCollected.toFixed(2)]);
-        rows.push(["TVA deductible", tvaDeductible.toFixed(2)]);
-        rows.push(["TVA a reverser", (tvaCollected - tvaDeductible).toFixed(2)]);
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["BILAN SIMPLIFIÉ"],
+            [],
+            ["ACTIF", "", "PASSIF", ""],
+            ["Trésorerie nette", cashIn - cashOut, "Capitaux propres", v.result],
+            ["Créances clients", outstanding, "", ""],
+            [],
+            ["Total actif", cashIn - cashOut + outstanding, "Total passif", v.result]
+        ], { origin: "A" + (r + 1) });
+        applyColWidths(ws, [24, 18, 24, 18]);
+        return ws;
+    }
 
-        var csv = rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
-        var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url; a.download = "comptabilite-complet-" + tag + ".csv";
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+    function buildSalesJournal(v, p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var b = v.bounds;
+        var r = xlsxHeader(ws, p, b.label);
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["JOURNAL DES VENTES"],
+            [],
+            ["Date", "N° Facture", "Client", "HT", "TVA", "TTC", "Statut"]
+        ], { origin: "A" + (r + 1) });
+        r += 3;
+        var allInv = state.invoices.filter(function (i) { return !i.credit_note_id && dateInBounds(i.date, b); })
+            .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+        allInv.forEach(function (inv) {
+            r++;
+            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+            XLSX.utils.sheet_add_aoa(ws, [[inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht), Number(inv.tva_amount), Number(inv.total_ttc), invoiceStatusOf(inv)]], { origin: "A" + (r + 1) });
+        });
+        r += 2;
+        var totHT = allInv.reduce(function (s, i) { return s + Number(i.subtotal_ht); }, 0);
+        var totTVA = allInv.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
+        var totTTC = allInv.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
+        XLSX.utils.sheet_add_aoa(ws, [["", "", "TOTAL", totHT, totTVA, totTTC, ""]], { origin: "A" + (r + 1) });
+        applyColWidths(ws, [12, 16, 28, 14, 14, 14, 12]);
+        return ws;
+    }
+
+    function buildPurchaseJournal(v, p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var r = xlsxHeader(ws, p, v.bounds.label);
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["JOURNAL DES ACHATS"],
+            [],
+            ["Date", "Fournisseur", "Catégorie", "HT", "TVA", "TTC", "Note"]
+        ], { origin: "A" + (r + 1) });
+        r += 3;
+        var sorted = v.expenses.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+        sorted.forEach(function (x) {
+            r++;
+            XLSX.utils.sheet_add_aoa(ws, [[x.date, x.supplier || "", EXP_CAT_LABEL[x.category] || x.category, Number(x.amount_ht), Number(x.tva_amount), Number(x.amount_ttc), x.note || ""]], { origin: "A" + (r + 1) });
+        });
+        r += 2;
+        var tHT = sorted.reduce(function (s, x) { return s + Number(x.amount_ht); }, 0);
+        var tTVA = sorted.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
+        var tTTC = sorted.reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
+        XLSX.utils.sheet_add_aoa(ws, [["", "", "TOTAL", tHT, tTVA, tTTC, ""]], { origin: "A" + (r + 1) });
+        applyColWidths(ws, [12, 28, 22, 14, 14, 14, 22]);
+        return ws;
+    }
+
+    function buildAgedBalance(v, p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var r = xlsxHeader(ws, p, v.bounds.label);
+        var now = new Date();
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["BALANCE ÂGÉE CLIENTS"],
+            [],
+            ["Client", "N° Facture", "Date", "Échéance", "Montant TTC", "Retard (jours)"]
+        ], { origin: "A" + (r + 1) });
+        r += 3;
+        var pending = state.invoices.filter(function (i) {
+            return !i.credit_note_id && i.status !== "paid" && dateInBounds(i.date, v.bounds);
+        }).sort(function (a, b) { return a.due_date < b.due_date ? -1 : 1; });
+        pending.forEach(function (inv) {
+            r++;
+            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+            var days = Math.max(0, Math.round((now - new Date(inv.due_date)) / 86400000));
+            XLSX.utils.sheet_add_aoa(ws, [[c ? c.name : "", inv.number, inv.date, inv.due_date, Number(inv.total_ttc), days > 0 ? days : "À venir"]], { origin: "A" + (r + 1) });
+        });
+        r += 2;
+        var total = pending.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
+        XLSX.utils.sheet_add_aoa(ws, [["", "", "", "TOTAL", total, ""]], { origin: "A" + (r + 1) });
+        applyColWidths(ws, [28, 16, 12, 12, 16, 14]);
+        return ws;
+    }
+
+    function buildVatSheet(v, p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var r = xlsxHeader(ws, p, v.bounds.label);
+        var tvaCollected = v.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
+        var tvaDeductible = v.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["DÉTAIL TVA"],
+            [],
+            ["TVA collectée (sur ventes)", tvaCollected],
+            ["TVA déductible (sur achats)", tvaDeductible],
+            [],
+            ["TVA nette à reverser", tvaCollected - tvaDeductible],
+            [],
+            ["DÉTAIL TVA COLLECTÉE PAR FACTURE"],
+            [],
+            ["Date", "N° Facture", "Client", "Base HT", "TVA"]
+        ], { origin: "A" + (r + 1) });
+        r += 10;
+        v.paidInvoices.forEach(function (inv) {
+            r++;
+            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+            XLSX.utils.sheet_add_aoa(ws, [[inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht), Number(inv.tva_amount)]], { origin: "A" + (r + 1) });
+        });
+        applyColWidths(ws, [12, 16, 28, 14, 14]);
+        return ws;
+    }
+
+    function buildUrssafSheet(p) {
+        var ws = XLSX.utils.aoa_to_sheet([]);
+        var r = xlsxHeader(ws, p, "Historique");
+        XLSX.utils.sheet_add_aoa(ws, [
+            ["RÉCAPITULATIF URSSAF"],
+            [],
+            ["Période", "CA déclaré", "Cotisations", "Date déclaration", "Statut"]
+        ], { origin: "A" + (r + 1) });
+        r += 3;
+        state.urssaf.sort(function (a, b) { return a.period_start < b.period_start ? -1 : 1; }).forEach(function (d) {
+            r++;
+            XLSX.utils.sheet_add_aoa(ws, [[d.period_start + " → " + d.period_end, Number(d.revenue || 0), Number(d.contributions || 0), d.declared_at ? d.declared_at.slice(0, 10) : "", d.status || ""]], { origin: "A" + (r + 1) });
+        });
+        applyColWidths(ws, [28, 16, 16, 16, 12]);
+        return ws;
+    }
+
+    window.doExportXLSX = function () {
+        if (!acctView) renderAccounting();
+        var v = acctView, p = state.profile;
+        var checks = document.querySelectorAll("#modal-export .export-opt input:checked");
+        var selected = [];
+        checks.forEach(function (cb) { selected.push(cb.value); });
+        if (selected.length === 0) { alert("Sélectionnez au moins un document."); return; }
+
+        var wb = XLSX.utils.book_new();
+        if (selected.indexOf("income") !== -1) XLSX.utils.book_append_sheet(wb, buildIncomeSheet(v, p), "Compte de résultat");
+        if (selected.indexOf("balance") !== -1) XLSX.utils.book_append_sheet(wb, buildBalanceSheet(v, p), "Bilan");
+        if (selected.indexOf("sales") !== -1) XLSX.utils.book_append_sheet(wb, buildSalesJournal(v, p), "Journal ventes");
+        if (selected.indexOf("purchases") !== -1) XLSX.utils.book_append_sheet(wb, buildPurchaseJournal(v, p), "Journal achats");
+        if (selected.indexOf("aged") !== -1) XLSX.utils.book_append_sheet(wb, buildAgedBalance(v, p), "Balance âgée");
+        if (selected.indexOf("vat") !== -1) XLSX.utils.book_append_sheet(wb, buildVatSheet(v, p), "TVA");
+        if (selected.indexOf("urssaf") !== -1) XLSX.utils.book_append_sheet(wb, buildUrssafSheet(p), "URSSAF");
+
+        var tag = v.bounds.label.replace(/[^0-9A-Za-zÀ-ÿ]+/g, "-");
+        XLSX.writeFile(wb, "comptabilite-" + tag + ".xlsx");
+        closeModal("modal-export");
     };
 
     // --- Subscription ---
@@ -2464,6 +2732,10 @@
         document.getElementById("prof-activity-type").value = p.activity_type || "bnc";
         document.getElementById("prof-urssaf-period").value = p.urssaf_period || "quarterly";
         document.getElementById("prof-tax-option").value = p.tax_option || "bareme";
+        document.getElementById("prof-bank-holder").value = p.bank_holder || "";
+        document.getElementById("prof-bank-name").value = p.bank_name || "";
+        document.getElementById("prof-iban").value = p.iban || "";
+        document.getElementById("prof-bic").value = p.bic || "";
     }
 
     document.getElementById("profile-form").addEventListener("submit", async function (e) {
@@ -2483,6 +2755,10 @@
             activity_type: document.getElementById("prof-activity-type").value || null,
             urssaf_period: document.getElementById("prof-urssaf-period").value || null,
             tax_option: document.getElementById("prof-tax-option").value || null,
+            bank_holder: document.getElementById("prof-bank-holder").value.trim() || null,
+            bank_name: document.getElementById("prof-bank-name").value.trim() || null,
+            iban: document.getElementById("prof-iban").value.trim() || null,
+            bic: document.getElementById("prof-bic").value.trim() || null,
             updated_at: new Date().toISOString()
         };
         var res = await sb.from("profiles").upsert(payload).select().single();

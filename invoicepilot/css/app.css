@@ -411,3 +411,30 @@ th.sortable:hover { color: var(--primary); }
     .form-row { grid-template-columns: 1fr; }
     .detail-balance { grid-template-columns: 1fr; }
 }
+
+/* Chart tooltip */
+.chart-tooltip {
+    position: absolute; background: var(--text); color: #fff; padding: 8px 14px;
+    border-radius: 8px; font-size: .82rem; pointer-events: none; z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,.18); white-space: nowrap;
+    transform: translate(-50%, -100%); margin-top: -10px;
+}
+.chart-tooltip::after {
+    content: ""; position: absolute; left: 50%; bottom: -5px; transform: translateX(-50%);
+    border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid var(--text);
+}
+
+/* Bar value labels on chart */
+.bar-label { font-size: 10px; font-weight: 700; fill: var(--text); text-anchor: middle; }
+
+/* Export modal options */
+.export-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.export-opt { display: flex; align-items: center; gap: 10px; font-size: .9rem; cursor: pointer;
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    transition: all .15s; }
+.export-opt:hover { border-color: var(--primary); background: #F5F3FF; }
+.export-opt input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+
+/* Supplier receipt link */
+.receipt-link { color: var(--primary); font-weight: 600; text-decoration: none; font-size: .82rem; }
+.receipt-link:hover { text-decoration: underline; }

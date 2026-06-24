@@ -28,6 +28,7 @@ Trois tables, toutes protégées par Row Level Security (chaque utilisateur n'ac
 - `clients` — carnet de clients
 - `invoices` — factures (lignes stockées en JSONB)
 - `quotes` — devis, convertibles en facture (lignes en JSONB)
+- `recurring_invoices` — modèles de factures récurrentes (mensuel/trimestriel/annuel)
 
 ## Configuration
 
@@ -57,6 +58,14 @@ python3 -m http.server 8000
 - [x] Export PDF conforme (mentions légales)
 - [x] Persistance Supabase + RLS
 - [x] Devis → Facture (création, acceptation/refus, conversion, PDF)
-- [ ] Factures récurrentes
+- [x] Factures récurrentes (génération de rattrapage à l'ouverture de l'app)
 - [ ] Relances automatiques par email
 - [ ] Abonnement Pro via Stripe
+
+### Note sur les factures récurrentes
+
+Sans cron côté serveur, les factures dues sont générées « en rattrapage » à
+l'ouverture de l'application : chaque modèle actif dont la date d'émission est
+passée produit les factures manquantes, en respectant une numérotation
+continue par année. Pour une génération garantie sans ouverture de l'app, il
+faudra plus tard une Edge Function Supabase planifiée (pg_cron).

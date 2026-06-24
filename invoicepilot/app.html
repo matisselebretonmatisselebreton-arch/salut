@@ -53,6 +53,9 @@
                 <a href="#" data-page="invoices">
                     <span class="nav-icon">&#128196;</span> Factures
                 </a>
+                <a href="#" data-page="recurring">
+                    <span class="nav-icon">&#128260;</span> Récurrences
+                </a>
                 <a href="#" data-page="clients">
                     <span class="nav-icon">&#128101;</span> Clients
                 </a>
@@ -118,6 +121,17 @@
                 </div>
                 <div class="table-card">
                     <div id="invoices-list"></div>
+                </div>
+            </div>
+
+            <!-- Recurring -->
+            <div id="page-recurring" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Factures récurrentes</h1>
+                    <button class="btn btn-primary" id="btn-new-recurring">+ Nouvelle récurrence</button>
+                </div>
+                <div class="table-card">
+                    <div id="recurring-list"></div>
                 </div>
             </div>
 
@@ -292,6 +306,65 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="closeModal('modal-invoice')">Annuler</button>
                     <button type="submit" class="btn btn-primary">Créer la facture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New Recurring -->
+    <div class="modal-overlay" id="modal-recurring">
+        <div class="modal">
+            <h2>Nouvelle facture récurrente</h2>
+            <form id="recurring-form">
+                <div class="form-group">
+                    <label>Libellé (interne)</label>
+                    <input type="text" id="r-label" placeholder="Ex: Abonnement mensuel — Client X" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client</label>
+                        <select id="r-client" required>
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fréquence</label>
+                        <select id="r-frequency">
+                            <option value="monthly">Mensuelle</option>
+                            <option value="quarterly">Trimestrielle</option>
+                            <option value="yearly">Annuelle</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Première émission le</label>
+                    <input type="date" id="r-next-run" required>
+                </div>
+
+                <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes de la facture</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-desc">Description</th>
+                            <th class="col-qty">Qté</th>
+                            <th class="col-price">Prix unit. (€)</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="recurring-items"></tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-add-recurring-item">+ Ajouter une ligne</button>
+
+                <div class="invoice-totals">
+                    <div class="total-line"><span>Sous-total HT</span><span id="r-subtotal">0,00 €</span></div>
+                    <div class="total-line"><span>TVA (<span id="r-tva-rate-display">20</span>%)</span><span id="r-tva-amount">0,00 €</span></div>
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="r-total">0,00 €</span></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-recurring')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Activer la récurrence</button>
                 </div>
             </form>
         </div>

@@ -10,7 +10,8 @@
         profile: {},
         clients: [],
         invoices: [],
-        quotes: []
+        quotes: [],
+        recurring: []
     };
 
     // --- Screens ---
@@ -30,6 +31,7 @@
         document.getElementById("user-display-name").textContent =
             (state.user.user_metadata && state.user.user_metadata.name) || state.user.email;
         await refreshData();
+        await processRecurring();
         navigate("dashboard");
     }
 
@@ -38,12 +40,14 @@
             sb.from("profiles").select("*").eq("id", state.user.id).maybeSingle(),
             sb.from("clients").select("*").order("created_at", { ascending: false }),
             sb.from("invoices").select("*").order("date", { ascending: false }),
-            sb.from("quotes").select("*").order("date", { ascending: false })
+            sb.from("quotes").select("*").order("date", { ascending: false }),
+            sb.from("recurring_invoices").select("*").order("created_at", { ascending: false })
         ]);
         state.profile = results[0].data || {};
         state.clients = results[1].data || [];
         state.invoices = results[2].data || [];
         state.quotes = results[3].data || [];
+        state.recurring = results[4].data || [];
     }
 
     // --- Auth UI ---
@@ -131,6 +135,7 @@
         if (page === "dashboard") renderDashboard();
         if (page === "invoices") renderInvoices();
         if (page === "quotes") renderQuotes();
+        if (page === "recurring") renderRecurring();
         if (page === "clients") renderClients();
         if (page === "profile") loadProfile();
     }
@@ -496,6 +501,205 @@
         await refreshData();
         closeModal("modal-quote");
         navigate("quotes");
+    });
+
+    // --- Recurring invoices ---
+    var FREQ_LABEL = { monthly: "Mensuelle", quarterly: "Trimestrielle", yearly: "Annuelle" };
+
+    function advanceDate(isoDate, frequency) {
+        var d = new Date(isoDate + "T00:00:00");
+        if (frequency === "monthly") d.setMonth(d.getMonth() + 1);
+        else if (frequency === "quarterly") d.setMonth(d.getMonth() + 3);
+        else if (frequency === "yearly") d.setFullYear(d.getFullYear() + 1);
+        return d.toISOString().slice(0, 10);
+    }
+
+    // Catch-up generation: create any invoices due since the last run.
+    async function processRecurring() {
+        var today = new Date().toISOString().slice(0, 10);
+        var generatedCount = 0;
+        // Continuous per-year sequence, seeded from existing invoices and shared
+        // across templates so numbers never collide or skip within a year.
+        var seqByYear = {};
+        function nextNumber(year) {
+            if (seqByYear[year] === undefined) {
+                seqByYear[year] = state.invoices.filter(function (inv) {
+                    return inv.number && inv.number.startsWith(year + "-");
+                }).length;
+            }
+            seqByYear[year]++;
+            return year + "-" + String(seqByYear[year]).padStart(3, "0");
+        }
+
+        for (var i = 0; i < state.recurring.length; i++) {
+            var r = state.recurring[i];
+            if (!r.active) continue;
+
+            var nextRun = r.next_run;
+            var lastGenerated = r.last_generated;
+            var didGenerate = false;
+
+            // Generate one invoice per due period, catching up multiple periods.
+            while (nextRun <= today) {
+                var year = new Date(nextRun).getFullYear();
+                var number = nextNumber(year);
+
+                var subtotal = (r.items || []).reduce(function (s, it) { return s + Number(it.total); }, 0);
+                var rate = Number(r.tva_rate);
+                var tva = subtotal * rate / 100;
+                var due = advanceDate(nextRun, "monthly"); // 30-day-ish due window
+
+                var insertRes = await sb.from("invoices").insert({
+                    user_id: state.user.id,
+                    number: number,
+                    client_id: r.client_id,
+                    date: nextRun,
+                    due_date: due,
+                    items: r.items,
+                    subtotal_ht: subtotal,
+                    tva_rate: rate,
+                    tva_amount: tva,
+                    total_ttc: subtotal + tva,
+                    status: "pending"
+                }).select().single();
+
+                if (insertRes.error) break;
+                generatedCount++;
+                didGenerate = true;
+                lastGenerated = nextRun;
+                nextRun = advanceDate(nextRun, r.frequency);
+            }
+
+            if (didGenerate) {
+                await sb.from("recurring_invoices")
+                    .update({ next_run: nextRun, last_generated: lastGenerated })
+                    .eq("id", r.id);
+            }
+        }
+
+        if (generatedCount > 0) await refreshData();
+    }
+
+    function renderRecurring() {
+        var container = document.getElementById("recurring-list");
+        if (state.recurring.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128260;</div><p>Aucune facture récurrente</p><button class="btn btn-primary" onclick="document.getElementById(\'btn-new-recurring\').click()">Créer une récurrence</button></div>';
+            return;
+        }
+        var html = '<table><thead><tr><th>Libellé</th><th>Client</th><th>Fréquence</th><th>Prochaine émission</th><th>Montant TTC</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
+        state.recurring.forEach(function (r) {
+            var client = state.clients.find(function (c) { return c.id === r.client_id; });
+            var subtotal = (r.items || []).reduce(function (s, it) { return s + Number(it.total); }, 0);
+            var ttc = subtotal * (1 + Number(r.tva_rate) / 100);
+            html += '<tr>';
+            html += '<td><strong>' + esc(r.label) + '</strong></td>';
+            html += '<td>' + esc(client ? client.name : "—") + '</td>';
+            html += '<td>' + (FREQ_LABEL[r.frequency] || r.frequency) + '</td>';
+            html += '<td>' + (r.active ? formatDate(r.next_run) : "—") + '</td>';
+            html += '<td>' + formatMoney(ttc) + '</td>';
+            html += '<td><span class="status ' + (r.active ? "status-paid" : "status-pending") + '"><span class="status-dot"></span>' + (r.active ? "Active" : "En pause") + '</span></td>';
+            html += '<td>';
+            html += '<button class="btn btn-sm btn-outline" onclick="toggleRecurring(\'' + r.id + '\',' + (!r.active) + ')">' + (r.active ? "Mettre en pause" : "Réactiver") + '</button> ';
+            html += '<button class="btn btn-sm btn-outline" onclick="deleteRecurring(\'' + r.id + '\')">Suppr.</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    window.toggleRecurring = async function (id, active) {
+        var res = await sb.from("recurring_invoices").update({ active: active }).eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        if (active) await processRecurring();
+        renderRecurring();
+    };
+
+    window.deleteRecurring = async function (id) {
+        if (!confirm("Supprimer cette récurrence ? Les factures déjà générées sont conservées.")) return;
+        var res = await sb.from("recurring_invoices").delete().eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        renderRecurring();
+    };
+
+    // --- New Recurring ---
+    function setupRecurringModal() {
+        var select = document.getElementById("r-client");
+        select.innerHTML = '<option value="">Sélectionner un client</option>';
+        state.clients.forEach(function (c) {
+            select.innerHTML += '<option value="' + c.id + '">' + esc(c.name) + '</option>';
+        });
+        document.getElementById("r-next-run").value = new Date().toISOString().slice(0, 10);
+        var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
+        document.getElementById("r-tva-rate-display").textContent = rate;
+        document.getElementById("recurring-items").innerHTML = itemRow();
+        recalcRecurring();
+    }
+
+    document.getElementById("btn-add-recurring-item").addEventListener("click", function () {
+        document.getElementById("recurring-items").insertAdjacentHTML("beforeend", itemRow());
+    });
+
+    document.getElementById("recurring-items").addEventListener("input", recalcRecurring);
+    document.getElementById("recurring-items").addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-item")) {
+            var rows = document.getElementById("recurring-items").querySelectorAll("tr");
+            if (rows.length > 1) e.target.closest("tr").remove();
+            recalcRecurring();
+        }
+    });
+
+    function recalcRecurring() {
+        var subtotal = 0;
+        document.querySelectorAll("#recurring-items tr").forEach(function (row) {
+            var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
+            var price = parseFloat(row.querySelector(".item-price").value) || 0;
+            var total = qty * price;
+            subtotal += total;
+            row.querySelector(".item-total").textContent = formatMoney(total);
+        });
+        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var tva = subtotal * rate / 100;
+        document.getElementById("r-subtotal").textContent = formatMoney(subtotal);
+        document.getElementById("r-tva-amount").textContent = formatMoney(tva);
+        document.getElementById("r-total").textContent = formatMoney(subtotal + tva);
+    }
+
+    document.getElementById("btn-new-recurring").addEventListener("click", function () {
+        if (state.clients.length === 0) {
+            alert("Ajoutez d'abord un client avant de créer une récurrence.");
+            navigate("clients");
+            return;
+        }
+        document.getElementById("recurring-form").reset();
+        setupRecurringModal();
+        openModal("modal-recurring");
+    });
+
+    document.getElementById("recurring-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var items = collectItems("#recurring-items tr");
+        if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
+        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+
+        var payload = {
+            user_id: state.user.id,
+            label: document.getElementById("r-label").value.trim(),
+            client_id: document.getElementById("r-client").value,
+            items: items,
+            tva_rate: rate,
+            frequency: document.getElementById("r-frequency").value,
+            next_run: document.getElementById("r-next-run").value,
+            active: true
+        };
+
+        var res = await sb.from("recurring_invoices").insert(payload);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        await processRecurring();
+        closeModal("modal-recurring");
+        navigate("recurring");
     });
 
     // --- Clients ---

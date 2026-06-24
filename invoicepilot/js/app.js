@@ -67,8 +67,12 @@
 
         if (isSignup) {
             var name = document.getElementById("auth-name").value.trim();
+            if (localStorage.getItem("ip_pwd_" + email)) {
+                alert("Un compte existe déjà avec cet email.");
+                return;
+            }
             state.user = { email: email, name: name, createdAt: new Date().toISOString() };
-            save("ip_pwd_" + email, password);
+            localStorage.setItem("ip_pwd_" + email, password);
         } else {
             var stored = localStorage.getItem("ip_pwd_" + email);
             if (!stored) {
@@ -158,6 +162,7 @@
             html += '<td>' + formatMoney(inv.totalTTC) + '</td>';
             html += '<td><span class="status ' + statusClass + '"><span class="status-dot"></span>' + statusLabel + '</span></td>';
             html += '<td>';
+            html += '<button class="btn btn-sm btn-outline" onclick="downloadPDF(\'' + inv.id + '\')">PDF</button> ';
             if (inv.status !== "paid") {
                 html += '<button class="btn btn-sm btn-outline" onclick="markPaid(\'' + inv.id + '\')">Marquer payée</button> ';
             }
@@ -178,6 +183,83 @@
         state.invoices = state.invoices.filter(function (i) { return i.id !== id; });
         persist();
         navigate("invoices");
+    };
+
+    // --- PDF export (print-to-PDF, dependency-free) ---
+    window.downloadPDF = function (id) {
+        var inv = state.invoices.find(function (i) { return i.id === id; });
+        if (!inv) return;
+        var client = state.clients.find(function (c) { return c.id === inv.clientId; }) || {};
+        var p = state.profile || {};
+
+        var itemsHtml = inv.items.map(function (it) {
+            return '<tr>'
+                + '<td>' + esc(it.description) + '</td>'
+                + '<td class="r">' + it.quantity + '</td>'
+                + '<td class="r">' + formatMoney(it.unitPrice) + '</td>'
+                + '<td class="r">' + formatMoney(it.total) + '</td>'
+                + '</tr>';
+        }).join("");
+
+        var mentions = p.mentions ? '<p class="mentions">' + esc(p.mentions) + '</p>' : "";
+        var tvaLine = inv.tvaRate > 0
+            ? '<tr><td>TVA (' + inv.tvaRate + '%)</td><td class="r">' + formatMoney(inv.tvaAmount) + '</td></tr>'
+            : '<tr><td>TVA</td><td class="r">Non applicable</td></tr>';
+
+        var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Facture ' + esc(inv.number) + '</title>'
+            + '<style>'
+            + '*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}'
+            + 'body{padding:40px;color:#1E293B;font-size:13px;line-height:1.5;}'
+            + '.head{display:flex;justify-content:space-between;margin-bottom:40px;}'
+            + '.from h2{font-size:18px;margin-bottom:8px;}'
+            + '.from p,.to p{color:#475569;font-size:12px;}'
+            + '.to{text-align:right;}'
+            + '.to .label{font-size:11px;text-transform:uppercase;color:#94A3B8;margin-bottom:4px;}'
+            + '.title{font-size:28px;font-weight:800;color:#4F46E5;margin-bottom:4px;}'
+            + '.meta{color:#64748B;font-size:12px;margin-bottom:32px;}'
+            + 'table.items{width:100%;border-collapse:collapse;margin-bottom:24px;}'
+            + 'table.items th{background:#F1F5F9;text-align:left;padding:10px;font-size:11px;text-transform:uppercase;color:#64748B;}'
+            + 'table.items td{padding:10px;border-bottom:1px solid #E2E8F0;}'
+            + '.r{text-align:right;}'
+            + 'table.totals{margin-left:auto;width:280px;border-collapse:collapse;}'
+            + 'table.totals td{padding:6px 10px;}'
+            + 'table.totals .grand td{font-weight:800;font-size:15px;border-top:2px solid #1E293B;}'
+            + '.mentions{margin-top:40px;padding-top:16px;border-top:1px solid #E2E8F0;color:#94A3B8;font-size:11px;}'
+            + '.footer{margin-top:8px;color:#94A3B8;font-size:11px;}'
+            + '@media print{body{padding:0;}}'
+            + '</style></head><body>'
+            + '<div class="head">'
+            + '<div class="from"><h2>' + esc(p.name || "Votre entreprise") + '</h2>'
+            + '<p>' + esc(p.address || "") + '</p><p>' + esc(p.city || "") + '</p>'
+            + (p.siret ? '<p>SIRET : ' + esc(p.siret) + '</p>' : "")
+            + (p.tvaNumber ? '<p>TVA : ' + esc(p.tvaNumber) + '</p>' : "")
+            + (p.email ? '<p>' + esc(p.email) + '</p>' : "")
+            + (p.phone ? '<p>' + esc(p.phone) + '</p>' : "")
+            + '</div>'
+            + '<div class="to"><div class="label">Facturé à</div>'
+            + '<p><strong>' + esc(client.name || "") + '</strong></p>'
+            + '<p>' + esc(client.address || "") + '</p><p>' + esc(client.city || "") + '</p>'
+            + (client.siret ? '<p>SIRET : ' + esc(client.siret) + '</p>' : "")
+            + '</div></div>'
+            + '<div class="title">FACTURE</div>'
+            + '<div class="meta">N° ' + esc(inv.number) + ' &bull; Date : ' + formatDate(inv.date) + ' &bull; Échéance : ' + formatDate(inv.dueDate) + '</div>'
+            + '<table class="items"><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Total HT</th></tr></thead>'
+            + '<tbody>' + itemsHtml + '</tbody></table>'
+            + '<table class="totals">'
+            + '<tr><td>Sous-total HT</td><td class="r">' + formatMoney(inv.subtotalHT) + '</td></tr>'
+            + tvaLine
+            + '<tr class="grand"><td>Total TTC</td><td class="r">' + formatMoney(inv.totalTTC) + '</td></tr>'
+            + '</table>'
+            + mentions
+            + '<p class="footer">En cas de retard de paiement, des pénalités de retard sont exigibles (art. L441-10 du Code de commerce). Indemnité forfaitaire pour frais de recouvrement : 40 €.</p>'
+            + '</body></html>';
+
+        var win = window.open("", "_blank");
+        if (!win) { alert("Veuillez autoriser les pop-ups pour générer le PDF."); return; }
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        setTimeout(function () { win.print(); }, 300);
     };
 
     // --- Clients ---

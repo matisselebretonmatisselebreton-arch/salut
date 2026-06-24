@@ -1,30 +1,18 @@
 (function () {
     "use strict";
 
-    // --- Storage helpers (localStorage as backend for MVP) ---
-    function load(key) {
-        try { return JSON.parse(localStorage.getItem("ip_" + key)) || null; } catch { return null; }
-    }
-    function save(key, data) {
-        localStorage.setItem("ip_" + key, JSON.stringify(data));
-    }
+    var cfg = window.IP_CONFIG;
+    var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
 
-    // --- State ---
+    // In-memory cache, refreshed from the database
     var state = {
-        user: load("user"),
-        profile: load("profile") || {},
-        clients: load("clients") || [],
-        invoices: load("invoices") || []
+        user: null,
+        profile: {},
+        clients: [],
+        invoices: []
     };
 
-    function persist() {
-        save("user", state.user);
-        save("profile", state.profile);
-        save("clients", state.clients);
-        save("invoices", state.invoices);
-    }
-
-    // --- Auth ---
+    // --- Screens ---
     var authScreen = document.getElementById("auth-screen");
     var appScreen = document.getElementById("app-screen");
     var isSignup = window.location.hash === "#signup";
@@ -35,13 +23,27 @@
         updateAuthUI();
     }
 
-    function showApp() {
+    async function showApp() {
         authScreen.style.display = "none";
         appScreen.style.display = "";
-        document.getElementById("user-display-name").textContent = state.user.name || state.user.email;
+        document.getElementById("user-display-name").textContent =
+            (state.user.user_metadata && state.user.user_metadata.name) || state.user.email;
+        await refreshData();
         navigate("dashboard");
     }
 
+    async function refreshData() {
+        var results = await Promise.all([
+            sb.from("profiles").select("*").eq("id", state.user.id).maybeSingle(),
+            sb.from("clients").select("*").order("created_at", { ascending: false }),
+            sb.from("invoices").select("*").order("date", { ascending: false })
+        ]);
+        state.profile = results[0].data || {};
+        state.clients = results[1].data || [];
+        state.invoices = results[2].data || [];
+    }
+
+    // --- Auth UI ---
     function updateAuthUI() {
         document.getElementById("auth-title").textContent = isSignup ? "Créer un compte" : "Connexion";
         document.getElementById("auth-subtitle").textContent = isSignup
@@ -59,40 +61,60 @@
         updateAuthUI();
     });
 
-    document.getElementById("auth-form").addEventListener("submit", function (e) {
+    document.getElementById("auth-form").addEventListener("submit", async function (e) {
         e.preventDefault();
+        var btn = document.getElementById("auth-submit");
         var email = document.getElementById("auth-email").value.trim();
         var password = document.getElementById("auth-password").value;
         if (!email || !password) return;
 
-        if (isSignup) {
-            var name = document.getElementById("auth-name").value.trim();
-            if (localStorage.getItem("ip_pwd_" + email)) {
-                alert("Un compte existe déjà avec cet email.");
-                return;
+        btn.disabled = true;
+        var originalLabel = btn.textContent;
+        btn.textContent = "Veuillez patienter…";
+
+        try {
+            if (isSignup) {
+                var name = document.getElementById("auth-name").value.trim();
+                var signupRes = await sb.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: { data: { name: name } }
+                });
+                if (signupRes.error) { alert(translateAuthError(signupRes.error.message)); return; }
+                if (!signupRes.data.session) {
+                    alert("Compte créé ! Vérifiez votre email pour confirmer votre inscription, puis connectez-vous.");
+                    isSignup = false;
+                    updateAuthUI();
+                    return;
+                }
+                state.user = signupRes.data.user;
+                await showApp();
+            } else {
+                var loginRes = await sb.auth.signInWithPassword({ email: email, password: password });
+                if (loginRes.error) { alert(translateAuthError(loginRes.error.message)); return; }
+                state.user = loginRes.data.user;
+                await showApp();
             }
-            state.user = { email: email, name: name, createdAt: new Date().toISOString() };
-            localStorage.setItem("ip_pwd_" + email, password);
-        } else {
-            var stored = localStorage.getItem("ip_pwd_" + email);
-            if (!stored) {
-                alert("Aucun compte trouvé avec cet email.");
-                return;
-            }
-            if (stored !== password) {
-                alert("Mot de passe incorrect.");
-                return;
-            }
-            state.user = load("user") || { email: email, name: email };
+        } catch (err) {
+            alert("Une erreur est survenue : " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
         }
-        persist();
-        showApp();
     });
 
-    document.getElementById("logout-btn").addEventListener("click", function (e) {
+    function translateAuthError(msg) {
+        if (/already registered|already been registered/i.test(msg)) return "Un compte existe déjà avec cet email.";
+        if (/Invalid login credentials/i.test(msg)) return "Email ou mot de passe incorrect.";
+        if (/Password should be at least/i.test(msg)) return "Le mot de passe doit contenir au moins 6 caractères.";
+        if (/Email not confirmed/i.test(msg)) return "Veuillez confirmer votre email avant de vous connecter.";
+        return msg;
+    }
+
+    document.getElementById("logout-btn").addEventListener("click", async function (e) {
         e.preventDefault();
+        await sb.auth.signOut();
         state.user = null;
-        persist();
         showAuth();
     });
 
@@ -121,23 +143,20 @@
         var paid = 0, pending = 0, overdue = 0, revenue = 0;
         var now = new Date();
         state.invoices.forEach(function (inv) {
-            if (inv.status === "paid") { paid++; revenue += inv.totalTTC; }
-            else if (new Date(inv.dueDate) < now) { overdue++; }
+            if (inv.status === "paid") { paid++; revenue += Number(inv.total_ttc); }
+            else if (new Date(inv.due_date) < now) { overdue++; }
             else { pending++; }
         });
         document.getElementById("stat-revenue").textContent = formatMoney(revenue);
         document.getElementById("stat-paid").textContent = paid;
         document.getElementById("stat-pending").textContent = pending;
         document.getElementById("stat-overdue").textContent = overdue;
-
-        var recent = state.invoices.slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); }).slice(0, 5);
-        renderInvoiceTable("dashboard-invoices-list", recent);
+        renderInvoiceTable("dashboard-invoices-list", state.invoices.slice(0, 5));
     }
 
     // --- Invoices ---
     function renderInvoices() {
-        var sorted = state.invoices.slice().sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-        renderInvoiceTable("invoices-list", sorted);
+        renderInvoiceTable("invoices-list", state.invoices);
     }
 
     function renderInvoiceTable(containerId, invoices) {
@@ -149,17 +168,17 @@
         var now = new Date();
         var html = '<table><thead><tr><th>N°</th><th>Client</th><th>Date</th><th>Montant TTC</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
         invoices.forEach(function (inv) {
-            var client = state.clients.find(function (c) { return c.id === inv.clientId; });
+            var client = state.clients.find(function (c) { return c.id === inv.client_id; });
             var statusClass, statusLabel;
             if (inv.status === "paid") { statusClass = "status-paid"; statusLabel = "Payée"; }
-            else if (new Date(inv.dueDate) < now) { statusClass = "status-overdue"; statusLabel = "En retard"; }
+            else if (new Date(inv.due_date) < now) { statusClass = "status-overdue"; statusLabel = "En retard"; }
             else { statusClass = "status-pending"; statusLabel = "En attente"; }
 
             html += '<tr>';
             html += '<td><strong>' + esc(inv.number) + '</strong></td>';
             html += '<td>' + esc(client ? client.name : "—") + '</td>';
             html += '<td>' + formatDate(inv.date) + '</td>';
-            html += '<td>' + formatMoney(inv.totalTTC) + '</td>';
+            html += '<td>' + formatMoney(Number(inv.total_ttc)) + '</td>';
             html += '<td><span class="status ' + statusClass + '"><span class="status-dot"></span>' + statusLabel + '</span></td>';
             html += '<td>';
             html += '<button class="btn btn-sm btn-outline" onclick="downloadPDF(\'' + inv.id + '\')">PDF</button> ';
@@ -173,15 +192,18 @@
         container.innerHTML = html;
     }
 
-    window.markPaid = function (id) {
-        var inv = state.invoices.find(function (i) { return i.id === id; });
-        if (inv) { inv.status = "paid"; persist(); navigate("invoices"); }
+    window.markPaid = async function (id) {
+        var res = await sb.from("invoices").update({ status: "paid" }).eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        navigate("invoices");
     };
 
-    window.deleteInvoice = function (id) {
+    window.deleteInvoice = async function (id) {
         if (!confirm("Supprimer cette facture ?")) return;
-        state.invoices = state.invoices.filter(function (i) { return i.id !== id; });
-        persist();
+        var res = await sb.from("invoices").delete().eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
         navigate("invoices");
     };
 
@@ -189,10 +211,10 @@
     window.downloadPDF = function (id) {
         var inv = state.invoices.find(function (i) { return i.id === id; });
         if (!inv) return;
-        var client = state.clients.find(function (c) { return c.id === inv.clientId; }) || {};
+        var client = state.clients.find(function (c) { return c.id === inv.client_id; }) || {};
         var p = state.profile || {};
 
-        var itemsHtml = inv.items.map(function (it) {
+        var itemsHtml = (inv.items || []).map(function (it) {
             return '<tr>'
                 + '<td>' + esc(it.description) + '</td>'
                 + '<td class="r">' + it.quantity + '</td>'
@@ -202,8 +224,8 @@
         }).join("");
 
         var mentions = p.mentions ? '<p class="mentions">' + esc(p.mentions) + '</p>' : "";
-        var tvaLine = inv.tvaRate > 0
-            ? '<tr><td>TVA (' + inv.tvaRate + '%)</td><td class="r">' + formatMoney(inv.tvaAmount) + '</td></tr>'
+        var tvaLine = Number(inv.tva_rate) > 0
+            ? '<tr><td>TVA (' + inv.tva_rate + '%)</td><td class="r">' + formatMoney(Number(inv.tva_amount)) + '</td></tr>'
             : '<tr><td>TVA</td><td class="r">Non applicable</td></tr>';
 
         var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Facture ' + esc(inv.number) + '</title>'
@@ -232,7 +254,7 @@
             + '<div class="from"><h2>' + esc(p.name || "Votre entreprise") + '</h2>'
             + '<p>' + esc(p.address || "") + '</p><p>' + esc(p.city || "") + '</p>'
             + (p.siret ? '<p>SIRET : ' + esc(p.siret) + '</p>' : "")
-            + (p.tvaNumber ? '<p>TVA : ' + esc(p.tvaNumber) + '</p>' : "")
+            + (p.tva_number ? '<p>TVA : ' + esc(p.tva_number) + '</p>' : "")
             + (p.email ? '<p>' + esc(p.email) + '</p>' : "")
             + (p.phone ? '<p>' + esc(p.phone) + '</p>' : "")
             + '</div>'
@@ -242,13 +264,13 @@
             + (client.siret ? '<p>SIRET : ' + esc(client.siret) + '</p>' : "")
             + '</div></div>'
             + '<div class="title">FACTURE</div>'
-            + '<div class="meta">N° ' + esc(inv.number) + ' &bull; Date : ' + formatDate(inv.date) + ' &bull; Échéance : ' + formatDate(inv.dueDate) + '</div>'
+            + '<div class="meta">N° ' + esc(inv.number) + ' &bull; Date : ' + formatDate(inv.date) + ' &bull; Échéance : ' + formatDate(inv.due_date) + '</div>'
             + '<table class="items"><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Total HT</th></tr></thead>'
             + '<tbody>' + itemsHtml + '</tbody></table>'
             + '<table class="totals">'
-            + '<tr><td>Sous-total HT</td><td class="r">' + formatMoney(inv.subtotalHT) + '</td></tr>'
+            + '<tr><td>Sous-total HT</td><td class="r">' + formatMoney(Number(inv.subtotal_ht)) + '</td></tr>'
             + tvaLine
-            + '<tr class="grand"><td>Total TTC</td><td class="r">' + formatMoney(inv.totalTTC) + '</td></tr>'
+            + '<tr class="grand"><td>Total TTC</td><td class="r">' + formatMoney(Number(inv.total_ttc)) + '</td></tr>'
             + '</table>'
             + mentions
             + '<p class="footer">En cas de retard de paiement, des pénalités de retard sont exigibles (art. L441-10 du Code de commerce). Indemnité forfaitaire pour frais de recouvrement : 40 €.</p>'
@@ -271,7 +293,7 @@
         }
         var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Ville</th><th>Factures</th><th>Actions</th></tr></thead><tbody>';
         state.clients.forEach(function (c) {
-            var invCount = state.invoices.filter(function (i) { return i.clientId === c.id; }).length;
+            var invCount = state.invoices.filter(function (i) { return i.client_id === c.id; }).length;
             html += '<tr>';
             html += '<td><strong>' + esc(c.name) + '</strong></td>';
             html += '<td>' + esc(c.email || "—") + '</td>';
@@ -284,10 +306,11 @@
         container.innerHTML = html;
     }
 
-    window.deleteClient = function (id) {
+    window.deleteClient = async function (id) {
         if (!confirm("Supprimer ce client ?")) return;
-        state.clients = state.clients.filter(function (c) { return c.id !== id; });
-        persist();
+        var res = await sb.from("clients").delete().eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
         renderClients();
     };
 
@@ -300,25 +323,29 @@
         document.getElementById("prof-city").value = p.city || "";
         document.getElementById("prof-email").value = p.email || "";
         document.getElementById("prof-phone").value = p.phone || "";
-        document.getElementById("prof-tva").value = p.tvaNumber || "";
-        document.getElementById("prof-tva-rate").value = p.tvaRate != null ? p.tvaRate : 20;
+        document.getElementById("prof-tva").value = p.tva_number || "";
+        document.getElementById("prof-tva-rate").value = p.tva_rate != null ? p.tva_rate : 20;
         document.getElementById("prof-mentions").value = p.mentions || "";
     }
 
-    document.getElementById("profile-form").addEventListener("submit", function (e) {
+    document.getElementById("profile-form").addEventListener("submit", async function (e) {
         e.preventDefault();
-        state.profile = {
+        var payload = {
+            id: state.user.id,
             name: document.getElementById("prof-name").value.trim(),
             siret: document.getElementById("prof-siret").value.trim(),
             address: document.getElementById("prof-address").value.trim(),
             city: document.getElementById("prof-city").value.trim(),
             email: document.getElementById("prof-email").value.trim(),
             phone: document.getElementById("prof-phone").value.trim(),
-            tvaNumber: document.getElementById("prof-tva").value.trim(),
-            tvaRate: parseFloat(document.getElementById("prof-tva-rate").value),
-            mentions: document.getElementById("prof-mentions").value.trim()
+            tva_number: document.getElementById("prof-tva").value.trim(),
+            tva_rate: parseFloat(document.getElementById("prof-tva-rate").value),
+            mentions: document.getElementById("prof-mentions").value.trim(),
+            updated_at: new Date().toISOString()
         };
-        persist();
+        var res = await sb.from("profiles").upsert(payload).select().single();
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        state.profile = res.data;
         alert("Profil enregistré !");
     });
 
@@ -343,18 +370,19 @@
         openModal("modal-client");
     });
 
-    document.getElementById("client-form").addEventListener("submit", function (e) {
+    document.getElementById("client-form").addEventListener("submit", async function (e) {
         e.preventDefault();
-        var client = {
-            id: uid(),
+        var payload = {
+            user_id: state.user.id,
             name: document.getElementById("client-name").value.trim(),
             email: document.getElementById("client-email").value.trim(),
             address: document.getElementById("client-address").value.trim(),
             city: document.getElementById("client-city").value.trim(),
             siret: document.getElementById("client-siret").value.trim()
         };
-        state.clients.push(client);
-        persist();
+        var res = await sb.from("clients").insert(payload);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
         closeModal("modal-client");
         renderClients();
     });
@@ -378,7 +406,7 @@
         var nextNum = yearInvoices.length + 1;
         document.getElementById("inv-number").value = year + "-" + String(nextNum).padStart(3, "0");
 
-        var rate = state.profile.tvaRate != null ? state.profile.tvaRate : 20;
+        var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
         document.getElementById("inv-tva-rate-display").textContent = rate;
 
         document.getElementById("invoice-items").innerHTML = itemRow();
@@ -411,7 +439,7 @@
             subtotal += total;
             row.querySelector(".item-total").textContent = formatMoney(total);
         });
-        var rate = state.profile.tvaRate != null ? state.profile.tvaRate : 20;
+        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
         var tva = subtotal * rate / 100;
         document.getElementById("inv-subtotal").textContent = formatMoney(subtotal);
         document.getElementById("inv-tva-amount").textContent = formatMoney(tva);
@@ -431,7 +459,7 @@
         });
     });
 
-    document.getElementById("invoice-form").addEventListener("submit", function (e) {
+    document.getElementById("invoice-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         var items = [];
         document.querySelectorAll("#invoice-items tr").forEach(function (row) {
@@ -443,40 +471,47 @@
         if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
 
         var subtotal = items.reduce(function (s, i) { return s + i.total; }, 0);
-        var rate = state.profile.tvaRate != null ? state.profile.tvaRate : 20;
+        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
         var tva = subtotal * rate / 100;
 
-        var invoice = {
-            id: uid(),
+        var payload = {
+            user_id: state.user.id,
             number: document.getElementById("inv-number").value,
-            clientId: document.getElementById("inv-client").value,
+            client_id: document.getElementById("inv-client").value,
             date: document.getElementById("inv-date").value,
-            dueDate: document.getElementById("inv-due-date").value,
+            due_date: document.getElementById("inv-due-date").value,
             items: items,
-            subtotalHT: subtotal,
-            tvaRate: rate,
-            tvaAmount: tva,
-            totalTTC: subtotal + tva,
-            status: "pending",
-            createdAt: new Date().toISOString()
+            subtotal_ht: subtotal,
+            tva_rate: rate,
+            tva_amount: tva,
+            total_ttc: subtotal + tva,
+            status: "pending"
         };
 
-        state.invoices.push(invoice);
-        persist();
+        var res = await sb.from("invoices").insert(payload);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
         closeModal("modal-invoice");
         navigate("invoices");
     });
 
     // --- Helpers ---
-    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-    function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-    function formatMoney(n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
+    function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+    function formatMoney(n) { return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
     function formatDate(d) {
-        var parts = d.split("-");
+        var parts = String(d).slice(0, 10).split("-");
         return parts[2] + "/" + parts[1] + "/" + parts[0];
     }
 
-    // --- Init ---
-    if (state.user) { showApp(); } else { showAuth(); }
+    // --- Init: restore session if present ---
+    (async function init() {
+        var sessionRes = await sb.auth.getSession();
+        if (sessionRes.data.session) {
+            state.user = sessionRes.data.session.user;
+            await showApp();
+        } else {
+            showAuth();
+        }
+    })();
 
 })();

@@ -55,19 +55,22 @@
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span> Devis
                 </a>
                 <a href="#" data-page="invoices">
-                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg></span> Factures
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg></span> Factures & Avoirs
                 </a>
                 <a href="#" data-page="recurring">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span> Récurrences
                 </a>
-                <a href="#" data-page="credit-notes">
-                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/></svg></span> Avoirs
+                <a href="#" data-page="clients">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Clients
+                </a>
+                <a href="#" data-page="suppliers">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/></svg></span> Fournisseurs
                 </a>
                 <a href="#" data-page="expenses">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span> Dépenses
                 </a>
-                <a href="#" data-page="clients">
-                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Clients
+                <a href="#" data-page="performance">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span> Performance
                 </a>
                 <a href="#" data-page="accounting">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="14" y="6" width="3" height="12"/></svg></span> Comptabilité
@@ -101,21 +104,28 @@
                     <p id="usage-hint" style="margin-top:10px;font-size:.82rem;color:var(--text-muted)"></p>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card clickable" onclick="openRevenueDetail()">
                         <div class="stat-label">Chiffre d'affaires</div>
                         <div class="stat-value" id="stat-revenue">0 €</div>
+                        <div class="stat-spark-row">
+                            <span class="stat-spark" id="revenue-spark"></span>
+                            <span class="stat-delta" id="revenue-delta"></span>
+                        </div>
                     </div>
-                    <div class="stat-card success">
+                    <div class="stat-card success clickable" onclick="gotoInvoices('paid')">
                         <div class="stat-label">Payées</div>
                         <div class="stat-value" id="stat-paid">0</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
-                    <div class="stat-card warning">
+                    <div class="stat-card warning clickable" onclick="gotoInvoices('pending')">
                         <div class="stat-label">En attente</div>
                         <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
-                    <div class="stat-card danger">
+                    <div class="stat-card danger clickable" onclick="gotoInvoices('overdue')">
                         <div class="stat-label">En retard</div>
                         <div class="stat-value" id="stat-overdue">0</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
                 </div>
                 <div class="table-card">
@@ -133,20 +143,37 @@
                     <button class="btn btn-primary" id="btn-new-quote">+ Nouveau devis</button>
                 </div>
                 <div class="table-card">
+                    <div class="table-header" style="flex-direction:column;align-items:stretch;gap:12px">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="quote-search" placeholder="Rechercher (n° de devis, client)…">
+                        </div>
+                        <div class="filter-bar" id="quote-filters"></div>
+                    </div>
                     <div id="quotes-list"></div>
                 </div>
             </div>
 
-            <!-- Invoices -->
+            <!-- Invoices & Credit notes -->
             <div id="page-invoices" class="page" style="display:none">
                 <div class="page-header">
-                    <h1>Factures</h1>
-                    <button class="btn btn-primary" id="btn-new-invoice">+ Nouvelle facture</button>
+                    <h1>Factures &amp; Avoirs</h1>
+                    <button class="btn btn-primary" onclick="openNewDocMenu()">+ Nouveau document</button>
                 </div>
                 <div class="table-card">
+                    <div class="table-header" style="flex-direction:column;align-items:stretch;gap:12px">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="invoice-search" placeholder="Rechercher (n° de document, client)…">
+                        </div>
+                        <div class="filter-bar" id="invoice-filters"></div>
+                    </div>
                     <div id="invoices-list"></div>
                 </div>
             </div>
+
+            <!-- Hidden trigger conservé pour le flux "facture libre" -->
+            <button id="btn-new-invoice" style="display:none"></button>
 
             <!-- Recurring -->
             <div id="page-recurring" class="page" style="display:none">
@@ -156,16 +183,6 @@
                 </div>
                 <div class="table-card">
                     <div id="recurring-list"></div>
-                </div>
-            </div>
-
-            <!-- Credit Notes -->
-            <div id="page-credit-notes" class="page" style="display:none">
-                <div class="page-header">
-                    <h1>Avoirs</h1>
-                </div>
-                <div class="table-card">
-                    <div id="credit-notes-list"></div>
                 </div>
             </div>
 
@@ -183,6 +200,69 @@
                         </div>
                     </div>
                     <div id="clients-list"></div>
+                </div>
+            </div>
+
+            <!-- Suppliers -->
+            <div id="page-suppliers" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Fournisseurs</h1>
+                        <p class="page-subtitle">Carnet de fournisseurs et historique des achats</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-new-supplier">+ Nouveau fournisseur</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="supplier-search" placeholder="Rechercher un fournisseur (nom, email, ville)…">
+                        </div>
+                    </div>
+                    <div id="suppliers-list"></div>
+                </div>
+            </div>
+
+            <!-- Performance -->
+            <div id="page-performance" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Performance commerciale</h1>
+                        <p class="page-subtitle">Suivi des devis et taux de transformation</p>
+                    </div>
+                    <select id="perf-year" style="width:auto;padding:8px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.9rem"></select>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Devis émis</div>
+                        <div class="stat-value" id="perf-total">0</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-label">Taux de transformation</div>
+                        <div class="stat-value" id="perf-conv">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Convertis en facture</div>
+                        <div class="stat-value" id="perf-ca">0%</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">Montant moyen / devis</div>
+                        <div class="stat-value" id="perf-avg">0 €</div>
+                    </div>
+                </div>
+                <div class="acct-grid">
+                    <div class="acct-card">
+                        <div class="acct-head">Entonnoir de conversion</div>
+                        <div class="acct-body" id="perf-funnel"></div>
+                    </div>
+                    <div class="acct-card">
+                        <div class="acct-head">Top clients (devis validés)</div>
+                        <div class="acct-body" id="perf-top-clients"></div>
+                    </div>
+                </div>
+                <div class="acct-card" style="margin-top:20px">
+                    <div class="acct-head">Devis à relancer (en attente &gt; 30 jours)</div>
+                    <div class="acct-body" id="perf-stale"></div>
                 </div>
             </div>
 
@@ -242,6 +322,37 @@
                             <label>Mentions légales supplémentaires</label>
                             <textarea id="prof-mentions" rows="3" placeholder="Ex: TVA non applicable, art. 293 B du CGI"></textarea>
                         </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Statut & cotisations URSSAF</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Statut juridique</label>
+                                <select id="prof-legal-status">
+                                    <option value="">— Non renseigné —</option>
+                                    <option value="micro">Micro-entrepreneur</option>
+                                    <option value="ei">Entreprise individuelle (réel)</option>
+                                    <option value="eurl">EURL / SARL</option>
+                                    <option value="sas">SAS / SASU</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Type d'activité (micro)</label>
+                                <select id="prof-activity-type">
+                                    <option value="bnc">Prestations libérales (BNC)</option>
+                                    <option value="bic_services">Prestations de services (BIC)</option>
+                                    <option value="bic_sales">Vente de marchandises (BIC)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Périodicité de déclaration URSSAF</label>
+                                <select id="prof-urssaf-period">
+                                    <option value="quarterly">Trimestrielle</option>
+                                    <option value="monthly">Mensuelle</option>
+                                </select>
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
                     </form>
                 </div>
@@ -274,7 +385,10 @@
                         <h1>Comptabilité</h1>
                         <p class="page-subtitle">Compte de résultat & bilan simplifié</p>
                     </div>
-                    <select id="acct-year" style="width:auto;padding:8px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.9rem"></select>
+                    <div style="display:flex;gap:10px;align-items:center">
+                        <select id="acct-year" style="width:auto;padding:8px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.9rem"></select>
+                        <button class="btn btn-outline btn-sm" onclick="exportAccounting()">Export CSV</button>
+                    </div>
                 </div>
                 <div id="accounting-pro-gate" style="display:none"></div>
                 <div id="accounting-content">
@@ -302,6 +416,7 @@
                             <div class="acct-body" id="acct-balance-sheet"></div>
                         </div>
                     </div>
+                    <div id="acct-urssaf" style="margin-top:20px"></div>
                     <p style="margin-top:16px;font-size:.8rem;color:var(--text-muted)">
                         Estimation indicative basée sur vos factures encaissées et vos dépenses enregistrées.
                         Pour une comptabilité officielle, faites valider ces données par un expert-comptable.
@@ -422,6 +537,10 @@
                         <label>Numéro de facture</label>
                         <input type="text" id="inv-number" readonly>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>Bon de commande / Référence client (optionnel)</label>
+                    <input type="text" id="inv-po" placeholder="Ex: PO-2026-0042">
                 </div>
 
                 <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes de facturation</h3>
@@ -596,7 +715,8 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Fournisseur</label>
-                        <input type="text" id="exp-supplier" placeholder="Ex: OVH, Fournitures SARL" required>
+                        <input type="text" id="exp-supplier" list="supplier-datalist" placeholder="Ex: OVH, Fournitures SARL" required>
+                        <datalist id="supplier-datalist"></datalist>
                     </div>
                     <div class="form-group">
                         <label>Date</label>
@@ -673,6 +793,90 @@
                     <button type="submit" class="btn btn-danger">Émettre l'avoir</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: New document chooser -->
+    <div class="modal-overlay" id="modal-newdoc">
+        <div class="modal">
+            <h2>Nouveau document</h2>
+            <div id="newdoc-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-newdoc')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: New / Edit Supplier -->
+    <div class="modal-overlay" id="modal-supplier">
+        <div class="modal">
+            <h2 id="modal-supplier-title">Nouveau fournisseur</h2>
+            <form id="supplier-form">
+                <input type="hidden" id="supplier-edit-id" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom / Entreprise</label>
+                        <input type="text" id="supplier-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="supplier-email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="supplier-address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Code postal & Ville</label>
+                        <input type="text" id="supplier-city">
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET (optionnel)</label>
+                        <input type="text" id="supplier-siret">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-supplier')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Supplier detail -->
+    <div class="modal-overlay" id="modal-supplier-detail">
+        <div class="modal modal-lg">
+            <h2 id="sd-title">Fiche fournisseur</h2>
+            <div id="supplier-detail-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-supplier-detail')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Revenue chart -->
+    <div class="modal-overlay" id="modal-revenue">
+        <div class="modal modal-lg">
+            <h2>Évolution du chiffre d'affaires</h2>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+                <div>
+                    <div class="stat-label" id="rev-total-label">CA</div>
+                    <div class="stat-value" id="rev-total" style="font-size:1.8rem">0 €</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center">
+                    <select id="rev-mode" onchange="renderRevenueChartFromUI()" style="padding:8px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem">
+                        <option value="month">Par mois</option>
+                        <option value="year">Par année</option>
+                    </select>
+                    <select id="rev-year" onchange="renderRevenueChartFromUI()" style="padding:8px 12px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.85rem"></select>
+                </div>
+            </div>
+            <div id="rev-chart" style="min-height:240px"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-revenue')">Fermer</button>
+            </div>
         </div>
     </div>
 

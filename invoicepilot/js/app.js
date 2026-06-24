@@ -13,7 +13,9 @@
         quotes: [],
         recurring: [],
         creditNotes: [],
-        expenses: []
+        expenses: [],
+        suppliers: [],
+        urssaf: []
     };
 
     var FREE_INVOICE_LIMIT = 10;
@@ -63,7 +65,9 @@
             sb.from("quotes").select("*").order("date", { ascending: false }),
             sb.from("recurring_invoices").select("*").order("created_at", { ascending: false }),
             sb.from("credit_notes").select("*").order("date", { ascending: false }),
-            sb.from("expenses").select("*").order("date", { ascending: false })
+            sb.from("expenses").select("*").order("date", { ascending: false }),
+            sb.from("suppliers").select("*").order("created_at", { ascending: false }),
+            sb.from("urssaf_declarations").select("*").order("declared_at", { ascending: false })
         ]);
         state.profile = results[0].data || {};
         state.clients = results[1].data || [];
@@ -72,6 +76,8 @@
         state.recurring = results[4].data || [];
         state.creditNotes = results[5].data || [];
         state.expenses = results[6].data || [];
+        state.suppliers = results[7].data || [];
+        state.urssaf = results[8].data || [];
     }
 
     // --- Auth UI ---
@@ -160,8 +166,9 @@
         if (page === "invoices") renderInvoices();
         if (page === "quotes") renderQuotes();
         if (page === "recurring") renderRecurring();
-        if (page === "credit-notes") renderCreditNotes();
         if (page === "expenses") renderExpenses();
+        if (page === "suppliers") renderSuppliers();
+        if (page === "performance") renderPerformance();
         if (page === "accounting") renderAccounting();
         if (page === "subscription") renderSubscription();
         if (page === "clients") renderClients();
@@ -176,6 +183,30 @@
     });
 
     // --- Dashboard ---
+    // Net revenue (cashed-in) for a given YYYY-MM: paid invoices minus credit notes.
+    function revenueForYM(ym) {
+        var v = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status !== "paid") return;
+            if (String(inv.date).slice(0, 7) === ym) v += Number(inv.total_ttc);
+        });
+        state.creditNotes.forEach(function (cn) {
+            if (String(cn.date).slice(0, 7) === ym) v -= Number(cn.total_ttc);
+        });
+        return v;
+    }
+    function ymOffset(monthsBack) {
+        var d = new Date();
+        d.setDate(1);
+        d.setMonth(d.getMonth() - monthsBack);
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    }
+    function monthlyRevenueForYear(year) {
+        var arr = [];
+        for (var m = 1; m <= 12; m++) arr.push(revenueForYM(year + "-" + String(m).padStart(2, "0")));
+        return arr;
+    }
+
     function renderDashboard() {
         var paid = 0, pending = 0, overdue = 0, revenue = 0;
         var now = new Date();
@@ -192,8 +223,106 @@
         document.getElementById("stat-paid").textContent = paid;
         document.getElementById("stat-pending").textContent = pending;
         document.getElementById("stat-overdue").textContent = overdue;
+
+        // Sparkline (6 derniers mois) + variation vs mois précédent.
+        var series = [];
+        for (var i = 5; i >= 0; i--) series.push(revenueForYM(ymOffset(i)));
+        document.getElementById("revenue-spark").innerHTML = sparklineSVG(series);
+        var cur = series[5], prev = series[4];
+        var deltaEl = document.getElementById("revenue-delta");
+        if (prev === 0 && cur === 0) { deltaEl.textContent = ""; }
+        else if (prev === 0) { deltaEl.textContent = "+100%"; deltaEl.className = "stat-delta up"; }
+        else {
+            var pctChange = Math.round((cur - prev) / Math.abs(prev) * 100);
+            deltaEl.textContent = (pctChange >= 0 ? "+" : "") + pctChange + "% vs mois préc.";
+            deltaEl.className = "stat-delta " + (pctChange >= 0 ? "up" : "down");
+        }
+
         renderUsageCard();
         renderInvoiceTable("dashboard-invoices-list", state.invoices.slice(0, 5));
+    }
+
+    // Clic sur les cartes du dashboard.
+    window.openRevenueDetail = function () { openRevenueModal(); };
+    window.gotoInvoices = function (status) {
+        invoiceFilter = { type: "invoice", status: status, search: "" };
+        var si = document.getElementById("invoice-search");
+        if (si) si.value = "";
+        navigate("invoices");
+    };
+
+    // --- Mini SVG charts (sans dépendance) ---
+    function sparklineSVG(values) {
+        var w = 120, h = 34, max = Math.max.apply(null, values.concat([1]));
+        var min = Math.min.apply(null, values.concat([0]));
+        var range = (max - min) || 1;
+        var pts = values.map(function (v, i) {
+            var x = values.length > 1 ? (i / (values.length - 1)) * w : 0;
+            var y = h - ((v - min) / range) * (h - 4) - 2;
+            return x.toFixed(1) + "," + y.toFixed(1);
+        }).join(" ");
+        return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '" preserveAspectRatio="none">'
+            + '<polyline fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="' + pts + '"/></svg>';
+    }
+    function barChartSVG(values, labels) {
+        var w = 640, h = 240, pad = 30, n = values.length;
+        var max = Math.max.apply(null, values.concat([1]));
+        var bw = (w - pad * 2) / n * 0.62;
+        var gap = (w - pad * 2) / n;
+        var bars = "", lbls = "";
+        values.forEach(function (v, i) {
+            var bh = max > 0 ? (v / max) * (h - pad * 2) : 0;
+            var x = pad + i * gap + (gap - bw) / 2;
+            var y = h - pad - bh;
+            bars += '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="3" fill="url(#barGrad)"><title>' + esc(labels[i]) + ' : ' + formatMoney(v) + '</title></rect>';
+            lbls += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (h - pad + 14) + '" text-anchor="middle" font-size="10" fill="#94A3B8">' + esc(labels[i]) + '</text>';
+        });
+        return '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" preserveAspectRatio="xMidYMid meet">'
+            + '<defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366F1"/><stop offset="100%" stop-color="#A5B4FC"/></linearGradient></defs>'
+            + '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#E2E8F0"/>'
+            + bars + lbls + '</svg>';
+    }
+
+    function openRevenueModal() {
+        // Années disponibles (factures + avoirs).
+        var years = {};
+        state.invoices.forEach(function (i) { years[String(i.date).slice(0, 4)] = true; });
+        state.creditNotes.forEach(function (cn) { years[String(cn.date).slice(0, 4)] = true; });
+        years[String(new Date().getFullYear())] = true;
+        var sorted = Object.keys(years).sort().reverse();
+        var ysel = document.getElementById("rev-year");
+        ysel.innerHTML = sorted.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join("");
+        ysel.value = String(new Date().getFullYear());
+        document.getElementById("rev-mode").value = "month";
+        renderRevenueChart();
+        openModal("modal-revenue");
+    }
+    window.renderRevenueChartFromUI = function () { renderRevenueChart(); };
+    function renderRevenueChart() {
+        var mode = document.getElementById("rev-mode").value;
+        document.getElementById("rev-year").style.display = mode === "year" ? "none" : "";
+        var container = document.getElementById("rev-chart");
+        var totalEl = document.getElementById("rev-total");
+        var labelEl = document.getElementById("rev-total-label");
+        if (mode === "year") {
+            // Revenu par année (5 dernières années).
+            var years = [], vals = [];
+            var cy = new Date().getFullYear();
+            for (var y = cy - 4; y <= cy; y++) {
+                years.push(String(y));
+                vals.push(monthlyRevenueForYear(y).reduce(function (s, v) { return s + v; }, 0));
+            }
+            container.innerHTML = barChartSVG(vals, years);
+            totalEl.textContent = formatMoney(vals[vals.length - 1]);
+            labelEl.textContent = "CA " + cy;
+        } else {
+            var year = document.getElementById("rev-year").value || String(new Date().getFullYear());
+            var months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+            var data = monthlyRevenueForYear(year);
+            container.innerHTML = barChartSVG(data, months);
+            totalEl.textContent = formatMoney(data.reduce(function (s, v) { return s + v; }, 0));
+            labelEl.textContent = "CA " + year;
+        }
     }
 
     function renderUsageCard() {
@@ -215,11 +344,153 @@
     }
     window.goSubscription = function () { navigate("subscription"); };
 
-    // --- Invoices ---
-    function renderInvoices() {
-        renderInvoiceTable("invoices-list", state.invoices);
+    // --- Invoices & Credit notes (module unifié) ---
+    var invoiceFilter = { type: "all", status: "all", search: "" };
+    var invoiceSort = { key: "date", dir: "desc" };
+
+    function invoiceStatusOf(inv) {
+        if (inv.credit_note_id) return "cancelled";
+        if (inv.status === "paid") return "paid";
+        if (new Date(inv.due_date) < new Date()) return "overdue";
+        return "pending";
     }
 
+    function buildDocuments() {
+        // Vue unifiée factures + avoirs.
+        var docs = [];
+        state.invoices.forEach(function (inv) {
+            docs.push({ kind: "invoice", id: inv.id, raw: inv, number: inv.number,
+                client_id: inv.client_id, date: inv.date, total: Number(inv.total_ttc),
+                status: invoiceStatusOf(inv) });
+        });
+        state.creditNotes.forEach(function (cn) {
+            docs.push({ kind: "credit", id: cn.id, raw: cn, number: cn.number,
+                client_id: cn.client_id, date: cn.date, total: -Number(cn.total_ttc),
+                status: "credit" });
+        });
+        return docs;
+    }
+
+    function renderInvoices() {
+        var docs = buildDocuments();
+        var term = invoiceFilter.search.trim().toLowerCase();
+        docs = docs.filter(function (d) {
+            if (invoiceFilter.type === "invoice" && d.kind !== "invoice") return false;
+            if (invoiceFilter.type === "credit" && d.kind !== "credit") return false;
+            if (invoiceFilter.status !== "all" && d.status !== invoiceFilter.status) return false;
+            if (term) {
+                var client = state.clients.find(function (c) { return c.id === d.client_id; });
+                var hay = (d.number + " " + (client ? client.name : "")).toLowerCase();
+                if (hay.indexOf(term) === -1) return false;
+            }
+            return true;
+        });
+        // Tri
+        var k = invoiceSort.key, dir = invoiceSort.dir === "asc" ? 1 : -1;
+        docs.sort(function (a, b) {
+            var va, vb;
+            if (k === "client") {
+                va = (state.clients.find(function (c) { return c.id === a.client_id; }) || {}).name || "";
+                vb = (state.clients.find(function (c) { return c.id === b.client_id; }) || {}).name || "";
+                return va.localeCompare(vb) * dir;
+            }
+            if (k === "amount") { va = a.total; vb = b.total; }
+            else if (k === "number") { va = a.number; vb = b.number; return String(va).localeCompare(String(vb)) * dir; }
+            else { va = a.date; vb = b.date; }
+            return (va < vb ? -1 : va > vb ? 1 : 0) * dir;
+        });
+
+        renderInvoiceFilters();
+        var container = document.getElementById("invoices-list");
+        if (state.invoices.length === 0 && state.creditNotes.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128196;</div><p>Aucun document pour le moment</p><button class="btn btn-primary" onclick="openNewDocMenu()">Créer ma première facture</button></div>';
+            return;
+        }
+        if (docs.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucun document ne correspond à ces critères.</p></div>'; return; }
+
+        function arrow(key) { return invoiceSort.key === key ? (invoiceSort.dir === "asc" ? " ↑" : " ↓") : ""; }
+        var html = '<table><thead><tr>'
+            + '<th>Type</th>'
+            + '<th class="sortable" onclick="sortInvoices(\'number\')">N°' + arrow("number") + '</th>'
+            + '<th class="sortable" onclick="sortInvoices(\'client\')">Client' + arrow("client") + '</th>'
+            + '<th class="sortable" onclick="sortInvoices(\'date\')">Date' + arrow("date") + '</th>'
+            + '<th class="sortable" onclick="sortInvoices(\'amount\')">Montant TTC' + arrow("amount") + '</th>'
+            + '<th>Statut</th><th>Actions</th></tr></thead><tbody>';
+        docs.forEach(function (d) {
+            var client = state.clients.find(function (c) { return c.id === d.client_id; });
+            html += '<tr>';
+            if (d.kind === "credit") html += '<td><span class="doc-type credit">Avoir</span></td>';
+            else html += '<td><span class="doc-type invoice">Facture</span></td>';
+            html += '<td><strong>' + esc(d.number) + '</strong></td>';
+            html += '<td>' + esc(client ? client.name : "—") + '</td>';
+            html += '<td>' + formatDate(d.date) + '</td>';
+            html += '<td' + (d.kind === "credit" ? ' style="color:var(--danger)"' : '') + '>' + formatMoney(d.total) + '</td>';
+            html += '<td>' + statusBadge(d.status) + '</td>';
+            html += '<td>' + docActions(d) + '</td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    function statusBadge(status) {
+        var map = {
+            paid: { cls: "status-paid", label: "Payée" },
+            pending: { cls: "status-pending", label: "En attente" },
+            overdue: { cls: "status-overdue", label: "En retard" },
+            cancelled: { cls: "status-overdue", label: "Annulée" },
+            credit: { cls: "status-pending", label: "Avoir" }
+        };
+        var s = map[status] || map.pending;
+        return '<span class="status ' + s.cls + '"><span class="status-dot"></span>' + s.label + '</span>';
+    }
+
+    function docActions(d) {
+        if (d.kind === "credit") {
+            return '<button class="btn btn-sm btn-outline" onclick="downloadCreditNotePDF(\'' + d.id + '\')">PDF</button>';
+        }
+        var inv = d.raw;
+        var h = '<button class="btn btn-sm btn-outline" onclick="downloadPDF(\'' + inv.id + '\')">PDF</button> ';
+        if (inv.credit_note_id) {
+            h += '<span style="color:var(--text-muted);font-size:.8rem">→ avoir émis</span>';
+        } else if (inv.status === "paid") {
+            h += '<button class="btn btn-sm btn-outline" onclick="openCreditNote(\'' + inv.id + '\')">Avoir</button>';
+        } else {
+            h += '<button class="btn btn-sm btn-outline" onclick="markPaid(\'' + inv.id + '\')">Payée</button> ';
+            if (d.status === "overdue") h += '<button class="btn btn-sm btn-outline" onclick="sendReminder(\'' + inv.id + '\')">Relancer' + (inv.reminder_count ? ' (' + inv.reminder_count + ')' : '') + '</button> ';
+            h += '<button class="btn btn-sm btn-outline" onclick="deleteInvoice(\'' + inv.id + '\')">Suppr.</button>';
+        }
+        return h;
+    }
+
+    window.sortInvoices = function (key) {
+        if (invoiceSort.key === key) invoiceSort.dir = invoiceSort.dir === "asc" ? "desc" : "asc";
+        else { invoiceSort.key = key; invoiceSort.dir = key === "client" || key === "number" ? "asc" : "desc"; }
+        renderInvoices();
+    };
+
+    function renderInvoiceFilters() {
+        var bar = document.getElementById("invoice-filters");
+        if (!bar) return;
+        var pills = [
+            { t: "all", s: "all", label: "Tous" },
+            { t: "invoice", s: "all", label: "Factures" },
+            { t: "credit", s: "all", label: "Avoirs" },
+            { t: "invoice", s: "paid", label: "Payées" },
+            { t: "invoice", s: "pending", label: "En attente" },
+            { t: "invoice", s: "overdue", label: "En retard" }
+        ];
+        bar.innerHTML = pills.map(function (p) {
+            var active = invoiceFilter.type === p.t && invoiceFilter.status === p.s;
+            return '<button class="filter-pill' + (active ? " active" : "") + '" onclick="setInvoiceFilter(\'' + p.t + '\',\'' + p.s + '\')">' + p.label + '</button>';
+        }).join("");
+    }
+    window.setInvoiceFilter = function (type, status) {
+        invoiceFilter.type = type; invoiceFilter.status = status;
+        renderInvoices();
+    };
+
+    // Conservé pour la liste « Dernières factures » du tableau de bord.
     function renderInvoiceTable(containerId, invoices) {
         var container = document.getElementById(containerId);
         if (invoices.length === 0) {
@@ -273,6 +544,75 @@
         navigate("invoices");
     };
 
+    // Relance d'une facture en retard : ouvre un email pré-rempli et incrémente le compteur.
+    window.sendReminder = async function (id) {
+        var inv = state.invoices.find(function (i) { return i.id === id; });
+        if (!inv) return;
+        var client = state.clients.find(function (c) { return c.id === inv.client_id; }) || {};
+        var p = state.profile || {};
+        var subject = "Relance — Facture " + inv.number + " en attente de règlement";
+        var body = "Bonjour,\n\n"
+            + "Sauf erreur de notre part, la facture " + inv.number + " d'un montant de " + formatMoney(Number(inv.total_ttc))
+            + " émise le " + formatDate(inv.date) + " (échéance le " + formatDate(inv.due_date) + ") demeure impayée à ce jour.\n\n"
+            + "Nous vous remercions de bien vouloir procéder à son règlement dans les meilleurs délais.\n\n"
+            + "Cordialement,\n" + (p.name || "");
+        var mailto = "mailto:" + encodeURIComponent(client.email || "")
+            + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+        window.open(mailto, "_blank");
+        var res = await sb.from("invoices").update({
+            reminder_count: (inv.reminder_count || 0) + 1,
+            last_reminder_at: new Date().toISOString()
+        }).eq("id", id);
+        if (!res.error) { await refreshData(); renderInvoices(); }
+    };
+
+    // --- Menu "Nouveau document" (facture depuis devis / facture libre / avoir) ---
+    window.openNewDocMenu = function () {
+        document.getElementById("newdoc-body").innerHTML =
+            '<div class="newdoc-choices">'
+            + '<button class="newdoc-choice" onclick="newDocFromQuote()"><strong>Facture depuis un devis accepté</strong><span>Convertir un devis validé en facture</span></button>'
+            + '<button class="newdoc-choice" onclick="newDocFree()"><strong>Facture libre</strong><span>Créer une facture from scratch</span></button>'
+            + '<button class="newdoc-choice" onclick="newDocCredit()"><strong>Avoir</strong><span>Annuler tout ou partie d\'une facture payée</span></button>'
+            + '</div>';
+        openModal("modal-newdoc");
+    };
+    window.newDocFree = function () {
+        closeModal("modal-newdoc");
+        document.getElementById("btn-new-invoice").click();
+    };
+    window.newDocFromQuote = function () {
+        var accepted = state.quotes.filter(function (q) { return q.status === "accepted"; });
+        var body = document.getElementById("newdoc-body");
+        if (accepted.length === 0) {
+            body.innerHTML = '<p style="color:var(--text-muted)">Aucun devis accepté en attente de conversion. Faites accepter un devis dans l\'onglet Devis.</p>'
+                + '<div class="modal-actions"><button class="btn btn-outline" onclick="openNewDocMenu()">Retour</button></div>';
+            return;
+        }
+        var rows = accepted.map(function (q) {
+            var client = state.clients.find(function (c) { return c.id === q.client_id; });
+            return '<div class="row"><span>' + esc(q.number) + ' — ' + esc(client ? client.name : "—") + ' <span style="color:var(--text-muted)">' + formatMoney(Number(q.total_ttc)) + '</span></span>'
+                + '<button class="btn btn-sm btn-primary" onclick="convertToInvoice(\'' + q.id + '\')">Convertir</button></div>';
+        }).join("");
+        body.innerHTML = '<div class="detail-list">' + rows + '</div>'
+            + '<div class="modal-actions"><button class="btn btn-outline" onclick="openNewDocMenu()">Retour</button></div>';
+    };
+    window.newDocCredit = function () {
+        var payable = state.invoices.filter(function (i) { return i.status === "paid" && !i.credit_note_id; });
+        var body = document.getElementById("newdoc-body");
+        if (payable.length === 0) {
+            body.innerHTML = '<p style="color:var(--text-muted)">Aucune facture payée à annuler. Un avoir s\'émet sur une facture déjà réglée.</p>'
+                + '<div class="modal-actions"><button class="btn btn-outline" onclick="openNewDocMenu()">Retour</button></div>';
+            return;
+        }
+        var rows = payable.map(function (inv) {
+            var client = state.clients.find(function (c) { return c.id === inv.client_id; });
+            return '<div class="row"><span>' + esc(inv.number) + ' — ' + esc(client ? client.name : "—") + ' <span style="color:var(--text-muted)">' + formatMoney(Number(inv.total_ttc)) + '</span></span>'
+                + '<button class="btn btn-sm btn-outline" onclick="closeModal(\'modal-newdoc\');openCreditNote(\'' + inv.id + '\')">Émettre l\'avoir</button></div>';
+        }).join("");
+        body.innerHTML = '<div class="detail-list">' + rows + '</div>'
+            + '<div class="modal-actions"><button class="btn btn-outline" onclick="openNewDocMenu()">Retour</button></div>';
+    };
+
     // --- Credit Notes (avoirs) ---
     function nextCreditNoteNumber() {
         var year = new Date().getFullYear();
@@ -320,29 +660,6 @@
         navigate("invoices");
     });
 
-    function renderCreditNotes() {
-        var container = document.getElementById("credit-notes-list");
-        if (state.creditNotes.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>Aucun avoir émis</p></div>';
-            return;
-        }
-        var html = '<table><thead><tr><th>N° Avoir</th><th>Facture</th><th>Client</th><th>Date</th><th>Montant TTC</th><th>Motif</th><th>Actions</th></tr></thead><tbody>';
-        state.creditNotes.forEach(function (cn) {
-            var inv = state.invoices.find(function (i) { return i.id === cn.invoice_id; });
-            var client = state.clients.find(function (c) { return c.id === cn.client_id; });
-            html += '<tr>';
-            html += '<td><strong>' + esc(cn.number) + '</strong></td>';
-            html += '<td>' + esc(inv ? inv.number : "—") + '</td>';
-            html += '<td>' + esc(client ? client.name : "—") + '</td>';
-            html += '<td>' + formatDate(cn.date) + '</td>';
-            html += '<td style="color:var(--danger)">-' + formatMoney(Number(cn.total_ttc)) + '</td>';
-            html += '<td>' + esc(cn.reason || "—") + '</td>';
-            html += '<td><button class="btn btn-sm btn-outline" onclick="downloadCreditNotePDF(\'' + cn.id + '\')">PDF</button></td>';
-            html += '</tr>';
-        });
-        html += '</tbody></table>';
-        container.innerHTML = html;
-    }
 
     window.downloadCreditNotePDF = function (id) {
         var cn = state.creditNotes.find(function (x) { return x.id === id; });
@@ -416,7 +733,8 @@
             + (client.siret ? '<p>SIRET : ' + esc(client.siret) + '</p>' : "")
             + '</div></div>'
             + '<div class="title">' + esc(opts.title) + '</div>'
-            + '<div class="meta">N° ' + esc(doc.number) + ' &bull; Date : ' + formatDate(doc.date) + ' &bull; ' + esc(opts.metaLabel) + ' : ' + formatDate(opts.metaDate) + '</div>'
+            + '<div class="meta">N° ' + esc(doc.number) + ' &bull; Date : ' + formatDate(doc.date) + ' &bull; ' + esc(opts.metaLabel) + ' : ' + formatDate(opts.metaDate)
+            + (doc.po_number ? ' &bull; Bon de commande : ' + esc(doc.po_number) : "") + '</div>'
             + '<table class="items"><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Total HT</th></tr></thead>'
             + '<tbody>' + itemsHtml + '</tbody></table>'
             + '<table class="totals">'
@@ -449,14 +767,69 @@
     };
 
     // --- Quotes (devis) ---
+    var quoteFilter = { status: "all", search: "" };
+    var quoteSort = { key: "date", dir: "desc" };
+
+    window.sortQuotes = function (key) {
+        if (quoteSort.key === key) quoteSort.dir = quoteSort.dir === "asc" ? "desc" : "asc";
+        else { quoteSort.key = key; quoteSort.dir = key === "client" || key === "number" ? "asc" : "desc"; }
+        renderQuotes();
+    };
+    window.setQuoteFilter = function (status) { quoteFilter.status = status; renderQuotes(); };
+
+    function renderQuoteFilters() {
+        var bar = document.getElementById("quote-filters");
+        if (!bar) return;
+        var pills = [
+            { s: "all", label: "Tous" },
+            { s: "pending", label: "En attente" },
+            { s: "accepted", label: "Acceptés" },
+            { s: "rejected", label: "Refusés" },
+            { s: "invoiced", label: "Facturés" }
+        ];
+        bar.innerHTML = pills.map(function (p) {
+            return '<button class="filter-pill' + (quoteFilter.status === p.s ? " active" : "") + '" onclick="setQuoteFilter(\'' + p.s + '\')">' + p.label + '</button>';
+        }).join("");
+    }
+
     function renderQuotes() {
+        renderQuoteFilters();
         var container = document.getElementById("quotes-list");
         if (state.quotes.length === 0) {
             container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>Aucun devis pour le moment</p><button class="btn btn-primary" onclick="document.getElementById(\'btn-new-quote\').click()">Créer mon premier devis</button></div>';
             return;
         }
-        var html = '<table><thead><tr><th>N°</th><th>Client</th><th>Date</th><th>Montant TTC</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
-        state.quotes.forEach(function (q) {
+        var term = quoteFilter.search.trim().toLowerCase();
+        var list = state.quotes.filter(function (q) {
+            if (quoteFilter.status !== "all" && q.status !== quoteFilter.status) return false;
+            if (term) {
+                var client = state.clients.find(function (c) { return c.id === q.client_id; });
+                if (((q.number || "") + " " + (client ? client.name : "")).toLowerCase().indexOf(term) === -1) return false;
+            }
+            return true;
+        });
+        var k = quoteSort.key, dir = quoteSort.dir === "asc" ? 1 : -1;
+        list.sort(function (a, b) {
+            var va, vb;
+            if (k === "client") {
+                va = (state.clients.find(function (c) { return c.id === a.client_id; }) || {}).name || "";
+                vb = (state.clients.find(function (c) { return c.id === b.client_id; }) || {}).name || "";
+                return va.localeCompare(vb) * dir;
+            }
+            if (k === "amount") { va = Number(a.total_ttc); vb = Number(b.total_ttc); }
+            else if (k === "number") { return String(a.number).localeCompare(String(b.number)) * dir; }
+            else { va = a.date; vb = b.date; }
+            return (va < vb ? -1 : va > vb ? 1 : 0) * dir;
+        });
+        if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucun devis ne correspond à ces critères.</p></div>'; return; }
+        function arrow(key) { return quoteSort.key === key ? (quoteSort.dir === "asc" ? " ↑" : " ↓") : ""; }
+        var html = '<table><thead><tr>'
+            + '<th class="sortable" onclick="sortQuotes(\'number\')">N°' + arrow("number") + '</th>'
+            + '<th class="sortable" onclick="sortQuotes(\'client\')">Client' + arrow("client") + '</th>'
+            + '<th class="sortable" onclick="sortQuotes(\'date\')">Date' + arrow("date") + '</th>'
+            + '<th class="sortable" onclick="sortQuotes(\'amount\')">Montant TTC' + arrow("amount") + '</th>'
+            + '<th>Statut</th><th>Actions</th></tr></thead><tbody>';
+        list.forEach(function (q) {
             var client = state.clients.find(function (c) { return c.id === q.client_id; });
             var map = {
                 pending: { cls: "status-pending", label: "En attente" },
@@ -536,6 +909,7 @@
         if (updateRes.error) { alert("Erreur : " + updateRes.error.message); return; }
 
         await refreshData();
+        closeModal("modal-newdoc");
         navigate("invoices");
     };
 
@@ -890,6 +1264,8 @@
     }
 
     document.getElementById("client-search").addEventListener("input", renderClients);
+    document.getElementById("invoice-search").addEventListener("input", function () { invoiceFilter.search = this.value; renderInvoices(); });
+    document.getElementById("quote-search").addEventListener("input", function () { quoteFilter.search = this.value; renderQuotes(); });
 
     window.openClientDetail = function (id) {
         var c = state.clients.find(function (x) { return x.id === id; });
@@ -900,19 +1276,36 @@
         var contact = [c.email, c.city, c.address, c.siret ? "SIRET : " + c.siret : ""]
             .filter(Boolean).map(esc).join(" &bull; ") || "—";
 
+        var quotesPending = state.quotes.filter(function (q) { return q.client_id === id && q.status === "pending"; });
+        var quotesValid = state.quotes.filter(function (q) { return q.client_id === id && (q.status === "accepted" || q.status === "invoiced"); });
         var invoices = state.invoices.filter(function (i) { return i.client_id === id; });
-        var quotes = state.quotes.filter(function (q) { return q.client_id === id; });
         var credits = state.creditNotes.filter(function (cn) { return cn.client_id === id; });
 
-        function docRows(arr, kind) {
-            if (arr.length === 0) return '<div class="row"><span style="color:var(--text-muted)">Aucun</span></div>';
-            return arr.map(function (d) {
-                var right;
-                if (kind === "invoice") right = formatMoney(Number(d.total_ttc)) + ' — ' + (d.credit_note_id ? "Annulée" : (d.status === "paid" ? "Payée" : "En attente"));
-                else if (kind === "quote") right = formatMoney(Number(d.total_ttc)) + ' — ' + d.status;
-                else right = '-' + formatMoney(Number(d.total_ttc));
-                return '<div class="row"><span>' + esc(d.number) + ' <span style="color:var(--text-muted)">' + formatDate(d.date) + '</span></span><span>' + right + '</span></div>';
+        function line(number, date, right, pdfCall) {
+            return '<div class="row"><span>' + esc(number) + ' <span style="color:var(--text-muted)">' + formatDate(date) + '</span></span>'
+                + '<span style="display:flex;gap:12px;align-items:center">' + right
+                + '<button class="btn btn-sm btn-outline" onclick="' + pdfCall + '">PDF</button></span></div>';
+        }
+        function emptyRow() { return '<div class="row"><span style="color:var(--text-muted)">Aucun document</span></div>'; }
+
+        function quoteList(arr) {
+            if (arr.length === 0) return emptyRow();
+            return arr.map(function (q) {
+                return line(q.number, q.date, formatMoney(Number(q.total_ttc)), "downloadQuotePDF('" + q.id + "')");
             }).join("");
+        }
+        var tabPending = quoteList(quotesPending);
+        var tabValid = quoteList(quotesValid);
+        var tabInvoices = invoices.length === 0 ? emptyRow() : invoices.map(function (inv) {
+            var label = inv.credit_note_id ? "Annulée" : (inv.status === "paid" ? "Payée" : "En attente");
+            return line(inv.number, inv.date, formatMoney(Number(inv.total_ttc)) + ' <span style="color:var(--text-muted)">' + label + '</span>', "downloadPDF('" + inv.id + "')");
+        }).join("");
+        var tabCredits = credits.length === 0 ? emptyRow() : credits.map(function (cn) {
+            return line(cn.number, cn.date, '<span style="color:var(--danger)">-' + formatMoney(Number(cn.total_ttc)) + '</span>', "downloadCreditNotePDF('" + cn.id + "')");
+        }).join("");
+
+        function tabBtn(idx, label, count) {
+            return '<button class="cd-tab' + (idx === 0 ? " active" : "") + '" onclick="clientDetailTab(' + idx + ')">' + label + ' <span class="cd-count">' + count + '</span></button>';
         }
 
         document.getElementById("client-detail-body").innerHTML =
@@ -922,11 +1315,40 @@
             + '<div class="bal"><div class="bal-label">Encaissé</div><div class="bal-value" style="color:var(--success)">' + formatMoney(bal.paid) + '</div></div>'
             + '<div class="bal"><div class="bal-label">Solde dû</div><div class="bal-value" style="color:' + (bal.outstanding > 0 ? "var(--warning)" : "var(--text)") + '">' + formatMoney(bal.outstanding) + '</div></div>'
             + '</div></div>'
-            + '<div class="detail-section"><h3>Factures (' + invoices.length + ')</h3><div class="detail-list">' + docRows(invoices, "invoice") + '</div></div>'
-            + '<div class="detail-section"><h3>Devis (' + quotes.length + ')</h3><div class="detail-list">' + docRows(quotes, "quote") + '</div></div>'
-            + '<div class="detail-section"><h3>Avoirs (' + credits.length + ')</h3><div class="detail-list">' + docRows(credits, "credit") + '</div></div>';
+            + '<div class="detail-section" style="display:flex;gap:10px">'
+            + '<button class="btn btn-sm btn-outline" onclick="newQuoteForClient(\'' + id + '\')">+ Nouveau devis</button>'
+            + '<button class="btn btn-sm btn-primary" onclick="newInvoiceForClient(\'' + id + '\')">+ Nouvelle facture</button>'
+            + '</div>'
+            + '<div class="cd-tabs">' + tabBtn(0, "Devis en attente", quotesPending.length) + tabBtn(1, "Devis validés", quotesValid.length) + tabBtn(2, "Factures", invoices.length) + tabBtn(3, "Avoirs", credits.length) + '</div>'
+            + '<div class="cd-tab-pane active" data-tab="0"><div class="detail-list">' + tabPending + '</div></div>'
+            + '<div class="cd-tab-pane" data-tab="1" style="display:none"><div class="detail-list">' + tabValid + '</div></div>'
+            + '<div class="cd-tab-pane" data-tab="2" style="display:none"><div class="detail-list">' + tabInvoices + '</div></div>'
+            + '<div class="cd-tab-pane" data-tab="3" style="display:none"><div class="detail-list">' + tabCredits + '</div></div>';
 
         openModal("modal-client-detail");
+    };
+
+    window.clientDetailTab = function (idx) {
+        document.querySelectorAll("#client-detail-body .cd-tab").forEach(function (b, i) { b.classList.toggle("active", i === idx); });
+        document.querySelectorAll("#client-detail-body .cd-tab-pane").forEach(function (p) {
+            p.style.display = String(p.dataset.tab) === String(idx) ? "" : "none";
+        });
+    };
+
+    window.newQuoteForClient = function (clientId) {
+        closeModal("modal-client-detail");
+        document.getElementById("quote-form").reset();
+        setupQuoteModal();
+        document.getElementById("q-client").value = clientId;
+        openModal("modal-quote");
+    };
+    window.newInvoiceForClient = function (clientId) {
+        closeModal("modal-client-detail");
+        if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
+        document.getElementById("invoice-form").reset();
+        setupInvoiceModal();
+        document.getElementById("inv-client").value = clientId;
+        openModal("modal-invoice");
     };
 
     window.deleteClient = async function (id) {
@@ -949,9 +1371,23 @@
     document.getElementById("btn-new-expense").addEventListener("click", function () {
         document.getElementById("expense-form").reset();
         document.getElementById("exp-date").value = new Date().toISOString().slice(0, 10);
+        // Autocomplétion fournisseurs existants.
+        document.getElementById("supplier-datalist").innerHTML =
+            state.suppliers.map(function (s) { return '<option value="' + esc(s.name) + '">'; }).join("");
         recalcExpense();
         openModal("modal-expense");
     });
+
+    // Trouve un fournisseur par nom (insensible à la casse) ou le crée. Renvoie son id.
+    async function resolveSupplierId(name) {
+        if (!name) return null;
+        var existing = state.suppliers.find(function (s) { return s.name && s.name.toLowerCase() === name.toLowerCase(); });
+        if (existing) return existing.id;
+        var res = await sb.from("suppliers").insert({ user_id: state.user.id, name: name }).select().single();
+        if (res.error) return null;
+        state.suppliers.push(res.data);
+        return res.data.id;
+    }
 
     document.getElementById("expense-form").addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -971,9 +1407,12 @@
                 if (up.error) { alert("Erreur lors de l'envoi du fichier : " + up.error.message); return; }
             }
 
+            var supplierName = document.getElementById("exp-supplier").value.trim();
+            var supplierId = isPro() ? await resolveSupplierId(supplierName) : null;
             var payload = {
                 user_id: state.user.id,
-                supplier: document.getElementById("exp-supplier").value.trim(),
+                supplier: supplierName,
+                supplier_id: supplierId,
                 date: document.getElementById("exp-date").value,
                 category: document.getElementById("exp-category").value,
                 amount_ht: ht,
@@ -1045,6 +1484,193 @@
         await refreshData();
         renderExpenses();
     };
+
+    // --- Suppliers (fournisseurs, plan Pro) ---
+    function expensesOfSupplier(sup) {
+        return state.expenses.filter(function (x) {
+            if (x.supplier_id) return x.supplier_id === sup.id;
+            return x.supplier && sup.name && x.supplier.toLowerCase() === sup.name.toLowerCase();
+        });
+    }
+    function supplierTotal(sup) {
+        return expensesOfSupplier(sup).reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
+    }
+
+    function renderSuppliers() {
+        var container = document.getElementById("suppliers-list");
+        if (!isPro()) { container.innerHTML = proGateHTML("Le carnet de fournisseurs"); return; }
+        var term = (document.getElementById("supplier-search").value || "").trim().toLowerCase();
+        if (state.suppliers.length === 0) {
+            container.innerHTML = emptyState("&#127981;", "Aucun fournisseur enregistré", "btn-new-supplier", "Ajouter un fournisseur");
+            return;
+        }
+        var list = state.suppliers.filter(function (s) {
+            if (!term) return true;
+            return [s.name, s.email, s.city].some(function (v) { return v && String(v).toLowerCase().indexOf(term) !== -1; });
+        });
+        if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucun fournisseur ne correspond.</p></div>'; return; }
+        var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Ville</th><th>Dépenses</th><th>Total acheté</th><th>Actions</th></tr></thead><tbody>';
+        list.forEach(function (s) {
+            var exp = expensesOfSupplier(s);
+            html += '<tr>';
+            html += '<td><a href="#" onclick="openSupplierDetail(\'' + s.id + '\');return false" style="color:var(--primary);font-weight:600;text-decoration:none">' + esc(s.name) + '</a></td>';
+            html += '<td>' + esc(s.email || "—") + '</td>';
+            html += '<td>' + esc(s.city || "—") + '</td>';
+            html += '<td>' + exp.length + '</td>';
+            html += '<td>' + formatMoney(supplierTotal(s)) + '</td>';
+            html += '<td>';
+            html += '<button class="btn btn-sm btn-outline" onclick="openSupplierDetail(\'' + s.id + '\')">Voir</button> ';
+            html += '<button class="btn btn-sm btn-outline" onclick="editSupplier(\'' + s.id + '\')">Modifier</button> ';
+            html += '<button class="btn btn-sm btn-outline" onclick="deleteSupplier(\'' + s.id + '\')">Suppr.</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    document.getElementById("supplier-search").addEventListener("input", renderSuppliers);
+
+    document.getElementById("btn-new-supplier").addEventListener("click", function () {
+        document.getElementById("supplier-form").reset();
+        document.getElementById("supplier-edit-id").value = "";
+        document.getElementById("modal-supplier-title").textContent = "Nouveau fournisseur";
+        openModal("modal-supplier");
+    });
+
+    window.editSupplier = function (id) {
+        var s = state.suppliers.find(function (x) { return x.id === id; });
+        if (!s) return;
+        document.getElementById("supplier-edit-id").value = s.id;
+        document.getElementById("supplier-name").value = s.name || "";
+        document.getElementById("supplier-email").value = s.email || "";
+        document.getElementById("supplier-address").value = s.address || "";
+        document.getElementById("supplier-city").value = s.city || "";
+        document.getElementById("supplier-siret").value = s.siret || "";
+        document.getElementById("modal-supplier-title").textContent = "Modifier le fournisseur";
+        openModal("modal-supplier");
+    };
+
+    document.getElementById("supplier-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var editId = document.getElementById("supplier-edit-id").value;
+        var payload = {
+            name: document.getElementById("supplier-name").value.trim(),
+            email: document.getElementById("supplier-email").value.trim(),
+            address: document.getElementById("supplier-address").value.trim(),
+            city: document.getElementById("supplier-city").value.trim(),
+            siret: document.getElementById("supplier-siret").value.trim()
+        };
+        var res;
+        if (editId) res = await sb.from("suppliers").update(payload).eq("id", editId);
+        else { payload.user_id = state.user.id; res = await sb.from("suppliers").insert(payload); }
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        closeModal("modal-supplier");
+        renderSuppliers();
+    });
+
+    window.deleteSupplier = async function (id) {
+        if (!confirm("Supprimer ce fournisseur ? Les dépenses liées sont conservées.")) return;
+        var res = await sb.from("suppliers").delete().eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        renderSuppliers();
+    };
+
+    window.openSupplierDetail = function (id) {
+        var s = state.suppliers.find(function (x) { return x.id === id; });
+        if (!s) return;
+        document.getElementById("sd-title").textContent = s.name;
+        var contact = [s.email, s.city, s.address, s.siret ? "SIRET : " + s.siret : ""]
+            .filter(Boolean).map(esc).join(" &bull; ") || "—";
+        var exp = expensesOfSupplier(s).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+        var rows = exp.length === 0
+            ? '<div class="row"><span style="color:var(--text-muted)">Aucune dépense</span></div>'
+            : exp.map(function (x) {
+                return '<div class="row"><span>' + formatDate(x.date) + ' — ' + esc(EXP_CAT_LABEL[x.category] || x.category)
+                    + (x.note ? ' <span style="color:var(--text-muted)">' + esc(x.note) + '</span>' : '') + '</span><span>' + formatMoney(Number(x.amount_ttc)) + '</span></div>';
+            }).join("");
+        document.getElementById("supplier-detail-body").innerHTML =
+            '<div class="detail-section"><p style="color:var(--text-muted);font-size:.88rem">' + contact + '</p></div>'
+            + '<div class="detail-section"><div class="detail-balance">'
+            + '<div class="bal"><div class="bal-label">Dépenses</div><div class="bal-value">' + exp.length + '</div></div>'
+            + '<div class="bal"><div class="bal-label">Total acheté (TTC)</div><div class="bal-value">' + formatMoney(supplierTotal(s)) + '</div></div>'
+            + '</div></div>'
+            + '<div class="detail-section"><h3>Historique des achats</h3><div class="detail-list">' + rows + '</div></div>';
+        openModal("modal-supplier-detail");
+    };
+
+    // --- Performance (analytics devis) ---
+    function renderPerformance() {
+        // Sélecteur d'année.
+        var sel = document.getElementById("perf-year");
+        var years = {};
+        state.quotes.forEach(function (q) { years[String(q.date).slice(0, 4)] = true; });
+        years[String(new Date().getFullYear())] = true;
+        var sorted = Object.keys(years).sort().reverse();
+        var prev = sel.value;
+        sel.innerHTML = '<option value="all">Toutes les années</option>'
+            + sorted.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join("");
+        sel.value = prev || "all";
+        var year = sel.value;
+
+        var quotes = state.quotes.filter(function (q) { return year === "all" || String(q.date).slice(0, 4) === year; });
+        var total = quotes.length;
+        var byStatus = { pending: 0, accepted: 0, rejected: 0, invoiced: 0 };
+        var amount = 0;
+        quotes.forEach(function (q) { byStatus[q.status] = (byStatus[q.status] || 0) + 1; amount += Number(q.total_ttc); });
+        var validated = byStatus.accepted + byStatus.invoiced; // devis validés
+        var convRate = total ? Math.round(validated / total * 100) : 0;
+        var caRate = total ? Math.round(byStatus.invoiced / total * 100) : 0;
+        var avg = total ? amount / total : 0;
+
+        document.getElementById("perf-total").textContent = total;
+        document.getElementById("perf-conv").textContent = convRate + "%";
+        document.getElementById("perf-ca").textContent = caRate + "%";
+        document.getElementById("perf-avg").textContent = formatMoney(avg);
+
+        // Entonnoir Émis → Acceptés/Facturés → Facturés.
+        function funnelRow(label, count, color) {
+            var pct = total ? Math.round(count / total * 100) : 0;
+            return '<div class="funnel-row"><div class="funnel-label">' + label + ' <strong>' + count + '</strong></div>'
+                + '<div class="funnel-bar"><div class="funnel-fill" style="width:' + pct + '%;background:' + color + '"></div></div>'
+                + '<div class="funnel-pct">' + pct + '%</div></div>';
+        }
+        document.getElementById("perf-funnel").innerHTML =
+            funnelRow("Devis émis", total, "var(--primary)")
+            + funnelRow("Devis validés", validated, "var(--success)")
+            + funnelRow("Convertis en facture", byStatus.invoiced, "#0EA5E9")
+            + funnelRow("Refusés", byStatus.rejected, "var(--danger)");
+
+        // Devis en attente depuis plus de 30 jours (à relancer).
+        var now = new Date();
+        var stale = quotes.filter(function (q) {
+            return q.status === "pending" && (now - new Date(q.date)) / 86400000 > 30;
+        });
+        var staleHtml = stale.length === 0
+            ? '<p style="color:var(--text-muted);font-size:.88rem">Aucun devis en attente depuis plus de 30 jours.</p>'
+            : '<div class="detail-list">' + stale.map(function (q) {
+                var client = state.clients.find(function (c) { return c.id === q.client_id; });
+                var days = Math.floor((now - new Date(q.date)) / 86400000);
+                return '<div class="row"><span>' + esc(q.number) + ' — ' + esc(client ? client.name : "—") + '</span><span style="color:var(--warning)">' + days + ' jours</span></div>';
+            }).join("") + '</div>';
+        document.getElementById("perf-stale").innerHTML = staleHtml;
+
+        // Top clients par montant de devis validés.
+        var byClient = {};
+        quotes.forEach(function (q) {
+            if (q.status !== "accepted" && q.status !== "invoiced") return;
+            byClient[q.client_id] = (byClient[q.client_id] || 0) + Number(q.total_ttc);
+        });
+        var top = Object.keys(byClient).map(function (cid) {
+            var c = state.clients.find(function (x) { return x.id === cid; });
+            return { name: c ? c.name : "—", amount: byClient[cid] };
+        }).sort(function (a, b) { return b.amount - a.amount; }).slice(0, 5);
+        document.getElementById("perf-top-clients").innerHTML = top.length === 0
+            ? '<p style="color:var(--text-muted);font-size:.88rem">Aucun devis validé sur la période.</p>'
+            : '<div class="detail-list">' + top.map(function (t) {
+                return '<div class="row"><span>' + esc(t.name) + '</span><span>' + formatMoney(t.amount) + '</span></div>';
+            }).join("") + '</div>';
+    }
 
     // --- Accounting ---
     function renderAccounting() {
@@ -1135,9 +1761,119 @@
         bs += '<div class="acct-line"><span>TVA déductible</span><span class="val">' + formatMoney(tvaDeductible) + '</span></div>';
         bs += '<div class="acct-line total"><span>TVA à reverser</span><span class="val">' + formatMoney(tvaCollected - tvaDeductible) + '</span></div>';
         document.getElementById("acct-balance-sheet").innerHTML = bs;
+
+        renderUrssaf(year);
     }
 
+    // --- Accompagnement URSSAF (micro-entrepreneur) ---
+    // Taux de cotisations 2025 (indicatifs — à confirmer chaque année).
+    var URSSAF_RATES = { bic_sales: 0.123, bic_services: 0.212, bnc: 0.246 };
+    var URSSAF_LABELS = {
+        bic_sales: "Vente de marchandises (BIC) — 12,3 %",
+        bic_services: "Prestations de services (BIC) — 21,2 %",
+        bnc: "Prestations libérales (BNC) — 24,6 %"
+    };
+
+    function caHTForMonths(year, months) {
+        var v = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status !== "paid") return;
+            if (String(inv.date).slice(0, 4) !== String(year)) return;
+            if (months.indexOf(parseInt(String(inv.date).slice(5, 7), 10)) !== -1) v += Number(inv.subtotal_ht);
+        });
+        state.creditNotes.forEach(function (cn) {
+            if (String(cn.date).slice(0, 4) !== String(year)) return;
+            if (months.indexOf(parseInt(String(cn.date).slice(5, 7), 10)) !== -1) v -= Number(cn.subtotal_ht);
+        });
+        return v;
+    }
+
+    function renderUrssaf(year) {
+        var box = document.getElementById("acct-urssaf");
+        if (!box) return;
+        var p = state.profile || {};
+        if (p.legal_status !== "micro") {
+            box.innerHTML = '<div class="acct-card"><div class="acct-head">Déclaration URSSAF</div><div class="acct-body">'
+                + '<p style="color:var(--text-muted);font-size:.9rem">L\'accompagnement automatique URSSAF est disponible pour le statut <strong>micro-entrepreneur</strong>. '
+                + 'Renseignez votre statut juridique et votre type d\'activité dans <a href="#" onclick="goProfile();return false" style="color:var(--primary)">Mon profil</a> pour l\'activer.</p>'
+                + '<p style="color:var(--text-muted);font-size:.82rem;margin-top:8px">Pour les autres statuts (EI réel, EURL, SAS…), rapprochez-vous de votre expert-comptable.</p>'
+                + '</div></div>';
+            return;
+        }
+        var rate = URSSAF_RATES[p.activity_type] || URSSAF_RATES.bnc;
+        var mode = p.urssaf_period === "monthly" ? "monthly" : "quarterly";
+        var periods = [];
+        if (mode === "monthly") {
+            var mNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+            for (var m = 1; m <= 12; m++) periods.push({ label: year + "-" + String(m).padStart(2, "0"), title: mNames[m - 1] + " " + year, months: [m] });
+        } else {
+            for (var q = 1; q <= 4; q++) periods.push({ label: year + "-T" + q, title: "T" + q + " " + year, months: [q * 3 - 2, q * 3 - 1, q * 3] });
+        }
+
+        var rows = periods.map(function (per) {
+            var ca = caHTForMonths(year, per.months);
+            var cot = ca * rate;
+            var declared = state.urssaf.find(function (d) { return d.period_label === per.label; });
+            var action = declared
+                ? '<span class="status status-paid"><span class="status-dot"></span>Déclaré</span>'
+                : (ca > 0 ? '<button class="btn btn-sm btn-outline" onclick="declareUrssaf(\'' + per.label + '\',' + ca.toFixed(2) + ',' + cot.toFixed(2) + ')">Marquer déclaré</button>' : '<span style="color:var(--text-muted);font-size:.8rem">—</span>');
+            return '<div class="acct-line"><span>' + esc(per.title) + '</span>'
+                + '<span style="display:flex;gap:14px;align-items:center">'
+                + '<span style="color:var(--text-muted)">CA ' + formatMoney(ca) + '</span>'
+                + '<span class="val" style="min-width:90px;text-align:right">' + formatMoney(cot) + '</span>'
+                + action + '</span></div>';
+        }).join("");
+
+        var totalCA = caHTForMonths(year, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        box.innerHTML = '<div class="acct-card"><div class="acct-head">Déclaration URSSAF — micro-entrepreneur</div><div class="acct-body">'
+            + '<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:10px">Base : ' + esc(URSSAF_LABELS[p.activity_type] || URSSAF_LABELS.bnc)
+            + ' &bull; Déclaration ' + (mode === "monthly" ? "mensuelle" : "trimestrielle") + ' &bull; cotisations calculées sur le CA encaissé.</p>'
+            + rows
+            + '<div class="acct-line total"><span>Cotisations estimées ' + year + '</span><span class="val">' + formatMoney(totalCA * rate) + '</span></div>'
+            + '<p style="font-size:.78rem;color:var(--text-muted);margin-top:8px">Taux indicatifs 2025. Le versement libératoire de l\'impôt et la CFP ne sont pas inclus. Vérifiez les taux en vigueur sur autoentrepreneur.urssaf.fr.</p>'
+            + '</div></div>';
+    }
+
+    window.declareUrssaf = async function (label, caBase, cot) {
+        var res = await sb.from("urssaf_declarations").insert({
+            user_id: state.user.id, period_label: label, ca_base: caBase, cotisation: cot
+        });
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        renderAccounting();
+    };
+    window.goProfile = function () { navigate("profile"); };
+
+    // Export comptable CSV (factures, avoirs, dépenses) de l'année sélectionnée.
+    window.exportAccounting = function () {
+        var year = document.getElementById("acct-year").value || String(new Date().getFullYear());
+        var rows = [["Type", "Date", "Numero", "Tiers", "HT", "TVA", "TTC", "Statut"]];
+        function csvCell(v) { var s = String(v == null ? "" : v); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+        state.invoices.forEach(function (inv) {
+            if (String(inv.date).slice(0, 4) !== year) return;
+            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+            rows.push(["Facture", inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht).toFixed(2), Number(inv.tva_amount).toFixed(2), Number(inv.total_ttc).toFixed(2), invoiceStatusOf(inv)]);
+        });
+        state.creditNotes.forEach(function (cn) {
+            if (String(cn.date).slice(0, 4) !== year) return;
+            var c = state.clients.find(function (x) { return x.id === cn.client_id; });
+            rows.push(["Avoir", cn.date, cn.number, c ? c.name : "", (-Number(cn.subtotal_ht)).toFixed(2), (-Number(cn.tva_amount)).toFixed(2), (-Number(cn.total_ttc)).toFixed(2), "avoir"]);
+        });
+        state.expenses.forEach(function (x) {
+            if (String(x.date).slice(0, 4) !== year) return;
+            rows.push(["Depense", x.date, "", x.supplier || "", (-Number(x.amount_ht)).toFixed(2), (-Number(x.tva_amount)).toFixed(2), (-Number(x.amount_ttc)).toFixed(2), EXP_CAT_LABEL[x.category] || x.category]);
+        });
+        var csv = rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
+        var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "comptabilite-" + year + ".csv";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     document.getElementById("acct-year").addEventListener("change", renderAccounting);
+    document.getElementById("perf-year").addEventListener("change", renderPerformance);
 
     // --- Subscription ---
     var PLAN_META = {
@@ -1206,6 +1942,9 @@
         document.getElementById("prof-tva").value = p.tva_number || "";
         document.getElementById("prof-tva-rate").value = p.tva_rate != null ? p.tva_rate : 20;
         document.getElementById("prof-mentions").value = p.mentions || "";
+        document.getElementById("prof-legal-status").value = p.legal_status || "";
+        document.getElementById("prof-activity-type").value = p.activity_type || "bnc";
+        document.getElementById("prof-urssaf-period").value = p.urssaf_period || "quarterly";
     }
 
     document.getElementById("profile-form").addEventListener("submit", async function (e) {
@@ -1221,6 +1960,9 @@
             tva_number: document.getElementById("prof-tva").value.trim(),
             tva_rate: parseFloat(document.getElementById("prof-tva-rate").value),
             mentions: document.getElementById("prof-mentions").value.trim(),
+            legal_status: document.getElementById("prof-legal-status").value || null,
+            activity_type: document.getElementById("prof-activity-type").value || null,
+            urssaf_period: document.getElementById("prof-urssaf-period").value || null,
             updated_at: new Date().toISOString()
         };
         var res = await sb.from("profiles").upsert(payload).select().single();
@@ -1374,6 +2116,7 @@
             client_id: document.getElementById("inv-client").value,
             date: document.getElementById("inv-date").value,
             due_date: document.getElementById("inv-due-date").value,
+            po_number: document.getElementById("inv-po").value.trim() || null,
             items: items,
             subtotal_ht: subtotal,
             tva_rate: rate,

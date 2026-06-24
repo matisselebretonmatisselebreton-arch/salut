@@ -30,7 +30,13 @@ Trois tables, toutes protégées par Row Level Security (chaque utilisateur n'ac
 - `quotes` — devis, convertibles en facture (lignes en JSONB)
 - `recurring_invoices` — modèles de factures récurrentes (mensuel/trimestriel/annuel)
 - `credit_notes` — avoirs émis en annulation d'une facture
-- `expenses` — factures reçues / dépenses (justificatifs dans le bucket Storage `receipts`)
+- `expenses` — factures reçues / dépenses (justificatifs dans le bucket Storage `receipts`), reliées à `suppliers`
+- `suppliers` — carnet de fournisseurs (plan Pro), avec historique des achats
+- `urssaf_declarations` — historique des déclarations URSSAF marquées comme faites (micro-entrepreneur)
+
+Les factures portent aussi un numéro de bon de commande (`po_number`) et un suivi des relances
+(`reminder_count`, `last_reminder_at`). Le profil porte le statut juridique (`legal_status`),
+le type d'activité (`activity_type`) et la périodicité URSSAF (`urssaf_period`).
 
 ### Formules
 

@@ -47,6 +47,9 @@
                 <a href="#" class="active" data-page="dashboard">
                     <span class="nav-icon">&#9632;</span> Tableau de bord
                 </a>
+                <a href="#" data-page="quotes">
+                    <span class="nav-icon">&#128203;</span> Devis
+                </a>
                 <a href="#" data-page="invoices">
                     <span class="nav-icon">&#128196;</span> Factures
                 </a>
@@ -93,6 +96,17 @@
                         <h2>Dernières factures</h2>
                     </div>
                     <div id="dashboard-invoices-list"></div>
+                </div>
+            </div>
+
+            <!-- Quotes -->
+            <div id="page-quotes" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Devis</h1>
+                    <button class="btn btn-primary" id="btn-new-quote">+ Nouveau devis</button>
+                </div>
+                <div class="table-card">
+                    <div id="quotes-list"></div>
                 </div>
             </div>
 
@@ -278,6 +292,63 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="closeModal('modal-invoice')">Annuler</button>
                     <button type="submit" class="btn btn-primary">Créer la facture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New Quote -->
+    <div class="modal-overlay" id="modal-quote">
+        <div class="modal">
+            <h2>Nouveau devis</h2>
+            <form id="quote-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client</label>
+                        <select id="q-client" required>
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="q-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valable jusqu'au</label>
+                        <input type="date" id="q-valid-until" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Numéro de devis</label>
+                        <input type="text" id="q-number" readonly>
+                    </div>
+                </div>
+
+                <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes du devis</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-desc">Description</th>
+                            <th class="col-qty">Qté</th>
+                            <th class="col-price">Prix unit. (€)</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="quote-items"></tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-add-quote-item">+ Ajouter une ligne</button>
+
+                <div class="invoice-totals">
+                    <div class="total-line"><span>Sous-total HT</span><span id="q-subtotal">0,00 €</span></div>
+                    <div class="total-line"><span>TVA (<span id="q-tva-rate-display">20</span>%)</span><span id="q-tva-amount">0,00 €</span></div>
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="q-total">0,00 €</span></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-quote')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer le devis</button>
                 </div>
             </form>
         </div>

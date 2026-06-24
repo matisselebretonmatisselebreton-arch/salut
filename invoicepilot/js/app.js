@@ -9,7 +9,8 @@
         user: null,
         profile: {},
         clients: [],
-        invoices: []
+        invoices: [],
+        quotes: []
     };
 
     // --- Screens ---
@@ -36,11 +37,13 @@
         var results = await Promise.all([
             sb.from("profiles").select("*").eq("id", state.user.id).maybeSingle(),
             sb.from("clients").select("*").order("created_at", { ascending: false }),
-            sb.from("invoices").select("*").order("date", { ascending: false })
+            sb.from("invoices").select("*").order("date", { ascending: false }),
+            sb.from("quotes").select("*").order("date", { ascending: false })
         ]);
         state.profile = results[0].data || {};
         state.clients = results[1].data || [];
         state.invoices = results[2].data || [];
+        state.quotes = results[3].data || [];
     }
 
     // --- Auth UI ---
@@ -127,6 +130,7 @@
         });
         if (page === "dashboard") renderDashboard();
         if (page === "invoices") renderInvoices();
+        if (page === "quotes") renderQuotes();
         if (page === "clients") renderClients();
         if (page === "profile") loadProfile();
     }
@@ -208,13 +212,13 @@
     };
 
     // --- PDF export (print-to-PDF, dependency-free) ---
-    window.downloadPDF = function (id) {
-        var inv = state.invoices.find(function (i) { return i.id === id; });
-        if (!inv) return;
-        var client = state.clients.find(function (c) { return c.id === inv.client_id; }) || {};
+    // Generic renderer shared by invoices and quotes.
+    // opts = { title, metaLabel, metaDate, footerNote }
+    function renderDocumentPDF(doc, opts) {
+        var client = state.clients.find(function (c) { return c.id === doc.client_id; }) || {};
         var p = state.profile || {};
 
-        var itemsHtml = (inv.items || []).map(function (it) {
+        var itemsHtml = (doc.items || []).map(function (it) {
             return '<tr>'
                 + '<td>' + esc(it.description) + '</td>'
                 + '<td class="r">' + it.quantity + '</td>'
@@ -224,11 +228,11 @@
         }).join("");
 
         var mentions = p.mentions ? '<p class="mentions">' + esc(p.mentions) + '</p>' : "";
-        var tvaLine = Number(inv.tva_rate) > 0
-            ? '<tr><td>TVA (' + inv.tva_rate + '%)</td><td class="r">' + formatMoney(Number(inv.tva_amount)) + '</td></tr>'
+        var tvaLine = Number(doc.tva_rate) > 0
+            ? '<tr><td>TVA (' + doc.tva_rate + '%)</td><td class="r">' + formatMoney(Number(doc.tva_amount)) + '</td></tr>'
             : '<tr><td>TVA</td><td class="r">Non applicable</td></tr>';
 
-        var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Facture ' + esc(inv.number) + '</title>'
+        var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + esc(opts.title) + ' ' + esc(doc.number) + '</title>'
             + '<style>'
             + '*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}'
             + 'body{padding:40px;color:#1E293B;font-size:13px;line-height:1.5;}'
@@ -258,22 +262,22 @@
             + (p.email ? '<p>' + esc(p.email) + '</p>' : "")
             + (p.phone ? '<p>' + esc(p.phone) + '</p>' : "")
             + '</div>'
-            + '<div class="to"><div class="label">Facturé à</div>'
+            + '<div class="to"><div class="label">' + esc(opts.recipientLabel) + '</div>'
             + '<p><strong>' + esc(client.name || "") + '</strong></p>'
             + '<p>' + esc(client.address || "") + '</p><p>' + esc(client.city || "") + '</p>'
             + (client.siret ? '<p>SIRET : ' + esc(client.siret) + '</p>' : "")
             + '</div></div>'
-            + '<div class="title">FACTURE</div>'
-            + '<div class="meta">N° ' + esc(inv.number) + ' &bull; Date : ' + formatDate(inv.date) + ' &bull; Échéance : ' + formatDate(inv.due_date) + '</div>'
+            + '<div class="title">' + esc(opts.title) + '</div>'
+            + '<div class="meta">N° ' + esc(doc.number) + ' &bull; Date : ' + formatDate(doc.date) + ' &bull; ' + esc(opts.metaLabel) + ' : ' + formatDate(opts.metaDate) + '</div>'
             + '<table class="items"><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Prix unit.</th><th class="r">Total HT</th></tr></thead>'
             + '<tbody>' + itemsHtml + '</tbody></table>'
             + '<table class="totals">'
-            + '<tr><td>Sous-total HT</td><td class="r">' + formatMoney(Number(inv.subtotal_ht)) + '</td></tr>'
+            + '<tr><td>Sous-total HT</td><td class="r">' + formatMoney(Number(doc.subtotal_ht)) + '</td></tr>'
             + tvaLine
-            + '<tr class="grand"><td>Total TTC</td><td class="r">' + formatMoney(Number(inv.total_ttc)) + '</td></tr>'
+            + '<tr class="grand"><td>Total TTC</td><td class="r">' + formatMoney(Number(doc.total_ttc)) + '</td></tr>'
             + '</table>'
             + mentions
-            + '<p class="footer">En cas de retard de paiement, des pénalités de retard sont exigibles (art. L441-10 du Code de commerce). Indemnité forfaitaire pour frais de recouvrement : 40 €.</p>'
+            + '<p class="footer">' + esc(opts.footerNote) + '</p>'
             + '</body></html>';
 
         var win = window.open("", "_blank");
@@ -282,7 +286,217 @@
         win.document.close();
         win.focus();
         setTimeout(function () { win.print(); }, 300);
+    }
+
+    window.downloadPDF = function (id) {
+        var inv = state.invoices.find(function (i) { return i.id === id; });
+        if (!inv) return;
+        renderDocumentPDF(inv, {
+            title: "FACTURE",
+            recipientLabel: "Facturé à",
+            metaLabel: "Échéance",
+            metaDate: inv.due_date,
+            footerNote: "En cas de retard de paiement, des pénalités de retard sont exigibles (art. L441-10 du Code de commerce). Indemnité forfaitaire pour frais de recouvrement : 40 €."
+        });
     };
+
+    // --- Quotes (devis) ---
+    function renderQuotes() {
+        var container = document.getElementById("quotes-list");
+        if (state.quotes.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>Aucun devis pour le moment</p><button class="btn btn-primary" onclick="document.getElementById(\'btn-new-quote\').click()">Créer mon premier devis</button></div>';
+            return;
+        }
+        var html = '<table><thead><tr><th>N°</th><th>Client</th><th>Date</th><th>Montant TTC</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
+        state.quotes.forEach(function (q) {
+            var client = state.clients.find(function (c) { return c.id === q.client_id; });
+            var map = {
+                pending: { cls: "status-pending", label: "En attente" },
+                accepted: { cls: "status-paid", label: "Accepté" },
+                rejected: { cls: "status-overdue", label: "Refusé" },
+                invoiced: { cls: "status-paid", label: "Facturé" }
+            };
+            var s = map[q.status] || map.pending;
+            html += '<tr>';
+            html += '<td><strong>' + esc(q.number) + '</strong></td>';
+            html += '<td>' + esc(client ? client.name : "—") + '</td>';
+            html += '<td>' + formatDate(q.date) + '</td>';
+            html += '<td>' + formatMoney(Number(q.total_ttc)) + '</td>';
+            html += '<td><span class="status ' + s.cls + '"><span class="status-dot"></span>' + s.label + '</span></td>';
+            html += '<td>';
+            html += '<button class="btn btn-sm btn-outline" onclick="downloadQuotePDF(\'' + q.id + '\')">PDF</button> ';
+            if (q.status === "pending") {
+                html += '<button class="btn btn-sm btn-outline" onclick="setQuoteStatus(\'' + q.id + '\',\'accepted\')">Accepter</button> ';
+                html += '<button class="btn btn-sm btn-outline" onclick="setQuoteStatus(\'' + q.id + '\',\'rejected\')">Refuser</button> ';
+            }
+            if (q.status === "accepted") {
+                html += '<button class="btn btn-sm btn-primary" onclick="convertToInvoice(\'' + q.id + '\')">Convertir en facture</button> ';
+            }
+            if (q.status === "invoiced") {
+                html += '<span style="color:var(--text-muted);font-size:.8rem">→ facture créée</span> ';
+            }
+            html += '<button class="btn btn-sm btn-outline" onclick="deleteQuote(\'' + q.id + '\')">Suppr.</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    window.setQuoteStatus = async function (id, status) {
+        var res = await sb.from("quotes").update({ status: status }).eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        renderQuotes();
+    };
+
+    window.deleteQuote = async function (id) {
+        if (!confirm("Supprimer ce devis ?")) return;
+        var res = await sb.from("quotes").delete().eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        renderQuotes();
+    };
+
+    window.convertToInvoice = async function (id) {
+        var q = state.quotes.find(function (x) { return x.id === id; });
+        if (!q) return;
+        if (!confirm("Convertir ce devis en facture ?")) return;
+
+        var year = new Date().getFullYear();
+        var nextNum = state.invoices.filter(function (i) { return i.number && i.number.startsWith(year + "-"); }).length + 1;
+        var today = new Date().toISOString().slice(0, 10);
+        var due = new Date(); due.setDate(due.getDate() + 30);
+
+        var invoicePayload = {
+            user_id: state.user.id,
+            number: year + "-" + String(nextNum).padStart(3, "0"),
+            client_id: q.client_id,
+            date: today,
+            due_date: due.toISOString().slice(0, 10),
+            items: q.items,
+            subtotal_ht: q.subtotal_ht,
+            tva_rate: q.tva_rate,
+            tva_amount: q.tva_amount,
+            total_ttc: q.total_ttc,
+            status: "pending"
+        };
+        var insertRes = await sb.from("invoices").insert(invoicePayload).select().single();
+        if (insertRes.error) { alert("Erreur : " + insertRes.error.message); return; }
+
+        var updateRes = await sb.from("quotes")
+            .update({ status: "invoiced", converted_invoice_id: insertRes.data.id })
+            .eq("id", id);
+        if (updateRes.error) { alert("Erreur : " + updateRes.error.message); return; }
+
+        await refreshData();
+        navigate("invoices");
+    };
+
+    window.downloadQuotePDF = function (id) {
+        var q = state.quotes.find(function (x) { return x.id === id; });
+        if (!q) return;
+        renderDocumentPDF(q, {
+            title: "DEVIS",
+            recipientLabel: "Destinataire",
+            metaLabel: "Valable jusqu'au",
+            metaDate: q.valid_until,
+            footerNote: "Devis valable jusqu'au " + formatDate(q.valid_until) + ". Bon pour accord : date, signature et mention « Bon pour accord » du client."
+        });
+    };
+
+    // --- New Quote ---
+    function setupQuoteModal() {
+        var select = document.getElementById("q-client");
+        select.innerHTML = '<option value="">Sélectionner un client</option>';
+        state.clients.forEach(function (c) {
+            select.innerHTML += '<option value="' + c.id + '">' + esc(c.name) + '</option>';
+        });
+
+        var today = new Date().toISOString().slice(0, 10);
+        document.getElementById("q-date").value = today;
+        var valid = new Date(); valid.setDate(valid.getDate() + 30);
+        document.getElementById("q-valid-until").value = valid.toISOString().slice(0, 10);
+
+        var year = new Date().getFullYear();
+        var nextNum = state.quotes.filter(function (x) { return x.number && x.number.indexOf(year) !== -1; }).length + 1;
+        document.getElementById("q-number").value = "DEVIS-" + year + "-" + String(nextNum).padStart(3, "0");
+
+        var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
+        document.getElementById("q-tva-rate-display").textContent = rate;
+
+        document.getElementById("quote-items").innerHTML = itemRow();
+        recalcQuote();
+    }
+
+    document.getElementById("btn-add-quote-item").addEventListener("click", function () {
+        document.getElementById("quote-items").insertAdjacentHTML("beforeend", itemRow());
+    });
+
+    document.getElementById("quote-items").addEventListener("input", recalcQuote);
+    document.getElementById("quote-items").addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-item")) {
+            var rows = document.getElementById("quote-items").querySelectorAll("tr");
+            if (rows.length > 1) e.target.closest("tr").remove();
+            recalcQuote();
+        }
+    });
+
+    function recalcQuote() {
+        var subtotal = 0;
+        document.querySelectorAll("#quote-items tr").forEach(function (row) {
+            var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
+            var price = parseFloat(row.querySelector(".item-price").value) || 0;
+            var total = qty * price;
+            subtotal += total;
+            row.querySelector(".item-total").textContent = formatMoney(total);
+        });
+        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var tva = subtotal * rate / 100;
+        document.getElementById("q-subtotal").textContent = formatMoney(subtotal);
+        document.getElementById("q-tva-amount").textContent = formatMoney(tva);
+        document.getElementById("q-total").textContent = formatMoney(subtotal + tva);
+    }
+
+    document.getElementById("btn-new-quote").addEventListener("click", function () {
+        if (state.clients.length === 0) {
+            alert("Ajoutez d'abord un client avant de créer un devis.");
+            navigate("clients");
+            return;
+        }
+        document.getElementById("quote-form").reset();
+        setupQuoteModal();
+        openModal("modal-quote");
+    });
+
+    document.getElementById("quote-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var items = collectItems("#quote-items tr");
+        if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
+
+        var subtotal = items.reduce(function (s, i) { return s + i.total; }, 0);
+        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var tva = subtotal * rate / 100;
+
+        var payload = {
+            user_id: state.user.id,
+            number: document.getElementById("q-number").value,
+            client_id: document.getElementById("q-client").value,
+            date: document.getElementById("q-date").value,
+            valid_until: document.getElementById("q-valid-until").value,
+            items: items,
+            subtotal_ht: subtotal,
+            tva_rate: rate,
+            tva_amount: tva,
+            total_ttc: subtotal + tva,
+            status: "pending"
+        };
+
+        var res = await sb.from("quotes").insert(payload);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        closeModal("modal-quote");
+        navigate("quotes");
+    });
 
     // --- Clients ---
     function renderClients() {
@@ -461,13 +675,7 @@
 
     document.getElementById("invoice-form").addEventListener("submit", async function (e) {
         e.preventDefault();
-        var items = [];
-        document.querySelectorAll("#invoice-items tr").forEach(function (row) {
-            var desc = row.querySelector(".item-desc").value.trim();
-            var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
-            var price = parseFloat(row.querySelector(".item-price").value) || 0;
-            if (desc && qty > 0) items.push({ description: desc, quantity: qty, unitPrice: price, total: qty * price });
-        });
+        var items = collectItems("#invoice-items tr");
         if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
 
         var subtotal = items.reduce(function (s, i) { return s + i.total; }, 0);
@@ -496,6 +704,16 @@
     });
 
     // --- Helpers ---
+    function collectItems(selector) {
+        var items = [];
+        document.querySelectorAll(selector).forEach(function (row) {
+            var desc = row.querySelector(".item-desc").value.trim();
+            var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
+            var price = parseFloat(row.querySelector(".item-price").value) || 0;
+            if (desc && qty > 0) items.push({ description: desc, quantity: qty, unitPrice: price, total: qty * price });
+        });
+        return items;
+    }
     function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
     function formatMoney(n) { return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
     function formatDate(d) {

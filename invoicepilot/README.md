@@ -27,6 +27,7 @@ Trois tables, toutes protégées par Row Level Security (chaque utilisateur n'ac
 - `profiles` — infos entreprise du freelance (créée automatiquement à l'inscription via un trigger)
 - `clients` — carnet de clients
 - `invoices` — factures (lignes stockées en JSONB)
+- `quotes` — devis, convertibles en facture (lignes en JSONB)
 
 ## Configuration
 
@@ -55,7 +56,7 @@ python3 -m http.server 8000
 - [x] Auth, clients, factures, dashboard, profil
 - [x] Export PDF conforme (mentions légales)
 - [x] Persistance Supabase + RLS
-- [ ] Devis → Facture
+- [x] Devis → Facture (création, acceptation/refus, conversion, PDF)
 - [ ] Factures récurrentes
 - [ ] Relances automatiques par email
 - [ ] Abonnement Pro via Stripe

@@ -32,18 +32,35 @@ Trois tables, toutes protégées par Row Level Security (chaque utilisateur n'ac
 - `credit_notes` — avoirs émis en annulation d'une facture
 - `expenses` — factures reçues / dépenses (justificatifs dans le bucket Storage `receipts`), reliées à `suppliers`
 - `suppliers` — carnet de fournisseurs (plan Pro), avec historique des achats
-- `urssaf_declarations` — historique des déclarations URSSAF marquées comme faites (micro-entrepreneur)
+- `urssaf_declarations` — historique des déclarations fiscales/sociales marquées comme faites (tous statuts)
 
-Les factures portent aussi un numéro de bon de commande (`po_number`) et un suivi des relances
-(`reminder_count`, `last_reminder_at`). Le profil porte le statut juridique (`legal_status`),
-le type d'activité (`activity_type`) et la périodicité URSSAF (`urssaf_period`).
+Les factures portent un numéro de bon de commande (`po_number`), un suivi des relances
+(`reminder_count`, `last_reminder_at`) et une date d'encaissement (`paid_at`, pour le calcul du DSO).
+Le profil porte le statut juridique (`legal_status`), le type d'activité (`activity_type`),
+la périodicité URSSAF (`urssaf_period`), l'option fiscale micro (`tax_option` : barème / versement
+libératoire) et la rémunération annuelle du dirigeant (`annual_remuneration`, pour les SAS/SASU).
 
 ### Formules
 
-- **Gratuit** : 10 factures/mois, devis/avoirs/récurrences, clients, export PDF.
-- **Standard (14,99 €/mois)** : factures illimitées + tout le plan Gratuit, sans la comptabilité.
-- **Pro (29,99 €/mois)** : tout le plan Standard + factures reçues & dépenses, comptabilité
-  (compte de résultat, bilan simplifié, suivi de TVA), support prioritaire.
+- **Gratuit** : 10 factures/mois, 10 devis/mois, récurrences, clients, export PDF.
+- **Standard (14,99 €/mois)** : factures & devis illimités + tout le plan Gratuit, sans la comptabilité.
+- **Pro (29,99 €/mois)** : tout le plan Standard + fournisseurs & dépenses, comptabilité
+  (compte de résultat, bilan, **trésorerie / BFR / DSO**), suivi de TVA et **accompagnement fiscal
+  & social** (calcul des cotisations et estimation de l'imposition selon le statut).
+
+### Accompagnement fiscal & social (Pro)
+
+Le module Comptabilité estime, selon le statut juridique du profil :
+
+- **Micro-entrepreneur** : cotisations sur le CA encaissé par période, impôt au versement
+  libératoire ou au barème (après abattement), récapitulatif annuel.
+- **EI / EURL à l'IR** : bénéfice, cotisations sociales TNS (≈ 45 %), impôt sur le revenu au barème.
+- **SAS / SASU / SARL à l'IS** : charges sociales du dirigeant assimilé salarié, impôt sur les
+  sociétés (15 % / 25 %).
+
+Les onglets temporels (Comptabilité, Performance) disposent d'un sélecteur de plage précis
+(année, trimestre, mois, période personnalisée, raccourcis) et de cartes cliquables ouvrant le
+détail ligne à ligne. Ces estimations sont indicatives et ne remplacent pas un expert-comptable.
 
 Le paiement Stripe reste à brancher — l'activation est pour l'instant immédiate côté application.
 

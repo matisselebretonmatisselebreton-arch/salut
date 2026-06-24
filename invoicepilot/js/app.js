@@ -530,7 +530,7 @@
     }
 
     window.markPaid = async function (id) {
-        var res = await sb.from("invoices").update({ status: "paid" }).eq("id", id);
+        var res = await sb.from("invoices").update({ status: "paid", paid_at: new Date().toISOString() }).eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         navigate("invoices");
@@ -1600,20 +1600,12 @@
     };
 
     // --- Performance (analytics devis) ---
+    var perfView = null;
     function renderPerformance() {
-        // Sélecteur d'année.
-        var sel = document.getElementById("perf-year");
-        var years = {};
-        state.quotes.forEach(function (q) { years[String(q.date).slice(0, 4)] = true; });
-        years[String(new Date().getFullYear())] = true;
-        var sorted = Object.keys(years).sort().reverse();
-        var prev = sel.value;
-        sel.innerHTML = '<option value="all">Toutes les années</option>'
-            + sorted.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join("");
-        sel.value = prev || "all";
-        var year = sel.value;
+        renderRangeControls("performance");
+        var b = rangeBounds(rangeState.performance);
 
-        var quotes = state.quotes.filter(function (q) { return year === "all" || String(q.date).slice(0, 4) === year; });
+        var quotes = state.quotes.filter(function (q) { return dateInBounds(q.date, b); });
         var total = quotes.length;
         var byStatus = { pending: 0, accepted: 0, rejected: 0, invoiced: 0 };
         var amount = 0;
@@ -1622,6 +1614,8 @@
         var convRate = total ? Math.round(validated / total * 100) : 0;
         var caRate = total ? Math.round(byStatus.invoiced / total * 100) : 0;
         var avg = total ? amount / total : 0;
+
+        perfView = { bounds: b, quotes: quotes, total: total, byStatus: byStatus, validated: validated, avg: avg };
 
         document.getElementById("perf-total").textContent = total;
         document.getElementById("perf-conv").textContent = convRate + "%";
@@ -1672,6 +1666,164 @@
             }).join("") + '</div>';
     }
 
+    var QUOTE_STATUS_LABEL = { pending: "En attente", accepted: "Accepté", rejected: "Refusé", invoiced: "Facturé" };
+    // --- Drill-down Performance ---
+    window.openPerfDetail = function (which) {
+        if (!perfView) return;
+        var v = perfView, now = new Date();
+        function clientName(id) { var c = state.clients.find(function (x) { return x.id === id; }); return c ? c.name : "—"; }
+        function qrow(q, right, color) {
+            return '<div class="row"><span>' + esc(q.number) + ' — ' + esc(clientName(q.client_id)) + ' <span style="color:var(--text-muted);font-size:.85rem">' + formatDate(q.date) + '</span></span>'
+                + '<span' + (color ? ' style="color:' + color + '"' : '') + '>' + right + '</span></div>';
+        }
+        var title = "", body = "";
+        if (which === "total") {
+            title = "Devis émis — " + v.bounds.label;
+            var lines = v.quotes.slice().sort(function (a, c) { return a.date < c.date ? 1 : -1; }).map(function (q) {
+                return qrow(q, formatMoney(Number(q.total_ttc)) + ' · ' + QUOTE_STATUS_LABEL[q.status]);
+            });
+            body = listOrEmpty(lines) + totalRow("Total devis émis", String(v.total));
+        } else if (which === "conv") {
+            title = "Taux de transformation — " + v.bounds.label;
+            function bucket(label, statuses, color) {
+                var arr = v.quotes.filter(function (q) { return statuses.indexOf(q.status) !== -1; });
+                if (arr.length === 0) return "";
+                return '<div style="font-weight:700;font-size:.82rem;color:' + color + ';margin:10px 0 4px">' + label + ' (' + arr.length + ')</div>'
+                    + arr.map(function (q) { return qrow(q, formatMoney(Number(q.total_ttc))); }).join("");
+            }
+            body = '<p style="color:var(--text-muted);font-size:.9rem;margin-bottom:6px">Validés : <strong>' + v.validated + '</strong> / ' + v.total + ' devis — taux ' + (v.total ? Math.round(v.validated / v.total * 100) : 0) + ' %.</p>'
+                + '<div class="detail-list">'
+                + bucket("Validés (acceptés + facturés)", ["accepted", "invoiced"], "var(--success)")
+                + bucket("En attente", ["pending"], "var(--warning)")
+                + bucket("Refusés", ["rejected"], "var(--danger)")
+                + '</div>';
+        } else if (which === "ca") {
+            title = "Devis convertis en facture — " + v.bounds.label;
+            var conv = v.quotes.filter(function (q) { return q.status === "invoiced"; });
+            var clines = conv.slice().sort(function (a, c) { return a.date < c.date ? 1 : -1; }).map(function (q) {
+                var inv = state.invoices.find(function (i) { return i.id === q.converted_invoice_id; });
+                var right = inv ? "→ Facture " + esc(inv.number) : formatMoney(Number(q.total_ttc));
+                return qrow(q, right, "#0EA5E9");
+            });
+            body = listOrEmpty(clines) + totalRow("Convertis en facture", String(conv.length));
+        } else {
+            title = "Montant moyen / devis — " + v.bounds.label;
+            var amounts = v.quotes.map(function (q) { return Number(q.total_ttc); }).sort(function (a, c) { return a - c; });
+            var median = amounts.length ? (amounts.length % 2 ? amounts[(amounts.length - 1) / 2] : (amounts[amounts.length / 2 - 1] + amounts[amounts.length / 2]) / 2) : 0;
+            var min = amounts.length ? amounts[0] : 0, max = amounts.length ? amounts[amounts.length - 1] : 0;
+            body = '<div class="tax-summary">'
+                + taxStat("Moyenne", formatMoney(v.avg), v.total + " devis")
+                + taxStat("Médiane", formatMoney(median), "valeur centrale")
+                + taxStat("Min — Max", formatMoney(min) + " → " + formatMoney(max), "amplitude")
+                + '</div>'
+                + '<div class="detail-list" style="margin-top:10px">' + v.quotes.slice().sort(function (a, c) { return Number(c.total_ttc) - Number(a.total_ttc); }).map(function (q) {
+                    return qrow(q, formatMoney(Number(q.total_ttc)));
+                }).join("") + '</div>';
+        }
+        document.getElementById("detail-title").textContent = title;
+        document.getElementById("detail-body").innerHTML = body;
+        openModal("modal-detail");
+    };
+
+    // --- Sélecteur de plage de dates réutilisable ---
+    // Modes : year / quarter / month / custom / all. Utilisé par Comptabilité et Performance.
+    var MONTH_NAMES = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+    function pad2(n) { return String(n).padStart(2, "0"); }
+    function lastDayOfMonth(year, month) { return new Date(Number(year), Number(month), 0).getDate(); }
+
+    function defaultRange() {
+        var y = String(new Date().getFullYear());
+        return { mode: "year", year: y, quarter: Math.floor(new Date().getMonth() / 3) + 1, month: pad2(new Date().getMonth() + 1), from: y + "-01-01", to: y + "-12-31" };
+    }
+    var rangeState = { accounting: defaultRange(), performance: { mode: "all", year: String(new Date().getFullYear()), quarter: 1, month: "01", from: "", to: "" } };
+    var RANGE_CONTAINER = { accounting: "acct-range", performance: "perf-range" };
+
+    function availableYears() {
+        var years = {};
+        function add(arr) { arr.forEach(function (d) { if (d && d.date) years[String(d.date).slice(0, 4)] = true; }); }
+        add(state.invoices); add(state.quotes); add(state.expenses); add(state.creditNotes);
+        years[String(new Date().getFullYear())] = true;
+        return Object.keys(years).sort().reverse();
+    }
+
+    // Renvoie les bornes inclusives { from, to, label, year } d'une plage.
+    function rangeBounds(r) {
+        if (r.mode === "all") return { from: "0000-01-01", to: "9999-12-31", label: "Toutes périodes", year: String(new Date().getFullYear()) };
+        if (r.mode === "custom") {
+            var f = r.from || "0000-01-01", t = r.to || "9999-12-31";
+            return { from: f, to: t, label: formatDate(f) + " → " + formatDate(t), year: String(f).slice(0, 4) };
+        }
+        if (r.mode === "quarter") {
+            var qs = (r.quarter - 1) * 3 + 1, qe = qs + 2;
+            return { from: r.year + "-" + pad2(qs) + "-01", to: r.year + "-" + pad2(qe) + "-" + lastDayOfMonth(r.year, qe), label: "T" + r.quarter + " " + r.year, year: r.year };
+        }
+        if (r.mode === "month") {
+            var mm = Number(r.month);
+            return { from: r.year + "-" + r.month + "-01", to: r.year + "-" + r.month + "-" + lastDayOfMonth(r.year, mm), label: MONTH_NAMES[mm - 1] + " " + r.year, year: r.year };
+        }
+        return { from: r.year + "-01-01", to: r.year + "-12-31", label: "Année " + r.year, year: r.year };
+    }
+    function dateInBounds(dateStr, b) { var d = String(dateStr).slice(0, 10); return d >= b.from && d <= b.to; }
+
+    function renderRangeControls(key) {
+        var container = document.getElementById(RANGE_CONTAINER[key]);
+        if (!container) return;
+        var r = rangeState[key];
+        var years = availableYears();
+        function sel(onchange, options) { return '<select class="range-sel" onchange="' + onchange + '">' + options + '</select>'; }
+        function optList(arr, cur) { return arr.map(function (o) { return '<option value="' + o.v + '"' + (String(o.v) === String(cur) ? ' selected' : '') + '>' + o.l + '</option>'; }).join(""); }
+
+        var modeOpts = [{ v: "year", l: "Année" }, { v: "quarter", l: "Trimestre" }, { v: "month", l: "Mois" }, { v: "custom", l: "Personnalisé" }];
+        if (key === "performance") modeOpts.unshift({ v: "all", l: "Tout l'historique" });
+        var html = sel("rngMode('" + key + "',this.value)", optList(modeOpts, r.mode));
+
+        if (r.mode === "year" || r.mode === "quarter" || r.mode === "month") {
+            html += sel("rngYear('" + key + "',this.value)", optList(years.map(function (y) { return { v: y, l: y }; }), r.year));
+        }
+        if (r.mode === "quarter") {
+            html += sel("rngQuarter('" + key + "',this.value)", optList([1, 2, 3, 4].map(function (q) { return { v: q, l: "T" + q }; }), r.quarter));
+        }
+        if (r.mode === "month") {
+            html += sel("rngMonth('" + key + "',this.value)", optList(MONTH_NAMES.map(function (m, i) { return { v: pad2(i + 1), l: m }; }), r.month));
+        }
+        if (r.mode === "custom") {
+            html += '<input type="date" class="range-sel" value="' + (r.from || "") + '" onchange="rngFrom(\'' + key + '\',this.value)">'
+                + '<span style="color:var(--text-muted);font-size:.85rem">au</span>'
+                + '<input type="date" class="range-sel" value="' + (r.to || "") + '" onchange="rngTo(\'' + key + '\',this.value)">';
+        }
+        // Raccourcis rapides
+        html += '<span class="range-quicks">'
+            + '<button class="range-quick" onclick="rngQuick(\'' + key + '\',\'ytd\')">Cette année</button>'
+            + '<button class="range-quick" onclick="rngQuick(\'' + key + '\',\'quarter\')">Ce trimestre</button>'
+            + '<button class="range-quick" onclick="rngQuick(\'' + key + '\',\'30d\')">30 j</button>'
+            + '</span>';
+        container.innerHTML = html;
+    }
+
+    function applyRangeChange(key) {
+        renderRangeControls(key);
+        if (key === "accounting") renderAccounting();
+        else if (key === "performance") renderPerformance();
+    }
+    window.rngMode = function (key, v) { rangeState[key].mode = v; applyRangeChange(key); };
+    window.rngYear = function (key, v) { rangeState[key].year = v; applyRangeChange(key); };
+    window.rngQuarter = function (key, v) { rangeState[key].quarter = Number(v); applyRangeChange(key); };
+    window.rngMonth = function (key, v) { rangeState[key].month = v; applyRangeChange(key); };
+    window.rngFrom = function (key, v) { rangeState[key].from = v; applyRangeChange(key); };
+    window.rngTo = function (key, v) { rangeState[key].to = v; applyRangeChange(key); };
+    window.rngQuick = function (key, which) {
+        var r = rangeState[key];
+        var now = new Date();
+        if (which === "ytd") { r.mode = "year"; r.year = String(now.getFullYear()); }
+        else if (which === "quarter") { r.mode = "quarter"; r.year = String(now.getFullYear()); r.quarter = Math.floor(now.getMonth() / 3) + 1; }
+        else if (which === "30d") {
+            r.mode = "custom";
+            var from = new Date(); from.setDate(from.getDate() - 30);
+            r.from = from.toISOString().slice(0, 10); r.to = now.toISOString().slice(0, 10);
+        }
+        applyRangeChange(key);
+    };
+
     // --- Accounting ---
     function renderAccounting() {
         var gate = document.getElementById("accounting-pro-gate");
@@ -1685,47 +1837,42 @@
         gate.style.display = "none";
         content.style.display = "";
 
-        // Populate year selector once.
-        var sel = document.getElementById("acct-year");
-        var years = {};
-        state.invoices.forEach(function (i) { years[String(i.date).slice(0, 4)] = true; });
-        state.expenses.forEach(function (x) { years[String(x.date).slice(0, 4)] = true; });
-        var thisYear = String(new Date().getFullYear());
-        years[thisYear] = true;
-        var sorted = Object.keys(years).sort().reverse();
-        var prev = sel.value;
-        sel.innerHTML = sorted.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join("");
-        sel.value = (prev && years[prev]) ? prev : thisYear;
-
-        var year = sel.value;
+        renderRangeControls("accounting");
+        var b = rangeBounds(rangeState.accounting);
 
         // Produits = factures encaissées (HT), moins avoirs (HT).
-        var productsHT = 0, tvaCollected = 0;
-        state.invoices.forEach(function (inv) {
-            if (inv.credit_note_id) return;
-            if (inv.status !== "paid") return;
-            if (String(inv.date).slice(0, 4) !== year) return;
-            productsHT += Number(inv.subtotal_ht);
-            tvaCollected += Number(inv.tva_amount);
+        var paidInvoices = state.invoices.filter(function (inv) {
+            return !inv.credit_note_id && inv.status === "paid" && dateInBounds(inv.date, b);
         });
-        var creditsHT = 0;
-        state.creditNotes.forEach(function (cn) {
-            if (String(cn.date).slice(0, 4) !== year) return;
-            creditsHT += Number(cn.subtotal_ht);
-        });
-        productsHT -= creditsHT;
+        var productsGross = 0, tvaCollected = 0;
+        paidInvoices.forEach(function (inv) { productsGross += Number(inv.subtotal_ht); tvaCollected += Number(inv.tva_amount); });
+        var credits = state.creditNotes.filter(function (cn) { return dateInBounds(cn.date, b); });
+        var creditsHT = credits.reduce(function (s, cn) { return s + Number(cn.subtotal_ht); }, 0);
+        var productsHT = productsGross - creditsHT;
 
         // Charges = dépenses (HT), TVA déductible.
-        var chargesHT = 0, tvaDeductible = 0;
-        var byCat = {};
-        state.expenses.forEach(function (x) {
-            if (String(x.date).slice(0, 4) !== year) return;
+        var periodExpenses = state.expenses.filter(function (x) { return dateInBounds(x.date, b); });
+        var chargesHT = 0, tvaDeductible = 0, byCat = {};
+        periodExpenses.forEach(function (x) {
             chargesHT += Number(x.amount_ht);
             tvaDeductible += Number(x.tva_amount);
             byCat[x.category] = (byCat[x.category] || 0) + Number(x.amount_ht);
         });
 
         var result = productsHT - chargesHT;
+
+        // Créances clients (factures émises non payées, non annulées).
+        var receivables = state.invoices.filter(function (inv) {
+            return !inv.credit_note_id && inv.status !== "paid" && dateInBounds(inv.date, b);
+        });
+        var outstanding = receivables.reduce(function (s, inv) { return s + Number(inv.total_ttc); }, 0);
+
+        // Mémorise la vue pour les drill-downs.
+        acctView = {
+            bounds: b, paidInvoices: paidInvoices, credits: credits, expenses: periodExpenses,
+            receivables: receivables, byCat: byCat, productsHT: productsHT, productsGross: productsGross,
+            creditsHT: creditsHT, chargesHT: chargesHT, result: result
+        };
 
         document.getElementById("acct-products").textContent = formatMoney(productsHT);
         document.getElementById("acct-charges").textContent = formatMoney(chargesHT);
@@ -1735,7 +1882,7 @@
 
         // Income statement
         var is = '';
-        is += '<div class="acct-line positive"><span>Produits (ventes encaissées, HT)</span><span class="val">' + formatMoney(productsHT + creditsHT) + '</span></div>';
+        is += '<div class="acct-line positive"><span>Produits (ventes encaissées, HT)</span><span class="val">' + formatMoney(productsGross) + '</span></div>';
         if (creditsHT > 0) is += '<div class="acct-line negative"><span>Avoirs émis (HT)</span><span class="val">-' + formatMoney(creditsHT) + '</span></div>';
         Object.keys(byCat).forEach(function (cat) {
             is += '<div class="acct-line negative"><span>' + esc(EXP_CAT_LABEL[cat] || cat) + '</span><span class="val">-' + formatMoney(byCat[cat]) + '</span></div>';
@@ -1744,35 +1891,158 @@
         is += '<div class="acct-line total"><span>Résultat net</span><span class="val" style="color:' + (result >= 0 ? "var(--success)" : "var(--danger)") + '">' + formatMoney(result) + '</span></div>';
         document.getElementById("acct-income-statement").innerHTML = is;
 
+        // Trésorerie & fonds de roulement
+        renderTreasury(b, paidInvoices, periodExpenses, credits, outstanding);
+
         // Simplified balance sheet
-        var outstanding = 0;
-        state.invoices.forEach(function (inv) {
-            if (inv.credit_note_id || inv.status === "paid") return;
-            if (String(inv.date).slice(0, 4) !== year) return;
-            outstanding += Number(inv.total_ttc);
-        });
-        var treasury = result; // approximation HT
         var bs = '';
         bs += '<div style="font-weight:700;font-size:.8rem;color:var(--text-muted);margin:4px 0 6px">ACTIF</div>';
         bs += '<div class="acct-line"><span>Créances clients (factures impayées TTC)</span><span class="val">' + formatMoney(outstanding) + '</span></div>';
-        bs += '<div class="acct-line"><span>Trésorerie estimée</span><span class="val">' + formatMoney(treasury) + '</span></div>';
+        bs += '<div class="acct-line"><span>Résultat net de la période (HT)</span><span class="val">' + formatMoney(result) + '</span></div>';
         bs += '<div style="font-weight:700;font-size:.8rem;color:var(--text-muted);margin:14px 0 6px">TVA</div>';
         bs += '<div class="acct-line"><span>TVA collectée</span><span class="val">' + formatMoney(tvaCollected) + '</span></div>';
         bs += '<div class="acct-line"><span>TVA déductible</span><span class="val">' + formatMoney(tvaDeductible) + '</span></div>';
         bs += '<div class="acct-line total"><span>TVA à reverser</span><span class="val">' + formatMoney(tvaCollected - tvaDeductible) + '</span></div>';
         document.getElementById("acct-balance-sheet").innerHTML = bs;
 
-        renderUrssaf(year);
+        renderTax(b.year);
     }
 
-    // --- Accompagnement URSSAF (micro-entrepreneur) ---
-    // Taux de cotisations 2025 (indicatifs — à confirmer chaque année).
+    var acctView = null;
+
+    // Trésorerie nette, BFR, fonds de roulement, DSO.
+    function renderTreasury(b, paidInvoices, periodExpenses, credits, outstanding) {
+        var cashIn = paidInvoices.reduce(function (s, inv) { return s + Number(inv.total_ttc); }, 0)
+            - credits.reduce(function (s, cn) { return s + Number(cn.total_ttc); }, 0);
+        var cashOut = periodExpenses.reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
+        var netCash = cashIn - cashOut;
+        // Dettes fournisseurs non suivies dans l'app → 0 (les dépenses sont saisies une fois réglées).
+        var payables = 0;
+        var bfr = outstanding - payables;
+
+        // DSO = délai moyen d'encaissement (jours entre émission et paiement), si paid_at connu.
+        var dsoDays = 0, dsoCount = 0;
+        paidInvoices.forEach(function (inv) {
+            if (!inv.paid_at) return;
+            var d = (new Date(inv.paid_at) - new Date(inv.date)) / 86400000;
+            if (d >= 0) { dsoDays += d; dsoCount++; }
+        });
+        var dso = dsoCount ? Math.round(dsoDays / dsoCount) : null;
+
+        function card(label, value, color, hint) {
+            return '<div class="treasury-card">'
+                + '<div class="treasury-label">' + label + '</div>'
+                + '<div class="treasury-value"' + (color ? ' style="color:' + color + '"' : '') + '>' + value + '</div>'
+                + (hint ? '<div class="treasury-hint">' + hint + '</div>' : '') + '</div>';
+        }
+        document.getElementById("acct-treasury").innerHTML =
+            card("Trésorerie nette de la période", formatMoney(netCash), netCash >= 0 ? "var(--success)" : "var(--danger)", "Encaissé − décaissé")
+            + card("Créances clients", formatMoney(outstanding), outstanding > 0 ? "var(--warning)" : null, "Factures émises non réglées")
+            + card("BFR", formatMoney(bfr), null, "Créances − dettes fournisseurs")
+            + card("DSO", dso == null ? "n/d" : (dso + " j"), dso != null && dso > 45 ? "var(--danger)" : null, "Délai moyen d'encaissement");
+
+        var notes = [];
+        if (netCash < 0) notes.push("⚠️ Trésorerie négative sur la période : vos décaissements dépassent vos encaissements.");
+        if (dso != null && dso > 45) notes.push("⚠️ Délai d'encaissement élevé (" + dso + " j). Pensez à relancer vos factures en attente.");
+        if (dso == null) notes.push("Le DSO sera calculé dès que des factures seront marquées payées (date d'encaissement enregistrée).");
+        document.getElementById("acct-treasury-detail").innerHTML = notes.length
+            ? '<p style="font-size:.8rem;color:var(--text-muted);margin-top:4px">' + notes.map(esc).join("<br>") + '</p>' : "";
+    }
+
+    // --- Drill-down Comptabilité ---
+    window.openAcctDetail = function (which) {
+        if (!acctView) return;
+        var v = acctView, body = "", title = "";
+        function clientName(id) { var c = state.clients.find(function (x) { return x.id === id; }); return c ? c.name : "—"; }
+        function row(left, sub, right, color) {
+            return '<div class="row"><span>' + left + (sub ? ' <span style="color:var(--text-muted);font-size:.85rem">' + sub + '</span>' : '') + '</span>'
+                + '<span' + (color ? ' style="color:' + color + '"' : '') + '>' + right + '</span></div>';
+        }
+        if (which === "products") {
+            title = "Produits encaissés — " + v.bounds.label;
+            var lines = v.paidInvoices.slice().sort(function (a, c) { return a.date < c.date ? 1 : -1; }).map(function (inv) {
+                return row(esc(inv.number) + " — " + esc(clientName(inv.client_id)), formatDate(inv.date), formatMoney(Number(inv.subtotal_ht)) + " HT");
+            });
+            v.credits.forEach(function (cn) {
+                lines.push(row("Avoir " + esc(cn.number) + " — " + esc(clientName(cn.client_id)), formatDate(cn.date), "-" + formatMoney(Number(cn.subtotal_ht)) + " HT", "var(--danger)"));
+            });
+            body = listOrEmpty(lines) + totalRow("Total produits (HT)", formatMoney(v.productsHT));
+        } else if (which === "charges") {
+            title = "Charges — " + v.bounds.label;
+            var clines = v.expenses.slice().sort(function (a, c) { return a.date < c.date ? 1 : -1; }).map(function (x) {
+                return row(esc(x.supplier || "—") + " — " + esc(EXP_CAT_LABEL[x.category] || x.category), formatDate(x.date), formatMoney(Number(x.amount_ht)) + " HT");
+            });
+            body = listOrEmpty(clines) + totalRow("Total charges (HT)", formatMoney(v.chargesHT));
+        } else {
+            title = "Résultat net — " + v.bounds.label;
+            var cats = Object.keys(v.byCat);
+            body = '<div class="detail-list">'
+                + row("Produits encaissés (HT)", "", formatMoney(v.productsGross), "var(--success)")
+                + (v.creditsHT > 0 ? row("Avoirs émis (HT)", "", "-" + formatMoney(v.creditsHT), "var(--danger)") : "")
+                + cats.map(function (cat) { return row(esc(EXP_CAT_LABEL[cat] || cat), "", "-" + formatMoney(v.byCat[cat]), "var(--danger)"); }).join("")
+                + (cats.length === 0 ? row("Charges", "", "0,00 €") : "")
+                + '</div>'
+                + totalRow("Résultat net", formatMoney(v.result), v.result >= 0 ? "var(--success)" : "var(--danger)");
+        }
+        document.getElementById("detail-title").textContent = title;
+        document.getElementById("detail-body").innerHTML = body;
+        openModal("modal-detail");
+    };
+    function listOrEmpty(lines) {
+        return lines.length ? '<div class="detail-list">' + lines.join("") + '</div>'
+            : '<p style="color:var(--text-muted)">Aucune écriture sur cette période.</p>';
+    }
+    function totalRow(label, value, color) {
+        return '<div class="acct-line total" style="margin-top:10px"><span>' + esc(label) + '</span><span class="val"' + (color ? ' style="color:' + color + '"' : '') + '>' + value + '</span></div>';
+    }
+
+    // --- Accompagnement fiscal & social (tous statuts) ---
+    // Taux indicatifs 2025/2026 — à confirmer chaque année auprès de l'URSSAF / des impôts.
     var URSSAF_RATES = { bic_sales: 0.123, bic_services: 0.212, bnc: 0.246 };
     var URSSAF_LABELS = {
         bic_sales: "Vente de marchandises (BIC) — 12,3 %",
         bic_services: "Prestations de services (BIC) — 21,2 %",
         bnc: "Prestations libérales (BNC) — 24,6 %"
     };
+    // Versement libératoire de l'impôt (option micro).
+    var VFL_RATES = { bic_sales: 0.01, bic_services: 0.017, bnc: 0.022 };
+    // Abattement forfaitaire micro pour le revenu imposable (barème).
+    var MICRO_ABATTEMENT = { bic_sales: 0.71, bic_services: 0.50, bnc: 0.34 };
+    var CFP_RATE = { bic_sales: 0.001, bic_services: 0.003, bnc: 0.002 }; // contribution formation pro
+    // Cotisations sociales TNS au réel (EI/EURL à l'IR), estimation sur le bénéfice.
+    var TNS_RATE = 0.45;
+    // Charges sociales dirigeant assimilé salarié (SAS/SASU), part patronale + salariale sur le net.
+    var ASSIMILE_RATE = 0.82;
+
+    // Barème de l'impôt sur le revenu 2025 (déclaration 2026), 1 part — estimation indicative.
+    var IR_BRACKETS = [
+        { up: 11497, rate: 0 },
+        { up: 29315, rate: 0.11 },
+        { up: 83823, rate: 0.30 },
+        { up: 180294, rate: 0.41 },
+        { up: Infinity, rate: 0.45 }
+    ];
+    function incomeTaxBareme(taxable) {
+        if (taxable <= 0) return 0;
+        var tax = 0, prev = 0;
+        for (var i = 0; i < IR_BRACKETS.length; i++) {
+            var b = IR_BRACKETS[i];
+            if (taxable > b.up) { tax += (b.up - prev) * b.rate; prev = b.up; }
+            else { tax += (taxable - prev) * b.rate; break; }
+        }
+        return tax;
+    }
+    // Impôt sur les sociétés : 15 % jusqu'à 42 500 €, 25 % au-delà.
+    function corporateTax(profit) {
+        if (profit <= 0) return 0;
+        return profit <= 42500 ? profit * 0.15 : 42500 * 0.15 + (profit - 42500) * 0.25;
+    }
+    function chargesHTForYear(year) {
+        return state.expenses.reduce(function (s, x) {
+            return String(x.date).slice(0, 4) === String(year) ? s + Number(x.amount_ht) : s;
+        }, 0);
+    }
+    var TAX_DISCLAIMER = "Estimation indicative à partir de vos données InvoicePilot et des taux/barèmes en vigueur (1 part fiscale, sans tenir compte de votre situation personnelle). Elle ne remplace pas votre expert-comptable ni les simulateurs officiels (urssaf.fr, impots.gouv.fr).";
 
     function caHTForMonths(year, months) {
         var v = 0;
@@ -1788,51 +2058,154 @@
         return v;
     }
 
-    function renderUrssaf(year) {
+    // Routeur principal : choisit l'accompagnement selon le statut juridique.
+    function renderTax(year) {
         var box = document.getElementById("acct-urssaf");
         if (!box) return;
         var p = state.profile || {};
-        if (p.legal_status !== "micro") {
-            box.innerHTML = '<div class="acct-card"><div class="acct-head">Déclaration URSSAF</div><div class="acct-body">'
-                + '<p style="color:var(--text-muted);font-size:.9rem">L\'accompagnement automatique URSSAF est disponible pour le statut <strong>micro-entrepreneur</strong>. '
-                + 'Renseignez votre statut juridique et votre type d\'activité dans <a href="#" onclick="goProfile();return false" style="color:var(--primary)">Mon profil</a> pour l\'activer.</p>'
-                + '<p style="color:var(--text-muted);font-size:.82rem;margin-top:8px">Pour les autres statuts (EI réel, EURL, SAS…), rapprochez-vous de votre expert-comptable.</p>'
-                + '</div></div>';
-            return;
-        }
-        var rate = URSSAF_RATES[p.activity_type] || URSSAF_RATES.bnc;
+        var status = p.legal_status || "";
+        if (status === "micro") return renderTaxMicro(box, p, year);
+        if (status === "ei" || status === "eurl") return renderTaxTNS(box, p, year, status);
+        if (status === "sas") return renderTaxAssimile(box, p, year);
+        box.innerHTML = taxCard("Accompagnement fiscal & social",
+            '<p style="color:var(--text-muted);font-size:.9rem">Renseignez votre <strong>statut juridique</strong> dans '
+            + '<a href="#" onclick="goProfile();return false" style="color:var(--primary)">Mon profil</a> pour activer le calcul de vos cotisations et de votre imposition '
+            + '(micro-entrepreneur, EI, EURL, SAS/SASU).</p>');
+    }
+
+    function taxCard(head, bodyHtml) {
+        return '<div class="acct-card"><div class="acct-head">' + esc(head) + '</div><div class="acct-body">' + bodyHtml
+            + '<p style="font-size:.76rem;color:var(--text-muted);margin-top:12px;border-top:1px dashed var(--border);padding-top:10px">' + esc(TAX_DISCLAIMER) + '</p>'
+            + '</div></div>';
+    }
+
+    // --- Micro-entrepreneur : cotisations sur CA + impôt (VFL ou barème) ---
+    function renderTaxMicro(box, p, year) {
+        var act = p.activity_type || "bnc";
+        var rate = URSSAF_RATES[act] || URSSAF_RATES.bnc;
+        var cfp = CFP_RATE[act] || CFP_RATE.bnc;
+        var vfl = p.tax_option === "vfl";
         var mode = p.urssaf_period === "monthly" ? "monthly" : "quarterly";
         var periods = [];
         if (mode === "monthly") {
-            var mNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-            for (var m = 1; m <= 12; m++) periods.push({ label: year + "-" + String(m).padStart(2, "0"), title: mNames[m - 1] + " " + year, months: [m] });
+            for (var m = 1; m <= 12; m++) periods.push({ label: year + "-" + pad2(m), title: MONTH_NAMES[m - 1] + " " + year, months: [m] });
         } else {
             for (var q = 1; q <= 4; q++) periods.push({ label: year + "-T" + q, title: "T" + q + " " + year, months: [q * 3 - 2, q * 3 - 1, q * 3] });
         }
 
         var rows = periods.map(function (per) {
             var ca = caHTForMonths(year, per.months);
-            var cot = ca * rate;
+            var cot = ca * (rate + cfp);
+            var imp = vfl ? ca * (VFL_RATES[act] || 0) : 0;
+            var due = cot + imp;
             var declared = state.urssaf.find(function (d) { return d.period_label === per.label; });
             var action = declared
                 ? '<span class="status status-paid"><span class="status-dot"></span>Déclaré</span>'
-                : (ca > 0 ? '<button class="btn btn-sm btn-outline" onclick="declareUrssaf(\'' + per.label + '\',' + ca.toFixed(2) + ',' + cot.toFixed(2) + ')">Marquer déclaré</button>' : '<span style="color:var(--text-muted);font-size:.8rem">—</span>');
+                : (ca > 0 ? '<button class="btn btn-sm btn-outline" onclick="declareUrssaf(\'' + per.label + '\',' + ca.toFixed(2) + ',' + due.toFixed(2) + ')">Marquer déclaré</button>' : '<span style="color:var(--text-muted);font-size:.8rem">—</span>');
             return '<div class="acct-line"><span>' + esc(per.title) + '</span>'
                 + '<span style="display:flex;gap:14px;align-items:center">'
                 + '<span style="color:var(--text-muted)">CA ' + formatMoney(ca) + '</span>'
-                + '<span class="val" style="min-width:90px;text-align:right">' + formatMoney(cot) + '</span>'
+                + '<span class="val" style="min-width:90px;text-align:right">' + formatMoney(due) + '</span>'
                 + action + '</span></div>';
         }).join("");
 
         var totalCA = caHTForMonths(year, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-        box.innerHTML = '<div class="acct-card"><div class="acct-head">Déclaration URSSAF — micro-entrepreneur</div><div class="acct-body">'
-            + '<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:10px">Base : ' + esc(URSSAF_LABELS[p.activity_type] || URSSAF_LABELS.bnc)
-            + ' &bull; Déclaration ' + (mode === "monthly" ? "mensuelle" : "trimestrielle") + ' &bull; cotisations calculées sur le CA encaissé.</p>'
-            + rows
-            + '<div class="acct-line total"><span>Cotisations estimées ' + year + '</span><span class="val">' + formatMoney(totalCA * rate) + '</span></div>'
-            + '<p style="font-size:.78rem;color:var(--text-muted);margin-top:8px">Taux indicatifs 2025. Le versement libératoire de l\'impôt et la CFP ne sont pas inclus. Vérifiez les taux en vigueur sur autoentrepreneur.urssaf.fr.</p>'
-            + '</div></div>';
+        var totalCot = totalCA * (rate + cfp);
+        var taxable = totalCA * (1 - (MICRO_ABATTEMENT[act] || 0.34));
+        var totalImp = vfl ? totalCA * (VFL_RATES[act] || 0) : incomeTaxBareme(taxable);
+
+        var summary =
+            '<div class="tax-summary">'
+            + taxStat("Cotisations sociales " + year, formatMoney(totalCot), Math.round((rate + cfp) * 1000) / 10 + " % du CA")
+            + taxStat(vfl ? "Impôt (versement libératoire)" : "Impôt sur le revenu estimé", formatMoney(totalImp), vfl ? (Math.round((VFL_RATES[act] || 0) * 1000) / 10 + " % du CA") : "barème sur " + formatMoney(taxable))
+            + taxStat("Total prélèvements " + year, formatMoney(totalCot + totalImp), "cotisations + impôt")
+            + '</div>';
+
+        box.innerHTML = taxCard("Déclaration URSSAF & impôt — micro-entrepreneur",
+            '<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:10px">Base : ' + esc(URSSAF_LABELS[act] || URSSAF_LABELS.bnc)
+            + ' &bull; Déclaration ' + (mode === "monthly" ? "mensuelle" : "trimestrielle")
+            + ' &bull; Impôt : ' + (vfl ? "versement libératoire" : "barème progressif (abattement " + Math.round((MICRO_ABATTEMENT[act] || 0.34) * 100) + " %)") + '.</p>'
+            + '<p style="font-size:.8rem;color:var(--text-muted);margin-bottom:8px">Vous pouvez activer/désactiver le versement libératoire dans <a href="#" onclick="goProfile();return false" style="color:var(--primary)">Mon profil</a>.</p>'
+            + rows + summary);
     }
+    function taxStat(label, value, hint) {
+        return '<div class="tax-stat"><div class="tax-stat-label">' + esc(label) + '</div>'
+            + '<div class="tax-stat-value">' + value + '</div>'
+            + (hint ? '<div class="tax-stat-hint">' + esc(hint) + '</div>' : '') + '</div>';
+    }
+
+    // --- EI / EURL à l'IR : TNS, cotisations sur bénéfice + IR au barème ---
+    function renderTaxTNS(box, p, year, status) {
+        var products = caHTForMonths(year, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        var charges = chargesHTForYear(year);
+        var benefit = products - charges;
+        var cotis = Math.max(0, benefit) * TNS_RATE;
+        // Revenu imposable ≈ bénéfice après déduction des cotisations sociales obligatoires.
+        var taxable = Math.max(0, benefit - cotis);
+        var ir = incomeTaxBareme(taxable);
+        var perLabel = year + "-ANNUEL";
+        var declared = state.urssaf.find(function (d) { return d.period_label === perLabel; });
+        var statusLabel = status === "eurl" ? "EURL / SARL (gérant majoritaire TNS, à l'IR)" : "Entreprise individuelle (au réel)";
+
+        var acompteN = p.urssaf_period === "monthly" ? 12 : 4;
+        var detail =
+            '<div class="acct-line"><span>Produits encaissés (HT)</span><span class="val">' + formatMoney(products) + '</span></div>'
+            + '<div class="acct-line"><span>Charges déductibles (HT)</span><span class="val">-' + formatMoney(charges) + '</span></div>'
+            + '<div class="acct-line total"><span>Bénéfice</span><span class="val">' + formatMoney(benefit) + '</span></div>';
+
+        var summary = '<div class="tax-summary">'
+            + taxStat("Cotisations sociales TNS", formatMoney(cotis), "≈ 45 % du bénéfice")
+            + taxStat("Impôt sur le revenu estimé", formatMoney(ir), "barème sur " + formatMoney(taxable))
+            + taxStat("Acompte URSSAF " + (acompteN === 12 ? "mensuel" : "trimestriel"), formatMoney(cotis / acompteN), "cotisations / " + acompteN)
+            + '</div>';
+
+        var action = declared
+            ? '<span class="status status-paid"><span class="status-dot"></span>Déclaration ' + year + ' marquée faite</span>'
+            : '<button class="btn btn-sm btn-outline" onclick="declareUrssaf(\'' + perLabel + '\',' + benefit.toFixed(2) + ',' + (cotis + ir).toFixed(2) + ')">Marquer la déclaration ' + year + ' comme faite</button>';
+
+        box.innerHTML = taxCard("Cotisations & impôt — " + statusLabel,
+            '<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:10px">Les indépendants au réel cotisent sur leur <strong>bénéfice</strong>. '
+            + 'L\'URSSAF prélève des acomptes ' + (acompteN === 12 ? "mensuels" : "trimestriels") + ', régularisés après la déclaration annuelle de revenus.</p>'
+            + detail + summary
+            + '<div style="margin-top:10px">' + action + '</div>');
+    }
+
+    // --- SAS / SASU / SARL à l'IS : président assimilé salarié ---
+    function renderTaxAssimile(box, p, year) {
+        var products = caHTForMonths(year, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        var charges = chargesHTForYear(year);
+        var rem = Number(p.annual_remuneration) || 0; // rémunération nette annuelle du dirigeant
+        var social = rem * ASSIMILE_RATE;             // charges patronales + salariales
+        var profitBeforeRem = products - charges;
+        var profitIS = Math.max(0, profitBeforeRem - rem - social); // résultat imposable à l'IS
+        var is = corporateTax(profitIS);
+
+        var detail =
+            '<div class="acct-line"><span>Produits encaissés (HT)</span><span class="val">' + formatMoney(products) + '</span></div>'
+            + '<div class="acct-line"><span>Charges déductibles (HT)</span><span class="val">-' + formatMoney(charges) + '</span></div>'
+            + '<div class="acct-line"><span>Rémunération nette dirigeant</span><span class="val">-' + formatMoney(rem) + '</span></div>'
+            + '<div class="acct-line"><span>Charges sociales sur rémunération</span><span class="val">-' + formatMoney(social) + '</span></div>'
+            + '<div class="acct-line total"><span>Résultat imposable à l\'IS</span><span class="val">' + formatMoney(profitIS) + '</span></div>';
+
+        var summary = '<div class="tax-summary">'
+            + taxStat("Charges sociales dirigeant", formatMoney(social), "≈ 82 % du net (assimilé salarié)")
+            + taxStat("Impôt sur les sociétés", formatMoney(is), "15 % puis 25 %")
+            + taxStat("Net après IS", formatMoney(profitIS - is), "avant dividendes")
+            + '</div>';
+
+        box.innerHTML = taxCard("Cotisations & impôt — SAS / SASU / SARL (à l'IS)",
+            '<p style="font-size:.85rem;color:var(--text-muted);margin-bottom:10px">Le dirigeant assimilé salarié est soumis aux charges sociales sur sa rémunération. '
+            + 'La société paie l\'<strong>impôt sur les sociétés</strong> sur son résultat. Les dividendes éventuels sont soumis au prélèvement forfaitaire unique (30 %).</p>'
+            + '<div class="form-group" style="max-width:340px;margin-bottom:12px"><label style="font-size:.82rem">Rémunération nette annuelle du dirigeant (€)</label>'
+            + '<input type="number" min="0" step="100" value="' + rem + '" onchange="saveRemuneration(this.value)" placeholder="0"></div>'
+            + detail + summary);
+    }
+    window.saveRemuneration = async function (val) {
+        var res = await sb.from("profiles").upsert({ id: state.user.id, annual_remuneration: Number(val) || 0 }).select().single();
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        state.profile = res.data;
+        renderAccounting();
+    };
 
     window.declareUrssaf = async function (label, caBase, cot) {
         var res = await sb.from("urssaf_declarations").insert({
@@ -1846,34 +2219,32 @@
 
     // Export comptable CSV (factures, avoirs, dépenses) de l'année sélectionnée.
     window.exportAccounting = function () {
-        var year = document.getElementById("acct-year").value || String(new Date().getFullYear());
+        var b = rangeBounds(rangeState.accounting);
+        var tag = b.label.replace(/[^0-9A-Za-z]+/g, "-");
         var rows = [["Type", "Date", "Numero", "Tiers", "HT", "TVA", "TTC", "Statut"]];
         function csvCell(v) { var s = String(v == null ? "" : v); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
         state.invoices.forEach(function (inv) {
-            if (String(inv.date).slice(0, 4) !== year) return;
+            if (!dateInBounds(inv.date, b)) return;
             var c = state.clients.find(function (x) { return x.id === inv.client_id; });
             rows.push(["Facture", inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht).toFixed(2), Number(inv.tva_amount).toFixed(2), Number(inv.total_ttc).toFixed(2), invoiceStatusOf(inv)]);
         });
         state.creditNotes.forEach(function (cn) {
-            if (String(cn.date).slice(0, 4) !== year) return;
+            if (!dateInBounds(cn.date, b)) return;
             var c = state.clients.find(function (x) { return x.id === cn.client_id; });
             rows.push(["Avoir", cn.date, cn.number, c ? c.name : "", (-Number(cn.subtotal_ht)).toFixed(2), (-Number(cn.tva_amount)).toFixed(2), (-Number(cn.total_ttc)).toFixed(2), "avoir"]);
         });
         state.expenses.forEach(function (x) {
-            if (String(x.date).slice(0, 4) !== year) return;
+            if (!dateInBounds(x.date, b)) return;
             rows.push(["Depense", x.date, "", x.supplier || "", (-Number(x.amount_ht)).toFixed(2), (-Number(x.tva_amount)).toFixed(2), (-Number(x.amount_ttc)).toFixed(2), EXP_CAT_LABEL[x.category] || x.category]);
         });
         var csv = rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
         var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
-        a.href = url; a.download = "comptabilite-" + year + ".csv";
+        a.href = url; a.download = "comptabilite-" + tag + ".csv";
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
-
-    document.getElementById("acct-year").addEventListener("change", renderAccounting);
-    document.getElementById("perf-year").addEventListener("change", renderPerformance);
 
     // --- Subscription ---
     var PLAN_META = {
@@ -1945,6 +2316,7 @@
         document.getElementById("prof-legal-status").value = p.legal_status || "";
         document.getElementById("prof-activity-type").value = p.activity_type || "bnc";
         document.getElementById("prof-urssaf-period").value = p.urssaf_period || "quarterly";
+        document.getElementById("prof-tax-option").value = p.tax_option || "bareme";
     }
 
     document.getElementById("profile-form").addEventListener("submit", async function (e) {
@@ -1963,6 +2335,7 @@
             legal_status: document.getElementById("prof-legal-status").value || null,
             activity_type: document.getElementById("prof-activity-type").value || null,
             urssaf_period: document.getElementById("prof-urssaf-period").value || null,
+            tax_option: document.getElementById("prof-tax-option").value || null,
             updated_at: new Date().toISOString()
         };
         var res = await sb.from("profiles").upsert(payload).select().single();

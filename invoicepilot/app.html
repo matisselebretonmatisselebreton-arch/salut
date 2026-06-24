@@ -230,24 +230,28 @@
                         <h1>Performance commerciale</h1>
                         <p class="page-subtitle">Suivi des devis et taux de transformation</p>
                     </div>
-                    <select id="perf-year" style="width:auto;padding:8px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.9rem"></select>
+                    <div id="perf-range" class="range-controls"></div>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card clickable" onclick="openPerfDetail('total')">
                         <div class="stat-label">Devis émis</div>
                         <div class="stat-value" id="perf-total">0</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
-                    <div class="stat-card success">
+                    <div class="stat-card success clickable" onclick="openPerfDetail('conv')">
                         <div class="stat-label">Taux de transformation</div>
                         <div class="stat-value" id="perf-conv">0%</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card clickable" onclick="openPerfDetail('ca')">
                         <div class="stat-label">Convertis en facture</div>
                         <div class="stat-value" id="perf-ca">0%</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
-                    <div class="stat-card warning">
+                    <div class="stat-card warning clickable" onclick="openPerfDetail('avg')">
                         <div class="stat-label">Montant moyen / devis</div>
                         <div class="stat-value" id="perf-avg">0 €</div>
+                        <div class="stat-link">Voir le détail →</div>
                     </div>
                 </div>
                 <div class="acct-grid">
@@ -351,7 +355,13 @@
                                     <option value="monthly">Mensuelle</option>
                                 </select>
                             </div>
-                            <div class="form-group"></div>
+                            <div class="form-group">
+                                <label>Option fiscale (micro)</label>
+                                <select id="prof-tax-option">
+                                    <option value="bareme">Impôt au barème progressif</option>
+                                    <option value="vfl">Versement libératoire de l'impôt</option>
+                                </select>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Enregistrer</button>
                     </form>
@@ -385,28 +395,38 @@
                         <h1>Comptabilité</h1>
                         <p class="page-subtitle">Compte de résultat & bilan simplifié</p>
                     </div>
-                    <div style="display:flex;gap:10px;align-items:center">
-                        <select id="acct-year" style="width:auto;padding:8px 14px;border:1px solid var(--border);border-radius:9px;font-family:inherit;font-size:.9rem"></select>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <div id="acct-range" class="range-controls"></div>
                         <button class="btn btn-outline btn-sm" onclick="exportAccounting()">Export CSV</button>
                     </div>
                 </div>
                 <div id="accounting-pro-gate" style="display:none"></div>
                 <div id="accounting-content">
                     <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-                        <div class="stat-card success">
+                        <div class="stat-card success clickable" onclick="openAcctDetail('products')">
                             <div class="stat-label">Produits (encaissés)</div>
                             <div class="stat-value" id="acct-products">0 €</div>
+                            <div class="stat-link">Voir le détail →</div>
                         </div>
-                        <div class="stat-card danger">
+                        <div class="stat-card danger clickable" onclick="openAcctDetail('charges')">
                             <div class="stat-label">Charges</div>
                             <div class="stat-value" id="acct-charges">0 €</div>
+                            <div class="stat-link">Voir le détail →</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card clickable" onclick="openAcctDetail('result')">
                             <div class="stat-label">Résultat net</div>
                             <div class="stat-value" id="acct-result">0 €</div>
+                            <div class="stat-link">Voir le détail →</div>
                         </div>
                     </div>
-                    <div class="acct-grid">
+                    <div class="acct-card" style="margin-top:20px">
+                        <div class="acct-head">Trésorerie &amp; fonds de roulement</div>
+                        <div class="acct-body">
+                            <div class="treasury-grid" id="acct-treasury"></div>
+                            <div id="acct-treasury-detail" style="margin-top:8px"></div>
+                        </div>
+                    </div>
+                    <div class="acct-grid" style="margin-top:20px">
                         <div class="acct-card">
                             <div class="acct-head">Compte de résultat</div>
                             <div class="acct-body" id="acct-income-statement"></div>
@@ -439,7 +459,7 @@
                         <div class="plan-price">0 €<span> / mois</span></div>
                         <ul class="plan-features">
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 10 factures par mois</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Devis & avoirs illimités</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 10 devis par mois</li>
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Export PDF conforme</li>
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion clients</li>
                         </ul>
@@ -449,8 +469,7 @@
                         <div class="plan-name">Standard</div>
                         <div class="plan-price">14,99 €<span> / mois</span></div>
                         <ul class="plan-features">
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Factures illimitées</strong></li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Devis & avoirs illimités</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Factures & devis illimités</strong></li>
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Factures récurrentes</li>
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion clients & export PDF</li>
                         </ul>
@@ -461,10 +480,11 @@
                         <div class="plan-name">Pro</div>
                         <div class="plan-price">29,99 €<span> / mois</span></div>
                         <ul class="plan-features">
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Factures illimitées</li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Factures reçues & dépenses</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Factures & devis illimités</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Fournisseurs & dépenses</li>
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Comptabilité : bilan & compte de résultat</strong></li>
-                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Suivi de TVA & support prioritaire</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion trésorerie</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Suivi de TVA & déclaration URSSAF</li>
                         </ul>
                         <button class="btn btn-primary" style="width:100%" id="btn-select-pro">Passer au Pro</button>
                     </div>
@@ -852,6 +872,17 @@
             <div id="supplier-detail-body"></div>
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-supplier-detail')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Generic drill-down detail -->
+    <div class="modal-overlay" id="modal-detail">
+        <div class="modal modal-lg">
+            <h2 id="detail-title">Détail</h2>
+            <div id="detail-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-detail')">Fermer</button>
             </div>
         </div>
     </div>

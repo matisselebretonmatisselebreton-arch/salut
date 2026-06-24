@@ -239,7 +239,105 @@
         }
 
         renderUsageCard();
+        renderDashRelance();
+        renderHealthScore();
+        renderTreasuryForecast();
         renderInvoiceTable("dashboard-invoices-list", state.invoices.slice(0, 5));
+    }
+
+    // Bannière "factures à relancer" (en retard).
+    function renderDashRelance() {
+        var box = document.getElementById("dash-relance");
+        if (!box) return;
+        var now = new Date();
+        var overdue = state.invoices.filter(function (inv) {
+            return !inv.credit_note_id && inv.status !== "paid" && new Date(inv.due_date) < now;
+        });
+        if (overdue.length === 0) { box.innerHTML = ""; return; }
+        var total = overdue.reduce(function (s, inv) { return s + Number(inv.total_ttc); }, 0);
+        box.innerHTML = '<div class="dash-alert" onclick="gotoInvoices(\'overdue\')">'
+            + '<span class="dash-alert-icon">&#9888;</span>'
+            + '<span><strong>' + overdue.length + ' facture' + (overdue.length > 1 ? 's' : '') + ' en retard</strong> à relancer — '
+            + formatMoney(total) + ' en attente de règlement.</span>'
+            + '<span class="dash-alert-cta">Voir &rarr;</span></div>';
+    }
+
+    // Indicateur de santé financière (encaissement + ponctualité + trésorerie).
+    function renderHealthScore() {
+        var box = document.getElementById("dash-health");
+        if (!box) return;
+        var now = new Date();
+        var issuedTTC = 0, paidTTC = 0, overdueTTC = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id) return;
+            issuedTTC += Number(inv.total_ttc);
+            if (inv.status === "paid") paidTTC += Number(inv.total_ttc);
+            else if (new Date(inv.due_date) < now) overdueTTC += Number(inv.total_ttc);
+        });
+        var year = String(now.getFullYear());
+        var cashIn = 0, cashOut = 0;
+        state.invoices.forEach(function (inv) { if (!inv.credit_note_id && inv.status === "paid" && String(inv.date).slice(0, 4) === year) cashIn += Number(inv.total_ttc); });
+        state.creditNotes.forEach(function (cn) { if (String(cn.date).slice(0, 4) === year) cashIn -= Number(cn.total_ttc); });
+        state.expenses.forEach(function (x) { if (String(x.date).slice(0, 4) === year) cashOut += Number(x.amount_ttc); });
+        var netCash = cashIn - cashOut;
+
+        var encaissement = issuedTTC > 0 ? (paidTTC / issuedTTC) : 1;        // 0..1
+        var ponctualite = issuedTTC > 0 ? (1 - overdueTTC / issuedTTC) : 1;  // 0..1
+        var tresoOk = netCash >= 0 ? 1 : 0;
+        var score = Math.round(encaissement * 50 + ponctualite * 30 + tresoOk * 20);
+
+        var level = score >= 70 ? { c: "var(--success)", l: "Bonne santé" } : (score >= 40 ? { c: "var(--warning)", l: "À surveiller" } : { c: "var(--danger)", l: "Fragile" });
+        function bar(label, ratio) {
+            var pct = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+            return '<div class="health-bar-row"><span>' + label + '</span><span>' + pct + '%</span></div>'
+                + '<div class="health-bar"><div class="health-bar-fill" style="width:' + pct + '%"></div></div>';
+        }
+        box.innerHTML = '<div class="insight-head">Santé financière</div>'
+            + '<div class="health-score" style="color:' + level.c + '">' + score + '<span>/100</span></div>'
+            + '<div class="health-level" style="color:' + level.c + '">' + level.l + '</div>'
+            + bar("Encaissement", encaissement)
+            + bar("Ponctualité de paiement", ponctualite)
+            + '<div class="health-bar-row" style="margin-top:8px"><span>Trésorerie ' + year + '</span><span style="color:' + (netCash >= 0 ? "var(--success)" : "var(--danger)") + '">' + formatMoney(netCash) + '</span></div>';
+    }
+
+    // Prévisionnel de trésorerie : encaissements attendus à 30 / 60 / 90 jours.
+    function recurringTTC(r) {
+        var sub = (r.items || []).reduce(function (s, it) { return s + Number(it.total); }, 0);
+        return sub * (1 + Number(r.tva_rate) / 100);
+    }
+    function projectedRecurring(r, horizon) {
+        if (!r.active || !r.next_run) return 0;
+        var today = new Date(); today.setHours(0, 0, 0, 0);
+        var d = new Date(r.next_run + "T00:00:00"), count = 0, guard = 0;
+        while (d <= horizon && guard < 120) {
+            if (d >= today) count++;
+            d = new Date(advanceDate(d.toISOString().slice(0, 10), r.frequency) + "T00:00:00");
+            guard++;
+        }
+        return count * recurringTTC(r);
+    }
+    function forecastInflow(days) {
+        var horizon = new Date(); horizon.setDate(horizon.getDate() + days);
+        var hStr = horizon.toISOString().slice(0, 10);
+        var sum = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status === "paid") return;
+            if (String(inv.due_date).slice(0, 10) <= hStr) sum += Number(inv.total_ttc);
+        });
+        state.recurring.forEach(function (r) { sum += projectedRecurring(r, horizon); });
+        return sum;
+    }
+    function renderTreasuryForecast() {
+        var box = document.getElementById("dash-forecast");
+        if (!box) return;
+        var d30 = forecastInflow(30), d60 = forecastInflow(60), d90 = forecastInflow(90);
+        function col(label, val) {
+            return '<div class="forecast-col"><div class="forecast-label">' + label + '</div><div class="forecast-value">' + formatMoney(val) + '</div></div>';
+        }
+        box.innerHTML = '<div class="insight-head">Prévisionnel de trésorerie</div>'
+            + '<p class="insight-sub">Encaissements attendus (factures en attente + récurrences à venir)</p>'
+            + '<div class="forecast-grid">' + col("30 jours", d30) + col("60 jours", d60) + col("90 jours", d90) + '</div>'
+            + (d30 + d60 + d90 === 0 ? '<p class="insight-sub" style="margin-top:8px">Aucun encaissement projeté — créez des factures ou des récurrences.</p>' : '');
     }
 
     // Clic sur les cartes du dashboard.
@@ -2242,6 +2340,55 @@
         var url = URL.createObjectURL(blob);
         var a = document.createElement("a");
         a.href = url; a.download = "comptabilite-" + tag + ".csv";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    // Export complet : écritures + synthèse (résultat, trésorerie, BFR, DSO, TVA).
+    window.exportAccountingFull = function () {
+        if (!acctView) { renderAccounting(); }
+        var v = acctView, b = v.bounds;
+        var tag = b.label.replace(/[^0-9A-Za-z]+/g, "-");
+        function csvCell(val) { var s = String(val == null ? "" : val); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+        var rows = [["Type", "Date", "Numero", "Tiers", "HT", "TVA", "TTC", "Statut"]];
+        v.paidInvoices.concat(state.invoices.filter(function (i) { return !i.credit_note_id && i.status !== "paid" && dateInBounds(i.date, b); }))
+            .forEach(function (inv) {
+                var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+                rows.push(["Facture", inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht).toFixed(2), Number(inv.tva_amount).toFixed(2), Number(inv.total_ttc).toFixed(2), invoiceStatusOf(inv)]);
+            });
+        v.credits.forEach(function (cn) {
+            var c = state.clients.find(function (x) { return x.id === cn.client_id; });
+            rows.push(["Avoir", cn.date, cn.number, c ? c.name : "", (-Number(cn.subtotal_ht)).toFixed(2), (-Number(cn.tva_amount)).toFixed(2), (-Number(cn.total_ttc)).toFixed(2), "avoir"]);
+        });
+        v.expenses.forEach(function (x) {
+            rows.push(["Depense", x.date, "", x.supplier || "", (-Number(x.amount_ht)).toFixed(2), (-Number(x.tva_amount)).toFixed(2), (-Number(x.amount_ttc)).toFixed(2), EXP_CAT_LABEL[x.category] || x.category]);
+        });
+
+        // Synthèse
+        var tvaCollected = v.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
+        var tvaDeductible = v.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
+        var cashIn = v.paidInvoices.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0) - v.credits.reduce(function (s, cn) { return s + Number(cn.total_ttc); }, 0);
+        var cashOut = v.expenses.reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
+        var outstanding = v.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
+        var dsoDays = 0, dsoCount = 0;
+        v.paidInvoices.forEach(function (inv) { if (inv.paid_at) { var d = (new Date(inv.paid_at) - new Date(inv.date)) / 86400000; if (d >= 0) { dsoDays += d; dsoCount++; } } });
+        rows.push([], ["SYNTHESE", b.label]);
+        rows.push(["Produits encaisses (HT)", v.productsHT.toFixed(2)]);
+        rows.push(["Charges (HT)", v.chargesHT.toFixed(2)]);
+        rows.push(["Resultat net (HT)", v.result.toFixed(2)]);
+        rows.push(["Tresorerie nette (TTC)", (cashIn - cashOut).toFixed(2)]);
+        rows.push(["Creances clients (TTC)", outstanding.toFixed(2)]);
+        rows.push(["BFR (TTC)", outstanding.toFixed(2)]);
+        rows.push(["DSO (jours)", dsoCount ? Math.round(dsoDays / dsoCount) : "n/d"]);
+        rows.push(["TVA collectee", tvaCollected.toFixed(2)]);
+        rows.push(["TVA deductible", tvaDeductible.toFixed(2)]);
+        rows.push(["TVA a reverser", (tvaCollected - tvaDeductible).toFixed(2)]);
+
+        var csv = rows.map(function (r) { return r.map(csvCell).join(";"); }).join("\r\n");
+        var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "comptabilite-complet-" + tag + ".csv";
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };

@@ -103,6 +103,7 @@
                     <div class="usage-track"><div class="usage-fill" id="usage-fill" style="width:0%"></div></div>
                     <p id="usage-hint" style="margin-top:10px;font-size:.82rem;color:var(--text-muted)"></p>
                 </div>
+                <div id="dash-relance"></div>
                 <div class="stats-grid">
                     <div class="stat-card clickable" onclick="openRevenueDetail()">
                         <div class="stat-label">Chiffre d'affaires</div>
@@ -127,6 +128,10 @@
                         <div class="stat-value" id="stat-overdue">0</div>
                         <div class="stat-link">Voir le détail →</div>
                     </div>
+                </div>
+                <div class="dash-insights">
+                    <div class="insight-card" id="dash-health"></div>
+                    <div class="insight-card" id="dash-forecast"></div>
                 </div>
                 <div class="table-card">
                     <div class="table-header">
@@ -398,6 +403,7 @@
                     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
                         <div id="acct-range" class="range-controls"></div>
                         <button class="btn btn-outline btn-sm" onclick="exportAccounting()">Export CSV</button>
+                        <button class="btn btn-outline btn-sm" onclick="exportAccountingFull()">Export complet</button>
                     </div>
                 </div>
                 <div id="accounting-pro-gate" style="display:none"></div>

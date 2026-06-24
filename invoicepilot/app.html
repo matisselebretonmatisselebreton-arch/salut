@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvoicePilot — App</title>
+    <link rel="stylesheet" href="css/app.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-container">
+        <div class="auth-card">
+            <div style="font-size:2rem;margin-bottom:12px">&#9993;</div>
+            <h1 id="auth-title">Connexion</h1>
+            <p class="subtitle" id="auth-subtitle">Accédez à votre espace de facturation</p>
+            <form id="auth-form">
+                <div class="form-group" id="auth-name-group" style="display:none">
+                    <label>Nom complet</label>
+                    <input type="text" id="auth-name" placeholder="Jean Dupont">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="auth-email" placeholder="jean@exemple.fr" required>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" id="auth-password" placeholder="Votre mot de passe" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" id="auth-submit">Se connecter</button>
+            </form>
+            <p class="auth-switch">
+                <span id="auth-switch-text">Pas encore de compte ?</span>
+                <a href="#" id="auth-switch-link">Créer un compte</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div id="app-screen" class="app" style="display:none">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <span>&#9993;</span> InvoicePilot
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" data-page="dashboard">
+                    <span class="nav-icon">&#9632;</span> Tableau de bord
+                </a>
+                <a href="#" data-page="invoices">
+                    <span class="nav-icon">&#128196;</span> Factures
+                </a>
+                <a href="#" data-page="clients">
+                    <span class="nav-icon">&#128101;</span> Clients
+                </a>
+                <a href="#" data-page="profile">
+                    <span class="nav-icon">&#9881;</span> Mon profil
+                </a>
+            </nav>
+            <div class="sidebar-user">
+                <div id="user-display-name"></div>
+                <a href="#" id="logout-btn" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none">Déconnexion</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <!-- Dashboard -->
+            <div id="page-dashboard" class="page">
+                <div class="page-header">
+                    <h1>Tableau de bord</h1>
+                    <button class="btn btn-primary" id="btn-new-invoice-dash">+ Nouvelle facture</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Chiffre d'affaires</div>
+                        <div class="stat-value" id="stat-revenue">0 €</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-label">Payées</div>
+                        <div class="stat-value" id="stat-paid">0</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-label">En attente</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <div class="stat-label">En retard</div>
+                        <div class="stat-value" id="stat-overdue">0</div>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h2>Dernières factures</h2>
+                    </div>
+                    <div id="dashboard-invoices-list"></div>
+                </div>
+            </div>
+
+            <!-- Invoices -->
+            <div id="page-invoices" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Factures</h1>
+                    <button class="btn btn-primary" id="btn-new-invoice">+ Nouvelle facture</button>
+                </div>
+                <div class="table-card">
+                    <div id="invoices-list"></div>
+                </div>
+            </div>
+
+            <!-- Clients -->
+            <div id="page-clients" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Clients</h1>
+                    <button class="btn btn-primary" id="btn-new-client">+ Nouveau client</button>
+                </div>
+                <div class="table-card">
+                    <div id="clients-list"></div>
+                </div>
+            </div>
+
+            <!-- Profile -->
+            <div id="page-profile" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Mon profil entreprise</h1>
+                </div>
+                <div class="table-card" style="padding:32px">
+                    <form id="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nom / Raison sociale</label>
+                                <input type="text" id="prof-name" placeholder="Mon Entreprise">
+                            </div>
+                            <div class="form-group">
+                                <label>SIRET</label>
+                                <input type="text" id="prof-siret" placeholder="123 456 789 00012">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Adresse</label>
+                                <input type="text" id="prof-address" placeholder="12 rue de Paris">
+                            </div>
+                            <div class="form-group">
+                                <label>Code postal & Ville</label>
+                                <input type="text" id="prof-city" placeholder="75001 Paris">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email professionnel</label>
+                                <input type="email" id="prof-email" placeholder="contact@monentreprise.fr">
+                            </div>
+                            <div class="form-group">
+                                <label>Téléphone</label>
+                                <input type="text" id="prof-phone" placeholder="06 12 34 56 78">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>N° TVA intracommunautaire</label>
+                                <input type="text" id="prof-tva" placeholder="FR 12 345678901 (laisser vide si non assujetti)">
+                            </div>
+                            <div class="form-group">
+                                <label>Taux de TVA par défaut (%)</label>
+                                <select id="prof-tva-rate">
+                                    <option value="0">Non assujetti (0%)</option>
+                                    <option value="5.5">5,5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="20" selected>20%</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mentions légales supplémentaires</label>
+                            <textarea id="prof-mentions" rows="3" placeholder="Ex: TVA non applicable, art. 293 B du CGI"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: New Client -->
+    <div class="modal-overlay" id="modal-client">
+        <div class="modal">
+            <h2 id="modal-client-title">Nouveau client</h2>
+            <form id="client-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom / Entreprise</label>
+                        <input type="text" id="client-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="client-email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="client-address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Code postal & Ville</label>
+                        <input type="text" id="client-city">
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET (optionnel)</label>
+                        <input type="text" id="client-siret">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-client')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New Invoice -->
+    <div class="modal-overlay" id="modal-invoice">
+        <div class="modal">
+            <h2>Nouvelle facture</h2>
+            <form id="invoice-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client</label>
+                        <select id="inv-client" required>
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="inv-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Échéance</label>
+                        <input type="date" id="inv-due-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Numéro de facture</label>
+                        <input type="text" id="inv-number" readonly>
+                    </div>
+                </div>
+
+                <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes de facturation</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-desc">Description</th>
+                            <th class="col-qty">Qté</th>
+                            <th class="col-price">Prix unit. (€)</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items">
+                        <tr>
+                            <td><input type="text" class="item-desc" placeholder="Prestation"></td>
+                            <td><input type="number" class="item-qty" value="1" min="1"></td>
+                            <td><input type="number" class="item-price" value="0" min="0" step="0.01"></td>
+                            <td class="item-total">0,00 €</td>
+                            <td><button type="button" class="remove-item" title="Supprimer">&times;</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-add-item">+ Ajouter une ligne</button>
+
+                <div class="invoice-totals">
+                    <div class="total-line"><span>Sous-total HT</span><span id="inv-subtotal">0,00 €</span></div>
+                    <div class="total-line"><span>TVA (<span id="inv-tva-rate-display">20</span>%)</span><span id="inv-tva-amount">0,00 €</span></div>
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="inv-total">0,00 €</span></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-invoice')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer la facture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

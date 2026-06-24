@@ -1,0 +1,6 @@
+# Netlify configuration for InvoicePilot
+# Static site (no build step). The app lives in the invoicepilot/ folder,
+# which is published as the site root.
+[build]
+  publish = "invoicepilot"
+  command = ""

@@ -257,7 +257,7 @@ tbody tr:last-child td { border-bottom: none; }
 .usage-fill.full { background: linear-gradient(90deg, #F87171, #EF4444); }
 
 /* Plan / pricing cards */
-.plan-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-width: 720px; }
+.plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1040px; }
 .plan-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     padding: 28px; box-shadow: var(--shadow); position: relative;

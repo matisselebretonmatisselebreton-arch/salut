@@ -17,7 +17,10 @@
     };
 
     var FREE_INVOICE_LIMIT = 10;
-    function isPro() { return state.profile && state.profile.plan === "pro"; }
+    function planOf() { return (state.profile && state.profile.plan) || "free"; }
+    // Pro = accès complet (dépenses + comptabilité). Standard = factures illimitées seulement.
+    function isPro() { return planOf() === "pro"; }
+    function hasUnlimitedInvoices() { return planOf() === "standard" || planOf() === "pro"; }
     function invoicesThisMonth() {
         var now = new Date();
         var ym = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
@@ -25,9 +28,9 @@
             return String(inv.date).slice(0, 7) === ym;
         }).length;
     }
-    function canCreateInvoice() { return isPro() || invoicesThisMonth() < FREE_INVOICE_LIMIT; }
+    function canCreateInvoice() { return hasUnlimitedInvoices() || invoicesThisMonth() < FREE_INVOICE_LIMIT; }
     function quotaBlockedAlert() {
-        alert("Vous avez atteint la limite de " + FREE_INVOICE_LIMIT + " factures ce mois-ci (formule gratuite).\n\nPassez au Pro pour des factures illimitées.");
+        alert("Vous avez atteint la limite de " + FREE_INVOICE_LIMIT + " factures ce mois-ci (formule gratuite).\n\nPassez au Standard ou au Pro pour des factures illimitées.");
         navigate("subscription");
     }
 
@@ -195,7 +198,7 @@
 
     function renderUsageCard() {
         var card = document.getElementById("usage-card");
-        if (isPro()) { card.style.display = "none"; return; }
+        if (hasUnlimitedInvoices()) { card.style.display = "none"; return; }
         card.style.display = "";
         var used = invoicesThisMonth();
         var pct = Math.min(100, Math.round(used / FREE_INVOICE_LIMIT * 100));
@@ -205,7 +208,7 @@
         fill.className = "usage-fill" + (used >= FREE_INVOICE_LIMIT ? " full" : (used >= FREE_INVOICE_LIMIT - 2 ? " warn" : ""));
         var hint = document.getElementById("usage-hint");
         if (used >= FREE_INVOICE_LIMIT) {
-            hint.innerHTML = "Limite atteinte. <a href=\"#\" onclick=\"goSubscription();return false\" style=\"color:var(--primary);font-weight:600\">Passez au Pro</a> pour des factures illimitées.";
+            hint.innerHTML = "Limite atteinte. <a href=\"#\" onclick=\"goSubscription();return false\" style=\"color:var(--primary);font-weight:600\">Passez au Standard ou Pro</a> pour des factures illimitées.";
         } else {
             hint.innerHTML = "Formule gratuite — " + (FREE_INVOICE_LIMIT - used) + " facture(s) restante(s) ce mois-ci.";
         }
@@ -1137,29 +1140,32 @@
     document.getElementById("acct-year").addEventListener("change", renderAccounting);
 
     // --- Subscription ---
+    var PLAN_META = {
+        free: { tag: "Gratuit", label: "Gratuit" },
+        standard: { tag: "Standard", label: "Standard — 14,99 €/mois" },
+        pro: { tag: "Pro", label: "Pro — 29,99 €/mois" }
+    };
+
     function renderSubscription() {
-        var pro = isPro();
+        var plan = planOf();
+        var meta = PLAN_META[plan] || PLAN_META.free;
         var banner = document.getElementById("current-plan-banner");
         banner.innerHTML = '<div style="display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;box-shadow:var(--shadow)">'
-            + '<span class="plan-tag" style="' + (pro ? '' : 'background:#F1F5F9;color:var(--text-muted)') + '">' + (pro ? "Pro" : "Gratuit") + '</span>'
-            + '<span style="font-size:.9rem">Formule actuelle : <strong>' + (pro ? "Pro — 29,99 €/mois" : "Gratuit") + '</strong></span></div>';
+            + '<span class="plan-tag" style="' + (plan === "free" ? 'background:#F1F5F9;color:var(--text-muted)' : '') + '">' + meta.tag + '</span>'
+            + '<span style="font-size:.9rem">Formule actuelle : <strong>' + meta.label + '</strong></span></div>';
 
-        document.getElementById("plan-card-free").classList.toggle("current-plan", !pro);
-        document.getElementById("plan-card-pro").classList.toggle("current-plan", pro);
-
-        var freeBtn = document.getElementById("btn-select-free");
-        var proBtn = document.getElementById("btn-select-pro");
-        if (pro) {
-            freeBtn.textContent = "Revenir au gratuit";
-            freeBtn.disabled = false;
-            proBtn.textContent = "Formule actuelle";
-            proBtn.disabled = true;
-        } else {
-            freeBtn.textContent = "Formule actuelle";
-            freeBtn.disabled = true;
-            proBtn.textContent = "Passer au Pro";
-            proBtn.disabled = false;
-        }
+        ["free", "standard", "pro"].forEach(function (p) {
+            document.getElementById("plan-card-" + p).classList.toggle("current-plan", plan === p);
+            var btn = document.getElementById("btn-select-" + p);
+            if (plan === p) {
+                btn.textContent = "Formule actuelle";
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+                btn.textContent = p === "free" ? "Revenir au gratuit"
+                    : (p === "standard" ? "Choisir Standard" : "Passer au Pro");
+            }
+        });
     }
 
     async function changePlan(plan) {
@@ -1173,12 +1179,18 @@
     document.getElementById("btn-select-pro").addEventListener("click", function () {
         if (isPro()) return;
         if (!confirm("Activer la formule Pro (29,99 €/mois) ?\n\nLe paiement par carte via Stripe sera branché prochainement — pour l'instant l'activation est immédiate afin de tester les fonctionnalités Pro.")) return;
-        changePlan("pro").then(function () { alert("Formule Pro activée ! Vous avez maintenant accès aux dépenses et à la comptabilité."); });
+        changePlan("pro").then(function () { alert("Formule Pro activée ! Vous avez maintenant accès aux factures illimitées, aux dépenses et à la comptabilité."); });
+    });
+
+    document.getElementById("btn-select-standard").addEventListener("click", function () {
+        if (planOf() === "standard") return;
+        if (!confirm("Activer la formule Standard (14,99 €/mois) ?\n\nFactures illimitées, sans le module comptabilité. Le paiement par carte via Stripe sera branché prochainement — l'activation est immédiate pour l'instant.")) return;
+        changePlan("standard").then(function () { alert("Formule Standard activée ! Vos factures sont désormais illimitées."); });
     });
 
     document.getElementById("btn-select-free").addEventListener("click", function () {
-        if (!isPro()) return;
-        if (!confirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules Pro.")) return;
+        if (planOf() === "free") return;
+        if (!confirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules payants.")) return;
         changePlan("free");
     });
 

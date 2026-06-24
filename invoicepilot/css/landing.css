@@ -121,9 +121,9 @@ body {
 .feature-card p { color: var(--text-muted); font-size: .9rem; line-height: 1.5; }
 
 /* Pricing */
-.pricing { max-width: 800px; margin: 0 auto; padding: 80px 24px; text-align: center; }
+.pricing { max-width: 1100px; margin: 0 auto; padding: 80px 24px; text-align: center; }
 .pricing h2 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
-.pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
 .pricing-card {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: var(--radius); padding: 40px 32px; text-align: left;

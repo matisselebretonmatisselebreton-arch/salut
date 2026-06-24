@@ -104,6 +104,7 @@ tbody tr:last-child td { border-bottom: none; }
 .status-paid { background: var(--success-bg); color: var(--success); }
 .status-pending { background: var(--warning-bg); color: var(--warning); }
 .status-overdue { background: var(--danger-bg); color: var(--danger); }
+.status-cancelled { background: #F1F5F9; color: #94A3B8; text-decoration: line-through; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 /* Buttons */

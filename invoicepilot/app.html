@@ -56,6 +56,9 @@
                 <a href="#" data-page="recurring">
                     <span class="nav-icon">&#128260;</span> Récurrences
                 </a>
+                <a href="#" data-page="credit-notes">
+                    <span class="nav-icon">&#128203;</span> Avoirs
+                </a>
                 <a href="#" data-page="clients">
                     <span class="nav-icon">&#128101;</span> Clients
                 </a>
@@ -132,6 +135,16 @@
                 </div>
                 <div class="table-card">
                     <div id="recurring-list"></div>
+                </div>
+            </div>
+
+            <!-- Credit Notes -->
+            <div id="page-credit-notes" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Avoirs</h1>
+                </div>
+                <div class="table-card">
+                    <div id="credit-notes-list"></div>
                 </div>
             </div>
 
@@ -214,6 +227,7 @@
         <div class="modal">
             <h2 id="modal-client-title">Nouveau client</h2>
             <form id="client-form">
+                <input type="hidden" id="client-edit-id" value="">
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nom / Entreprise</label>
@@ -422,6 +436,36 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="closeModal('modal-quote')">Annuler</button>
                     <button type="submit" class="btn btn-primary">Créer le devis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Credit Note -->
+    <div class="modal-overlay" id="modal-credit-note">
+        <div class="modal">
+            <h2>Émettre un avoir</h2>
+            <form id="credit-note-form">
+                <input type="hidden" id="cn-invoice-id">
+                <div class="form-group">
+                    <label>Facture concernée</label>
+                    <input type="text" id="cn-invoice-ref" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Numéro d'avoir</label>
+                    <input type="text" id="cn-number" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Motif de l'avoir</label>
+                    <textarea id="cn-reason" rows="2" placeholder="Ex: Annulation de la prestation, erreur de facturation…" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Montant TTC annulé</label>
+                    <input type="text" id="cn-total" readonly>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-credit-note')">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Émettre l'avoir</button>
                 </div>
             </form>
         </div>

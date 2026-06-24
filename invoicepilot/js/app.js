@@ -11,7 +11,8 @@
         clients: [],
         invoices: [],
         quotes: [],
-        recurring: []
+        recurring: [],
+        creditNotes: []
     };
 
     // --- Screens ---
@@ -41,13 +42,15 @@
             sb.from("clients").select("*").order("created_at", { ascending: false }),
             sb.from("invoices").select("*").order("date", { ascending: false }),
             sb.from("quotes").select("*").order("date", { ascending: false }),
-            sb.from("recurring_invoices").select("*").order("created_at", { ascending: false })
+            sb.from("recurring_invoices").select("*").order("created_at", { ascending: false }),
+            sb.from("credit_notes").select("*").order("date", { ascending: false })
         ]);
         state.profile = results[0].data || {};
         state.clients = results[1].data || [];
         state.invoices = results[2].data || [];
         state.quotes = results[3].data || [];
         state.recurring = results[4].data || [];
+        state.creditNotes = results[5].data || [];
     }
 
     // --- Auth UI ---
@@ -136,6 +139,7 @@
         if (page === "invoices") renderInvoices();
         if (page === "quotes") renderQuotes();
         if (page === "recurring") renderRecurring();
+        if (page === "credit-notes") renderCreditNotes();
         if (page === "clients") renderClients();
         if (page === "profile") loadProfile();
     }
@@ -152,9 +156,13 @@
         var paid = 0, pending = 0, overdue = 0, revenue = 0;
         var now = new Date();
         state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id) return;
             if (inv.status === "paid") { paid++; revenue += Number(inv.total_ttc); }
             else if (new Date(inv.due_date) < now) { overdue++; }
             else { pending++; }
+        });
+        state.creditNotes.forEach(function (cn) {
+            revenue -= Number(cn.total_ttc);
         });
         document.getElementById("stat-revenue").textContent = formatMoney(revenue);
         document.getElementById("stat-paid").textContent = paid;
@@ -179,7 +187,8 @@
         invoices.forEach(function (inv) {
             var client = state.clients.find(function (c) { return c.id === inv.client_id; });
             var statusClass, statusLabel;
-            if (inv.status === "paid") { statusClass = "status-paid"; statusLabel = "Payée"; }
+            if (inv.credit_note_id) { statusClass = "status-overdue"; statusLabel = "Annulée"; }
+            else if (inv.status === "paid") { statusClass = "status-paid"; statusLabel = "Payée"; }
             else if (new Date(inv.due_date) < now) { statusClass = "status-overdue"; statusLabel = "En retard"; }
             else { statusClass = "status-pending"; statusLabel = "En attente"; }
 
@@ -191,10 +200,14 @@
             html += '<td><span class="status ' + statusClass + '"><span class="status-dot"></span>' + statusLabel + '</span></td>';
             html += '<td>';
             html += '<button class="btn btn-sm btn-outline" onclick="downloadPDF(\'' + inv.id + '\')">PDF</button> ';
-            if (inv.status !== "paid") {
+            if (inv.credit_note_id) {
+                html += '<span style="color:var(--text-muted);font-size:.8rem">→ avoir émis</span> ';
+            } else if (inv.status === "paid") {
+                html += '<button class="btn btn-sm btn-outline" onclick="openCreditNote(\'' + inv.id + '\')">Avoir</button> ';
+            } else {
                 html += '<button class="btn btn-sm btn-outline" onclick="markPaid(\'' + inv.id + '\')">Marquer payée</button> ';
+                html += '<button class="btn btn-sm btn-outline" onclick="deleteInvoice(\'' + inv.id + '\')">Suppr.</button>';
             }
-            html += '<button class="btn btn-sm btn-outline" onclick="deleteInvoice(\'' + inv.id + '\')">Suppr.</button>';
             html += '</td></tr>';
         });
         html += '</tbody></table>';
@@ -214,6 +227,90 @@
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         navigate("invoices");
+    };
+
+    // --- Credit Notes (avoirs) ---
+    function nextCreditNoteNumber() {
+        var year = new Date().getFullYear();
+        return "AVOIR-" + year + "-" + String(maxSeqForYear(state.creditNotes, year) + 1).padStart(3, "0");
+    }
+
+    window.openCreditNote = function (invoiceId) {
+        var inv = state.invoices.find(function (i) { return i.id === invoiceId; });
+        if (!inv) return;
+        document.getElementById("cn-invoice-id").value = inv.id;
+        document.getElementById("cn-invoice-ref").value = inv.number + " — " + formatMoney(Number(inv.total_ttc));
+        document.getElementById("cn-number").value = nextCreditNoteNumber();
+        document.getElementById("cn-total").value = formatMoney(Number(inv.total_ttc));
+        document.getElementById("cn-reason").value = "";
+        openModal("modal-credit-note");
+    };
+
+    document.getElementById("credit-note-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var invoiceId = document.getElementById("cn-invoice-id").value;
+        var inv = state.invoices.find(function (i) { return i.id === invoiceId; });
+        if (!inv) return;
+
+        var payload = {
+            user_id: state.user.id,
+            number: nextCreditNoteNumber(),
+            invoice_id: inv.id,
+            client_id: inv.client_id,
+            date: new Date().toISOString().slice(0, 10),
+            items: inv.items,
+            subtotal_ht: inv.subtotal_ht,
+            tva_rate: inv.tva_rate,
+            tva_amount: inv.tva_amount,
+            total_ttc: inv.total_ttc,
+            reason: document.getElementById("cn-reason").value.trim()
+        };
+
+        var insertRes = await sb.from("credit_notes").insert(payload).select().single();
+        if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
+
+        await sb.from("invoices").update({ credit_note_id: insertRes.data.id }).eq("id", inv.id);
+
+        await refreshData();
+        closeModal("modal-credit-note");
+        navigate("invoices");
+    });
+
+    function renderCreditNotes() {
+        var container = document.getElementById("credit-notes-list");
+        if (state.creditNotes.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>Aucun avoir émis</p></div>';
+            return;
+        }
+        var html = '<table><thead><tr><th>N° Avoir</th><th>Facture</th><th>Client</th><th>Date</th><th>Montant TTC</th><th>Motif</th><th>Actions</th></tr></thead><tbody>';
+        state.creditNotes.forEach(function (cn) {
+            var inv = state.invoices.find(function (i) { return i.id === cn.invoice_id; });
+            var client = state.clients.find(function (c) { return c.id === cn.client_id; });
+            html += '<tr>';
+            html += '<td><strong>' + esc(cn.number) + '</strong></td>';
+            html += '<td>' + esc(inv ? inv.number : "—") + '</td>';
+            html += '<td>' + esc(client ? client.name : "—") + '</td>';
+            html += '<td>' + formatDate(cn.date) + '</td>';
+            html += '<td style="color:var(--danger)">-' + formatMoney(Number(cn.total_ttc)) + '</td>';
+            html += '<td>' + esc(cn.reason || "—") + '</td>';
+            html += '<td><button class="btn btn-sm btn-outline" onclick="downloadCreditNotePDF(\'' + cn.id + '\')">PDF</button></td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    window.downloadCreditNotePDF = function (id) {
+        var cn = state.creditNotes.find(function (x) { return x.id === id; });
+        if (!cn) return;
+        var inv = state.invoices.find(function (i) { return i.id === cn.invoice_id; });
+        renderDocumentPDF(cn, {
+            title: "AVOIR",
+            recipientLabel: "Client",
+            metaLabel: "Facture d'origine",
+            metaDate: inv ? inv.date : cn.date,
+            footerNote: "Avoir émis en annulation de la facture " + (inv ? inv.number : "N/A") + ". Motif : " + (cn.reason || "—")
+        });
     };
 
     // --- PDF export (print-to-PDF, dependency-free) ---
@@ -713,7 +810,10 @@
             html += '<td>' + esc(c.email || "—") + '</td>';
             html += '<td>' + esc(c.city || "—") + '</td>';
             html += '<td>' + invCount + '</td>';
-            html += '<td><button class="btn btn-sm btn-outline" onclick="deleteClient(\'' + c.id + '\')">Suppr.</button></td>';
+            html += '<td>';
+            html += '<button class="btn btn-sm btn-outline" onclick="editClient(\'' + c.id + '\')">Modifier</button> ';
+            html += '<button class="btn btn-sm btn-outline" onclick="deleteClient(\'' + c.id + '\')">Suppr.</button>';
+            html += '</td>';
             html += '</tr>';
         });
         html += '</tbody></table>';
@@ -778,23 +878,44 @@
         });
     });
 
-    // --- New Client ---
+    // --- New / Edit Client ---
     document.getElementById("btn-new-client").addEventListener("click", function () {
         document.getElementById("client-form").reset();
+        document.getElementById("client-edit-id").value = "";
+        document.getElementById("modal-client-title").textContent = "Nouveau client";
         openModal("modal-client");
     });
 
+    window.editClient = function (id) {
+        var c = state.clients.find(function (x) { return x.id === id; });
+        if (!c) return;
+        document.getElementById("client-edit-id").value = c.id;
+        document.getElementById("client-name").value = c.name || "";
+        document.getElementById("client-email").value = c.email || "";
+        document.getElementById("client-address").value = c.address || "";
+        document.getElementById("client-city").value = c.city || "";
+        document.getElementById("client-siret").value = c.siret || "";
+        document.getElementById("modal-client-title").textContent = "Modifier le client";
+        openModal("modal-client");
+    };
+
     document.getElementById("client-form").addEventListener("submit", async function (e) {
         e.preventDefault();
+        var editId = document.getElementById("client-edit-id").value;
         var payload = {
-            user_id: state.user.id,
             name: document.getElementById("client-name").value.trim(),
             email: document.getElementById("client-email").value.trim(),
             address: document.getElementById("client-address").value.trim(),
             city: document.getElementById("client-city").value.trim(),
             siret: document.getElementById("client-siret").value.trim()
         };
-        var res = await sb.from("clients").insert(payload);
+        var res;
+        if (editId) {
+            res = await sb.from("clients").update(payload).eq("id", editId);
+        } else {
+            payload.user_id = state.user.id;
+            res = await sb.from("clients").insert(payload);
+        }
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         closeModal("modal-client");

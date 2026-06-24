@@ -24,11 +24,20 @@ invoicepilot/
 
 Trois tables, toutes protégées par Row Level Security (chaque utilisateur n'accède qu'à ses propres données) :
 
-- `profiles` — infos entreprise du freelance (créée automatiquement à l'inscription via un trigger)
+- `profiles` — infos entreprise du freelance (créée automatiquement à l'inscription via un trigger) ; contient le champ `plan` (`free` / `pro`)
 - `clients` — carnet de clients
 - `invoices` — factures (lignes stockées en JSONB)
 - `quotes` — devis, convertibles en facture (lignes en JSONB)
 - `recurring_invoices` — modèles de factures récurrentes (mensuel/trimestriel/annuel)
+- `credit_notes` — avoirs émis en annulation d'une facture
+- `expenses` — factures reçues / dépenses (justificatifs dans le bucket Storage `receipts`)
+
+### Formules
+
+- **Gratuit** : 10 factures/mois, devis/avoirs/récurrences, clients, export PDF.
+- **Pro (29,99 €/mois)** : factures illimitées, factures reçues & dépenses, comptabilité
+  (compte de résultat, bilan simplifié, suivi de TVA). Le paiement Stripe reste à brancher —
+  l'activation est pour l'instant immédiate côté application.
 
 ## Configuration
 

@@ -12,8 +12,24 @@
         invoices: [],
         quotes: [],
         recurring: [],
-        creditNotes: []
+        creditNotes: [],
+        expenses: []
     };
+
+    var FREE_INVOICE_LIMIT = 10;
+    function isPro() { return state.profile && state.profile.plan === "pro"; }
+    function invoicesThisMonth() {
+        var now = new Date();
+        var ym = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+        return state.invoices.filter(function (inv) {
+            return String(inv.date).slice(0, 7) === ym;
+        }).length;
+    }
+    function canCreateInvoice() { return isPro() || invoicesThisMonth() < FREE_INVOICE_LIMIT; }
+    function quotaBlockedAlert() {
+        alert("Vous avez atteint la limite de " + FREE_INVOICE_LIMIT + " factures ce mois-ci (formule gratuite).\n\nPassez au Pro pour des factures illimitées.");
+        navigate("subscription");
+    }
 
     // --- Screens ---
     var authScreen = document.getElementById("auth-screen");
@@ -43,7 +59,8 @@
             sb.from("invoices").select("*").order("date", { ascending: false }),
             sb.from("quotes").select("*").order("date", { ascending: false }),
             sb.from("recurring_invoices").select("*").order("created_at", { ascending: false }),
-            sb.from("credit_notes").select("*").order("date", { ascending: false })
+            sb.from("credit_notes").select("*").order("date", { ascending: false }),
+            sb.from("expenses").select("*").order("date", { ascending: false })
         ]);
         state.profile = results[0].data || {};
         state.clients = results[1].data || [];
@@ -51,6 +68,7 @@
         state.quotes = results[3].data || [];
         state.recurring = results[4].data || [];
         state.creditNotes = results[5].data || [];
+        state.expenses = results[6].data || [];
     }
 
     // --- Auth UI ---
@@ -140,6 +158,9 @@
         if (page === "quotes") renderQuotes();
         if (page === "recurring") renderRecurring();
         if (page === "credit-notes") renderCreditNotes();
+        if (page === "expenses") renderExpenses();
+        if (page === "accounting") renderAccounting();
+        if (page === "subscription") renderSubscription();
         if (page === "clients") renderClients();
         if (page === "profile") loadProfile();
     }
@@ -168,8 +189,28 @@
         document.getElementById("stat-paid").textContent = paid;
         document.getElementById("stat-pending").textContent = pending;
         document.getElementById("stat-overdue").textContent = overdue;
+        renderUsageCard();
         renderInvoiceTable("dashboard-invoices-list", state.invoices.slice(0, 5));
     }
+
+    function renderUsageCard() {
+        var card = document.getElementById("usage-card");
+        if (isPro()) { card.style.display = "none"; return; }
+        card.style.display = "";
+        var used = invoicesThisMonth();
+        var pct = Math.min(100, Math.round(used / FREE_INVOICE_LIMIT * 100));
+        document.getElementById("usage-count").textContent = used + " / " + FREE_INVOICE_LIMIT;
+        var fill = document.getElementById("usage-fill");
+        fill.style.width = pct + "%";
+        fill.className = "usage-fill" + (used >= FREE_INVOICE_LIMIT ? " full" : (used >= FREE_INVOICE_LIMIT - 2 ? " warn" : ""));
+        var hint = document.getElementById("usage-hint");
+        if (used >= FREE_INVOICE_LIMIT) {
+            hint.innerHTML = "Limite atteinte. <a href=\"#\" onclick=\"goSubscription();return false\" style=\"color:var(--primary);font-weight:600\">Passez au Pro</a> pour des factures illimitées.";
+        } else {
+            hint.innerHTML = "Formule gratuite — " + (FREE_INVOICE_LIMIT - used) + " facture(s) restante(s) ce mois-ci.";
+        }
+    }
+    window.goSubscription = function () { navigate("subscription"); };
 
     // --- Invoices ---
     function renderInvoices() {
@@ -464,6 +505,7 @@
     window.convertToInvoice = async function (id) {
         var q = state.quotes.find(function (x) { return x.id === id; });
         if (!q) return;
+        if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
         if (!confirm("Convertir ce devis en facture ?")) return;
 
         var today = new Date().toISOString().slice(0, 10);
@@ -796,21 +838,45 @@
     });
 
     // --- Clients ---
+    function clientBalance(clientId) {
+        // Outstanding = unpaid, non-cancelled invoices for this client.
+        var invoiced = 0, paid = 0, outstanding = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.client_id !== clientId || inv.credit_note_id) return;
+            invoiced += Number(inv.total_ttc);
+            if (inv.status === "paid") paid += Number(inv.total_ttc);
+            else outstanding += Number(inv.total_ttc);
+        });
+        return { invoiced: invoiced, paid: paid, outstanding: outstanding };
+    }
+
     function renderClients() {
         var container = document.getElementById("clients-list");
+        var term = (document.getElementById("client-search").value || "").trim().toLowerCase();
         if (state.clients.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128101;</div><p>Aucun client pour le moment</p><button class="btn btn-primary" onclick="document.getElementById(\'btn-new-client\').click()">Ajouter un client</button></div>';
+            container.innerHTML = emptyState("&#128101;", "Aucun client pour le moment", "btn-new-client", "Ajouter un client");
             return;
         }
-        var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Ville</th><th>Factures</th><th>Actions</th></tr></thead><tbody>';
-        state.clients.forEach(function (c) {
+        var list = state.clients.filter(function (c) {
+            if (!term) return true;
+            return [c.name, c.email, c.city].some(function (v) { return v && String(v).toLowerCase().indexOf(term) !== -1; });
+        });
+        if (list.length === 0) {
+            container.innerHTML = '<div class="empty-state"><p>Aucun client ne correspond à « ' + esc(term) + ' ».</p></div>';
+            return;
+        }
+        var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Ville</th><th>Factures</th><th>Solde dû</th><th>Actions</th></tr></thead><tbody>';
+        list.forEach(function (c) {
             var invCount = state.invoices.filter(function (i) { return i.client_id === c.id; }).length;
+            var bal = clientBalance(c.id);
             html += '<tr>';
-            html += '<td><strong>' + esc(c.name) + '</strong></td>';
+            html += '<td><a href="#" onclick="openClientDetail(\'' + c.id + '\');return false" style="color:var(--primary);font-weight:600;text-decoration:none">' + esc(c.name) + '</a></td>';
             html += '<td>' + esc(c.email || "—") + '</td>';
             html += '<td>' + esc(c.city || "—") + '</td>';
             html += '<td>' + invCount + '</td>';
+            html += '<td' + (bal.outstanding > 0 ? ' style="color:var(--warning);font-weight:600"' : '') + '>' + formatMoney(bal.outstanding) + '</td>';
             html += '<td>';
+            html += '<button class="btn btn-sm btn-outline" onclick="openClientDetail(\'' + c.id + '\')">Voir</button> ';
             html += '<button class="btn btn-sm btn-outline" onclick="editClient(\'' + c.id + '\')">Modifier</button> ';
             html += '<button class="btn btn-sm btn-outline" onclick="deleteClient(\'' + c.id + '\')">Suppr.</button>';
             html += '</td>';
@@ -820,6 +886,46 @@
         container.innerHTML = html;
     }
 
+    document.getElementById("client-search").addEventListener("input", renderClients);
+
+    window.openClientDetail = function (id) {
+        var c = state.clients.find(function (x) { return x.id === id; });
+        if (!c) return;
+        document.getElementById("cd-title").textContent = c.name;
+        var bal = clientBalance(id);
+
+        var contact = [c.email, c.city, c.address, c.siret ? "SIRET : " + c.siret : ""]
+            .filter(Boolean).map(esc).join(" &bull; ") || "—";
+
+        var invoices = state.invoices.filter(function (i) { return i.client_id === id; });
+        var quotes = state.quotes.filter(function (q) { return q.client_id === id; });
+        var credits = state.creditNotes.filter(function (cn) { return cn.client_id === id; });
+
+        function docRows(arr, kind) {
+            if (arr.length === 0) return '<div class="row"><span style="color:var(--text-muted)">Aucun</span></div>';
+            return arr.map(function (d) {
+                var right;
+                if (kind === "invoice") right = formatMoney(Number(d.total_ttc)) + ' — ' + (d.credit_note_id ? "Annulée" : (d.status === "paid" ? "Payée" : "En attente"));
+                else if (kind === "quote") right = formatMoney(Number(d.total_ttc)) + ' — ' + d.status;
+                else right = '-' + formatMoney(Number(d.total_ttc));
+                return '<div class="row"><span>' + esc(d.number) + ' <span style="color:var(--text-muted)">' + formatDate(d.date) + '</span></span><span>' + right + '</span></div>';
+            }).join("");
+        }
+
+        document.getElementById("client-detail-body").innerHTML =
+            '<div class="detail-section"><p style="color:var(--text-muted);font-size:.88rem">' + contact + '</p></div>'
+            + '<div class="detail-section"><div class="detail-balance">'
+            + '<div class="bal"><div class="bal-label">Facturé</div><div class="bal-value">' + formatMoney(bal.invoiced) + '</div></div>'
+            + '<div class="bal"><div class="bal-label">Encaissé</div><div class="bal-value" style="color:var(--success)">' + formatMoney(bal.paid) + '</div></div>'
+            + '<div class="bal"><div class="bal-label">Solde dû</div><div class="bal-value" style="color:' + (bal.outstanding > 0 ? "var(--warning)" : "var(--text)") + '">' + formatMoney(bal.outstanding) + '</div></div>'
+            + '</div></div>'
+            + '<div class="detail-section"><h3>Factures (' + invoices.length + ')</h3><div class="detail-list">' + docRows(invoices, "invoice") + '</div></div>'
+            + '<div class="detail-section"><h3>Devis (' + quotes.length + ')</h3><div class="detail-list">' + docRows(quotes, "quote") + '</div></div>'
+            + '<div class="detail-section"><h3>Avoirs (' + credits.length + ')</h3><div class="detail-list">' + docRows(credits, "credit") + '</div></div>';
+
+        openModal("modal-client-detail");
+    };
+
     window.deleteClient = async function (id) {
         if (!confirm("Supprimer ce client ?")) return;
         var res = await sb.from("clients").delete().eq("id", id);
@@ -827,6 +933,254 @@
         await refreshData();
         renderClients();
     };
+
+    // --- Expenses (factures reçues) ---
+    function recalcExpense() {
+        var ht = parseFloat(document.getElementById("exp-ht").value) || 0;
+        var tva = parseFloat(document.getElementById("exp-tva").value) || 0;
+        document.getElementById("exp-ttc").textContent = formatMoney(ht + tva);
+    }
+    document.getElementById("exp-ht").addEventListener("input", recalcExpense);
+    document.getElementById("exp-tva").addEventListener("input", recalcExpense);
+
+    document.getElementById("btn-new-expense").addEventListener("click", function () {
+        document.getElementById("expense-form").reset();
+        document.getElementById("exp-date").value = new Date().toISOString().slice(0, 10);
+        recalcExpense();
+        openModal("modal-expense");
+    });
+
+    document.getElementById("expense-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var btn = document.getElementById("exp-submit");
+        btn.disabled = true; var lbl = btn.textContent; btn.textContent = "Enregistrement…";
+        try {
+            var ht = parseFloat(document.getElementById("exp-ht").value) || 0;
+            var tva = parseFloat(document.getElementById("exp-tva").value) || 0;
+
+            var filePath = null;
+            var fileInput = document.getElementById("exp-file");
+            if (fileInput.files && fileInput.files[0]) {
+                var f = fileInput.files[0];
+                var ext = (f.name.split(".").pop() || "bin").toLowerCase();
+                filePath = state.user.id + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+                var up = await sb.storage.from("receipts").upload(filePath, f, { upsert: false });
+                if (up.error) { alert("Erreur lors de l'envoi du fichier : " + up.error.message); return; }
+            }
+
+            var payload = {
+                user_id: state.user.id,
+                supplier: document.getElementById("exp-supplier").value.trim(),
+                date: document.getElementById("exp-date").value,
+                category: document.getElementById("exp-category").value,
+                amount_ht: ht,
+                tva_amount: tva,
+                amount_ttc: ht + tva,
+                note: document.getElementById("exp-note").value.trim(),
+                file_path: filePath
+            };
+            var res = await sb.from("expenses").insert(payload);
+            if (res.error) { alert("Erreur : " + res.error.message); return; }
+            await refreshData();
+            closeModal("modal-expense");
+            renderExpenses();
+        } finally {
+            btn.disabled = false; btn.textContent = lbl;
+        }
+    });
+
+    var EXP_CAT_LABEL = {
+        achats: "Achats", services: "Services ext.", fournitures: "Fournitures",
+        loyer: "Loyer & charges", logiciels: "Logiciels", deplacements: "Déplacements", autre: "Autre"
+    };
+
+    function renderExpenses() {
+        var container = document.getElementById("expenses-list");
+        if (!isPro()) { container.innerHTML = proGateHTML("Les factures reçues et le suivi des dépenses"); return; }
+        var term = (document.getElementById("expense-search").value || "").trim().toLowerCase();
+        if (state.expenses.length === 0) {
+            container.innerHTML = emptyState("&#128722;", "Aucune dépense enregistrée", "btn-new-expense", "Ajouter une dépense");
+            return;
+        }
+        var list = state.expenses.filter(function (x) {
+            if (!term) return true;
+            return (x.supplier && x.supplier.toLowerCase().indexOf(term) !== -1) || (x.note && x.note.toLowerCase().indexOf(term) !== -1);
+        });
+        if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucune dépense ne correspond.</p></div>'; return; }
+        var html = '<table><thead><tr><th>Fournisseur</th><th>Date</th><th>Catégorie</th><th>HT</th><th>TVA</th><th>TTC</th><th>Justif.</th><th></th></tr></thead><tbody>';
+        list.forEach(function (x) {
+            html += '<tr>';
+            html += '<td><strong>' + esc(x.supplier || "—") + '</strong>' + (x.note ? '<br><span style="color:var(--text-muted);font-size:.8rem">' + esc(x.note) + '</span>' : '') + '</td>';
+            html += '<td>' + formatDate(x.date) + '</td>';
+            html += '<td>' + esc(EXP_CAT_LABEL[x.category] || x.category) + '</td>';
+            html += '<td>' + formatMoney(Number(x.amount_ht)) + '</td>';
+            html += '<td>' + formatMoney(Number(x.tva_amount)) + '</td>';
+            html += '<td><strong>' + formatMoney(Number(x.amount_ttc)) + '</strong></td>';
+            html += '<td>' + (x.file_path ? '<button class="btn btn-sm btn-outline" onclick="downloadReceipt(\'' + encodeURIComponent(x.file_path) + '\')">Voir</button>' : '—') + '</td>';
+            html += '<td><button class="btn btn-sm btn-outline" onclick="deleteExpense(\'' + x.id + '\')">Suppr.</button></td>';
+            html += '</tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    document.getElementById("expense-search").addEventListener("input", renderExpenses);
+
+    window.downloadReceipt = async function (encodedPath) {
+        var path = decodeURIComponent(encodedPath);
+        var res = await sb.storage.from("receipts").createSignedUrl(path, 120);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        window.open(res.data.signedUrl, "_blank");
+    };
+
+    window.deleteExpense = async function (id) {
+        if (!confirm("Supprimer cette dépense ?")) return;
+        var x = state.expenses.find(function (e) { return e.id === id; });
+        if (x && x.file_path) { await sb.storage.from("receipts").remove([x.file_path]); }
+        var res = await sb.from("expenses").delete().eq("id", id);
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        await refreshData();
+        renderExpenses();
+    };
+
+    // --- Accounting ---
+    function renderAccounting() {
+        var gate = document.getElementById("accounting-pro-gate");
+        var content = document.getElementById("accounting-content");
+        if (!isPro()) {
+            content.style.display = "none";
+            gate.style.display = "";
+            gate.innerHTML = proGateHTML("La comptabilité (compte de résultat & bilan)");
+            return;
+        }
+        gate.style.display = "none";
+        content.style.display = "";
+
+        // Populate year selector once.
+        var sel = document.getElementById("acct-year");
+        var years = {};
+        state.invoices.forEach(function (i) { years[String(i.date).slice(0, 4)] = true; });
+        state.expenses.forEach(function (x) { years[String(x.date).slice(0, 4)] = true; });
+        var thisYear = String(new Date().getFullYear());
+        years[thisYear] = true;
+        var sorted = Object.keys(years).sort().reverse();
+        var prev = sel.value;
+        sel.innerHTML = sorted.map(function (y) { return '<option value="' + y + '">' + y + '</option>'; }).join("");
+        sel.value = (prev && years[prev]) ? prev : thisYear;
+
+        var year = sel.value;
+
+        // Produits = factures encaissées (HT), moins avoirs (HT).
+        var productsHT = 0, tvaCollected = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id) return;
+            if (inv.status !== "paid") return;
+            if (String(inv.date).slice(0, 4) !== year) return;
+            productsHT += Number(inv.subtotal_ht);
+            tvaCollected += Number(inv.tva_amount);
+        });
+        var creditsHT = 0;
+        state.creditNotes.forEach(function (cn) {
+            if (String(cn.date).slice(0, 4) !== year) return;
+            creditsHT += Number(cn.subtotal_ht);
+        });
+        productsHT -= creditsHT;
+
+        // Charges = dépenses (HT), TVA déductible.
+        var chargesHT = 0, tvaDeductible = 0;
+        var byCat = {};
+        state.expenses.forEach(function (x) {
+            if (String(x.date).slice(0, 4) !== year) return;
+            chargesHT += Number(x.amount_ht);
+            tvaDeductible += Number(x.tva_amount);
+            byCat[x.category] = (byCat[x.category] || 0) + Number(x.amount_ht);
+        });
+
+        var result = productsHT - chargesHT;
+
+        document.getElementById("acct-products").textContent = formatMoney(productsHT);
+        document.getElementById("acct-charges").textContent = formatMoney(chargesHT);
+        var resEl = document.getElementById("acct-result");
+        resEl.textContent = formatMoney(result);
+        resEl.style.color = result >= 0 ? "var(--success)" : "var(--danger)";
+
+        // Income statement
+        var is = '';
+        is += '<div class="acct-line positive"><span>Produits (ventes encaissées, HT)</span><span class="val">' + formatMoney(productsHT + creditsHT) + '</span></div>';
+        if (creditsHT > 0) is += '<div class="acct-line negative"><span>Avoirs émis (HT)</span><span class="val">-' + formatMoney(creditsHT) + '</span></div>';
+        Object.keys(byCat).forEach(function (cat) {
+            is += '<div class="acct-line negative"><span>' + esc(EXP_CAT_LABEL[cat] || cat) + '</span><span class="val">-' + formatMoney(byCat[cat]) + '</span></div>';
+        });
+        if (Object.keys(byCat).length === 0) is += '<div class="acct-line negative"><span>Charges</span><span class="val">0,00 €</span></div>';
+        is += '<div class="acct-line total"><span>Résultat net</span><span class="val" style="color:' + (result >= 0 ? "var(--success)" : "var(--danger)") + '">' + formatMoney(result) + '</span></div>';
+        document.getElementById("acct-income-statement").innerHTML = is;
+
+        // Simplified balance sheet
+        var outstanding = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status === "paid") return;
+            if (String(inv.date).slice(0, 4) !== year) return;
+            outstanding += Number(inv.total_ttc);
+        });
+        var treasury = result; // approximation HT
+        var bs = '';
+        bs += '<div style="font-weight:700;font-size:.8rem;color:var(--text-muted);margin:4px 0 6px">ACTIF</div>';
+        bs += '<div class="acct-line"><span>Créances clients (factures impayées TTC)</span><span class="val">' + formatMoney(outstanding) + '</span></div>';
+        bs += '<div class="acct-line"><span>Trésorerie estimée</span><span class="val">' + formatMoney(treasury) + '</span></div>';
+        bs += '<div style="font-weight:700;font-size:.8rem;color:var(--text-muted);margin:14px 0 6px">TVA</div>';
+        bs += '<div class="acct-line"><span>TVA collectée</span><span class="val">' + formatMoney(tvaCollected) + '</span></div>';
+        bs += '<div class="acct-line"><span>TVA déductible</span><span class="val">' + formatMoney(tvaDeductible) + '</span></div>';
+        bs += '<div class="acct-line total"><span>TVA à reverser</span><span class="val">' + formatMoney(tvaCollected - tvaDeductible) + '</span></div>';
+        document.getElementById("acct-balance-sheet").innerHTML = bs;
+    }
+
+    document.getElementById("acct-year").addEventListener("change", renderAccounting);
+
+    // --- Subscription ---
+    function renderSubscription() {
+        var pro = isPro();
+        var banner = document.getElementById("current-plan-banner");
+        banner.innerHTML = '<div style="display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;box-shadow:var(--shadow)">'
+            + '<span class="plan-tag" style="' + (pro ? '' : 'background:#F1F5F9;color:var(--text-muted)') + '">' + (pro ? "Pro" : "Gratuit") + '</span>'
+            + '<span style="font-size:.9rem">Formule actuelle : <strong>' + (pro ? "Pro — 29,99 €/mois" : "Gratuit") + '</strong></span></div>';
+
+        document.getElementById("plan-card-free").classList.toggle("current-plan", !pro);
+        document.getElementById("plan-card-pro").classList.toggle("current-plan", pro);
+
+        var freeBtn = document.getElementById("btn-select-free");
+        var proBtn = document.getElementById("btn-select-pro");
+        if (pro) {
+            freeBtn.textContent = "Revenir au gratuit";
+            freeBtn.disabled = false;
+            proBtn.textContent = "Formule actuelle";
+            proBtn.disabled = true;
+        } else {
+            freeBtn.textContent = "Formule actuelle";
+            freeBtn.disabled = true;
+            proBtn.textContent = "Passer au Pro";
+            proBtn.disabled = false;
+        }
+    }
+
+    async function changePlan(plan) {
+        var payload = { id: state.user.id, plan: plan, plan_since: new Date().toISOString() };
+        var res = await sb.from("profiles").upsert(payload).select().single();
+        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        state.profile = res.data;
+        renderSubscription();
+    }
+
+    document.getElementById("btn-select-pro").addEventListener("click", function () {
+        if (isPro()) return;
+        if (!confirm("Activer la formule Pro (29,99 €/mois) ?\n\nLe paiement par carte via Stripe sera branché prochainement — pour l'instant l'activation est immédiate afin de tester les fonctionnalités Pro.")) return;
+        changePlan("pro").then(function () { alert("Formule Pro activée ! Vous avez maintenant accès aux dépenses et à la comptabilité."); });
+    });
+
+    document.getElementById("btn-select-free").addEventListener("click", function () {
+        if (!isPro()) return;
+        if (!confirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules Pro.")) return;
+        changePlan("free");
+    });
 
     // --- Profile ---
     function loadProfile() {
@@ -980,6 +1334,7 @@
 
     ["btn-new-invoice", "btn-new-invoice-dash"].forEach(function (id) {
         document.getElementById(id).addEventListener("click", function () {
+            if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
             if (state.clients.length === 0) {
                 alert("Ajoutez d'abord un client avant de créer une facture.");
                 navigate("clients");
@@ -993,6 +1348,7 @@
 
     document.getElementById("invoice-form").addEventListener("submit", async function (e) {
         e.preventDefault();
+        if (!canCreateInvoice()) { closeModal("modal-invoice"); quotaBlockedAlert(); return; }
         var items = collectItems("#invoice-items tr");
         if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
 
@@ -1054,6 +1410,17 @@
             if (desc && qty > 0) items.push({ description: desc, quantity: qty, unitPrice: price, total: qty * price });
         });
         return items;
+    }
+    function emptyState(icon, text, btnId, btnLabel) {
+        var btn = btnId ? '<button class="btn btn-primary" onclick="document.getElementById(\'' + btnId + '\').click()">' + esc(btnLabel) + '</button>' : '';
+        return '<div class="empty-state"><div class="empty-icon">' + icon + '</div><p>' + esc(text) + '</p>' + btn + '</div>';
+    }
+    function proGateHTML(feature) {
+        return '<div class="empty-state">'
+            + '<div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>'
+            + '<p>' + esc(feature) + ' fait partie de la formule <strong>Pro</strong>.</p>'
+            + '<button class="btn btn-primary" onclick="goSubscription()">Passer au Pro — 29,99 €/mois</button>'
+            + '</div>';
     }
     function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
     function formatMoney(n) { return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }

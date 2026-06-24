@@ -232,7 +232,9 @@
                 + '</tr>';
         }).join("");
 
-        var mentions = p.mentions ? '<p class="mentions">' + esc(p.mentions) + '</p>' : "";
+        // Auto legal mention for the VAT-exempt micro-entrepreneur regime.
+        var mentionsText = p.mentions || (Number(doc.tva_rate) === 0 ? "TVA non applicable, art. 293 B du CGI" : "");
+        var mentions = mentionsText ? '<p class="mentions">' + esc(mentionsText) + '</p>' : "";
         var tvaLine = Number(doc.tva_rate) > 0
             ? '<tr><td>TVA (' + doc.tva_rate + '%)</td><td class="r">' + formatMoney(Number(doc.tva_amount)) + '</td></tr>'
             : '<tr><td>TVA</td><td class="r">Non applicable</td></tr>';
@@ -367,14 +369,12 @@
         if (!q) return;
         if (!confirm("Convertir ce devis en facture ?")) return;
 
-        var year = new Date().getFullYear();
-        var nextNum = state.invoices.filter(function (i) { return i.number && i.number.startsWith(year + "-"); }).length + 1;
         var today = new Date().toISOString().slice(0, 10);
         var due = new Date(); due.setDate(due.getDate() + 30);
 
         var invoicePayload = {
             user_id: state.user.id,
-            number: year + "-" + String(nextNum).padStart(3, "0"),
+            number: nextInvoiceNumber(),
             client_id: q.client_id,
             date: today,
             due_date: due.toISOString().slice(0, 10),
@@ -386,7 +386,7 @@
             status: "pending"
         };
         var insertRes = await sb.from("invoices").insert(invoicePayload).select().single();
-        if (insertRes.error) { alert("Erreur : " + insertRes.error.message); return; }
+        if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
 
         var updateRes = await sb.from("quotes")
             .update({ status: "invoiced", converted_invoice_id: insertRes.data.id })
@@ -422,9 +422,7 @@
         var valid = new Date(); valid.setDate(valid.getDate() + 30);
         document.getElementById("q-valid-until").value = valid.toISOString().slice(0, 10);
 
-        var year = new Date().getFullYear();
-        var nextNum = state.quotes.filter(function (x) { return x.number && x.number.indexOf(year) !== -1; }).length + 1;
-        document.getElementById("q-number").value = "DEVIS-" + year + "-" + String(nextNum).padStart(3, "0");
+        document.getElementById("q-number").value = nextQuoteNumber();
 
         var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
         document.getElementById("q-tva-rate-display").textContent = rate;
@@ -484,7 +482,7 @@
 
         var payload = {
             user_id: state.user.id,
-            number: document.getElementById("q-number").value,
+            number: nextQuoteNumber(),
             client_id: document.getElementById("q-client").value,
             date: document.getElementById("q-date").value,
             valid_until: document.getElementById("q-valid-until").value,
@@ -497,7 +495,7 @@
         };
 
         var res = await sb.from("quotes").insert(payload);
-        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        if (res.error) { alert("Erreur : " + dbErrorMessage(res.error)); return; }
         await refreshData();
         closeModal("modal-quote");
         navigate("quotes");
@@ -523,9 +521,7 @@
         var seqByYear = {};
         function nextNumber(year) {
             if (seqByYear[year] === undefined) {
-                seqByYear[year] = state.invoices.filter(function (inv) {
-                    return inv.number && inv.number.startsWith(year + "-");
-                }).length;
+                seqByYear[year] = maxSeqForYear(state.invoices, year);
             }
             seqByYear[year]++;
             return year + "-" + String(seqByYear[year]).padStart(3, "0");
@@ -819,10 +815,7 @@
         due.setDate(due.getDate() + 30);
         document.getElementById("inv-due-date").value = due.toISOString().slice(0, 10);
 
-        var year = new Date().getFullYear();
-        var yearInvoices = state.invoices.filter(function (i) { return i.number && i.number.startsWith(year + "-"); });
-        var nextNum = yearInvoices.length + 1;
-        document.getElementById("inv-number").value = year + "-" + String(nextNum).padStart(3, "0");
+        document.getElementById("inv-number").value = nextInvoiceNumber();
 
         var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
         document.getElementById("inv-tva-rate-display").textContent = rate;
@@ -888,7 +881,7 @@
 
         var payload = {
             user_id: state.user.id,
-            number: document.getElementById("inv-number").value,
+            number: nextInvoiceNumber(),
             client_id: document.getElementById("inv-client").value,
             date: document.getElementById("inv-date").value,
             due_date: document.getElementById("inv-due-date").value,
@@ -901,13 +894,36 @@
         };
 
         var res = await sb.from("invoices").insert(payload);
-        if (res.error) { alert("Erreur : " + res.error.message); return; }
+        if (res.error) { alert("Erreur : " + dbErrorMessage(res.error)); return; }
         await refreshData();
         closeModal("modal-invoice");
         navigate("invoices");
     });
 
     // --- Helpers ---
+    // Highest sequence number used for a given year in a list of documents.
+    // Matches both "2026-001" (invoices) and "DEVIS-2026-001" (quotes).
+    function maxSeqForYear(list, year) {
+        var re = new RegExp("(?:^|-)" + year + "-(\\d+)$");
+        var max = 0;
+        list.forEach(function (d) {
+            var m = d.number && d.number.match(re);
+            if (m) { var n = parseInt(m[1], 10); if (!isNaN(n) && n > max) max = n; }
+        });
+        return max;
+    }
+    function nextInvoiceNumber() {
+        var year = new Date().getFullYear();
+        return year + "-" + String(maxSeqForYear(state.invoices, year) + 1).padStart(3, "0");
+    }
+    function nextQuoteNumber() {
+        var year = new Date().getFullYear();
+        return "DEVIS-" + year + "-" + String(maxSeqForYear(state.quotes, year) + 1).padStart(3, "0");
+    }
+    function dbErrorMessage(error) {
+        if (error && error.code === "23505") return "Ce numéro est déjà utilisé. Veuillez réessayer.";
+        return (error && error.message) || "Erreur inconnue.";
+    }
     function collectItems(selector) {
         var items = [];
         document.querySelectorAll(selector).forEach(function (row) {

@@ -78,6 +78,7 @@
         state.expenses = results[6].data || [];
         state.suppliers = results[7].data || [];
         state.urssaf = results[8].data || [];
+        reservedSeq = { invoices: {}, quotes: {} };
     }
 
     // --- Auth UI ---
@@ -313,25 +314,22 @@
         // URSSAF à venir : dernier trimestre/mois non déclaré
         if (p.legal_status === "micro" && p.urssaf_period) {
             var nowU = new Date();
-            var lastDeclared = state.urssaf.length > 0 ? state.urssaf[0].period_end : null;
-            // Si la période précédente n'est pas dans l'historique, alerte
-            var prev;
+            var declaredLabels = state.urssaf.map(function (d) { return d.period_label; });
             if (p.urssaf_period === "monthly") {
-                prev = new Date(nowU.getFullYear(), nowU.getMonth() - 1, 1);
-                var prevEnd = new Date(nowU.getFullYear(), nowU.getMonth(), 0).toISOString().slice(0, 10);
-                if (lastDeclared !== prevEnd && nowU.getDate() <= 28) {
+                var prevM = new Date(nowU.getFullYear(), nowU.getMonth() - 1, 1);
+                var prevLabel = prevM.getFullYear() + "-" + String(prevM.getMonth() + 1).padStart(2, "0");
+                if (declaredLabels.indexOf(prevLabel) === -1 && nowU.getDate() <= 28) {
                     alerts.push({ level: "info", icon: "&#128203;",
-                        text: "<strong>Déclaration URSSAF mensuelle</strong> à effectuer pour " + prev.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) + "." });
+                        text: "<strong>Déclaration URSSAF mensuelle</strong> à effectuer pour " + prevM.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) + "." });
                 }
             } else {
-                var q = Math.floor(nowU.getMonth() / 3);
-                if (q > 0 || nowU.getMonth() >= 0) {
-                    var prevQEnd = new Date(nowU.getFullYear(), q * 3, 0).toISOString().slice(0, 10);
-                    if (q === 0) prevQEnd = (nowU.getFullYear() - 1) + "-12-31";
-                    if (lastDeclared !== prevQEnd && nowU.getDate() <= 30) {
-                        alerts.push({ level: "info", icon: "&#128203;",
-                            text: "<strong>Déclaration URSSAF trimestrielle</strong> à effectuer pour le trimestre précédent." });
-                    }
+                var currQ = Math.floor(nowU.getMonth() / 3);
+                var prevQNum = currQ === 0 ? 4 : currQ;
+                var prevQYear = currQ === 0 ? nowU.getFullYear() - 1 : nowU.getFullYear();
+                var prevQLabel = prevQYear + "-T" + prevQNum;
+                if (declaredLabels.indexOf(prevQLabel) === -1 && nowU.getDate() <= 30) {
+                    alerts.push({ level: "info", icon: "&#128203;",
+                        text: "<strong>Déclaration URSSAF trimestrielle</strong> à effectuer pour " + prevQLabel + "." });
                 }
             }
         }
@@ -915,6 +913,8 @@
         var q = state.quotes.find(function (x) { return x.id === quoteId; });
         if (!q) return;
         var mode = document.getElementById("dep-mode").value;
+        var nNeeded = mode === "deposit" ? 1 : Math.max(2, Math.min(12, parseInt(document.getElementById("dep-installments").value) || 3));
+        if (!hasUnlimitedInvoices() && invoicesThisMonth() + nNeeded > FREE_INVOICE_LIMIT) { quotaBlockedAlert(); return; }
         var btn = document.getElementById("dep-submit");
         btn.disabled = true; btn.textContent = "Création…";
         try {
@@ -924,11 +924,12 @@
                 var ratio = pct / 100;
                 var dueDeposit = new Date(); dueDeposit.setDate(dueDeposit.getDate() + 15);
                 var depositItems = (q.items || []).map(function (it) {
-                    return { description: "Acompte " + pct + "% — " + it.description, quantity: 1, unitPrice: Number(it.total) * ratio, total: Number(it.total) * ratio };
+                    var u = round2(Number(it.total) * ratio);
+                    return { description: "Acompte " + pct + "% — " + it.description, quantity: 1, unitPrice: u, total: u };
                 });
-                var subDeposit = Number(q.subtotal_ht) * ratio;
-                var tvaDeposit = Number(q.tva_amount) * ratio;
-                var totalDeposit = Number(q.total_ttc) * ratio;
+                var subDeposit = round2(Number(q.subtotal_ht) * ratio);
+                var tvaDeposit = round2(Number(q.tva_amount) * ratio);
+                var totalDeposit = round2(Number(q.total_ttc) * ratio);
                 var depositPayload = {
                     user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
                     date: today, due_date: dueDeposit.toISOString().slice(0, 10),
@@ -941,27 +942,37 @@
             } else {
                 var n = Math.max(2, Math.min(12, parseInt(document.getElementById("dep-installments").value) || 3));
                 var freq = parseInt(document.getElementById("dep-frequency").value) || 30;
-                var totalInv = Number(q.total_ttc);
-                var subInv = Number(q.subtotal_ht);
-                var tvaInv = Number(q.tva_amount);
+                var totalInv = round2(Number(q.total_ttc));
+                var subInv = round2(Number(q.subtotal_ht));
+                var tvaInv = round2(Number(q.tva_amount));
+                var subPart = round2(subInv / n);
+                var tvaPart = round2(tvaInv / n);
+                var totalPart = round2(totalInv / n);
+                var itemTotals = (q.items || []).map(function (it) { return round2(Number(it.total) / n); });
                 for (var i = 1; i <= n; i++) {
                     var d = new Date(); d.setDate(d.getDate() + (i - 1) * freq + 15);
                     var label = "Échéance " + i + "/" + n;
-                    var items = (q.items || []).map(function (it) {
-                        return { description: label + " — " + it.description, quantity: 1, unitPrice: Number(it.total) / n, total: Number(it.total) / n };
+                    var isLast = i === n;
+                    var sub_i = isLast ? round2(subInv - subPart * (n - 1)) : subPart;
+                    var tva_i = isLast ? round2(tvaInv - tvaPart * (n - 1)) : tvaPart;
+                    var tot_i = isLast ? round2(totalInv - totalPart * (n - 1)) : totalPart;
+                    var items = (q.items || []).map(function (it, idx) {
+                        var base = itemTotals[idx];
+                        var u = isLast ? round2(Number(it.total) - base * (n - 1)) : base;
+                        return { description: label + " — " + it.description, quantity: 1, unitPrice: u, total: u };
                     });
                     var inst = {
                         user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
                         date: today, due_date: d.toISOString().slice(0, 10),
-                        items: items, subtotal_ht: subInv / n, tva_rate: q.tva_rate, tva_amount: tvaInv / n, total_ttc: totalInv / n,
+                        items: items, subtotal_ht: sub_i, tva_rate: q.tva_rate, tva_amount: tva_i, total_ttc: tot_i,
                         status: "pending", doc_type: "installment", parent_quote_id: q.id,
                         installment_index: i, installment_total: n
                     };
                     var insRes = await sb.from("invoices").insert(inst).select().single();
                     if (insRes.error) { alert("Erreur échéance " + i + " : " + dbErrorMessage(insRes.error)); return; }
                     if (i === 1) await sb.from("quotes").update({ status: "invoiced", converted_invoice_id: insRes.data.id }).eq("id", q.id);
-                    await refreshData();
                 }
+                await refreshData();
             }
             await refreshData();
             closeModal("modal-deposit");
@@ -976,22 +987,27 @@
     window.createBalanceFor = async function (depositInvoiceId) {
         var deposit = state.invoices.find(function (i) { return i.id === depositInvoiceId; });
         if (!deposit || deposit.doc_type !== "deposit") return;
+        if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
         if (!confirm("Créer la facture de solde pour cet acompte ?")) return;
         var q = deposit.parent_quote_id ? state.quotes.find(function (x) { return x.id === deposit.parent_quote_id; }) : null;
         if (!q) { alert("Devis lié introuvable."); return; }
         var pct = Number(deposit.deposit_percent) || 30;
-        var ratio = (100 - pct) / 100;
         var today = new Date().toISOString().slice(0, 10);
         var due = new Date(); due.setDate(due.getDate() + 30);
         var items = (q.items || []).map(function (it) {
-            return { description: "Solde " + (100 - pct) + "% — " + it.description, quantity: 1, unitPrice: Number(it.total) * ratio, total: Number(it.total) * ratio };
+            var depPart = round2(Number(it.total) * (pct / 100));
+            var u = round2(Number(it.total) - depPart);
+            return { description: "Solde " + (100 - pct) + "% — " + it.description, quantity: 1, unitPrice: u, total: u };
         });
+        var subBal = round2(Number(q.subtotal_ht) - Number(deposit.subtotal_ht));
+        var tvaBal = round2(Number(q.tva_amount) - Number(deposit.tva_amount));
+        var totBal = round2(Number(q.total_ttc) - Number(deposit.total_ttc));
         var payload = {
             user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
             date: today, due_date: due.toISOString().slice(0, 10),
             items: items,
-            subtotal_ht: Number(q.subtotal_ht) * ratio, tva_rate: q.tva_rate,
-            tva_amount: Number(q.tva_amount) * ratio, total_ttc: Number(q.total_ttc) * ratio,
+            subtotal_ht: subBal, tva_rate: q.tva_rate,
+            tva_amount: tvaBal, total_ttc: totBal,
             status: "pending", doc_type: "balance", parent_quote_id: q.id, parent_invoice_id: deposit.id
         };
         var ins = await sb.from("invoices").insert(payload).select().single();
@@ -1562,38 +1578,28 @@
     async function processRecurring() {
         var today = new Date().toISOString().slice(0, 10);
         var generatedCount = 0;
-        // Continuous per-year sequence, seeded from existing invoices and shared
-        // across templates so numbers never collide or skip within a year.
-        var seqByYear = {};
-        function nextNumber(year) {
-            if (seqByYear[year] === undefined) {
-                seqByYear[year] = maxSeqForYear(state.invoices, year);
-            }
-            seqByYear[year]++;
-            return year + "-" + String(seqByYear[year]).padStart(3, "0");
-        }
 
         for (var i = 0; i < state.recurring.length; i++) {
             var r = state.recurring[i];
             if (!r.active) continue;
+            if (["monthly", "quarterly", "yearly"].indexOf(r.frequency) === -1) continue;
 
             var nextRun = r.next_run;
             var lastGenerated = r.last_generated;
             var didGenerate = false;
+            var safety = 0;
 
             // Generate one invoice per due period, catching up multiple periods.
-            while (nextRun <= today) {
-                var year = new Date(nextRun).getFullYear();
-                var number = nextNumber(year);
-
-                var subtotal = (r.items || []).reduce(function (s, it) { return s + Number(it.total); }, 0);
+            while (nextRun <= today && safety++ < 120) {
+                if (!canCreateInvoice()) break;
+                var subtotal = round2((r.items || []).reduce(function (s, it) { return s + Number(it.total); }, 0));
                 var rate = Number(r.tva_rate);
-                var tva = subtotal * rate / 100;
+                var tva = round2(subtotal * rate / 100);
                 var due = advanceDate(nextRun, "monthly"); // 30-day-ish due window
 
                 var insertRes = await sb.from("invoices").insert({
                     user_id: state.user.id,
-                    number: number,
+                    number: nextInvoiceNumber(),
                     client_id: r.client_id,
                     date: nextRun,
                     due_date: due,
@@ -1601,15 +1607,18 @@
                     subtotal_ht: subtotal,
                     tva_rate: rate,
                     tva_amount: tva,
-                    total_ttc: subtotal + tva,
+                    total_ttc: round2(subtotal + tva),
                     status: "pending"
                 }).select().single();
 
                 if (insertRes.error) break;
+                state.invoices.unshift(insertRes.data);
                 generatedCount++;
                 didGenerate = true;
                 lastGenerated = nextRun;
-                nextRun = advanceDate(nextRun, r.frequency);
+                var advanced = advanceDate(nextRun, r.frequency);
+                if (advanced === nextRun) break;
+                nextRun = advanced;
             }
 
             if (didGenerate) {
@@ -2152,8 +2161,8 @@
             ? '<div class="row"><span style="color:var(--text-muted)">Aucune dépense</span></div>'
             : exp.map(function (x) {
                 var receiptLink = "";
-                if (x.receipt_url) {
-                    receiptLink = ' <a href="#" class="receipt-link" onclick="viewReceipt(\'' + esc(x.receipt_url) + '\');return false">Justificatif</a>';
+                if (x.file_path) {
+                    receiptLink = ' <a href="#" class="receipt-link" onclick="viewReceipt(\'' + esc(x.file_path) + '\');return false">Justificatif</a>';
                 }
                 return '<div class="row"><span>' + formatDate(x.date) + ' — ' + esc(EXP_CAT_LABEL[x.category] || x.category)
                     + (x.note ? ' <span style="color:var(--text-muted)">' + esc(x.note) + '</span>' : '') + receiptLink + '</span><span>' + formatMoney(Number(x.amount_ttc)) + '</span></div>';
@@ -3002,11 +3011,11 @@
             ["Période", "CA déclaré", "Cotisations", "Date déclaration", "Statut"]
         ], { origin: "A" + (r + 1) });
         r += 3;
-        state.urssaf.sort(function (a, b) { return a.period_start < b.period_start ? -1 : 1; }).forEach(function (d) {
+        state.urssaf.slice().sort(function (a, b) { return (a.period_label || "") < (b.period_label || "") ? -1 : 1; }).forEach(function (d) {
             r++;
-            XLSX.utils.sheet_add_aoa(ws, [[d.period_start + " → " + d.period_end, Number(d.revenue || 0), Number(d.contributions || 0), d.declared_at ? d.declared_at.slice(0, 10) : "", d.status || ""]], { origin: "A" + (r + 1) });
+            XLSX.utils.sheet_add_aoa(ws, [[d.period_label || "", Number(d.ca_base || 0), Number(d.cotisation || 0), d.declared_at ? d.declared_at.slice(0, 10) : "", "Déclaré"]], { origin: "A" + (r + 1) });
         });
-        applyColWidths(ws, [28, 16, 16, 16, 12]);
+        applyColWidths(ws, [22, 16, 16, 16, 12]);
         return ws;
     }
 
@@ -3325,13 +3334,21 @@
         });
         return max;
     }
+    function round2(v) { return Math.round((Number(v) || 0) * 100) / 100; }
+    var reservedSeq = { invoices: {}, quotes: {} };
+    function reserveSeq(kind, list, year) {
+        var prev = reservedSeq[kind][year] || 0;
+        var next = Math.max(maxSeqForYear(list, year), prev) + 1;
+        reservedSeq[kind][year] = next;
+        return next;
+    }
     function nextInvoiceNumber() {
         var year = new Date().getFullYear();
-        return "FAC-" + year + "-" + String(maxSeqForYear(state.invoices, year) + 1).padStart(3, "0");
+        return "FAC-" + year + "-" + String(reserveSeq("invoices", state.invoices, year)).padStart(3, "0");
     }
     function nextQuoteNumber() {
         var year = new Date().getFullYear();
-        return "DEVIS-" + year + "-" + String(maxSeqForYear(state.quotes, year) + 1).padStart(3, "0");
+        return "DEVIS-" + year + "-" + String(reserveSeq("quotes", state.quotes, year)).padStart(3, "0");
     }
     function dbErrorMessage(error) {
         if (error && error.code === "23505") return "Ce numéro est déjà utilisé. Veuillez réessayer.";

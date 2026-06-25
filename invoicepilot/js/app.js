@@ -35,12 +35,14 @@
             document.getElementById("confirm-message").textContent = msg;
             var ok = document.getElementById("confirm-ok");
             var cancel = document.getElementById("confirm-cancel");
+            var prevFocus = document.activeElement;
             modal.classList.add("open");
-            ok.focus();
+            try { ok.focus(); } catch (e) {}
             function cleanup(val) {
                 modal.classList.remove("open");
                 ok.removeEventListener("click", onOk);
                 cancel.removeEventListener("click", onCancel);
+                if (prevFocus && prevFocus.focus) { try { prevFocus.focus(); } catch (e) {} }
                 resolve(val);
             }
             function onOk() { cleanup(true); }
@@ -883,6 +885,7 @@
             await sb.from("quotes").update({ status: "accepted", converted_invoice_id: null }).eq("id", linkedQuote.id);
         }
         await refreshData();
+        pageState.invoices = 1;
         navigate("invoices");
     };
 
@@ -1323,19 +1326,31 @@
             .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
     }
+    function isoDate(d) { return /^\d{4}-\d{2}-\d{2}$/.test(String(d || "")) ? d : new Date().toISOString().slice(0, 10); }
+    function ublAddress(party) {
+        var country = (party.country || "FR").toUpperCase().slice(0, 2);
+        return '    <cac:PostalAddress>'
+            + (party.address ? '<cbc:StreetName>' + xmlEsc(party.address) + '</cbc:StreetName>' : '')
+            + (party.city ? '<cbc:CityName>' + xmlEsc(party.city) + '</cbc:CityName>' : '')
+            + (party.postal_code ? '<cbc:PostalZone>' + xmlEsc(party.postal_code) + '</cbc:PostalZone>' : '')
+            + '<cac:Country><cbc:IdentificationCode>' + xmlEsc(country) + '</cbc:IdentificationCode></cac:Country>'
+            + '</cac:PostalAddress>\n';
+    }
     function buildUBL(inv) {
         var p = state.profile || {};
         var client = state.clients.find(function (c) { return c.id === inv.client_id; }) || {};
         var rate = Number(inv.tva_rate) || 0;
         var taxCategory = rate > 0 ? "S" : "E";
         var lines = (inv.items || []).map(function (it, i) {
-            var qty = Number(it.quantity) || 1;
+            var qty = Number(it.quantity);
+            if (!Number.isFinite(qty) || qty <= 0) qty = 1;
             var unit = Number(it.unitPrice) || 0;
-            var lineTotal = Number(it.total) || (qty * unit);
+            var lineTotal = Number(it.total);
+            if (!Number.isFinite(lineTotal)) lineTotal = qty * unit;
             return [
                 '  <cac:InvoiceLine>',
                 '    <cbc:ID>' + (i + 1) + '</cbc:ID>',
-                '    <cbc:InvoicedQuantity unitCode="C62">' + qty + '</cbc:InvoicedQuantity>',
+                '    <cbc:InvoicedQuantity unitCode="C62">' + qty.toFixed(2) + '</cbc:InvoicedQuantity>',
                 '    <cbc:LineExtensionAmount currencyID="EUR">' + lineTotal.toFixed(2) + '</cbc:LineExtensionAmount>',
                 '    <cac:Item><cbc:Name>' + xmlEsc(it.description || "—") + '</cbc:Name>',
                 '      <cac:ClassifiedTaxCategory><cbc:ID>' + taxCategory + '</cbc:ID><cbc:Percent>' + rate.toFixed(2) + '</cbc:Percent>'
@@ -1355,16 +1370,14 @@
             + '  xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">\n'
             + '  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>\n'
             + '  <cbc:ID>' + xmlEsc(inv.number) + '</cbc:ID>\n'
-            + '  <cbc:IssueDate>' + xmlEsc(inv.date) + '</cbc:IssueDate>\n'
-            + '  <cbc:DueDate>' + xmlEsc(inv.due_date) + '</cbc:DueDate>\n'
+            + '  <cbc:IssueDate>' + isoDate(inv.date) + '</cbc:IssueDate>\n'
+            + '  <cbc:DueDate>' + isoDate(inv.due_date) + '</cbc:DueDate>\n'
             + '  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>\n'
             + '  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>\n'
             + (inv.po_number ? '  <cac:OrderReference><cbc:ID>' + xmlEsc(inv.po_number) + '</cbc:ID></cac:OrderReference>\n' : '')
             + '  <cac:AccountingSupplierParty><cac:Party>\n'
             + '    <cac:PartyName><cbc:Name>' + xmlEsc(p.name || "") + '</cbc:Name></cac:PartyName>\n'
-            + '    <cac:PostalAddress><cbc:StreetName>' + xmlEsc(p.address || "") + '</cbc:StreetName>'
-            + '<cbc:CityName>' + xmlEsc(p.city || "") + '</cbc:CityName>'
-            + '<cac:Country><cbc:IdentificationCode>FR</cbc:IdentificationCode></cac:Country></cac:PostalAddress>\n'
+            + ublAddress(p)
             + (p.siret ? '    <cac:PartyLegalEntity><cbc:RegistrationName>' + xmlEsc(p.name || "") + '</cbc:RegistrationName>'
                 + '<cbc:CompanyID schemeID="0009">' + xmlEsc(p.siret) + '</cbc:CompanyID></cac:PartyLegalEntity>\n' : '')
             + (p.tva_number ? '    <cac:PartyTaxScheme><cbc:CompanyID>' + xmlEsc(p.tva_number) + '</cbc:CompanyID>'
@@ -1372,9 +1385,7 @@
             + '  </cac:Party></cac:AccountingSupplierParty>\n'
             + '  <cac:AccountingCustomerParty><cac:Party>\n'
             + '    <cac:PartyName><cbc:Name>' + xmlEsc(client.name || "") + '</cbc:Name></cac:PartyName>\n'
-            + '    <cac:PostalAddress><cbc:StreetName>' + xmlEsc(client.address || "") + '</cbc:StreetName>'
-            + '<cbc:CityName>' + xmlEsc(client.city || "") + '</cbc:CityName>'
-            + '<cac:Country><cbc:IdentificationCode>FR</cbc:IdentificationCode></cac:Country></cac:PostalAddress>\n'
+            + ublAddress(client)
             + (client.siret ? '    <cac:PartyLegalEntity><cbc:RegistrationName>' + xmlEsc(client.name || "") + '</cbc:RegistrationName>'
                 + '<cbc:CompanyID schemeID="0009">' + xmlEsc(client.siret) + '</cbc:CompanyID></cac:PartyLegalEntity>\n' : '')
             + '  </cac:Party></cac:AccountingCustomerParty>\n'
@@ -3289,6 +3300,8 @@
         document.getElementById("prof-siret").value = p.siret || "";
         document.getElementById("prof-address").value = p.address || "";
         document.getElementById("prof-city").value = p.city || "";
+        document.getElementById("prof-postal-code").value = p.postal_code || "";
+        document.getElementById("prof-country").value = p.country || "FR";
         document.getElementById("prof-email").value = p.email || "";
         document.getElementById("prof-phone").value = p.phone || "";
         document.getElementById("prof-tva").value = p.tva_number || "";
@@ -3324,6 +3337,8 @@
             siret: document.getElementById("prof-siret").value.trim(),
             address: document.getElementById("prof-address").value.trim(),
             city: document.getElementById("prof-city").value.trim(),
+            postal_code: document.getElementById("prof-postal-code").value.trim() || null,
+            country: (document.getElementById("prof-country").value.trim() || "FR").toUpperCase().slice(0, 2),
             email: document.getElementById("prof-email").value.trim(),
             phone: document.getElementById("prof-phone").value.trim(),
             tva_number: document.getElementById("prof-tva").value.trim(),
@@ -3341,8 +3356,8 @@
             template_color: document.getElementById("prof-template-color").value || "#4F46E5",
             template_font: document.getElementById("prof-template-font").value || "Arial",
             template_logo_url: document.getElementById("prof-template-logo").value.trim() || null,
-            penalty_rate: parseFloat(document.getElementById("prof-penalty-rate").value) || 0,
-            recovery_fee: parseFloat(document.getElementById("prof-recovery-fee").value) || 40,
+            penalty_rate: Math.max(0, Number.isFinite(parseFloat(document.getElementById("prof-penalty-rate").value)) ? parseFloat(document.getElementById("prof-penalty-rate").value) : 0),
+            recovery_fee: Math.max(0, Number.isFinite(parseFloat(document.getElementById("prof-recovery-fee").value)) ? parseFloat(document.getElementById("prof-recovery-fee").value) : 40),
             updated_at: new Date().toISOString()
         };
         var res = await sb.from("profiles").upsert(payload).select().single();
@@ -3352,19 +3367,30 @@
     });
 
     // --- Modals ---
-    var focusBeforeModal = null;
+    var focusStack = [];
     var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    function isVisible(el) {
+        if (!el || el.offsetWidth === 0 || el.offsetHeight === 0) return false;
+        var s = window.getComputedStyle(el);
+        return s.visibility !== "hidden" && s.display !== "none";
+    }
+    function visibleFocusables(root) {
+        return Array.prototype.filter.call(root.querySelectorAll(FOCUSABLE), isVisible);
+    }
     window.closeModal = function (id) {
         document.getElementById(id).classList.remove("open");
-        if (focusBeforeModal && focusBeforeModal.focus) { try { focusBeforeModal.focus(); } catch (e) {} focusBeforeModal = null; }
+        var prev = focusStack.pop();
+        if (prev && prev.focus) { try { prev.focus(); } catch (e) {} }
     };
 
     function openModal(id) {
-        focusBeforeModal = document.activeElement;
+        focusStack.push(document.activeElement);
         var el = document.getElementById(id);
         el.classList.add("open");
-        var first = el.querySelector(FOCUSABLE);
-        if (first) setTimeout(function () { try { first.focus(); } catch (e) {} }, 10);
+        setTimeout(function () {
+            var firsts = visibleFocusables(el);
+            if (firsts.length) try { firsts[0].focus(); } catch (e) {}
+        }, 10);
     }
 
     document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
@@ -3389,7 +3415,14 @@
             return;
         }
         if (inField) return;
-        if (e.key === "?") { e.preventDefault(); toast("Raccourcis : N facture · D devis · G puis i/q/c/d nav · / recherche · Esc fermer", "info"); return; }
+        // Consume a pending `g` sequence BEFORE single-letter shortcuts to avoid g→d colliding with `d` (new quote).
+        if (goSeq) {
+            clearTimeout(goSeq); goSeq = null;
+            var map = { i: "invoices", q: "quotes", c: "clients", d: "dashboard", e: "expenses", s: "suppliers", a: "accounting", p: "profile" };
+            var target = map[e.key.toLowerCase()];
+            if (target) { e.preventDefault(); navigate(target); return; }
+        }
+        if (e.key === "?") { e.preventDefault(); toast("Raccourcis : N facture · D devis · G puis i/q/c/d/e/s/a/p nav · / recherche · Esc fermer", "info"); return; }
         if (e.key === "n" || e.key === "N") {
             var btn = document.getElementById("btn-new-invoice");
             if (btn) { e.preventDefault(); btn.click(); }
@@ -3401,14 +3434,9 @@
             return;
         }
         if (e.key === "g" || e.key === "G") {
+            e.preventDefault();
             goSeq = setTimeout(function () { goSeq = null; }, 800);
             return;
-        }
-        if (goSeq) {
-            clearTimeout(goSeq); goSeq = null;
-            var map = { i: "invoices", q: "quotes", c: "clients", d: "dashboard", e: "expenses", s: "suppliers", a: "accounting", p: "profile" };
-            var target = map[e.key.toLowerCase()];
-            if (target) { e.preventDefault(); navigate(target); }
         }
     });
 
@@ -3418,7 +3446,7 @@
         var open = document.querySelectorAll(".modal-overlay.open");
         if (open.length === 0) return;
         var modal = open[open.length - 1];
-        var nodes = modal.querySelectorAll(FOCUSABLE);
+        var nodes = visibleFocusables(modal);
         if (!nodes.length) return;
         var first = nodes[0], last = nodes[nodes.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -3454,6 +3482,8 @@
         document.getElementById("client-email").value = c.email || "";
         document.getElementById("client-address").value = c.address || "";
         document.getElementById("client-city").value = c.city || "";
+        document.getElementById("client-postal-code").value = c.postal_code || "";
+        document.getElementById("client-country").value = c.country || "FR";
         document.getElementById("client-siret").value = c.siret || "";
         document.getElementById("modal-client-title").textContent = "Modifier le client";
         openModal("modal-client");
@@ -3469,6 +3499,8 @@
             email: document.getElementById("client-email").value.trim(),
             address: document.getElementById("client-address").value.trim(),
             city: document.getElementById("client-city").value.trim(),
+            postal_code: document.getElementById("client-postal-code").value.trim() || null,
+            country: (document.getElementById("client-country").value.trim() || "FR").toUpperCase().slice(0, 2),
             siret: siret
         };
         var res;
@@ -3674,13 +3706,17 @@
         return parts.join(". ") + ".";
     }
 
+    function stripBcd(s) { return String(s || "").replace(/[\r\n\t]+/g, " ").trim(); }
     function buildEpcPayload(profile, doc) {
+        var total = Number(doc.total_ttc);
+        if (!Number.isFinite(total) || total <= 0 || total > 999999999.99) return null;
         var iban = (profile.iban || "").replace(/\s/g, "").toUpperCase();
-        if (!iban || iban.length < 15) return null;
+        if (!iban || iban.length < 15 || iban.length > 34) return null;
         var bic = (profile.bic || "").replace(/\s/g, "").toUpperCase();
-        var name = (profile.bank_holder || profile.name || "").slice(0, 70);
-        var amount = "EUR" + Number(doc.total_ttc).toFixed(2);
-        var ref = (doc.number || "").slice(0, 35);
+        var name = stripBcd(profile.bank_holder || profile.name).slice(0, 70);
+        if (!name) return null;
+        var amount = "EUR" + total.toFixed(2);
+        var ref = stripBcd(doc.number).slice(0, 35);
         // EPC069-12 v2 format
         return ["BCD", "002", "1", "SCT", bic, name, iban, amount, "", "", ref, ""].join("\n");
     }

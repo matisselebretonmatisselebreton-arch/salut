@@ -303,8 +303,18 @@
                                 <input type="text" id="prof-address" placeholder="12 rue de Paris">
                             </div>
                             <div class="form-group">
-                                <label>Code postal & Ville</label>
-                                <input type="text" id="prof-city" placeholder="75001 Paris">
+                                <label>Code postal</label>
+                                <input type="text" id="prof-postal-code" maxlength="10" placeholder="75001">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ville</label>
+                                <input type="text" id="prof-city" placeholder="Paris">
+                            </div>
+                            <div class="form-group">
+                                <label>Pays (code ISO)</label>
+                                <input type="text" id="prof-country" maxlength="2" value="FR">
                             </div>
                         </div>
                         <div class="form-row">
@@ -582,8 +592,18 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Code postal & Ville</label>
-                        <input type="text" id="client-city">
+                        <label>Code postal</label>
+                        <input type="text" id="client-postal-code" maxlength="10" placeholder="75001">
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="client-city" placeholder="Paris">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pays (code ISO)</label>
+                        <input type="text" id="client-country" maxlength="2" placeholder="FR" value="FR">
                     </div>
                     <div class="form-group">
                         <label>SIRET (optionnel)</label>

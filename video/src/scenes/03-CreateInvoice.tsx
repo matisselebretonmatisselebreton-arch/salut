@@ -95,11 +95,12 @@ export const SceneCreateInvoice: React.FC = () => {
           position: "relative",
           width: isVertical ? "92%" : "70%",
           maxWidth: 900,
+          margin: "0 auto",
           transform: `translateY(${formY}px)`,
           opacity: formOpacity,
         }}
       >
-        <AppFrame title="app.invoicepilot.fr/factures/nouvelle">
+        <AppFrame title="app.invoicepilot.fr/factures/nouvelle" width="100%">
           <InvoiceForm
             clientFilled={clientFilled}
             itemFilled={itemFilled}

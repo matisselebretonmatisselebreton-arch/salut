@@ -82,7 +82,7 @@ export const SceneHook: React.FC = () => {
         <TextReveal
           text="Tu en as marre de te prendre la tête avec tes factures, tes devis ou encore ta comptabilité ?"
           fontSize={isVertical ? 72 : 80}
-          highlight="factures"
+          highlight={["factures", "devis", "comptabilité"]}
           highlightColor={theme.primary}
           stagger={2}
           fontWeight={800}

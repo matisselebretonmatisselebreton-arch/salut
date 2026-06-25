@@ -10,7 +10,7 @@ type Props = {
   color?: string;
   lineHeight?: number;
   style?: React.CSSProperties;
-  highlight?: string;
+  highlight?: string | string[];
   highlightColor?: string;
 };
 
@@ -30,6 +30,15 @@ export const TextReveal: React.FC<Props> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const words = text.split(" ");
+  const highlights = Array.isArray(highlight)
+    ? highlight.map((h) => h.toLowerCase())
+    : highlight
+    ? [highlight.toLowerCase()]
+    : [];
+  const matchHi = (word: string) => {
+    const clean = word.toLowerCase().replace(/[^\p{L}]/gu, "");
+    return highlights.some((h) => clean.includes(h));
+  };
 
   return (
     <div
@@ -57,7 +66,7 @@ export const TextReveal: React.FC<Props> = ({
         const opacity = interpolate(progress, [0, 1], [0, 1]);
         const translateY = interpolate(progress, [0, 1], [40, 0]);
         const blur = interpolate(progress, [0, 1], [12, 0]);
-        const isHi = highlight && w.toLowerCase().includes(highlight.toLowerCase());
+        const isHi = matchHi(w);
         return (
           <span
             key={i}

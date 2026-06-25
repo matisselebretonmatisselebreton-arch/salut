@@ -211,14 +211,18 @@
     function renderDashboard() {
         var paid = 0, pending = 0, overdue = 0, revenue = 0;
         var now = new Date();
+        var currentYear = String(now.getFullYear());
         state.invoices.forEach(function (inv) {
             if (inv.credit_note_id) return;
-            if (inv.status === "paid") { paid++; revenue += Number(inv.total_ttc); }
+            if (inv.status === "paid") {
+                paid++;
+                if (String(inv.date).slice(0, 4) === currentYear) revenue += Number(inv.total_ttc);
+            }
             else if (new Date(inv.due_date) < now) { overdue++; }
             else { pending++; }
         });
         state.creditNotes.forEach(function (cn) {
-            revenue -= Number(cn.total_ttc);
+            if (String(cn.date).slice(0, 4) === currentYear) revenue -= Number(cn.total_ttc);
         });
         document.getElementById("stat-revenue").textContent = formatMoney(revenue);
         document.getElementById("stat-paid").textContent = paid;
@@ -296,17 +300,16 @@
             }
         }
 
-        // TVA à déclarer (mensuel : avant le 24 du mois suivant ; trimestriel : avant le 24 du mois suivant le trimestre)
+        // TVA à déclarer (mensuel : avant le 24 du mois suivant la période)
         if (Number(p.tva_rate) > 0) {
             var now = new Date();
             var dueDay = 24;
-            // Estimation simple : si on est dans les 7 jours avant le 24, alerte.
-            var dueDate = new Date(now.getFullYear(), now.getMonth(), dueDay);
+            var dueDate = new Date(now.getFullYear(), now.getMonth() + 1, dueDay);
             var diff = (dueDate - now) / 86400000;
-            if (diff >= 0 && diff <= 7) {
+            if (diff >= 0 && diff <= 10) {
                 alerts.push({
                     level: "warning", icon: "&#128197;",
-                    text: "<strong>Déclaration TVA dans " + Math.ceil(diff) + " jour(s)</strong> — pensez à préparer votre télédéclaration avant le " + dueDay + "."
+                    text: "<strong>Déclaration TVA dans " + Math.ceil(diff) + " jour(s)</strong> — pensez à préparer votre télédéclaration avant le " + dueDay + "/" + (now.getMonth() + 2 > 12 ? 1 : now.getMonth() + 2) + "."
                 });
             }
         }
@@ -810,8 +813,13 @@
 
     window.deleteInvoice = async function (id) {
         if (!confirm("Supprimer cette facture ?")) return;
+        var inv = state.invoices.find(function (i) { return i.id === id; });
+        var linkedQuote = inv ? state.quotes.find(function (q) { return q.converted_invoice_id === id; }) : null;
         var res = await sb.from("invoices").delete().eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
+        if (linkedQuote) {
+            await sb.from("quotes").update({ status: "accepted", converted_invoice_id: null }).eq("id", linkedQuote.id);
+        }
         await refreshData();
         navigate("invoices");
     };
@@ -1092,7 +1100,12 @@
         var insertRes = await sb.from("credit_notes").insert(payload).select().single();
         if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
 
-        await sb.from("invoices").update({ credit_note_id: insertRes.data.id }).eq("id", inv.id);
+        var linkRes = await sb.from("invoices").update({ credit_note_id: insertRes.data.id }).eq("id", inv.id);
+        if (linkRes.error) {
+            await sb.from("credit_notes").delete().eq("id", insertRes.data.id);
+            alert("Erreur lors de l'association de l'avoir à la facture. L'avoir a été annulé.");
+            return;
+        }
 
         await refreshData();
         closeModal("modal-credit-note");
@@ -1136,11 +1149,11 @@
             ? '<tr><td>TVA (' + doc.tva_rate + '%)</td><td class="r">' + formatMoney(Number(doc.tva_amount)) + '</td></tr>'
             : '<tr><td>TVA</td><td class="r">Non applicable</td></tr>';
 
-        var accent = p.template_color || "#4F46E5";
-        var font = p.template_font || "Arial";
+        var accent = /^#[0-9A-Fa-f]{3,8}$/.test(p.template_color || "") ? p.template_color : "#4F46E5";
+        var font = safeCssValue(p.template_font || "Arial");
         var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + esc(opts.title) + ' ' + esc(doc.number) + '</title>'
             + '<style>'
-            + '*{margin:0;padding:0;box-sizing:border-box;font-family:' + esc(font) + ',Helvetica,sans-serif;}'
+            + '*{margin:0;padding:0;box-sizing:border-box;font-family:' + font + ',Helvetica,sans-serif;}'
             + 'body{padding:40px;color:#1E293B;font-size:13px;line-height:1.5;}'
             + '.head{display:flex;justify-content:space-between;margin-bottom:40px;align-items:flex-start;}'
             + '.from h2{font-size:18px;margin-bottom:8px;}'
@@ -1168,7 +1181,7 @@
             + '</style></head><body>'
             + '<div class="head">'
             + '<div class="from">'
-            + (p.template_logo_url ? '<img class="logo-img" src="' + esc(p.template_logo_url) + '" alt="Logo">' : '')
+            + (p.template_logo_url && /^(https:\/\/|data:image\/)/.test(p.template_logo_url) ? '<img class="logo-img" src="' + esc(p.template_logo_url) + '" alt="Logo">' : '')
             + '<h2>' + esc(p.name || "Votre entreprise") + '</h2>'
             + '<p>' + esc(p.address || "") + '</p><p>' + esc(p.city || "") + '</p>'
             + (p.siret ? '<p>SIRET : ' + esc(p.siret) + '</p>' : "")
@@ -2199,7 +2212,7 @@
             + 'h2{margin-bottom:20px}img{border:1px solid #E2E8F0;border-radius:6px;background:#fff;max-width:540px}</style></head><body>'
             + '<div class="card"><h2>Devis ' + esc(q.number) + ' — signature électronique</h2>'
             + (q.signer_name ? '<p style="margin-bottom:14px">Signataire : <strong>' + esc(q.signer_name) + '</strong></p>' : '')
-            + '<img src="' + q.signature_data + '">'
+            + (isDataImageUrl(q.signature_data) ? '<img src="' + q.signature_data + '">' : '<p style="color:red">Signature invalide</p>')
             + '<p style="margin-top:14px;color:#64748B;font-size:.85rem">Signé le ' + formatDate(q.signed_at) + '</p>'
             + '</div></body></html>');
         w.document.close();
@@ -3409,6 +3422,8 @@
         return /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(String(bic).replace(/\s+/g, "").toUpperCase());
     }
     function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+    function safeCssValue(s) { return String(s || "").replace(/[^a-zA-Z0-9 _\-,.#()]/g, ""); }
+    function isDataImageUrl(s) { return /^data:image\/(png|jpeg|svg\+xml|webp);base64,[A-Za-z0-9+/=]+$/.test(s || ""); }
     function formatMoney(n) { return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
     function formatDate(d) {
         var parts = String(d).slice(0, 10).split("-");

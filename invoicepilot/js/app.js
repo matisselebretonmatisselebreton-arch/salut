@@ -1294,7 +1294,7 @@
                 + '</div>' + qrHtml + '</div>';
         }
 
-        var termsHtml = p.terms ? '<div class="terms"><strong>Conditions générales</strong><p>' + esc(p.terms).replace(/\n/g, "<br>") + '</p></div>' : "";
+        var termsHtml = p.terms ? '<div class="terms"><strong>Conditions générales</strong><p>' + esc(p.terms).replace(/\r\n?|\n/g, "<br>") + '</p></div>' : "";
         html += mentions
             + termsHtml
             + '<p class="footer">' + esc(opts.footerNote) + '</p>'
@@ -1690,6 +1690,7 @@
 
         var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
         document.getElementById("q-tva-rate-display").textContent = rate;
+        document.getElementById("q-tva-rate").value = rate;
 
         document.getElementById("quote-items").innerHTML = itemRow();
         recalcQuote();
@@ -1700,6 +1701,7 @@
     });
 
     document.getElementById("quote-items").addEventListener("input", recalcQuote);
+    document.getElementById("q-tva-rate").addEventListener("input", recalcQuote);
     document.getElementById("quote-items").addEventListener("click", function (e) {
         if (e.target.classList.contains("remove-item")) {
             var rows = document.getElementById("quote-items").querySelectorAll("tr");
@@ -1717,8 +1719,13 @@
             subtotal += total;
             row.querySelector(".item-total").textContent = formatMoney(total);
         });
-        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var rateInput = document.getElementById(prefix + "-tva-rate");
+        var defaultRate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var rate = rateInput && rateInput.value !== "" ? Math.max(0, parseFloat(rateInput.value)) : defaultRate;
+        if (!Number.isFinite(rate)) rate = defaultRate;
         var tva = subtotal * rate / 100;
+        var rateDisplay = document.getElementById(prefix + "-tva-rate-display");
+        if (rateDisplay) rateDisplay.textContent = rate;
         document.getElementById(prefix + "-subtotal").textContent = formatMoney(subtotal);
         document.getElementById(prefix + "-tva-amount").textContent = formatMoney(tva);
         document.getElementById(prefix + "-total").textContent = formatMoney(subtotal + tva);
@@ -1741,9 +1748,11 @@
         var items = collectItems("#quote-items tr");
         if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
 
-        var subtotal = items.reduce(function (s, i) { return s + i.total; }, 0);
-        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
-        var tva = subtotal * rate / 100;
+        var subtotal = round2(items.reduce(function (s, i) { return s + i.total; }, 0));
+        var defaultRate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var rateInput = parseFloat(document.getElementById("q-tva-rate").value);
+        var rate = Number.isFinite(rateInput) ? Math.max(0, rateInput) : defaultRate;
+        var tva = round2(subtotal * rate / 100);
 
         var payload = {
             user_id: state.user.id,
@@ -1755,7 +1764,7 @@
             subtotal_ht: subtotal,
             tva_rate: rate,
             tva_amount: tva,
-            total_ttc: subtotal + tva,
+            total_ttc: round2(subtotal + tva),
             status: "pending"
         };
 
@@ -1887,6 +1896,7 @@
         document.getElementById("r-next-run").value = new Date().toISOString().slice(0, 10);
         var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
         document.getElementById("r-tva-rate-display").textContent = rate;
+        document.getElementById("r-tva-rate").value = rate;
         document.getElementById("recurring-items").innerHTML = itemRow();
         recalcRecurring();
     }
@@ -1896,6 +1906,7 @@
     });
 
     document.getElementById("recurring-items").addEventListener("input", recalcRecurring);
+    document.getElementById("r-tva-rate").addEventListener("input", recalcRecurring);
     document.getElementById("recurring-items").addEventListener("click", function (e) {
         if (e.target.classList.contains("remove-item")) {
             var rows = document.getElementById("recurring-items").querySelectorAll("tr");
@@ -1921,7 +1932,9 @@
         e.preventDefault();
         var items = collectItems("#recurring-items tr");
         if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
-        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var defaultRate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var rateInput = parseFloat(document.getElementById("r-tva-rate").value);
+        var rate = Number.isFinite(rateInput) ? Math.max(0, rateInput) : defaultRate;
 
         var payload = {
             user_id: state.user.id,
@@ -3534,6 +3547,7 @@
 
         var rate = state.profile.tva_rate != null ? state.profile.tva_rate : 20;
         document.getElementById("inv-tva-rate-display").textContent = rate;
+        document.getElementById("inv-tva-rate").value = rate;
 
         document.getElementById("invoice-items").innerHTML = itemRow();
         recalcInvoice();
@@ -3548,6 +3562,7 @@
     });
 
     document.getElementById("invoice-items").addEventListener("input", recalcInvoice);
+    document.getElementById("inv-tva-rate").addEventListener("input", recalcInvoice);
     document.getElementById("invoice-items").addEventListener("click", function (e) {
         if (e.target.classList.contains("remove-item")) {
             var rows = document.getElementById("invoice-items").querySelectorAll("tr");
@@ -3578,9 +3593,11 @@
         var items = collectItems("#invoice-items tr");
         if (items.length === 0) { alert("Ajoutez au moins une ligne."); return; }
 
-        var subtotal = items.reduce(function (s, i) { return s + i.total; }, 0);
-        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
-        var tva = subtotal * rate / 100;
+        var subtotal = round2(items.reduce(function (s, i) { return s + i.total; }, 0));
+        var defaultRate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
+        var rateInput = parseFloat(document.getElementById("inv-tva-rate").value);
+        var rate = Number.isFinite(rateInput) ? Math.max(0, rateInput) : defaultRate;
+        var tva = round2(subtotal * rate / 100);
 
         var payload = {
             user_id: state.user.id,
@@ -3593,7 +3610,7 @@
             subtotal_ht: subtotal,
             tva_rate: rate,
             tva_amount: tva,
-            total_ttc: subtotal + tva,
+            total_ttc: round2(subtotal + tva),
             status: "pending"
         };
 

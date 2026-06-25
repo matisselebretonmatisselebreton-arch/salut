@@ -731,6 +731,8 @@
         }
         if (docs.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucun document ne correspond à ces critères.</p></div>'; return; }
 
+        var pg = paginate(docs, "invoices");
+        docs = pg.items;
         function arrow(key) { return invoiceSort.key === key ? (invoiceSort.dir === "asc" ? " ↑" : " ↓") : ""; }
         var html = '<table><thead><tr>'
             + '<th>Type</th>'
@@ -759,6 +761,7 @@
             html += '</tr>';
         });
         html += '</tbody></table>';
+        html += paginationHTML("invoices", pg);
         container.innerHTML = html;
     }
 
@@ -1264,12 +1267,24 @@
             + '</table>';
 
         if (p.iban) {
+            var qrHtml = "";
+            if (opts.title === "FACTURE" && doc.total_ttc > 0) {
+                var epcPayload = buildEpcPayload(p, doc);
+                if (epcPayload) {
+                    var qrDataUrl = generateQrDataUrl(epcPayload);
+                    if (qrDataUrl) {
+                        qrHtml = '<div style="margin-top:14px;text-align:center">'
+                            + '<img src="' + qrDataUrl + '" style="width:120px;height:120px;image-rendering:pixelated" alt="QR SEPA">'
+                            + '<div style="font-size:10px;color:#94A3B8;margin-top:4px">Scanner pour payer par virement</div></div>';
+                    }
+                }
+            }
             html += '<div class="bank"><strong>Règlement par virement</strong><div class="row">'
                 + (p.bank_holder ? '<div class="field"><div class="label">Titulaire</div>' + esc(p.bank_holder) + '</div>' : '')
                 + (p.bank_name ? '<div class="field"><div class="label">Banque</div>' + esc(p.bank_name) + '</div>' : '')
                 + '<div class="field"><div class="label">IBAN</div>' + esc(p.iban) + '</div>'
                 + (p.bic ? '<div class="field"><div class="label">BIC</div>' + esc(p.bic) + '</div>' : '')
-                + '</div></div>';
+                + '</div>' + qrHtml + '</div>';
         }
 
         html += mentions
@@ -1292,7 +1307,7 @@
             recipientLabel: "Facturé à",
             metaLabel: "Échéance",
             metaDate: inv.due_date,
-            footerNote: "En cas de retard de paiement, des pénalités de retard sont exigibles (art. L441-10 du Code de commerce). Indemnité forfaitaire pour frais de recouvrement : 40 €."
+            footerNote: penaltyFooter()
         });
     };
 
@@ -1352,6 +1367,8 @@
             return (va < vb ? -1 : va > vb ? 1 : 0) * dir;
         });
         if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucun devis ne correspond à ces critères.</p></div>'; return; }
+        var pg = paginate(list, "quotes");
+        list = pg.items;
         function arrow(key) { return quoteSort.key === key ? (quoteSort.dir === "asc" ? " ↑" : " ↓") : ""; }
         var html = '<table><thead><tr>'
             + '<th class="sortable" onclick="sortQuotes(\'number\')">N°' + arrow("number") + '</th>'
@@ -1395,6 +1412,7 @@
             html += '</td></tr>';
         });
         html += '</tbody></table>';
+        html += paginationHTML("quotes", pg);
         container.innerHTML = html;
     }
 
@@ -1577,9 +1595,9 @@
         }
     });
 
-    function recalcQuote() {
+    function recalcItems(tableId, prefix) {
         var subtotal = 0;
-        document.querySelectorAll("#quote-items tr").forEach(function (row) {
+        document.querySelectorAll("#" + tableId + " tr").forEach(function (row) {
             var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
             var price = parseFloat(row.querySelector(".item-price").value) || 0;
             var total = qty * price;
@@ -1588,10 +1606,11 @@
         });
         var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
         var tva = subtotal * rate / 100;
-        document.getElementById("q-subtotal").textContent = formatMoney(subtotal);
-        document.getElementById("q-tva-amount").textContent = formatMoney(tva);
-        document.getElementById("q-total").textContent = formatMoney(subtotal + tva);
+        document.getElementById(prefix + "-subtotal").textContent = formatMoney(subtotal);
+        document.getElementById(prefix + "-tva-amount").textContent = formatMoney(tva);
+        document.getElementById(prefix + "-total").textContent = formatMoney(subtotal + tva);
     }
+    function recalcQuote() { recalcItems("quote-items", "q"); }
 
     document.getElementById("btn-new-quote").addEventListener("click", function () {
         if (state.clients.length === 0) {
@@ -1772,21 +1791,7 @@
         }
     });
 
-    function recalcRecurring() {
-        var subtotal = 0;
-        document.querySelectorAll("#recurring-items tr").forEach(function (row) {
-            var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
-            var price = parseFloat(row.querySelector(".item-price").value) || 0;
-            var total = qty * price;
-            subtotal += total;
-            row.querySelector(".item-total").textContent = formatMoney(total);
-        });
-        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
-        var tva = subtotal * rate / 100;
-        document.getElementById("r-subtotal").textContent = formatMoney(subtotal);
-        document.getElementById("r-tva-amount").textContent = formatMoney(tva);
-        document.getElementById("r-total").textContent = formatMoney(subtotal + tva);
-    }
+    function recalcRecurring() { recalcItems("recurring-items", "r"); }
 
     document.getElementById("btn-new-recurring").addEventListener("click", function () {
         if (state.clients.length === 0) {
@@ -1874,8 +1879,8 @@
     }
 
     document.getElementById("client-search").addEventListener("input", renderClients);
-    document.getElementById("invoice-search").addEventListener("input", function () { invoiceFilter.search = this.value; renderInvoices(); });
-    document.getElementById("quote-search").addEventListener("input", function () { quoteFilter.search = this.value; renderQuotes(); });
+    document.getElementById("invoice-search").addEventListener("input", function () { invoiceFilter.search = this.value; pageState.invoices = 1; renderInvoices(); });
+    document.getElementById("quote-search").addEventListener("input", function () { quoteFilter.search = this.value; pageState.quotes = 1; renderQuotes(); });
 
     window.openClientDetail = function (id) {
         var c = state.clients.find(function (x) { return x.id === id; });
@@ -2059,6 +2064,8 @@
             return (x.supplier && x.supplier.toLowerCase().indexOf(term) !== -1) || (x.note && x.note.toLowerCase().indexOf(term) !== -1);
         });
         if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucune dépense ne correspond.</p></div>'; return; }
+        var pg = paginate(list, "expenses");
+        list = pg.items;
         var html = '<table><thead><tr><th>Fournisseur</th><th>Date</th><th>Catégorie</th><th>HT</th><th>TVA</th><th>TTC</th><th>Justif.</th><th></th></tr></thead><tbody>';
         list.forEach(function (x) {
             html += '<tr>';
@@ -2073,10 +2080,11 @@
             html += '</tr>';
         });
         html += '</tbody></table>';
+        html += paginationHTML("expenses", pg);
         container.innerHTML = html;
     }
 
-    document.getElementById("expense-search").addEventListener("input", renderExpenses);
+    document.getElementById("expense-search").addEventListener("input", function () { pageState.expenses = 1; renderExpenses(); });
 
     window.downloadReceipt = async function (encodedPath) {
         var path = decodeURIComponent(encodedPath);
@@ -2152,6 +2160,8 @@
             return [s.name, s.email, s.city].some(function (v) { return v && String(v).toLowerCase().indexOf(term) !== -1; });
         });
         if (list.length === 0) { container.innerHTML = '<div class="empty-state"><p>Aucun fournisseur ne correspond.</p></div>'; return; }
+        var pg = paginate(list, "suppliers");
+        list = pg.items;
         var html = '<table><thead><tr><th>Nom</th><th>Email</th><th>Ville</th><th>Dépenses</th><th>Total acheté</th><th>Actions</th></tr></thead><tbody>';
         list.forEach(function (s) {
             var exp = expensesOfSupplier(s);
@@ -2168,9 +2178,10 @@
             html += '</td></tr>';
         });
         html += '</tbody></table>';
+        html += paginationHTML("suppliers", pg);
         container.innerHTML = html;
     }
-    document.getElementById("supplier-search").addEventListener("input", renderSuppliers);
+    document.getElementById("supplier-search").addEventListener("input", function () { pageState.suppliers = 1; renderSuppliers(); });
 
     document.getElementById("btn-new-supplier").addEventListener("click", function () {
         document.getElementById("supplier-form").reset();
@@ -3192,6 +3203,8 @@
         document.getElementById("prof-template-color").value = p.template_color || "#4F46E5";
         document.getElementById("prof-template-font").value = p.template_font || "Arial";
         document.getElementById("prof-template-logo").value = p.template_logo_url || "";
+        document.getElementById("prof-penalty-rate").value = p.penalty_rate || "";
+        document.getElementById("prof-recovery-fee").value = p.recovery_fee != null ? p.recovery_fee : 40;
     }
 
     document.getElementById("profile-form").addEventListener("submit", async function (e) {
@@ -3224,6 +3237,8 @@
             template_color: document.getElementById("prof-template-color").value || "#4F46E5",
             template_font: document.getElementById("prof-template-font").value || "Arial",
             template_logo_url: document.getElementById("prof-template-logo").value.trim() || null,
+            penalty_rate: parseFloat(document.getElementById("prof-penalty-rate").value) || 0,
+            recovery_fee: parseFloat(document.getElementById("prof-recovery-fee").value) || 40,
             updated_at: new Date().toISOString()
         };
         var res = await sb.from("profiles").upsert(payload).select().single();
@@ -3346,21 +3361,7 @@
         }
     });
 
-    function recalcInvoice() {
-        var subtotal = 0;
-        document.querySelectorAll("#invoice-items tr").forEach(function (row) {
-            var qty = parseFloat(row.querySelector(".item-qty").value) || 0;
-            var price = parseFloat(row.querySelector(".item-price").value) || 0;
-            var total = qty * price;
-            subtotal += total;
-            row.querySelector(".item-total").textContent = formatMoney(total);
-        });
-        var rate = state.profile.tva_rate != null ? Number(state.profile.tva_rate) : 20;
-        var tva = subtotal * rate / 100;
-        document.getElementById("inv-subtotal").textContent = formatMoney(subtotal);
-        document.getElementById("inv-tva-amount").textContent = formatMoney(tva);
-        document.getElementById("inv-total").textContent = formatMoney(subtotal + tva);
-    }
+    function recalcInvoice() { recalcItems("invoice-items", "inv"); }
 
     ["btn-new-invoice", "btn-new-invoice-dash"].forEach(function (id) {
         document.getElementById(id).addEventListener("click", function () {
@@ -3497,6 +3498,74 @@
     function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
     function safeCssValue(s) { return String(s || "").replace(/[^a-zA-Z0-9 _\-,.#()]/g, ""); }
     function isDataImageUrl(s) { return /^data:image\/(png|jpeg|svg\+xml|webp);base64,[A-Za-z0-9+/=]+$/.test(s || ""); }
+
+    // --- EPC069-12 SEPA QR code ---
+    function penaltyFooter() {
+        var p = state.profile;
+        var rate = Number(p.penalty_rate) || 0;
+        var fee = p.recovery_fee != null ? Number(p.recovery_fee) : 40;
+        var parts = [];
+        if (rate > 0) parts.push("Taux de pénalités de retard : " + rate.toFixed(2) + " % (art. L441-10 du Code de commerce)");
+        else parts.push("En cas de retard de paiement, des pénalités de retard sont exigibles (art. L441-10 du Code de commerce)");
+        if (fee > 0) parts.push("Indemnité forfaitaire pour frais de recouvrement : " + formatMoney(fee));
+        return parts.join(". ") + ".";
+    }
+
+    function buildEpcPayload(profile, doc) {
+        var iban = (profile.iban || "").replace(/\s/g, "").toUpperCase();
+        if (!iban || iban.length < 15) return null;
+        var bic = (profile.bic || "").replace(/\s/g, "").toUpperCase();
+        var name = (profile.bank_holder || profile.name || "").slice(0, 70);
+        var amount = "EUR" + Number(doc.total_ttc).toFixed(2);
+        var ref = (doc.number || "").slice(0, 35);
+        // EPC069-12 v2 format
+        return ["BCD", "002", "1", "SCT", bic, name, iban, amount, "", "", ref, ""].join("\n");
+    }
+
+    function generateQrDataUrl(text) {
+        if (typeof qrcode === "undefined") return null;
+        try {
+            var qr = qrcode(0, "L");
+            qr.addData(text);
+            qr.make();
+            var cnt = qr.getModuleCount();
+            var size = cnt + 8;
+            var cvs = document.createElement("canvas");
+            cvs.width = size; cvs.height = size;
+            var ctx = cvs.getContext("2d");
+            ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, size, size);
+            ctx.fillStyle = "#000";
+            for (var r = 0; r < cnt; r++)
+                for (var c = 0; c < cnt; c++)
+                    if (qr.isDark(r, c)) ctx.fillRect(c + 4, r + 4, 1, 1);
+            return cvs.toDataURL("image/png");
+        } catch (e) { return null; }
+    }
+
+    // --- Pagination ---
+    var PAGE_SIZE = 20;
+    var pageState = { invoices: 1, quotes: 1, expenses: 1, suppliers: 1 };
+    function paginate(items, section) {
+        var page = pageState[section] || 1;
+        var total = Math.ceil(items.length / PAGE_SIZE) || 1;
+        if (page > total) page = total;
+        pageState[section] = page;
+        var start = (page - 1) * PAGE_SIZE;
+        return { items: items.slice(start, start + PAGE_SIZE), page: page, total: total, count: items.length };
+    }
+    function paginationHTML(section, info) {
+        if (info.total <= 1) return '';
+        var html = '<div class="pagination"><span class="pag-info">' + info.count + ' résultats — page ' + info.page + '/' + info.total + '</span><div class="pag-btns">';
+        html += '<button class="btn btn-sm btn-outline" onclick="goPage(\'' + section + '\',' + (info.page - 1) + ')"' + (info.page <= 1 ? ' disabled' : '') + '>← Préc.</button>';
+        html += '<button class="btn btn-sm btn-outline" onclick="goPage(\'' + section + '\',' + (info.page + 1) + ')"' + (info.page >= info.total ? ' disabled' : '') + '>Suiv. →</button>';
+        html += '</div></div>';
+        return html;
+    }
+    window.goPage = function (section, page) {
+        pageState[section] = Math.max(1, page);
+        var renderers = { invoices: renderInvoices, quotes: renderQuotes, expenses: renderExpenses, suppliers: renderSuppliers };
+        if (renderers[section]) renderers[section]();
+    };
     function formatMoney(n) { return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }
     function formatDate(d) {
         var parts = String(d).slice(0, 10).split("-");

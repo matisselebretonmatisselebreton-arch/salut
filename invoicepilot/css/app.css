@@ -510,3 +510,11 @@ th.sortable:hover { color: var(--primary); }
     animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Pagination */
+.pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; margin-top: 8px; border-top: 1px solid var(--border);
+}
+.pag-info { font-size: .85rem; color: var(--text-muted); }
+.pag-btns { display: flex; gap: 8px; }

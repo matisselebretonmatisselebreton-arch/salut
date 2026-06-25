@@ -3122,61 +3122,103 @@
         return rows;
     }
 
-    function buildIncomeSheet(v, p) {
-        var ws = {}, r = xlsxBanner(ws, p, "Compte de résultat", v.bounds.label, 4);
+    function buildIncomeSheet(v, p, vPrev) {
+        var cmp = !!vPrev;
+        var colSpan = cmp ? 6 : 4;
+        var ws = {}, r = xlsxBanner(ws, p, "Compte de résultat", v.bounds.label, colSpan);
         var catTotals = {};
         v.expenses.forEach(function (x) {
             var cat = EXP_CAT_LABEL[x.category] || x.category;
             catTotals[cat] = (catTotals[cat] || 0) + Number(x.amount_ht);
         });
+        var prevCatTotals = {};
+        if (cmp) vPrev.expenses.forEach(function (x) {
+            var cat = EXP_CAT_LABEL[x.category] || x.category;
+            prevCatTotals[cat] = (prevCatTotals[cat] || 0) + Number(x.amount_ht);
+        });
 
-        // PRODUITS
-        setRow(ws, r, 0, ["PRODUITS D'EXPLOITATION", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
-        mergeCells(ws, r, 0, r, 3); r += 1;
-        setRow(ws, r, 0, ["Poste", "", "", "Montant HT"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight]);
-        mergeCells(ws, r, 0, r, 2); r += 1;
-        setRow(ws, r, 0, ["Chiffre d'affaires (factures encaissées)", "", "", Number(v.productsGross)], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
-        mergeCells(ws, r, 0, r, 2); r += 1;
-        if (v.creditsHT > 0) {
-            setRow(ws, r, 0, ["Avoirs émis (déduction)", "", "", -Number(v.creditsHT)], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
-            mergeCells(ws, r, 0, r, 2); r += 1;
+        function sectionH(title) {
+            if (cmp) {
+                setRow(ws, r, 0, [title, "", "Période", "N-1", "", "Évolution"],
+                    [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+            } else {
+                setRow(ws, r, 0, [title, "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+                mergeCells(ws, r, 0, r, 3);
+            }
+            r += 1;
         }
-        setRow(ws, r, 0, ["Total des produits", "", "", Number(v.productsHT)], [STY.subtotal, STY.subtotal, STY.subtotal, STY.subtotalNum]);
-        mergeCells(ws, r, 0, r, 2); r += 2;
+        function tableHeaderRow() {
+            if (cmp) {
+                setRow(ws, r, 0, ["Poste", "", "Montant HT", "N-1 HT", "", "Évolution"],
+                    [STY.tableH, STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableH, STY.tableH]);
+            } else {
+                setRow(ws, r, 0, ["Poste", "", "", "Montant HT"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight]);
+                mergeCells(ws, r, 0, r, 2);
+            }
+            r += 1;
+        }
+        function line(label, valN, valN1, isSubtotal) {
+            var cellSty = isSubtotal ? STY.subtotal : STY.cell;
+            var numSty = isSubtotal ? STY.subtotalNum : STY.cellNum;
+            if (cmp) {
+                setRow(ws, r, 0, [label, "", Number(valN), Number(valN1 || 0), "", evolPct(valN, valN1 || 0)],
+                    [cellSty, cellSty, numSty, numSty, cellSty, cellSty]);
+                mergeCells(ws, r, 0, r, 1);
+            } else {
+                setRow(ws, r, 0, [label, "", "", Number(valN)], [cellSty, cellSty, cellSty, numSty]);
+                mergeCells(ws, r, 0, r, 2);
+            }
+            r += 1;
+        }
 
-        // CHARGES
-        setRow(ws, r, 0, ["CHARGES D'EXPLOITATION", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
-        mergeCells(ws, r, 0, r, 3); r += 1;
-        setRow(ws, r, 0, ["Catégorie", "", "", "Montant HT"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight]);
-        mergeCells(ws, r, 0, r, 2); r += 1;
-        var catNames = Object.keys(catTotals).sort();
-        if (catNames.length === 0) {
-            setRow(ws, r, 0, ["— Aucune dépense sur la période —", "", "", 0], [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellNum]);
-            mergeCells(ws, r, 0, r, 2); r += 1;
+        sectionH("PRODUITS D'EXPLOITATION");
+        tableHeaderRow();
+        line("Chiffre d'affaires (factures encaissées)", v.productsGross, cmp ? vPrev.productsGross : 0);
+        if (v.creditsHT > 0 || (cmp && vPrev.creditsHT > 0)) line("Avoirs émis (déduction)", -v.creditsHT, cmp ? -vPrev.creditsHT : 0);
+        line("Total des produits", v.productsHT, cmp ? vPrev.productsHT : 0, true);
+        r += 1;
+
+        sectionH("CHARGES D'EXPLOITATION");
+        tableHeaderRow();
+        var allCats = Object.keys(catTotals).concat(Object.keys(prevCatTotals));
+        var uniqueCats = allCats.filter(function (c, i) { return allCats.indexOf(c) === i; }).sort();
+        if (uniqueCats.length === 0) {
+            line("— Aucune dépense sur la période —", 0, 0);
         } else {
-            catNames.forEach(function (cat) {
-                setRow(ws, r, 0, [cat, "", "", Number(catTotals[cat])], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
-                mergeCells(ws, r, 0, r, 2); r += 1;
+            uniqueCats.forEach(function (cat) {
+                line(cat, catTotals[cat] || 0, prevCatTotals[cat] || 0);
             });
         }
-        setRow(ws, r, 0, ["Total des charges", "", "", Number(v.chargesHT)], [STY.subtotal, STY.subtotal, STY.subtotal, STY.subtotalNum]);
-        mergeCells(ws, r, 0, r, 2); r += 2;
+        line("Total des charges", v.chargesHT, cmp ? vPrev.chargesHT : 0, true);
+        r += 1;
 
-        // RÉSULTAT
-        var mb = v.productsHT - v.chargesHT;
-        setRow(ws, r, 0, ["INDICATEURS DE GESTION", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
-        mergeCells(ws, r, 0, r, 3); r += 1;
-        setRow(ws, r, 0, ["Marge brute (Produits − Charges)", "", "", mb], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
-        mergeCells(ws, r, 0, r, 2); r += 1;
-        var marginPct = v.productsHT > 0 ? (mb / v.productsHT * 100) : 0;
-        setRow(ws, r, 0, ["Taux de marge", "", "", marginPct.toFixed(1) + " %"], [STY.cell, STY.cell, STY.cell, STY.cell]);
-        mergeCells(ws, r, 0, r, 2); r += 2;
+        sectionH("INDICATEURS DE GESTION");
+        line("Marge brute (Produits − Charges)", v.productsHT - v.chargesHT, cmp ? vPrev.productsHT - vPrev.chargesHT : 0);
+        var mPctN = v.productsHT > 0 ? (v.result / v.productsHT * 100) : 0;
+        var mPctN1 = cmp && vPrev.productsHT > 0 ? (vPrev.result / vPrev.productsHT * 100) : 0;
+        if (cmp) {
+            setRow(ws, r, 0, ["Taux de marge", "", mPctN.toFixed(1) + " %", mPctN1.toFixed(1) + " %", "", ""],
+                [STY.cell, STY.cell, STY.cell, STY.cell, STY.cell, STY.cell]);
+            mergeCells(ws, r, 0, r, 1);
+        } else {
+            setRow(ws, r, 0, ["Taux de marge", "", "", mPctN.toFixed(1) + " %"], [STY.cell, STY.cell, STY.cell, STY.cell]);
+            mergeCells(ws, r, 0, r, 2);
+        }
+        r += 2;
+
         var resStyle = v.result >= 0 ? STY.result : STY.resultNeg;
         var resNumStyle = v.result >= 0 ? STY.resultNum : STY.resultNegN;
-        setRow(ws, r, 0, ["RÉSULTAT NET DE LA PÉRIODE", "", "", Number(v.result)], [resStyle, resStyle, resStyle, resNumStyle]);
-        mergeCells(ws, r, 0, r, 2);
-        ensureRef(ws, r, 3);
-        applyColWidths(ws, [38, 12, 12, 18]);
+        if (cmp) {
+            setRow(ws, r, 0, ["RÉSULTAT NET DE LA PÉRIODE", "", Number(v.result), Number(vPrev.result), "", evolPct(v.result, vPrev.result)],
+                [resStyle, resStyle, resNumStyle, resNumStyle, resStyle, resStyle]);
+            mergeCells(ws, r, 0, r, 1);
+        } else {
+            setRow(ws, r, 0, ["RÉSULTAT NET DE LA PÉRIODE", "", "", Number(v.result)], [resStyle, resStyle, resStyle, resNumStyle]);
+            mergeCells(ws, r, 0, r, 2);
+        }
+        ensureRef(ws, r, colSpan - 1);
+        if (cmp) applyColWidths(ws, [34, 4, 16, 16, 4, 14]);
+        else applyColWidths(ws, [38, 12, 12, 18]);
         return ws;
     }
 
@@ -3373,42 +3415,420 @@
         return ws;
     }
 
-    function buildCoverSheet(v, p) {
-        var ws = {}, r = xlsxBanner(ws, p, "Synthèse comptable", v.bounds.label, 4);
+    function buildChartsSheet(v, p, vPrev) {
+        var cmp = !!vPrev;
+        var ws = {}, r = xlsxBanner(ws, p, "Données graphiques (prêt à grapher)", v.bounds.label, 4);
+
+        // Note d'aide
+        setRow(ws, r, 0, ["Astuce : sélectionnez une plage puis Insertion → Graphique pour visualiser.", "", "", ""],
+            [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted]);
+        mergeCells(ws, r, 0, r, 3); r += 2;
+
+        // === CA mensuel 12 mois ===
+        var year = parseInt(v.bounds.year || new Date().getFullYear(), 10);
+        var monthlyN = new Array(12).fill(0);
+        var monthlyN1 = new Array(12).fill(0);
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status !== "paid") return;
+            var d = String(inv.date || "");
+            var y = parseInt(d.slice(0, 4), 10), m = parseInt(d.slice(5, 7), 10);
+            if (y === year && m >= 1 && m <= 12) monthlyN[m - 1] += Number(inv.total_ttc);
+            if (cmp && y === year - 1 && m >= 1 && m <= 12) monthlyN1[m - 1] += Number(inv.total_ttc);
+        });
+        state.creditNotes.forEach(function (cn) {
+            var d = String(cn.date || "");
+            var y = parseInt(d.slice(0, 4), 10), m = parseInt(d.slice(5, 7), 10);
+            if (y === year && m >= 1 && m <= 12) monthlyN[m - 1] -= Number(cn.total_ttc);
+            if (cmp && y === year - 1 && m >= 1 && m <= 12) monthlyN1[m - 1] -= Number(cn.total_ttc);
+        });
+
+        setRow(ws, r, 0, ["CHIFFRE D'AFFAIRES MENSUEL — " + year + (cmp ? " vs " + (year - 1) : ""), "", "", ""],
+            [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        if (cmp) {
+            setRow(ws, r, 0, ["Mois", String(year), String(year - 1), "Évolution"],
+                [STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableH]);
+        } else {
+            setRow(ws, r, 0, ["Mois", String(year), "", ""], [STY.tableH, STY.tableHRight, STY.tableH, STY.tableH]);
+        }
+        r += 1;
+        var MONTH_FR = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+        for (var m = 0; m < 12; m++) {
+            if (cmp) {
+                setRow(ws, r, 0, [MONTH_FR[m], monthlyN[m], monthlyN1[m], evolPct(monthlyN[m], monthlyN1[m])],
+                    [STY.cell, STY.cellNum, STY.cellNum, STY.cell]);
+            } else {
+                setRow(ws, r, 0, [MONTH_FR[m], monthlyN[m], "", ""],
+                    [STY.cell, STY.cellNum, STY.cell, STY.cell]);
+            }
+            r += 1;
+        }
+        var totN = monthlyN.reduce(function (s, x) { return s + x; }, 0);
+        var totN1 = monthlyN1.reduce(function (s, x) { return s + x; }, 0);
+        if (cmp) {
+            setRow(ws, r, 0, ["TOTAL", totN, totN1, evolPct(totN, totN1)],
+                [STY.total, STY.totalNum, STY.totalNum, STY.total]);
+        } else {
+            setRow(ws, r, 0, ["TOTAL", totN, "", ""], [STY.total, STY.totalNum, STY.total, STY.total]);
+        }
+        r += 2;
+
+        // === Dépenses par catégorie ===
+        setRow(ws, r, 0, ["DÉPENSES PAR CATÉGORIE", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Catégorie", "Montant HT", "Part %", ""],
+            [STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableH]);
+        r += 1;
+        var catSum = {};
+        v.expenses.forEach(function (x) {
+            var lbl = EXP_CAT_LABEL[x.category] || x.category;
+            catSum[lbl] = (catSum[lbl] || 0) + Number(x.amount_ht);
+        });
+        var catList = Object.keys(catSum).map(function (k) { return [k, catSum[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+        var totCat = catList.reduce(function (s, c) { return s + c[1]; }, 0);
+        if (catList.length === 0) {
+            setRow(ws, r, 0, ["— Aucune dépense —", 0, "", ""], [STY.cellMuted, STY.cellNum, STY.cell, STY.cell]);
+            r += 1;
+        } else {
+            catList.forEach(function (c) {
+                var pct = totCat > 0 ? (c[1] / totCat * 100).toFixed(1) + " %" : "—";
+                setRow(ws, r, 0, [c[0], c[1], pct, ""], [STY.cell, STY.cellNum, STY.cell, STY.cell]);
+                r += 1;
+            });
+            setRow(ws, r, 0, ["TOTAL", totCat, "100 %", ""], [STY.total, STY.totalNum, STY.total, STY.total]);
+            r += 1;
+        }
+        r += 1;
+
+        // === Top 5 clients ===
+        setRow(ws, r, 0, ["TOP 5 CLIENTS (CA HT encaissé)", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Client", "CA HT", "Nb factures", "Part %"],
+            [STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableHRight]);
+        r += 1;
+        var clientTotals = {};
+        v.paidInvoices.forEach(function (inv) {
+            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+            var key = c ? c.name : "—";
+            clientTotals[key] = clientTotals[key] || { total: 0, count: 0 };
+            clientTotals[key].total += Number(inv.subtotal_ht);
+            clientTotals[key].count += 1;
+        });
+        var clientList = Object.keys(clientTotals).map(function (k) { return [k, clientTotals[k].total, clientTotals[k].count]; })
+            .sort(function (a, b) { return b[1] - a[1]; }).slice(0, 5);
+        var totProducts = v.productsHT;
+        if (clientList.length === 0) {
+            setRow(ws, r, 0, ["— Aucun client facturé —", 0, 0, ""], [STY.cellMuted, STY.cellNum, STY.cellNumInt, STY.cell]);
+            r += 1;
+        } else {
+            clientList.forEach(function (c) {
+                var pct = totProducts > 0 ? (c[1] / totProducts * 100).toFixed(1) + " %" : "—";
+                setRow(ws, r, 0, [c[0], c[1], c[2], pct], [STY.cell, STY.cellNum, STY.cellNumInt, STY.cell]);
+                r += 1;
+            });
+        }
+        r += 1;
+
+        // === Trésorerie cumulée mensuelle ===
+        setRow(ws, r, 0, ["TRÉSORERIE CUMULÉE — " + year, "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Mois", "Encaissements", "Décaissements", "Solde cumulé"],
+            [STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableHRight]);
+        r += 1;
+        var inMonth = new Array(12).fill(0), outMonth = new Array(12).fill(0);
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status !== "paid") return;
+            var d = String(inv.paid_at || inv.date || "");
+            var y = parseInt(d.slice(0, 4), 10), m = parseInt(d.slice(5, 7), 10);
+            if (y === year && m >= 1 && m <= 12) inMonth[m - 1] += Number(inv.total_ttc);
+        });
+        state.expenses.forEach(function (x) {
+            var d = String(x.date || "");
+            var y = parseInt(d.slice(0, 4), 10), m = parseInt(d.slice(5, 7), 10);
+            if (y === year && m >= 1 && m <= 12) outMonth[m - 1] += Number(x.amount_ttc);
+        });
+        var cum = 0;
+        for (var i = 0; i < 12; i++) {
+            cum += inMonth[i] - outMonth[i];
+            setRow(ws, r, 0, [MONTH_FR[i], inMonth[i], -outMonth[i], cum],
+                [STY.cell, STY.cellNum, STY.cellNum, STY.cellNum]);
+            r += 1;
+        }
+
+        ensureRef(ws, r - 1, 3);
+        applyColWidths(ws, [28, 18, 16, 16]);
+        return ws;
+    }
+
+    function buildCoverSheet(v, p, vPrev) {
+        var compareN1 = !!vPrev;
+        var colSpan = compareN1 ? 6 : 4;
+        var ws = {}, r = xlsxBanner(ws, p, "Synthèse comptable", v.bounds.label, colSpan);
         var tvaCollected = v.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
         var tvaDeductible = v.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
         var creances = v.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
         var nbInv = state.invoices.filter(function (i) { return !i.credit_note_id && dateInBounds(i.date, v.bounds); }).length;
         var nbExp = v.expenses.length;
 
-        var rows = [
-            ["INDICATEURS CLÉS", ""],
-            ["Chiffre d'affaires HT (encaissé)", Number(v.productsHT)],
-            ["Charges HT", Number(v.chargesHT)],
-            ["Résultat de la période", Number(v.result)],
-            ["Marge (%)", v.productsHT > 0 ? (v.result / v.productsHT * 100).toFixed(1) + " %" : "—"],
-            ["", ""],
-            ["TRÉSORERIE & TVA", ""],
-            ["TVA collectée", tvaCollected],
-            ["TVA déductible", tvaDeductible],
-            ["TVA nette à reverser", tvaCollected - tvaDeductible],
-            ["Créances clients ouvertes", creances],
-            ["", ""],
-            ["VOLUMES", ""],
-            ["Factures émises (période)", nbInv],
-            ["Dépenses enregistrées (période)", nbExp]
-        ];
-        rows.forEach(function (row) {
-            var isHeader = row[1] === "" && row[0] !== "";
-            var styles = isHeader ? [STY.sectionH, STY.sectionH] : [STY.cell, typeof row[1] === "number" ? STY.cellNum : STY.cell];
-            setRow(ws, r, 0, [row[0], "", "", row[1]], [styles[0], styles[0], styles[0], styles[1]]);
-            mergeCells(ws, r, 0, r, 2);
+        var prevTvaCollected = compareN1 ? vPrev.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0) : 0;
+        var prevTvaDeductible = compareN1 ? vPrev.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0) : 0;
+        var prevCreances = compareN1 ? vPrev.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0) : 0;
+        var prevNbInv = compareN1 ? state.invoices.filter(function (i) { return !i.credit_note_id && dateInBounds(i.date, vPrev.bounds); }).length : 0;
+        var prevNbExp = compareN1 ? vPrev.expenses.length : 0;
+
+        function row(label, valN, valN1, isPct) {
+            if (compareN1) {
+                var prevCell = isPct ? (vPrev.productsHT > 0 ? (vPrev.result / vPrev.productsHT * 100).toFixed(1) + " %" : "—") : Number(valN1);
+                return [label, "", valN, prevCell, "", evolPct(valN, valN1)];
+            }
+            return [label, "", "", valN];
+        }
+
+        var section = function (title) {
+            if (compareN1) {
+                setRow(ws, r, 0, [title, "", "Période", "N-1", "", "Évolution"],
+                    [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+            } else {
+                setRow(ws, r, 0, [title, "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+                mergeCells(ws, r, 0, r, 3);
+            }
             r += 1;
-        });
-        ensureRef(ws, r - 1, 3);
-        applyColWidths(ws, [38, 8, 8, 22]);
+        };
+        var line = function (label, valN, valN1) {
+            if (compareN1) {
+                setRow(ws, r, 0, [label, "", Number(valN), Number(valN1), "", evolPct(valN, valN1)],
+                    [STY.cell, STY.cell, STY.cellNum, STY.cellNum, STY.cell, STY.cell]);
+                mergeCells(ws, r, 0, r, 1);
+            } else {
+                setRow(ws, r, 0, [label, "", "", Number(valN)], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
+                mergeCells(ws, r, 0, r, 2);
+            }
+            r += 1;
+        };
+        var linePct = function (label, valN, valN1) {
+            if (compareN1) {
+                setRow(ws, r, 0, [label, "", valN, valN1, "", ""],
+                    [STY.cell, STY.cell, STY.cell, STY.cell, STY.cell, STY.cell]);
+                mergeCells(ws, r, 0, r, 1);
+            } else {
+                setRow(ws, r, 0, [label, "", "", valN], [STY.cell, STY.cell, STY.cell, STY.cell]);
+                mergeCells(ws, r, 0, r, 2);
+            }
+            r += 1;
+        };
+        var blank = function () { r += 1; };
+
+        section("INDICATEURS CLÉS");
+        line("Chiffre d'affaires HT (encaissé)", v.productsHT, compareN1 ? vPrev.productsHT : 0);
+        line("Charges HT", v.chargesHT, compareN1 ? vPrev.chargesHT : 0);
+        line("Résultat de la période", v.result, compareN1 ? vPrev.result : 0);
+        var margeN = v.productsHT > 0 ? (v.result / v.productsHT * 100).toFixed(1) + " %" : "—";
+        var margeN1 = compareN1 && vPrev.productsHT > 0 ? (vPrev.result / vPrev.productsHT * 100).toFixed(1) + " %" : "—";
+        linePct("Taux de marge", margeN, margeN1);
+        blank();
+
+        section("TRÉSORERIE & TVA");
+        line("TVA collectée", tvaCollected, prevTvaCollected);
+        line("TVA déductible", tvaDeductible, prevTvaDeductible);
+        line("TVA nette à reverser", tvaCollected - tvaDeductible, prevTvaCollected - prevTvaDeductible);
+        line("Créances clients ouvertes", creances, prevCreances);
+        blank();
+
+        section("VOLUMES");
+        line("Factures émises (période)", nbInv, prevNbInv);
+        line("Dépenses enregistrées (période)", nbExp, prevNbExp);
+
+        ensureRef(ws, r - 1, colSpan - 1);
+        if (compareN1) applyColWidths(ws, [34, 4, 18, 18, 4, 14]);
+        else applyColWidths(ws, [38, 8, 8, 22]);
         return ws;
     }
+
+    // Année précédente : recalcule les indicateurs sur la même fenêtre décalée d'un an.
+    function previousYearView(v) {
+        var b = v.bounds;
+        function shiftDate(d) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
+            return (parseInt(d.slice(0, 4), 10) - 1) + d.slice(4);
+        }
+        var pb = { from: shiftDate(b.from), to: shiftDate(b.to), label: b.label + " (N-1)", year: String(parseInt(b.year, 10) - 1) };
+        var paidInvoices = state.invoices.filter(function (inv) {
+            return !inv.credit_note_id && inv.status === "paid" && dateInBounds(inv.date, pb);
+        });
+        var productsGross = paidInvoices.reduce(function (s, i) { return s + Number(i.subtotal_ht); }, 0);
+        var credits = state.creditNotes.filter(function (cn) { return dateInBounds(cn.date, pb); });
+        var creditsHT = credits.reduce(function (s, cn) { return s + Number(cn.subtotal_ht); }, 0);
+        var productsHT = productsGross - creditsHT;
+        var periodExpenses = state.expenses.filter(function (x) { return dateInBounds(x.date, pb); });
+        var chargesHT = periodExpenses.reduce(function (s, x) { return s + Number(x.amount_ht); }, 0);
+        var byCat = {};
+        periodExpenses.forEach(function (x) { byCat[x.category] = (byCat[x.category] || 0) + Number(x.amount_ht); });
+        var receivables = state.invoices.filter(function (inv) {
+            return !inv.credit_note_id && inv.status !== "paid" && dateInBounds(inv.date, pb);
+        });
+        return {
+            bounds: pb, paidInvoices: paidInvoices, credits: credits, expenses: periodExpenses,
+            receivables: receivables, byCat: byCat,
+            productsHT: productsHT, productsGross: productsGross, creditsHT: creditsHT,
+            chargesHT: chargesHT, result: productsHT - chargesHT
+        };
+    }
+    function evolPct(curr, prev) {
+        if (!prev || prev === 0) return curr === 0 ? "—" : (curr > 0 ? "+∞" : "-∞");
+        var p = ((curr - prev) / Math.abs(prev)) * 100;
+        return (p >= 0 ? "+" : "") + p.toFixed(1) + " %";
+    }
+
+    // === Plan comptable simplifié pour l'auto-entrepreneur / TPE ===
+    // Mapping catégorie de dépense → numéro de compte PCG
+    var ACCOUNT_BY_CAT = {
+        achats: "607000",          // Achats de marchandises
+        sous_traitance: "611000",  // Sous-traitance générale
+        locations: "613000",       // Locations
+        entretien: "615000",       // Entretien et réparations
+        assurances: "616000",      // Primes d'assurance
+        documentation: "618000",   // Documentation
+        deplacements: "625100",    // Voyages et déplacements
+        repas: "625700",           // Réceptions
+        telecom: "626000",         // Frais postaux et télécommunications
+        bancaires: "627000",       // Services bancaires
+        honoraires: "622600",      // Honoraires
+        formation: "625600",       // Missions
+        fournitures: "606400",     // Fournitures administratives
+        marketing: "623000",       // Publicité, publications
+        logiciels: "651100",       // Redevances logiciels
+        autres: "658000"           // Autres charges diverses
+    };
+    function fecFmt(n) { return Number(n).toFixed(2).replace(".", ","); }
+    function fecDate(d) { return String(d || "").replace(/-/g, ""); }
+    function fecField(s) {
+        // FEC interdit | (séparateur) dans les champs ; remplace tab, CR, LF
+        return String(s == null ? "" : s).replace(/[|\t\r\n]+/g, " ").trim();
+    }
+    function buildFEC(profile) {
+        var rows = [];
+        // En-tête : 18 colonnes obligatoires
+        rows.push([
+            "JournalCode", "JournalLib", "EcritureNum", "EcritureDate",
+            "CompteNum", "CompteLib", "CompAuxNum", "CompAuxLib",
+            "PieceRef", "PieceDate", "EcritureLib", "Debit", "Credit",
+            "EcritureLet", "DateLet", "ValidDate", "Montantdevise", "Idevise"
+        ]);
+
+        var clientAcct = function (c) {
+            if (!c) return ["411000", "Clients divers", "", ""];
+            var aux = "C" + String(c.id || "").slice(0, 8).toUpperCase();
+            return ["411000", "Clients", aux, fecField(c.name)];
+        };
+        var supplierAcct = function (name) {
+            if (!name) return ["401000", "Fournisseurs divers", "", ""];
+            var aux = "F" + name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+            return ["401000", "Fournisseurs", aux, fecField(name)];
+        };
+        var validDate = fecDate(new Date().toISOString().slice(0, 10));
+
+        // --- VENTES (journal VE) ---
+        // Factures émises (hors avoirs)
+        var invoices = state.invoices.filter(function (i) { return !i.credit_note_id; })
+            .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+        invoices.forEach(function (inv, idx) {
+            var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+            var ca = clientAcct(c);
+            var num = "VE" + String(idx + 1).padStart(5, "0");
+            var lib = fecField("Facture " + inv.number);
+            // Débit client (TTC)
+            rows.push(["VE", "Ventes", num, fecDate(inv.date), ca[0], ca[1], ca[2], ca[3],
+                fecField(inv.number), fecDate(inv.date), lib,
+                fecFmt(inv.total_ttc), "0,00", "", "", validDate, "", ""]);
+            // Crédit vente HT
+            rows.push(["VE", "Ventes", num, fecDate(inv.date), "706000", "Prestations de services", "", "",
+                fecField(inv.number), fecDate(inv.date), lib,
+                "0,00", fecFmt(inv.subtotal_ht), "", "", validDate, "", ""]);
+            // Crédit TVA collectée
+            if (Number(inv.tva_amount) > 0) {
+                rows.push(["VE", "Ventes", num, fecDate(inv.date), "445710", "TVA collectée", "", "",
+                    fecField(inv.number), fecDate(inv.date), lib,
+                    "0,00", fecFmt(inv.tva_amount), "", "", validDate, "", ""]);
+            }
+        });
+
+        // Avoirs
+        state.creditNotes.sort(function (a, b) { return a.date < b.date ? -1 : 1; }).forEach(function (cn, idx) {
+            var c = state.clients.find(function (x) { return x.id === cn.client_id; });
+            var ca = clientAcct(c);
+            var num = "AV" + String(idx + 1).padStart(5, "0");
+            var lib = fecField("Avoir " + cn.number);
+            rows.push(["VE", "Ventes", num, fecDate(cn.date), ca[0], ca[1], ca[2], ca[3],
+                fecField(cn.number), fecDate(cn.date), lib, "0,00", fecFmt(cn.total_ttc),
+                "", "", validDate, "", ""]);
+            rows.push(["VE", "Ventes", num, fecDate(cn.date), "706000", "Prestations de services", "", "",
+                fecField(cn.number), fecDate(cn.date), lib, fecFmt(cn.subtotal_ht), "0,00",
+                "", "", validDate, "", ""]);
+            if (Number(cn.tva_amount) > 0) {
+                rows.push(["VE", "Ventes", num, fecDate(cn.date), "445710", "TVA collectée", "", "",
+                    fecField(cn.number), fecDate(cn.date), lib, fecFmt(cn.tva_amount), "0,00",
+                    "", "", validDate, "", ""]);
+            }
+        });
+
+        // --- ACHATS (journal AC) ---
+        state.expenses.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).forEach(function (x, idx) {
+            var sa = supplierAcct(x.supplier);
+            var num = "AC" + String(idx + 1).padStart(5, "0");
+            var lib = fecField((x.note || EXP_CAT_LABEL[x.category] || x.category) + (x.supplier ? " - " + x.supplier : ""));
+            var compteCharge = ACCOUNT_BY_CAT[x.category] || "658000";
+            // Débit charge HT
+            rows.push(["AC", "Achats", num, fecDate(x.date), compteCharge, fecField(EXP_CAT_LABEL[x.category] || x.category), "", "",
+                "", fecDate(x.date), lib, fecFmt(x.amount_ht), "0,00",
+                "", "", validDate, "", ""]);
+            // Débit TVA déductible
+            if (Number(x.tva_amount) > 0) {
+                rows.push(["AC", "Achats", num, fecDate(x.date), "445660", "TVA déductible sur achats", "", "",
+                    "", fecDate(x.date), lib, fecFmt(x.tva_amount), "0,00",
+                    "", "", validDate, "", ""]);
+            }
+            // Crédit fournisseur TTC
+            rows.push(["AC", "Achats", num, fecDate(x.date), sa[0], sa[1], sa[2], sa[3],
+                "", fecDate(x.date), lib, "0,00", fecFmt(x.amount_ttc),
+                "", "", validDate, "", ""]);
+        });
+
+        // --- BANQUE (encaissements clients sur factures payées) ---
+        state.invoices.filter(function (i) { return i.status === "paid" && !i.credit_note_id; })
+            .sort(function (a, b) { return (a.paid_at || a.date) < (b.paid_at || b.date) ? -1 : 1; })
+            .forEach(function (inv, idx) {
+                var c = state.clients.find(function (x) { return x.id === inv.client_id; });
+                var ca = clientAcct(c);
+                var num = "BQ" + String(idx + 1).padStart(5, "0");
+                var d = inv.paid_at ? inv.paid_at.slice(0, 10) : inv.date;
+                var lib = fecField("Encaissement facture " + inv.number);
+                rows.push(["BQ", "Banque", num, fecDate(d), "512000", "Banque", "", "",
+                    fecField(inv.number), fecDate(inv.date), lib,
+                    fecFmt(inv.total_ttc), "0,00", "", "", validDate, "", ""]);
+                rows.push(["BQ", "Banque", num, fecDate(d), ca[0], ca[1], ca[2], ca[3],
+                    fecField(inv.number), fecDate(inv.date), lib,
+                    "0,00", fecFmt(inv.total_ttc), "", "", validDate, "", ""]);
+            });
+
+        // Convertit en TSV (séparateur tabulation comme préconisé)
+        return rows.map(function (r) { return r.map(fecField).join("\t"); }).join("\r\n");
+    }
+    window.doExportFEC = function () {
+        var p = state.profile || {};
+        var siren = (p.siret || "000000000").replace(/\D/g, "").slice(0, 9) || "000000000";
+        var fec = buildFEC(p);
+        // BOM UTF-8 pour l'ouverture Excel
+        var blob = new Blob(["﻿" + fec], { type: "text/plain;charset=utf-8" });
+        var year = new Date().getFullYear();
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = siren + "FEC" + year + "1231.txt";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        toast("FEC généré — conforme à l'art. A47 A-1 du LPF, transmissible en cas de contrôle fiscal.", "success");
+        closeModal("modal-export");
+    };
 
     window.doExportXLSX = function () {
         if (!acctView) renderAccounting();
@@ -3417,21 +3837,31 @@
         var selected = [];
         checks.forEach(function (cb) { selected.push(cb.value); });
         if (selected.length === 0) { alert("Sélectionnez au moins un document."); return; }
+        var cmpToggle = document.getElementById("export-compare-yoy");
+        var vPrev = (cmpToggle && cmpToggle.checked) ? previousYearView(v) : null;
 
-        var wb = XLSX.utils.book_new();
-        // Always include a cover summary sheet first.
-        XLSX.utils.book_append_sheet(wb, buildCoverSheet(v, p), "Synthèse");
-        if (selected.indexOf("income") !== -1) XLSX.utils.book_append_sheet(wb, buildIncomeSheet(v, p), "Compte de résultat");
-        if (selected.indexOf("balance") !== -1) XLSX.utils.book_append_sheet(wb, buildBalanceSheet(v, p), "Bilan");
-        if (selected.indexOf("sales") !== -1) XLSX.utils.book_append_sheet(wb, buildSalesJournal(v, p), "Journal ventes");
-        if (selected.indexOf("purchases") !== -1) XLSX.utils.book_append_sheet(wb, buildPurchaseJournal(v, p), "Journal achats");
-        if (selected.indexOf("aged") !== -1) XLSX.utils.book_append_sheet(wb, buildAgedBalance(v, p), "Balance âgée");
-        if (selected.indexOf("vat") !== -1) XLSX.utils.book_append_sheet(wb, buildVatSheet(v, p), "TVA");
-        if (selected.indexOf("urssaf") !== -1) XLSX.utils.book_append_sheet(wb, buildUrssafSheet(p), "URSSAF");
+        showLoading(true);
+        try {
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, buildCoverSheet(v, p, vPrev), "Synthèse");
+            if (selected.indexOf("income") !== -1) XLSX.utils.book_append_sheet(wb, buildIncomeSheet(v, p, vPrev), "Compte de résultat");
+            if (selected.indexOf("balance") !== -1) XLSX.utils.book_append_sheet(wb, buildBalanceSheet(v, p), "Bilan");
+            if (selected.indexOf("sales") !== -1) XLSX.utils.book_append_sheet(wb, buildSalesJournal(v, p), "Journal ventes");
+            if (selected.indexOf("purchases") !== -1) XLSX.utils.book_append_sheet(wb, buildPurchaseJournal(v, p), "Journal achats");
+            if (selected.indexOf("aged") !== -1) XLSX.utils.book_append_sheet(wb, buildAgedBalance(v, p), "Balance âgée");
+            if (selected.indexOf("vat") !== -1) XLSX.utils.book_append_sheet(wb, buildVatSheet(v, p), "TVA");
+            if (selected.indexOf("urssaf") !== -1) XLSX.utils.book_append_sheet(wb, buildUrssafSheet(p), "URSSAF");
+            XLSX.utils.book_append_sheet(wb, buildChartsSheet(v, p, vPrev), "Données graphiques");
 
-        var tag = v.bounds.label.replace(/[^0-9A-Za-zÀ-ÿ]+/g, "-");
-        XLSX.writeFile(wb, "comptabilite-" + tag + ".xlsx");
-        closeModal("modal-export");
+            var tag = v.bounds.label.replace(/[^0-9A-Za-zÀ-ÿ]+/g, "-");
+            XLSX.writeFile(wb, "comptabilite-" + tag + ".xlsx");
+            toast("Export généré — " + (vPrev ? "avec comparaison N-1" : "période en cours") + ".", "success");
+        } catch (err) {
+            toast("Erreur export : " + err.message, "error");
+        } finally {
+            showLoading(false);
+            closeModal("modal-export");
+        }
     };
 
     // --- Subscription ---

@@ -1024,7 +1024,7 @@
     <div class="modal-overlay" id="modal-export">
         <div class="modal">
             <h2>Exporter les documents comptables</h2>
-            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Sélectionnez les documents à inclure. Une page <strong>Synthèse</strong> est automatiquement ajoutée en première page du classeur.</p>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Une page <strong>Synthèse</strong> et un onglet <strong>Données graphiques</strong> sont automatiquement ajoutés.</p>
             <div class="export-options">
                 <label class="export-opt"><input type="checkbox" value="income" checked> Compte de résultat</label>
                 <label class="export-opt"><input type="checkbox" value="balance" checked> Bilan simplifié</label>
@@ -1034,8 +1034,12 @@
                 <label class="export-opt"><input type="checkbox" value="vat" checked> Détail TVA</label>
                 <label class="export-opt"><input type="checkbox" value="urssaf"> Récapitulatif URSSAF</label>
             </div>
-            <div class="modal-actions">
+            <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.88rem">
+                <input type="checkbox" id="export-compare-yoy" checked> Inclure la comparaison année précédente (N-1)
+            </label>
+            <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-export')">Annuler</button>
+                <button type="button" class="btn btn-outline" onclick="doExportFEC()" title="Fichier des Écritures Comptables conforme art. A47 A-1 LPF">Export FEC (fiscal)</button>
                 <button type="button" class="btn btn-primary" onclick="doExportXLSX()">Télécharger .xlsx</button>
             </div>
         </div>

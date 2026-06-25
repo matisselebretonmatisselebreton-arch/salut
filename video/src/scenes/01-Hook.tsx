@@ -6,57 +6,137 @@ export const SceneHook: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   const isVertical = height > width;
+  const sz = isVertical ? 1 : 0.75;
 
-  // background pulse + zoom
-  const bgPulse = spring({ frame, fps, config: { damping: 14, stiffness: 60 }, durationInFrames: 30 });
-  const bgScale = interpolate(bgPulse, [0, 1], [1.05, 1]);
+  // Gradient ring pulse derrière le texte
+  const ringScale = interpolate(frame, [0, 90], [0.85, 1.15], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const ringOpacity = interpolate(frame, [0, 20], [0, 0.35], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
 
-  // Glitch on existing tools (60-75 frames)
-  const glitch = Math.sin(frame * 1.2) * (frame > 50 && frame < 75 ? 8 : 0);
+  // Ligne de réponse "On a la solution."
+  const answerIn = spring({
+    frame: frame - 55,
+    fps,
+    config: { damping: 14, stiffness: 100, mass: 0.6 },
+    durationInFrames: 22,
+  });
+  const answerY = interpolate(answerIn, [0, 1], [30, 0]);
+  const answerOpacity = answerIn;
 
   return (
     <AbsoluteFill
       style={{
-        background: `radial-gradient(circle at 50% 40%, ${theme.primarySoft} 0%, ${theme.bg} 70%)`,
+        background: theme.bg,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         fontFamily,
-        transform: `scale(${bgScale})`,
-        padding: isVertical ? "0 60px" : "0 120px",
+        overflow: "hidden",
       }}
     >
-      {/* Floating crossed-out icons */}
-      <div style={{ position: "absolute", top: "18%", left: "12%", opacity: 0.4, transform: `translate(${glitch}px, 0)` }}>
-        <CrossedTool label="Word" emoji="📄" />
-      </div>
-      <div style={{ position: "absolute", top: "20%", right: "10%", opacity: 0.4, transform: `translate(${-glitch}px, 0)` }}>
-        <CrossedTool label="Excel" emoji="📊" />
-      </div>
-      <div style={{ position: "absolute", bottom: "20%", left: "14%", opacity: 0.4, transform: `translate(${glitch / 2}px, 0)` }}>
-        <CrossedTool label="Post-it" emoji="📝" />
-      </div>
+      {/* Subtle gradient orb */}
+      <div
+        style={{
+          position: "absolute",
+          width: isVertical ? 800 : 900,
+          height: isVertical ? 800 : 900,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${theme.primarySoft} 0%, transparent 70%)`,
+          opacity: ringOpacity,
+          transform: `scale(${ringScale})`,
+        }}
+      />
 
-      <div style={{ textAlign: "center", maxWidth: 900, zIndex: 2 }}>
+      {/* Floating dots pattern */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          opacity: 0.06,
+          backgroundImage: `radial-gradient(circle, ${theme.primary} 1.5px, transparent 1.5px)`,
+          backgroundSize: "40px 40px",
+        }}
+      />
+
+      <div
+        style={{
+          textAlign: "center",
+          maxWidth: isVertical ? 920 : 1400,
+          padding: isVertical ? "0 60px" : "0 140px",
+          zIndex: 2,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 36 * sz,
+        }}
+      >
+        {/* Petit badge */}
+        <PillBadge frame={frame} fps={fps} sz={sz} />
+
+        {/* Texte principal */}
         <TextReveal
-          text="Tu factures encore sur Word ?"
-          fontSize={isVertical ? 92 : 110}
-          highlight="Word"
-          highlightColor={theme.danger}
-          stagger={4}
+          text="Tu en as marre de te prendre la tête avec tes factures, tes devis ou encore ta comptabilité ?"
+          fontSize={isVertical ? 72 : 80}
+          highlight="factures"
+          highlightColor={theme.primary}
+          stagger={2}
+          fontWeight={800}
+          lineHeight={1.15}
+          style={{ letterSpacing: "-0.025em" }}
         />
-        <div style={{ marginTop: 28, opacity: interpolate(frame, [40, 60], [0, 1], { extrapolateRight: "clamp" }) }}>
-          <span style={{
-            display: "inline-block",
-            padding: "10px 22px",
-            background: theme.text,
-            color: "#fff",
-            borderRadius: 999,
-            fontSize: isVertical ? 26 : 28,
-            fontWeight: 700,
-            letterSpacing: "-0.01em",
-          }}>
-            🛑 Il existe 100× mieux.
+
+        {/* Réponse */}
+        <div
+          style={{
+            opacity: answerOpacity,
+            transform: `translateY(${answerY}px)`,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 48 * sz,
+              height: 48 * sz,
+              borderRadius: 14,
+              background: `linear-gradient(135deg, ${theme.primary}, ${theme.primaryLight})`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 8px 24px rgba(79,70,229,0.3)",
+            }}
+          >
+            <svg
+              width={24 * sz}
+              height={24 * sz}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <path d="M14 2v6h6" />
+              <path d="M16 13H8" />
+              <path d="M16 17H8" />
+            </svg>
+          </div>
+          <span
+            style={{
+              fontSize: 34 * sz,
+              fontWeight: 700,
+              color: theme.text,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            On a la solution.
           </span>
         </div>
       </div>
@@ -64,22 +144,40 @@ export const SceneHook: React.FC = () => {
   );
 };
 
-const CrossedTool: React.FC<{ label: string; emoji: string }> = ({ label, emoji }) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 6,
-      fontSize: 14,
-      fontWeight: 600,
-      color: theme.textMuted,
-    }}
-  >
-    <div style={{ position: "relative", fontSize: 64 }}>
-      {emoji}
-      <div style={{ position: "absolute", top: "50%", left: "-10%", width: "120%", height: 4, background: theme.danger, transform: "rotate(-20deg)", borderRadius: 4 }} />
+const PillBadge: React.FC<{ frame: number; fps: number; sz: number }> = ({
+  frame,
+  fps,
+  sz,
+}) => {
+  const badgeIn = spring({
+    frame,
+    fps,
+    config: { damping: 16, stiffness: 140, mass: 0.4 },
+    durationInFrames: 18,
+  });
+  const badgeScale = interpolate(badgeIn, [0, 1], [0.6, 1]);
+  const badgeOpacity = badgeIn;
+
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: `${8 * sz}px ${20 * sz}px`,
+        background: theme.primarySoft,
+        borderRadius: 999,
+        fontSize: 16 * sz,
+        fontWeight: 700,
+        color: theme.primary,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        opacity: badgeOpacity,
+        transform: `scale(${badgeScale})`,
+      }}
+    >
+      <span style={{ fontSize: 14 * sz }}>💡</span>
+      Freelances & auto-entrepreneurs
     </div>
-    {label}
-  </div>
-);
+  );
+};

@@ -3037,193 +3037,376 @@
         openModal("modal-export");
     };
 
-    function xlsxHeader(ws, p, label) {
-        var name = p.name || "Mon Entreprise";
-        var info = [p.siret ? "SIRET : " + p.siret : "", p.tva_number || "", p.address || "", p.city || ""].filter(Boolean).join(" — ");
-        XLSX.utils.sheet_add_aoa(ws, [[name], [info], ["Période : " + label], []], { origin: "A1" });
-        ws["!merges"] = ws["!merges"] || [];
-        ws["!merges"].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 6 } });
-        ws["!merges"].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 6 } });
-        return 4;
+    // === Export XLSX — styles & helpers ===
+    var XS = {
+        accent: "4F46E5", accentLight: "EEF2FF", success: "10B981", danger: "EF4444",
+        muted: "94A3B8", text: "1E293B", border: "E2E8F0", stripe: "F8FAFC"
+    };
+    var STY = {
+        companyName: { font: { name: "Calibri", sz: 22, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.accent } }, alignment: { vertical: "center", horizontal: "left" } },
+        companySub:  { font: { name: "Calibri", sz: 10, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.accent } }, alignment: { vertical: "center" } },
+        period:      { font: { name: "Calibri", sz: 10, italic: true, color: { rgb: XS.muted } } },
+        docTitle:    { font: { name: "Calibri", sz: 16, bold: true, color: { rgb: XS.text } }, alignment: { horizontal: "left" } },
+        sectionH:    { font: { name: "Calibri", sz: 12, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.accent } }, alignment: { horizontal: "left", vertical: "center" } },
+        sectionSub:  { font: { name: "Calibri", sz: 11, bold: true, color: { rgb: XS.text } }, fill: { fgColor: { rgb: XS.accentLight } } },
+        tableH:      { font: { name: "Calibri", sz: 10, bold: true, color: { rgb: XS.text } }, fill: { fgColor: { rgb: XS.border } }, alignment: { horizontal: "left" }, border: borderAll() },
+        tableHRight: { font: { name: "Calibri", sz: 10, bold: true, color: { rgb: XS.text } }, fill: { fgColor: { rgb: XS.border } }, alignment: { horizontal: "right" }, border: borderAll() },
+        cell:        { font: { name: "Calibri", sz: 10, color: { rgb: XS.text } }, border: borderAll() },
+        cellNum:     { font: { name: "Calibri", sz: 10, color: { rgb: XS.text } }, alignment: { horizontal: "right" }, border: borderAll(), numFmt: '#,##0.00 €' },
+        cellNumInt:  { font: { name: "Calibri", sz: 10, color: { rgb: XS.text } }, alignment: { horizontal: "right" }, border: borderAll(), numFmt: '#,##0' },
+        cellDate:    { font: { name: "Calibri", sz: 10, color: { rgb: XS.text } }, alignment: { horizontal: "center" }, border: borderAll(), numFmt: 'dd/mm/yyyy' },
+        cellMuted:   { font: { name: "Calibri", sz: 10, italic: true, color: { rgb: XS.muted } }, border: borderAll() },
+        total:       { font: { name: "Calibri", sz: 11, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.accent } }, alignment: { horizontal: "left" }, border: borderAll() },
+        totalNum:    { font: { name: "Calibri", sz: 11, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.accent } }, alignment: { horizontal: "right" }, border: borderAll(), numFmt: '#,##0.00 €' },
+        subtotal:    { font: { name: "Calibri", sz: 10, bold: true, color: { rgb: XS.text } }, fill: { fgColor: { rgb: XS.accentLight } }, border: borderAll() },
+        subtotalNum: { font: { name: "Calibri", sz: 10, bold: true, color: { rgb: XS.text } }, fill: { fgColor: { rgb: XS.accentLight } }, alignment: { horizontal: "right" }, border: borderAll(), numFmt: '#,##0.00 €' },
+        result:      { font: { name: "Calibri", sz: 12, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.success } }, alignment: { horizontal: "left" }, border: borderAll() },
+        resultNum:   { font: { name: "Calibri", sz: 12, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.success } }, alignment: { horizontal: "right" }, border: borderAll(), numFmt: '#,##0.00 €' },
+        resultNeg:   { font: { name: "Calibri", sz: 12, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.danger } }, alignment: { horizontal: "left" }, border: borderAll() },
+        resultNegN:  { font: { name: "Calibri", sz: 12, bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: XS.danger } }, alignment: { horizontal: "right" }, border: borderAll(), numFmt: '#,##0.00 €' }
+    };
+    function borderAll() {
+        var b = { style: "thin", color: { rgb: XS.border } };
+        return { top: b, bottom: b, left: b, right: b };
     }
-
+    function setCell(ws, addr, val, style) {
+        ws[addr] = { v: val, t: (typeof val === "number") ? "n" : "s" };
+        if (style) ws[addr].s = style;
+    }
+    function setRow(ws, rowIdx, startCol, vals, styles) {
+        vals.forEach(function (v, i) {
+            var a = XLSX.utils.encode_cell({ r: rowIdx, c: startCol + i });
+            setCell(ws, a, v, styles[i] || null);
+        });
+    }
+    function setRange(ws, range) {
+        if (!ws["!ref"]) ws["!ref"] = range;
+        else {
+            var cur = XLSX.utils.decode_range(ws["!ref"]);
+            var nw = XLSX.utils.decode_range(range);
+            cur.s.r = Math.min(cur.s.r, nw.s.r); cur.s.c = Math.min(cur.s.c, nw.s.c);
+            cur.e.r = Math.max(cur.e.r, nw.e.r); cur.e.c = Math.max(cur.e.c, nw.e.c);
+            ws["!ref"] = XLSX.utils.encode_range(cur);
+        }
+    }
+    function ensureRef(ws, endRow, endCol) {
+        ws["!ref"] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: endRow, c: endCol } });
+    }
+    function mergeCells(ws, startRow, startCol, endRow, endCol) {
+        ws["!merges"] = ws["!merges"] || [];
+        ws["!merges"].push({ s: { r: startRow, c: startCol }, e: { r: endRow, c: endCol } });
+    }
+    function setRowHeights(ws, heights) {
+        ws["!rows"] = heights.map(function (h) { return h ? { hpt: h } : {}; });
+    }
     function applyColWidths(ws, widths) {
         ws["!cols"] = widths.map(function (w) { return { wch: w }; });
     }
-
-    function styleCurrency(ws, row, cols) {
-        cols.forEach(function (c) {
-            var addr = XLSX.utils.encode_cell({ r: row, c: c });
-            if (ws[addr]) ws[addr].z = '#,##0.00 €';
-        });
+    function xlsxBanner(ws, p, docTitle, periodLabel, cols) {
+        var name = p.name || "Mon Entreprise";
+        var sub = [p.siret ? "SIRET " + p.siret : null, p.tva_number || null, [p.address, p.postal_code, p.city].filter(Boolean).join(" ")].filter(Boolean).join("  •  ");
+        var lastCol = (cols || 7) - 1;
+        setCell(ws, "A1", name, STY.companyName);
+        setCell(ws, "A2", sub, STY.companySub);
+        setCell(ws, "A3", "Période : " + periodLabel + "  •  Édité le " + new Date().toLocaleDateString("fr-FR"), STY.period);
+        setCell(ws, "A5", docTitle, STY.docTitle);
+        mergeCells(ws, 0, 0, 0, lastCol);
+        mergeCells(ws, 1, 0, 1, lastCol);
+        mergeCells(ws, 2, 0, 2, lastCol);
+        mergeCells(ws, 4, 0, 4, lastCol);
+        setRowHeights(ws, [34, 18, 16, 8, 28]);
+        return 6;
+    }
+    function styleEmptyAOA(rows) {
+        // Helper for AOA-built rows so XLSX-style can attach formatting later by index
+        return rows;
     }
 
     function buildIncomeSheet(v, p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var r = xlsxHeader(ws, p, v.bounds.label);
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["COMPTE DE RÉSULTAT"],
-            [],
-            ["Poste", "Montant HT"],
-            ["Produits d'exploitation (factures encaissées)", v.productsHT],
-            [],
-            ["Charges d'exploitation", ""],
-        ], { origin: "A" + (r + 1) });
-        r += 6;
+        var ws = {}, r = xlsxBanner(ws, p, "Compte de résultat", v.bounds.label, 4);
         var catTotals = {};
         v.expenses.forEach(function (x) {
             var cat = EXP_CAT_LABEL[x.category] || x.category;
             catTotals[cat] = (catTotals[cat] || 0) + Number(x.amount_ht);
         });
-        Object.keys(catTotals).forEach(function (cat) {
-            r++;
-            XLSX.utils.sheet_add_aoa(ws, [["  " + cat, catTotals[cat]]], { origin: "A" + (r + 1) });
-        });
-        r += 2;
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["Total charges", v.chargesHT],
-            [],
-            ["RÉSULTAT NET", v.result]
-        ], { origin: "A" + (r + 1) });
-        applyColWidths(ws, [42, 18]);
+
+        // PRODUITS
+        setRow(ws, r, 0, ["PRODUITS D'EXPLOITATION", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Poste", "", "", "Montant HT"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight]);
+        mergeCells(ws, r, 0, r, 2); r += 1;
+        setRow(ws, r, 0, ["Chiffre d'affaires (factures encaissées)", "", "", Number(v.productsGross)], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
+        mergeCells(ws, r, 0, r, 2); r += 1;
+        if (v.creditsHT > 0) {
+            setRow(ws, r, 0, ["Avoirs émis (déduction)", "", "", -Number(v.creditsHT)], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
+            mergeCells(ws, r, 0, r, 2); r += 1;
+        }
+        setRow(ws, r, 0, ["Total des produits", "", "", Number(v.productsHT)], [STY.subtotal, STY.subtotal, STY.subtotal, STY.subtotalNum]);
+        mergeCells(ws, r, 0, r, 2); r += 2;
+
+        // CHARGES
+        setRow(ws, r, 0, ["CHARGES D'EXPLOITATION", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Catégorie", "", "", "Montant HT"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight]);
+        mergeCells(ws, r, 0, r, 2); r += 1;
+        var catNames = Object.keys(catTotals).sort();
+        if (catNames.length === 0) {
+            setRow(ws, r, 0, ["— Aucune dépense sur la période —", "", "", 0], [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellNum]);
+            mergeCells(ws, r, 0, r, 2); r += 1;
+        } else {
+            catNames.forEach(function (cat) {
+                setRow(ws, r, 0, [cat, "", "", Number(catTotals[cat])], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
+                mergeCells(ws, r, 0, r, 2); r += 1;
+            });
+        }
+        setRow(ws, r, 0, ["Total des charges", "", "", Number(v.chargesHT)], [STY.subtotal, STY.subtotal, STY.subtotal, STY.subtotalNum]);
+        mergeCells(ws, r, 0, r, 2); r += 2;
+
+        // RÉSULTAT
+        var mb = v.productsHT - v.chargesHT;
+        setRow(ws, r, 0, ["INDICATEURS DE GESTION", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Marge brute (Produits − Charges)", "", "", mb], [STY.cell, STY.cell, STY.cell, STY.cellNum]);
+        mergeCells(ws, r, 0, r, 2); r += 1;
+        var marginPct = v.productsHT > 0 ? (mb / v.productsHT * 100) : 0;
+        setRow(ws, r, 0, ["Taux de marge", "", "", marginPct.toFixed(1) + " %"], [STY.cell, STY.cell, STY.cell, STY.cell]);
+        mergeCells(ws, r, 0, r, 2); r += 2;
+        var resStyle = v.result >= 0 ? STY.result : STY.resultNeg;
+        var resNumStyle = v.result >= 0 ? STY.resultNum : STY.resultNegN;
+        setRow(ws, r, 0, ["RÉSULTAT NET DE LA PÉRIODE", "", "", Number(v.result)], [resStyle, resStyle, resStyle, resNumStyle]);
+        mergeCells(ws, r, 0, r, 2);
+        ensureRef(ws, r, 3);
+        applyColWidths(ws, [38, 12, 12, 18]);
         return ws;
     }
 
     function buildBalanceSheet(v, p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var r = xlsxHeader(ws, p, v.bounds.label);
+        var ws = {}, r = xlsxBanner(ws, p, "Bilan simplifié", v.bounds.label, 4);
         var cashIn = v.paidInvoices.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0) - v.credits.reduce(function (s, cn) { return s + Number(cn.total_ttc); }, 0);
         var cashOut = v.expenses.reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
-        var outstanding = v.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["BILAN SIMPLIFIÉ"],
-            [],
-            ["ACTIF", "", "PASSIF", ""],
-            ["Trésorerie nette", cashIn - cashOut, "Capitaux propres", v.result],
-            ["Créances clients", outstanding, "", ""],
-            [],
-            ["Total actif", cashIn - cashOut + outstanding, "Total passif", v.result]
-        ], { origin: "A" + (r + 1) });
-        applyColWidths(ws, [24, 18, 24, 18]);
+        var treso = cashIn - cashOut;
+        var creances = v.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
+        var totalActif = treso + creances;
+        var totalPassif = v.result;
+
+        setRow(ws, r, 0, ["ACTIF", "", "PASSIF", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]); r += 1;
+        setRow(ws, r, 0, ["Poste", "Montant", "Poste", "Montant"], [STY.tableH, STY.tableHRight, STY.tableH, STY.tableHRight]); r += 1;
+        setRow(ws, r, 0, ["Actif circulant", "", "Capitaux propres", ""], [STY.sectionSub, STY.sectionSub, STY.sectionSub, STY.sectionSub]); r += 1;
+        setRow(ws, r, 0, ["  Trésorerie nette", treso, "  Résultat de la période", v.result], [STY.cell, STY.cellNum, STY.cell, STY.cellNum]); r += 1;
+        setRow(ws, r, 0, ["  Créances clients", creances, "", ""], [STY.cell, STY.cellNum, STY.cell, STY.cell]); r += 2;
+        var passifStyle = totalPassif >= 0 ? STY.total : STY.resultNeg;
+        var passifNumStyle = totalPassif >= 0 ? STY.totalNum : STY.resultNegN;
+        setRow(ws, r, 0, ["TOTAL ACTIF", totalActif, "TOTAL PASSIF", totalPassif], [STY.total, STY.totalNum, passifStyle, passifNumStyle]);
+        r += 2;
+
+        // Détail trésorerie
+        setRow(ws, r, 0, ["DÉTAIL DE LA TRÉSORERIE", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["Encaissements (TTC)", "", "", cashIn], [STY.cell, STY.cell, STY.cell, STY.cellNum]); mergeCells(ws, r, 0, r, 2); r += 1;
+        setRow(ws, r, 0, ["Décaissements (TTC)", "", "", -cashOut], [STY.cell, STY.cell, STY.cell, STY.cellNum]); mergeCells(ws, r, 0, r, 2); r += 1;
+        setRow(ws, r, 0, ["Solde de trésorerie", "", "", treso], [STY.subtotal, STY.subtotal, STY.subtotal, STY.subtotalNum]); mergeCells(ws, r, 0, r, 2);
+
+        ensureRef(ws, r, 3);
+        applyColWidths(ws, [26, 18, 26, 18]);
         return ws;
     }
 
     function buildSalesJournal(v, p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var b = v.bounds;
-        var r = xlsxHeader(ws, p, b.label);
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["JOURNAL DES VENTES"],
-            [],
-            ["Date", "N° Facture", "Client", "HT", "TVA", "TTC", "Statut"]
-        ], { origin: "A" + (r + 1) });
-        r += 3;
-        var allInv = state.invoices.filter(function (i) { return !i.credit_note_id && dateInBounds(i.date, b); })
+        var ws = {}, r = xlsxBanner(ws, p, "Journal des ventes", v.bounds.label, 7);
+        var allInv = state.invoices.filter(function (i) { return !i.credit_note_id && dateInBounds(i.date, v.bounds); })
             .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+        setRow(ws, r, 0, ["Date", "N° Facture", "Client", "HT", "TVA", "TTC", "Statut"],
+            [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableHRight, STY.tableH]);
+        r += 1;
+        var totHT = 0, totTVA = 0, totTTC = 0;
         allInv.forEach(function (inv) {
-            r++;
             var c = state.clients.find(function (x) { return x.id === inv.client_id; });
-            XLSX.utils.sheet_add_aoa(ws, [[inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht), Number(inv.tva_amount), Number(inv.total_ttc), invoiceStatusOf(inv)]], { origin: "A" + (r + 1) });
+            setRow(ws, r, 0, [inv.date || "", inv.number, c ? c.name : "—", Number(inv.subtotal_ht), Number(inv.tva_amount), Number(inv.total_ttc), invoiceStatusOf(inv)],
+                [STY.cellDate, STY.cell, STY.cell, STY.cellNum, STY.cellNum, STY.cellNum, STY.cell]);
+            totHT += Number(inv.subtotal_ht); totTVA += Number(inv.tva_amount); totTTC += Number(inv.total_ttc);
+            r += 1;
         });
-        r += 2;
-        var totHT = allInv.reduce(function (s, i) { return s + Number(i.subtotal_ht); }, 0);
-        var totTVA = allInv.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
-        var totTTC = allInv.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
-        XLSX.utils.sheet_add_aoa(ws, [["", "", "TOTAL", totHT, totTVA, totTTC, ""]], { origin: "A" + (r + 1) });
-        applyColWidths(ws, [12, 16, 28, 14, 14, 14, 12]);
+        if (allInv.length === 0) {
+            setRow(ws, r, 0, ["— Aucune facture sur la période —", "", "", "", "", "", ""],
+                [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted]);
+            mergeCells(ws, r, 0, r, 6); r += 1;
+        }
+        setRow(ws, r, 0, ["", "", "TOTAL", totHT, totTVA, totTTC, ""],
+            [STY.total, STY.total, STY.total, STY.totalNum, STY.totalNum, STY.totalNum, STY.total]);
+        ensureRef(ws, r, 6);
+        applyColWidths(ws, [12, 16, 30, 14, 14, 14, 14]);
         return ws;
     }
 
     function buildPurchaseJournal(v, p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var r = xlsxHeader(ws, p, v.bounds.label);
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["JOURNAL DES ACHATS"],
-            [],
-            ["Date", "Fournisseur", "Catégorie", "HT", "TVA", "TTC", "Note"]
-        ], { origin: "A" + (r + 1) });
-        r += 3;
+        var ws = {}, r = xlsxBanner(ws, p, "Journal des achats", v.bounds.label, 7);
         var sorted = v.expenses.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+        setRow(ws, r, 0, ["Date", "Fournisseur", "Catégorie", "HT", "TVA", "TTC", "Note"],
+            [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableHRight, STY.tableH]);
+        r += 1;
+        var tHT = 0, tTVA = 0, tTTC = 0;
         sorted.forEach(function (x) {
-            r++;
-            XLSX.utils.sheet_add_aoa(ws, [[x.date, x.supplier || "", EXP_CAT_LABEL[x.category] || x.category, Number(x.amount_ht), Number(x.tva_amount), Number(x.amount_ttc), x.note || ""]], { origin: "A" + (r + 1) });
+            setRow(ws, r, 0, [x.date || "", x.supplier || "—", EXP_CAT_LABEL[x.category] || x.category, Number(x.amount_ht), Number(x.tva_amount), Number(x.amount_ttc), x.note || ""],
+                [STY.cellDate, STY.cell, STY.cell, STY.cellNum, STY.cellNum, STY.cellNum, STY.cell]);
+            tHT += Number(x.amount_ht); tTVA += Number(x.tva_amount); tTTC += Number(x.amount_ttc);
+            r += 1;
         });
-        r += 2;
-        var tHT = sorted.reduce(function (s, x) { return s + Number(x.amount_ht); }, 0);
-        var tTVA = sorted.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
-        var tTTC = sorted.reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
-        XLSX.utils.sheet_add_aoa(ws, [["", "", "TOTAL", tHT, tTVA, tTTC, ""]], { origin: "A" + (r + 1) });
-        applyColWidths(ws, [12, 28, 22, 14, 14, 14, 22]);
+        if (sorted.length === 0) {
+            setRow(ws, r, 0, ["— Aucune dépense sur la période —", "", "", "", "", "", ""],
+                [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted]);
+            mergeCells(ws, r, 0, r, 6); r += 1;
+        }
+        setRow(ws, r, 0, ["", "", "TOTAL", tHT, tTVA, tTTC, ""],
+            [STY.total, STY.total, STY.total, STY.totalNum, STY.totalNum, STY.totalNum, STY.total]);
+        ensureRef(ws, r, 6);
+        applyColWidths(ws, [12, 28, 22, 14, 14, 14, 26]);
         return ws;
     }
 
     function buildAgedBalance(v, p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var r = xlsxHeader(ws, p, v.bounds.label);
+        var ws = {}, r = xlsxBanner(ws, p, "Balance âgée clients", v.bounds.label, 7);
         var now = new Date();
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["BALANCE ÂGÉE CLIENTS"],
-            [],
-            ["Client", "N° Facture", "Date", "Échéance", "Montant TTC", "Retard (jours)"]
-        ], { origin: "A" + (r + 1) });
-        r += 3;
+        setRow(ws, r, 0, ["Client", "N° Facture", "Date", "Échéance", "Montant TTC", "Retard (j)", "Tranche"],
+            [STY.tableH, STY.tableH, STY.tableH, STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableH]);
+        r += 1;
         var pending = state.invoices.filter(function (i) {
             return !i.credit_note_id && i.status !== "paid" && dateInBounds(i.date, v.bounds);
         }).sort(function (a, b) { return a.due_date < b.due_date ? -1 : 1; });
+        var buckets = { "À venir": 0, "0-30 j": 0, "31-60 j": 0, "61-90 j": 0, "> 90 j": 0 };
         pending.forEach(function (inv) {
-            r++;
             var c = state.clients.find(function (x) { return x.id === inv.client_id; });
-            var days = Math.max(0, Math.round((now - new Date(inv.due_date)) / 86400000));
-            XLSX.utils.sheet_add_aoa(ws, [[c ? c.name : "", inv.number, inv.date, inv.due_date, Number(inv.total_ttc), days > 0 ? days : "À venir"]], { origin: "A" + (r + 1) });
+            var days = Math.round((now - new Date(inv.due_date)) / 86400000);
+            var bucket = days < 0 ? "À venir" : days <= 30 ? "0-30 j" : days <= 60 ? "31-60 j" : days <= 90 ? "61-90 j" : "> 90 j";
+            buckets[bucket] += Number(inv.total_ttc);
+            setRow(ws, r, 0, [c ? c.name : "—", inv.number, inv.date, inv.due_date, Number(inv.total_ttc), days < 0 ? 0 : days, bucket],
+                [STY.cell, STY.cell, STY.cellDate, STY.cellDate, STY.cellNum, STY.cellNumInt, STY.cell]);
+            r += 1;
         });
-        r += 2;
+        if (pending.length === 0) {
+            setRow(ws, r, 0, ["— Aucune créance ouverte —", "", "", "", "", "", ""],
+                [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted]);
+            mergeCells(ws, r, 0, r, 6); r += 1;
+        }
         var total = pending.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
-        XLSX.utils.sheet_add_aoa(ws, [["", "", "", "TOTAL", total, ""]], { origin: "A" + (r + 1) });
-        applyColWidths(ws, [28, 16, 12, 12, 16, 14]);
+        setRow(ws, r, 0, ["", "", "", "TOTAL", total, "", ""],
+            [STY.total, STY.total, STY.total, STY.total, STY.totalNum, STY.total, STY.total]);
+        r += 2;
+        // Synthèse par tranche d'âge
+        setRow(ws, r, 0, ["SYNTHÈSE PAR TRANCHE", "", "", "", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 6); r += 1;
+        Object.keys(buckets).forEach(function (label) {
+            setRow(ws, r, 0, [label, "", "", "", buckets[label], "", ""],
+                [STY.cell, STY.cell, STY.cell, STY.cell, STY.cellNum, STY.cell, STY.cell]);
+            r += 1;
+        });
+        ensureRef(ws, r - 1, 6);
+        applyColWidths(ws, [28, 16, 12, 12, 16, 12, 14]);
         return ws;
     }
 
     function buildVatSheet(v, p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var r = xlsxHeader(ws, p, v.bounds.label);
+        var ws = {}, r = xlsxBanner(ws, p, "Détail TVA", v.bounds.label, 5);
         var tvaCollected = v.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
         var tvaDeductible = v.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["DÉTAIL TVA"],
-            [],
-            ["TVA collectée (sur ventes)", tvaCollected],
-            ["TVA déductible (sur achats)", tvaDeductible],
-            [],
-            ["TVA nette à reverser", tvaCollected - tvaDeductible],
-            [],
-            ["DÉTAIL TVA COLLECTÉE PAR FACTURE"],
-            [],
-            ["Date", "N° Facture", "Client", "Base HT", "TVA"]
-        ], { origin: "A" + (r + 1) });
-        r += 10;
+        var net = tvaCollected - tvaDeductible;
+
+        setRow(ws, r, 0, ["RÉCAPITULATIF", "", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 4); r += 1;
+        setRow(ws, r, 0, ["TVA collectée (sur ventes encaissées)", "", "", "", tvaCollected], [STY.cell, STY.cell, STY.cell, STY.cell, STY.cellNum]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        setRow(ws, r, 0, ["TVA déductible (sur achats)", "", "", "", -tvaDeductible], [STY.cell, STY.cell, STY.cell, STY.cell, STY.cellNum]);
+        mergeCells(ws, r, 0, r, 3); r += 1;
+        var netStyle = net >= 0 ? STY.total : STY.result;
+        var netNumStyle = net >= 0 ? STY.totalNum : STY.resultNum;
+        setRow(ws, r, 0, [net >= 0 ? "TVA nette À REVERSER" : "CRÉDIT DE TVA", "", "", "", net], [netStyle, netStyle, netStyle, netStyle, netNumStyle]);
+        mergeCells(ws, r, 0, r, 3); r += 2;
+
+        setRow(ws, r, 0, ["TVA COLLECTÉE — DÉTAIL PAR FACTURE", "", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 4); r += 1;
+        setRow(ws, r, 0, ["Date", "N° Facture", "Client", "Base HT", "TVA"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight, STY.tableHRight]);
+        r += 1;
         v.paidInvoices.forEach(function (inv) {
-            r++;
             var c = state.clients.find(function (x) { return x.id === inv.client_id; });
-            XLSX.utils.sheet_add_aoa(ws, [[inv.date, inv.number, c ? c.name : "", Number(inv.subtotal_ht), Number(inv.tva_amount)]], { origin: "A" + (r + 1) });
+            setRow(ws, r, 0, [inv.date || "", inv.number, c ? c.name : "—", Number(inv.subtotal_ht), Number(inv.tva_amount)],
+                [STY.cellDate, STY.cell, STY.cell, STY.cellNum, STY.cellNum]);
+            r += 1;
         });
-        applyColWidths(ws, [12, 16, 28, 14, 14]);
+        r += 1;
+        setRow(ws, r, 0, ["TVA DÉDUCTIBLE — DÉTAIL PAR DÉPENSE", "", "", "", ""], [STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH, STY.sectionH]);
+        mergeCells(ws, r, 0, r, 4); r += 1;
+        setRow(ws, r, 0, ["Date", "Fournisseur", "Catégorie", "Base HT", "TVA"], [STY.tableH, STY.tableH, STY.tableH, STY.tableHRight, STY.tableHRight]);
+        r += 1;
+        v.expenses.forEach(function (x) {
+            setRow(ws, r, 0, [x.date || "", x.supplier || "—", EXP_CAT_LABEL[x.category] || x.category, Number(x.amount_ht), Number(x.tva_amount)],
+                [STY.cellDate, STY.cell, STY.cell, STY.cellNum, STY.cellNum]);
+            r += 1;
+        });
+        ensureRef(ws, r - 1, 4);
+        applyColWidths(ws, [12, 16, 30, 16, 16]);
         return ws;
     }
 
     function buildUrssafSheet(p) {
-        var ws = XLSX.utils.aoa_to_sheet([]);
-        var r = xlsxHeader(ws, p, "Historique");
-        XLSX.utils.sheet_add_aoa(ws, [
-            ["RÉCAPITULATIF URSSAF"],
-            [],
-            ["Période", "CA déclaré", "Cotisations", "Date déclaration", "Statut"]
-        ], { origin: "A" + (r + 1) });
-        r += 3;
-        state.urssaf.slice().sort(function (a, b) { return (a.period_label || "") < (b.period_label || "") ? -1 : 1; }).forEach(function (d) {
-            r++;
-            XLSX.utils.sheet_add_aoa(ws, [[d.period_label || "", Number(d.ca_base || 0), Number(d.cotisation || 0), d.declared_at ? d.declared_at.slice(0, 10) : "", "Déclaré"]], { origin: "A" + (r + 1) });
+        var ws = {}, r = xlsxBanner(ws, p, "Récapitulatif URSSAF", "Historique complet", 5);
+        setRow(ws, r, 0, ["Période", "CA déclaré", "Taux cotisation", "Cotisations", "Date déclaration"],
+            [STY.tableH, STY.tableHRight, STY.tableHRight, STY.tableHRight, STY.tableH]);
+        r += 1;
+        var sorted = state.urssaf.slice().sort(function (a, b) { return (a.period_label || "") < (b.period_label || "") ? -1 : 1; });
+        var totalCA = 0, totalCot = 0;
+        sorted.forEach(function (d) {
+            var ca = Number(d.ca_base || 0), cot = Number(d.cotisation || 0);
+            var rate = ca > 0 ? (cot / ca * 100).toFixed(2) + " %" : "—";
+            totalCA += ca; totalCot += cot;
+            setRow(ws, r, 0, [d.period_label || "—", ca, rate, cot, d.declared_at ? d.declared_at.slice(0, 10) : ""],
+                [STY.cell, STY.cellNum, STY.cell, STY.cellNum, STY.cellDate]);
+            r += 1;
         });
-        applyColWidths(ws, [22, 16, 16, 16, 12]);
+        if (sorted.length === 0) {
+            setRow(ws, r, 0, ["— Aucune déclaration enregistrée —", "", "", "", ""],
+                [STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted, STY.cellMuted]);
+            mergeCells(ws, r, 0, r, 4); r += 1;
+        }
+        setRow(ws, r, 0, ["TOTAL", totalCA, "", totalCot, ""],
+            [STY.total, STY.totalNum, STY.total, STY.totalNum, STY.total]);
+        ensureRef(ws, r, 4);
+        applyColWidths(ws, [24, 18, 16, 18, 18]);
+        return ws;
+    }
+
+    function buildCoverSheet(v, p) {
+        var ws = {}, r = xlsxBanner(ws, p, "Synthèse comptable", v.bounds.label, 4);
+        var tvaCollected = v.paidInvoices.reduce(function (s, i) { return s + Number(i.tva_amount); }, 0);
+        var tvaDeductible = v.expenses.reduce(function (s, x) { return s + Number(x.tva_amount); }, 0);
+        var creances = v.receivables.reduce(function (s, i) { return s + Number(i.total_ttc); }, 0);
+        var nbInv = state.invoices.filter(function (i) { return !i.credit_note_id && dateInBounds(i.date, v.bounds); }).length;
+        var nbExp = v.expenses.length;
+
+        var rows = [
+            ["INDICATEURS CLÉS", ""],
+            ["Chiffre d'affaires HT (encaissé)", Number(v.productsHT)],
+            ["Charges HT", Number(v.chargesHT)],
+            ["Résultat de la période", Number(v.result)],
+            ["Marge (%)", v.productsHT > 0 ? (v.result / v.productsHT * 100).toFixed(1) + " %" : "—"],
+            ["", ""],
+            ["TRÉSORERIE & TVA", ""],
+            ["TVA collectée", tvaCollected],
+            ["TVA déductible", tvaDeductible],
+            ["TVA nette à reverser", tvaCollected - tvaDeductible],
+            ["Créances clients ouvertes", creances],
+            ["", ""],
+            ["VOLUMES", ""],
+            ["Factures émises (période)", nbInv],
+            ["Dépenses enregistrées (période)", nbExp]
+        ];
+        rows.forEach(function (row) {
+            var isHeader = row[1] === "" && row[0] !== "";
+            var styles = isHeader ? [STY.sectionH, STY.sectionH] : [STY.cell, typeof row[1] === "number" ? STY.cellNum : STY.cell];
+            setRow(ws, r, 0, [row[0], "", "", row[1]], [styles[0], styles[0], styles[0], styles[1]]);
+            mergeCells(ws, r, 0, r, 2);
+            r += 1;
+        });
+        ensureRef(ws, r - 1, 3);
+        applyColWidths(ws, [38, 8, 8, 22]);
         return ws;
     }
 
@@ -3236,6 +3419,8 @@
         if (selected.length === 0) { alert("Sélectionnez au moins un document."); return; }
 
         var wb = XLSX.utils.book_new();
+        // Always include a cover summary sheet first.
+        XLSX.utils.book_append_sheet(wb, buildCoverSheet(v, p), "Synthèse");
         if (selected.indexOf("income") !== -1) XLSX.utils.book_append_sheet(wb, buildIncomeSheet(v, p), "Compte de résultat");
         if (selected.indexOf("balance") !== -1) XLSX.utils.book_append_sheet(wb, buildBalanceSheet(v, p), "Bilan");
         if (selected.indexOf("sales") !== -1) XLSX.utils.book_append_sheet(wb, buildSalesJournal(v, p), "Journal ventes");

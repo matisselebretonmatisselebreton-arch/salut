@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InvoicePilot — App</title>
     <link rel="stylesheet" href="css/app.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
 </head>
 <body>
 
@@ -104,6 +107,7 @@
                     <p id="usage-hint" style="margin-top:10px;font-size:.82rem;color:var(--text-muted)"></p>
                 </div>
                 <div id="dash-relance"></div>
+                <div id="dash-smart-alerts"></div>
                 <div class="stats-grid">
                     <div class="stat-card clickable" onclick="openRevenueDetail()">
                         <div class="stat-label">Chiffre d'affaires</div>
@@ -217,6 +221,7 @@
                     </div>
                     <button class="btn btn-primary" id="btn-new-supplier">+ Nouveau fournisseur</button>
                 </div>
+                <div id="suppliers-insights" style="margin-bottom:20px"></div>
                 <div class="table-card">
                     <div class="table-header">
                         <div class="search-bar">
@@ -330,6 +335,27 @@
                         <div class="form-group">
                             <label>Mentions légales supplémentaires</label>
                             <textarea id="prof-mentions" rows="3" placeholder="Ex: TVA non applicable, art. 293 B du CGI"></textarea>
+                        </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Apparence des PDF</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Couleur d'accent</label>
+                                <input type="color" id="prof-template-color" value="#4F46E5" style="height:42px;padding:4px">
+                            </div>
+                            <div class="form-group">
+                                <label>Police</label>
+                                <select id="prof-template-font">
+                                    <option value="Arial">Arial (par défaut)</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Georgia">Georgia (serif)</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New (mono)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>URL du logo (optionnel — affiché sur les PDF)</label>
+                            <input type="url" id="prof-template-logo" placeholder="https://exemple.fr/logo.png">
                         </div>
                         <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Coordonnées bancaires (RIB)</h3>
                         <div class="form-row">
@@ -964,16 +990,93 @@
         </div>
     </div>
 
-    <!-- Modal: Upload devis signé -->
+    <!-- Modal: Acompte / échéancier -->
+    <div class="modal-overlay" id="modal-deposit">
+        <div class="modal modal-lg">
+            <h2>Acompte ou échéancier</h2>
+            <input type="hidden" id="dep-quote-id">
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:14px"><span id="dep-quote-info"></span></p>
+
+            <div class="form-group">
+                <label>Mode</label>
+                <select id="dep-mode" onchange="updateDepositPreview()">
+                    <option value="deposit">Acompte + solde (2 factures)</option>
+                    <option value="installments">Échéancier (3, 6, 12 fois…)</option>
+                </select>
+            </div>
+
+            <div id="dep-pane-deposit">
+                <div class="form-group">
+                    <label>Pourcentage d'acompte (%)</label>
+                    <input type="number" id="dep-percent" value="30" min="1" max="99" oninput="updateDepositPreview()">
+                </div>
+            </div>
+
+            <div id="dep-pane-installments" style="display:none">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre d'échéances</label>
+                        <select id="dep-installments" onchange="updateDepositPreview()">
+                            <option value="2">2 fois</option>
+                            <option value="3" selected>3 fois</option>
+                            <option value="4">4 fois</option>
+                            <option value="6">6 fois</option>
+                            <option value="12">12 fois</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Intervalle entre échéances (jours)</label>
+                        <select id="dep-frequency" onchange="updateDepositPreview()">
+                            <option value="30" selected>Mensuel (30 jours)</option>
+                            <option value="14">Bimensuel (14 jours)</option>
+                            <option value="90">Trimestriel (90 jours)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-list" id="dep-preview" style="margin-top:14px"></div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-deposit')">Annuler</button>
+                <button type="button" class="btn btn-primary" id="dep-submit" onclick="submitDeposit()">Créer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Devis signé requis -->
     <div class="modal-overlay" id="modal-signed-quote">
         <div class="modal">
             <h2>Devis signé requis</h2>
-            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Pour convertir ce devis en facture, veuillez joindre le devis signé par le client.</p>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Pour convertir ce devis en facture, le client doit avoir donné son accord. Deux options :</p>
             <input type="hidden" id="sq-quote-id">
-            <div class="form-group">
-                <label>Document signé (PDF ou image)</label>
-                <input type="file" id="sq-file" accept=".pdf,image/jpeg,image/png,image/webp" required>
+
+            <div class="sq-tabs">
+                <button type="button" class="sq-tab active" onclick="setSqMode('sign')">&#9997; Signer en ligne</button>
+                <button type="button" class="sq-tab" onclick="setSqMode('upload')">&#128206; Uploader un PDF signé</button>
             </div>
+
+            <div id="sq-pane-sign">
+                <div class="form-group">
+                    <label>Nom du signataire</label>
+                    <input type="text" id="sq-signer-name" placeholder="Nom et prénom du client">
+                </div>
+                <div class="form-group">
+                    <label>Signature (souris ou doigt)</label>
+                    <div class="signature-pad-wrap">
+                        <canvas id="sq-canvas" width="540" height="200"></canvas>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="clearSignature()" style="margin-top:8px">Effacer</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sq-pane-upload" style="display:none">
+                <div class="form-group">
+                    <label>Document signé (PDF ou image)</label>
+                    <input type="file" id="sq-file" accept=".pdf,image/jpeg,image/png,image/webp">
+                </div>
+            </div>
+
             <div class="modal-actions">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-signed-quote')">Annuler</button>
                 <button type="button" class="btn btn-primary" id="sq-submit" onclick="submitSignedAndConvert()">Convertir en facture</button>

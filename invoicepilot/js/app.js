@@ -240,9 +240,106 @@
 
         renderUsageCard();
         renderDashRelance();
+        renderSmartAlerts();
         renderHealthScore();
         renderTreasuryForecast();
         renderInvoiceTable("dashboard-invoices-list", state.invoices.slice(0, 5));
+    }
+
+    // Alertes intelligentes : seuils micro, TVA à déclarer, URSSAF.
+    var MICRO_THRESHOLDS = { bic_sales: 188700, bic_services: 77700, bnc: 77700 };
+    var TVA_FRANCHISE = { bic_sales: 91900, bic_services: 36800, bnc: 36800 };
+
+    function caForYear(year) {
+        var ca = 0;
+        state.invoices.forEach(function (inv) {
+            if (inv.credit_note_id || inv.status !== "paid") return;
+            if (String(inv.date).slice(0, 4) === String(year)) ca += Number(inv.subtotal_ht);
+        });
+        state.creditNotes.forEach(function (cn) {
+            if (String(cn.date).slice(0, 4) === String(year)) ca -= Number(cn.subtotal_ht);
+        });
+        return ca;
+    }
+
+    function renderSmartAlerts() {
+        var box = document.getElementById("dash-smart-alerts");
+        if (!box) return;
+        var alerts = [];
+        var p = state.profile || {};
+        var year = new Date().getFullYear();
+        var ca = caForYear(year);
+
+        // Seuil micro
+        if (p.legal_status === "micro" && p.activity_type) {
+            var th = MICRO_THRESHOLDS[p.activity_type];
+            if (th) {
+                var pct = (ca / th) * 100;
+                if (pct >= 80) {
+                    alerts.push({
+                        level: pct >= 100 ? "danger" : "warning",
+                        icon: pct >= 100 ? "&#9888;" : "&#9888;",
+                        text: pct >= 100
+                            ? "<strong>Seuil micro-entreprise dépassé</strong> — CA " + year + " : " + formatMoney(ca) + " / " + formatMoney(th) + ". Passage au régime réel à anticiper."
+                            : "<strong>" + Math.round(pct) + "% du seuil micro atteint</strong> — CA " + year + " : " + formatMoney(ca) + " / " + formatMoney(th) + "."
+                    });
+                }
+            }
+            // Franchise TVA
+            var tvaTh = TVA_FRANCHISE[p.activity_type];
+            if (tvaTh && ca >= tvaTh * 0.9 && Number(p.tva_rate) === 0) {
+                alerts.push({
+                    level: "warning", icon: "&#8520;",
+                    text: "<strong>Franchise TVA bientôt dépassée</strong> — vous approchez " + formatMoney(tvaTh) + " HT. À partir de ce seuil, vous devrez facturer la TVA."
+                });
+            }
+        }
+
+        // TVA à déclarer (mensuel : avant le 24 du mois suivant ; trimestriel : avant le 24 du mois suivant le trimestre)
+        if (Number(p.tva_rate) > 0) {
+            var now = new Date();
+            var dueDay = 24;
+            // Estimation simple : si on est dans les 7 jours avant le 24, alerte.
+            var dueDate = new Date(now.getFullYear(), now.getMonth(), dueDay);
+            var diff = (dueDate - now) / 86400000;
+            if (diff >= 0 && diff <= 7) {
+                alerts.push({
+                    level: "warning", icon: "&#128197;",
+                    text: "<strong>Déclaration TVA dans " + Math.ceil(diff) + " jour(s)</strong> — pensez à préparer votre télédéclaration avant le " + dueDay + "."
+                });
+            }
+        }
+
+        // URSSAF à venir : dernier trimestre/mois non déclaré
+        if (p.legal_status === "micro" && p.urssaf_period) {
+            var nowU = new Date();
+            var lastDeclared = state.urssaf.length > 0 ? state.urssaf[0].period_end : null;
+            // Si la période précédente n'est pas dans l'historique, alerte
+            var prev;
+            if (p.urssaf_period === "monthly") {
+                prev = new Date(nowU.getFullYear(), nowU.getMonth() - 1, 1);
+                var prevEnd = new Date(nowU.getFullYear(), nowU.getMonth(), 0).toISOString().slice(0, 10);
+                if (lastDeclared !== prevEnd && nowU.getDate() <= 28) {
+                    alerts.push({ level: "info", icon: "&#128203;",
+                        text: "<strong>Déclaration URSSAF mensuelle</strong> à effectuer pour " + prev.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) + "." });
+                }
+            } else {
+                var q = Math.floor(nowU.getMonth() / 3);
+                if (q > 0 || nowU.getMonth() >= 0) {
+                    var prevQEnd = new Date(nowU.getFullYear(), q * 3, 0).toISOString().slice(0, 10);
+                    if (q === 0) prevQEnd = (nowU.getFullYear() - 1) + "-12-31";
+                    if (lastDeclared !== prevQEnd && nowU.getDate() <= 30) {
+                        alerts.push({ level: "info", icon: "&#128203;",
+                            text: "<strong>Déclaration URSSAF trimestrielle</strong> à effectuer pour le trimestre précédent." });
+                    }
+                }
+            }
+        }
+
+        if (alerts.length === 0) { box.innerHTML = ""; return; }
+        box.innerHTML = alerts.map(function (a) {
+            return '<div class="smart-alert smart-alert-' + a.level + '"><span class="dash-alert-icon">' + a.icon + '</span><span>' + a.text + '</span></div>';
+        }).join("");
     }
 
     // Bannière "factures à relancer" (en retard).
@@ -587,7 +684,13 @@
             var client = state.clients.find(function (c) { return c.id === d.client_id; });
             html += '<tr>';
             if (d.kind === "credit") html += '<td><span class="doc-type credit">Avoir</span></td>';
-            else html += '<td><span class="doc-type invoice">Facture</span></td>';
+            else {
+                var dt = d.raw.doc_type;
+                if (dt === "deposit") html += '<td><span class="doc-type deposit">Acompte ' + (d.raw.deposit_percent || "") + '%</span></td>';
+                else if (dt === "balance") html += '<td><span class="doc-type balance">Solde</span></td>';
+                else if (dt === "installment") html += '<td><span class="doc-type installment">Échéance ' + d.raw.installment_index + '/' + d.raw.installment_total + '</span></td>';
+                else html += '<td><span class="doc-type invoice">Facture</span></td>';
+            }
             html += '<td><strong>' + esc(d.number) + '</strong></td>';
             html += '<td>' + esc(client ? client.name : "—") + '</td>';
             html += '<td>' + formatDate(d.date) + '</td>';
@@ -621,6 +724,10 @@
         if (inv.credit_note_id) {
             h += '<span style="color:var(--text-muted);font-size:.8rem">→ avoir émis</span>';
         } else if (inv.status === "paid") {
+            if (inv.doc_type === "deposit") {
+                var hasBalance = state.invoices.some(function (i) { return i.parent_invoice_id === inv.id && i.doc_type === "balance"; });
+                if (!hasBalance) h += '<button class="btn btn-sm btn-primary" onclick="createBalanceFor(\'' + inv.id + '\')">Créer le solde</button> ';
+            }
             h += '<button class="btn btn-sm btn-outline" onclick="openCreditNote(\'' + inv.id + '\')">Avoir</button>';
         } else {
             h += '<button class="btn btn-sm btn-outline" onclick="markPaid(\'' + inv.id + '\')">Payée</button> ';
@@ -739,9 +846,158 @@
             '<div class="newdoc-choices">'
             + '<button class="newdoc-choice" onclick="newDocFromQuote()"><strong>Facture depuis un devis accepté</strong><span>Convertir un devis validé en facture</span></button>'
             + '<button class="newdoc-choice" onclick="newDocFree()"><strong>Facture libre</strong><span>Créer une facture from scratch</span></button>'
+            + '<button class="newdoc-choice" onclick="newDocDeposit()"><strong>Acompte ou échéancier</strong><span>Diviser un devis en acompte/solde ou en plusieurs échéances</span></button>'
             + '<button class="newdoc-choice" onclick="newDocCredit()"><strong>Avoir</strong><span>Annuler tout ou partie d\'une facture payée</span></button>'
             + '</div>';
         openModal("modal-newdoc");
+    };
+
+    window.newDocDeposit = function () {
+        var accepted = state.quotes.filter(function (q) { return q.status === "accepted" || q.status === "invoiced"; });
+        var body = document.getElementById("newdoc-body");
+        if (accepted.length === 0) {
+            body.innerHTML = '<p style="color:var(--text-muted)">Aucun devis accepté disponible. Acceptez un devis pour pouvoir créer un acompte ou un échéancier.</p>'
+                + '<div class="modal-actions"><button class="btn btn-outline" onclick="openNewDocMenu()">Retour</button></div>';
+            return;
+        }
+        var rows = accepted.map(function (q) {
+            var client = state.clients.find(function (c) { return c.id === q.client_id; });
+            return '<div class="row"><span>' + esc(q.number) + ' — ' + esc(client ? client.name : "—") + ' <span style="color:var(--text-muted)">' + formatMoney(Number(q.total_ttc)) + '</span></span>'
+                + '<button class="btn btn-sm btn-primary" onclick="closeModal(\'modal-newdoc\');openDepositModal(\'' + q.id + '\')">Choisir</button></div>';
+        }).join("");
+        body.innerHTML = '<div class="detail-list">' + rows + '</div>'
+            + '<div class="modal-actions"><button class="btn btn-outline" onclick="openNewDocMenu()">Retour</button></div>';
+    };
+
+    window.openDepositModal = function (quoteId) {
+        var q = state.quotes.find(function (x) { return x.id === quoteId; });
+        if (!q) return;
+        document.getElementById("dep-quote-id").value = quoteId;
+        var client = state.clients.find(function (c) { return c.id === q.client_id; });
+        document.getElementById("dep-quote-info").textContent = q.number + " — " + (client ? client.name : "") + " — " + formatMoney(Number(q.total_ttc));
+        document.getElementById("dep-mode").value = "deposit";
+        document.getElementById("dep-percent").value = 30;
+        document.getElementById("dep-installments").value = 3;
+        document.getElementById("dep-frequency").value = 30;
+        updateDepositPreview();
+        openModal("modal-deposit");
+    };
+
+    window.updateDepositPreview = function () {
+        var quoteId = document.getElementById("dep-quote-id").value;
+        var q = state.quotes.find(function (x) { return x.id === quoteId; });
+        if (!q) return;
+        var mode = document.getElementById("dep-mode").value;
+        document.getElementById("dep-pane-deposit").style.display = mode === "deposit" ? "" : "none";
+        document.getElementById("dep-pane-installments").style.display = mode === "installments" ? "" : "none";
+        var preview = document.getElementById("dep-preview");
+        var total = Number(q.total_ttc);
+        if (mode === "deposit") {
+            var pct = Math.max(1, Math.min(99, parseFloat(document.getElementById("dep-percent").value) || 30));
+            var deposit = total * pct / 100;
+            preview.innerHTML = '<div class="row"><span>Facture d\'acompte (' + pct + ' %)</span><strong>' + formatMoney(deposit) + '</strong></div>'
+                + '<div class="row"><span>Facture de solde (' + (100 - pct) + ' %)</span><strong>' + formatMoney(total - deposit) + '</strong></div>'
+                + '<p style="font-size:.82rem;color:var(--text-muted);margin-top:8px">L\'acompte est émis tout de suite. Le solde sera créé manuellement après réception de la prestation.</p>';
+        } else {
+            var n = Math.max(2, Math.min(12, parseInt(document.getElementById("dep-installments").value) || 3));
+            var freq = parseInt(document.getElementById("dep-frequency").value) || 30;
+            var perInst = total / n;
+            var rows = "";
+            for (var i = 1; i <= n; i++) {
+                rows += '<div class="row"><span>Échéance ' + i + '/' + n + (i === 1 ? ' (immédiate)' : ' (J+' + ((i - 1) * freq) + ')') + '</span><strong>' + formatMoney(perInst) + '</strong></div>';
+            }
+            preview.innerHTML = rows + '<p style="font-size:.82rem;color:var(--text-muted);margin-top:8px">Toutes les factures seront créées en une fois, avec des dates d\'échéance échelonnées.</p>';
+        }
+    };
+
+    window.submitDeposit = async function () {
+        var quoteId = document.getElementById("dep-quote-id").value;
+        var q = state.quotes.find(function (x) { return x.id === quoteId; });
+        if (!q) return;
+        var mode = document.getElementById("dep-mode").value;
+        var btn = document.getElementById("dep-submit");
+        btn.disabled = true; btn.textContent = "Création…";
+        try {
+            var today = new Date().toISOString().slice(0, 10);
+            if (mode === "deposit") {
+                var pct = Math.max(1, Math.min(99, parseFloat(document.getElementById("dep-percent").value) || 30));
+                var ratio = pct / 100;
+                var dueDeposit = new Date(); dueDeposit.setDate(dueDeposit.getDate() + 15);
+                var depositItems = (q.items || []).map(function (it) {
+                    return { description: "Acompte " + pct + "% — " + it.description, quantity: 1, unitPrice: Number(it.total) * ratio, total: Number(it.total) * ratio };
+                });
+                var subDeposit = Number(q.subtotal_ht) * ratio;
+                var tvaDeposit = Number(q.tva_amount) * ratio;
+                var totalDeposit = Number(q.total_ttc) * ratio;
+                var depositPayload = {
+                    user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
+                    date: today, due_date: dueDeposit.toISOString().slice(0, 10),
+                    items: depositItems, subtotal_ht: subDeposit, tva_rate: q.tva_rate, tva_amount: tvaDeposit, total_ttc: totalDeposit,
+                    status: "pending", doc_type: "deposit", parent_quote_id: q.id, deposit_percent: pct
+                };
+                var ins = await sb.from("invoices").insert(depositPayload).select().single();
+                if (ins.error) { alert("Erreur : " + dbErrorMessage(ins.error)); return; }
+                await sb.from("quotes").update({ status: "invoiced", converted_invoice_id: ins.data.id }).eq("id", q.id);
+            } else {
+                var n = Math.max(2, Math.min(12, parseInt(document.getElementById("dep-installments").value) || 3));
+                var freq = parseInt(document.getElementById("dep-frequency").value) || 30;
+                var totalInv = Number(q.total_ttc);
+                var subInv = Number(q.subtotal_ht);
+                var tvaInv = Number(q.tva_amount);
+                for (var i = 1; i <= n; i++) {
+                    var d = new Date(); d.setDate(d.getDate() + (i - 1) * freq + 15);
+                    var label = "Échéance " + i + "/" + n;
+                    var items = (q.items || []).map(function (it) {
+                        return { description: label + " — " + it.description, quantity: 1, unitPrice: Number(it.total) / n, total: Number(it.total) / n };
+                    });
+                    var inst = {
+                        user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
+                        date: today, due_date: d.toISOString().slice(0, 10),
+                        items: items, subtotal_ht: subInv / n, tva_rate: q.tva_rate, tva_amount: tvaInv / n, total_ttc: totalInv / n,
+                        status: "pending", doc_type: "installment", parent_quote_id: q.id,
+                        installment_index: i, installment_total: n
+                    };
+                    var insRes = await sb.from("invoices").insert(inst).select().single();
+                    if (insRes.error) { alert("Erreur échéance " + i + " : " + dbErrorMessage(insRes.error)); return; }
+                    if (i === 1) await sb.from("quotes").update({ status: "invoiced", converted_invoice_id: insRes.data.id }).eq("id", q.id);
+                    await refreshData();
+                }
+            }
+            await refreshData();
+            closeModal("modal-deposit");
+            navigate("invoices");
+        } catch (err) {
+            alert("Erreur : " + err.message);
+        } finally {
+            btn.disabled = false; btn.textContent = "Créer";
+        }
+    };
+
+    window.createBalanceFor = async function (depositInvoiceId) {
+        var deposit = state.invoices.find(function (i) { return i.id === depositInvoiceId; });
+        if (!deposit || deposit.doc_type !== "deposit") return;
+        if (!confirm("Créer la facture de solde pour cet acompte ?")) return;
+        var q = deposit.parent_quote_id ? state.quotes.find(function (x) { return x.id === deposit.parent_quote_id; }) : null;
+        if (!q) { alert("Devis lié introuvable."); return; }
+        var pct = Number(deposit.deposit_percent) || 30;
+        var ratio = (100 - pct) / 100;
+        var today = new Date().toISOString().slice(0, 10);
+        var due = new Date(); due.setDate(due.getDate() + 30);
+        var items = (q.items || []).map(function (it) {
+            return { description: "Solde " + (100 - pct) + "% — " + it.description, quantity: 1, unitPrice: Number(it.total) * ratio, total: Number(it.total) * ratio };
+        });
+        var payload = {
+            user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
+            date: today, due_date: due.toISOString().slice(0, 10),
+            items: items,
+            subtotal_ht: Number(q.subtotal_ht) * ratio, tva_rate: q.tva_rate,
+            tva_amount: Number(q.tva_amount) * ratio, total_ttc: Number(q.total_ttc) * ratio,
+            status: "pending", doc_type: "balance", parent_quote_id: q.id, parent_invoice_id: deposit.id
+        };
+        var ins = await sb.from("invoices").insert(payload).select().single();
+        if (ins.error) { alert("Erreur : " + dbErrorMessage(ins.error)); return; }
+        await refreshData();
+        renderInvoices();
     };
     window.newDocFree = function () {
         closeModal("modal-newdoc");
@@ -864,16 +1120,19 @@
             ? '<tr><td>TVA (' + doc.tva_rate + '%)</td><td class="r">' + formatMoney(Number(doc.tva_amount)) + '</td></tr>'
             : '<tr><td>TVA</td><td class="r">Non applicable</td></tr>';
 
+        var accent = p.template_color || "#4F46E5";
+        var font = p.template_font || "Arial";
         var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + esc(opts.title) + ' ' + esc(doc.number) + '</title>'
             + '<style>'
-            + '*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}'
+            + '*{margin:0;padding:0;box-sizing:border-box;font-family:' + esc(font) + ',Helvetica,sans-serif;}'
             + 'body{padding:40px;color:#1E293B;font-size:13px;line-height:1.5;}'
-            + '.head{display:flex;justify-content:space-between;margin-bottom:40px;}'
+            + '.head{display:flex;justify-content:space-between;margin-bottom:40px;align-items:flex-start;}'
             + '.from h2{font-size:18px;margin-bottom:8px;}'
             + '.from p,.to p{color:#475569;font-size:12px;}'
             + '.to{text-align:right;}'
             + '.to .label{font-size:11px;text-transform:uppercase;color:#94A3B8;margin-bottom:4px;}'
-            + '.title{font-size:28px;font-weight:800;color:#4F46E5;margin-bottom:4px;}'
+            + '.title{font-size:28px;font-weight:800;color:' + accent + ';margin-bottom:4px;}'
+            + '.logo-img{max-width:140px;max-height:70px;margin-bottom:10px;display:block;}'
             + '.meta{color:#64748B;font-size:12px;margin-bottom:32px;}'
             + 'table.items{width:100%;border-collapse:collapse;margin-bottom:24px;}'
             + 'table.items th{background:#F1F5F9;text-align:left;padding:10px;font-size:11px;text-transform:uppercase;color:#64748B;}'
@@ -881,7 +1140,7 @@
             + '.r{text-align:right;}'
             + 'table.totals{margin-left:auto;width:280px;border-collapse:collapse;}'
             + 'table.totals td{padding:6px 10px;}'
-            + 'table.totals .grand td{font-weight:800;font-size:15px;border-top:2px solid #1E293B;}'
+            + 'table.totals .grand td{font-weight:800;font-size:15px;border-top:2px solid ' + accent + ';color:' + accent + ';}'
             + '.mentions{margin-top:40px;padding-top:16px;border-top:1px solid #E2E8F0;color:#94A3B8;font-size:11px;}'
             + '.bank{margin-top:24px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:11px;color:#475569;}'
             + '.bank strong{display:block;font-size:12px;color:#1E293B;margin-bottom:4px;}'
@@ -892,7 +1151,9 @@
             + '@media print{body{padding:0;}}'
             + '</style></head><body>'
             + '<div class="head">'
-            + '<div class="from"><h2>' + esc(p.name || "Votre entreprise") + '</h2>'
+            + '<div class="from">'
+            + (p.template_logo_url ? '<img class="logo-img" src="' + esc(p.template_logo_url) + '" alt="Logo">' : '')
+            + '<h2>' + esc(p.name || "Votre entreprise") + '</h2>'
             + '<p>' + esc(p.address || "") + '</p><p>' + esc(p.city || "") + '</p>'
             + (p.siret ? '<p>SIRET : ' + esc(p.siret) + '</p>' : "")
             + (p.tva_number ? '<p>TVA : ' + esc(p.tva_number) + '</p>' : "")
@@ -1039,6 +1300,8 @@
                 html += '<span style="color:var(--text-muted);font-size:.8rem">→ facture créée</span> ';
                 if (q.signed_document_url) {
                     html += '<a href="#" class="receipt-link" onclick="viewSignedQuote(\'' + esc(q.signed_document_url) + '\');return false">Devis signé</a> ';
+                } else if (q.signature_data) {
+                    html += '<a href="#" class="receipt-link" onclick="viewSignaturePreview(\'' + q.id + '\');return false">Signé en ligne</a> ';
                 }
             }
             html += '<button class="btn btn-sm btn-outline" onclick="deleteQuote(\'' + q.id + '\')">Suppr.</button>';
@@ -1063,19 +1326,63 @@
         renderQuotes();
     };
 
+    var sqMode = "sign";
+    var sqHasDrawn = false;
+    window.setSqMode = function (mode) {
+        sqMode = mode;
+        document.querySelectorAll(".sq-tab").forEach(function (t, i) {
+            t.classList.toggle("active", (i === 0 && mode === "sign") || (i === 1 && mode === "upload"));
+        });
+        document.getElementById("sq-pane-sign").style.display = mode === "sign" ? "" : "none";
+        document.getElementById("sq-pane-upload").style.display = mode === "upload" ? "" : "none";
+    };
+    window.clearSignature = function () {
+        var c = document.getElementById("sq-canvas");
+        var ctx = c.getContext("2d");
+        ctx.clearRect(0, 0, c.width, c.height);
+        sqHasDrawn = false;
+    };
+    function setupSignaturePad() {
+        var c = document.getElementById("sq-canvas");
+        if (!c) return;
+        var ctx = c.getContext("2d");
+        ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.strokeStyle = "#1E293B";
+        ctx.clearRect(0, 0, c.width, c.height);
+        sqHasDrawn = false;
+        var drawing = false, lastX = 0, lastY = 0;
+        function pos(e) {
+            var rect = c.getBoundingClientRect();
+            var x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            var y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            return { x: x * (c.width / rect.width), y: y * (c.height / rect.height) };
+        }
+        function start(e) { e.preventDefault(); drawing = true; var p = pos(e); lastX = p.x; lastY = p.y; sqHasDrawn = true; }
+        function move(e) {
+            if (!drawing) return;
+            e.preventDefault();
+            var p = pos(e);
+            ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+            lastX = p.x; lastY = p.y;
+        }
+        function end() { drawing = false; }
+        c.onmousedown = start; c.onmousemove = move; c.onmouseup = end; c.onmouseleave = end;
+        c.ontouchstart = start; c.ontouchmove = move; c.ontouchend = end;
+    }
+
     window.convertToInvoice = function (id) {
         var q = state.quotes.find(function (x) { return x.id === id; });
         if (!q) return;
         if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
         document.getElementById("sq-quote-id").value = id;
         document.getElementById("sq-file").value = "";
+        document.getElementById("sq-signer-name").value = "";
+        setSqMode("sign");
         openModal("modal-signed-quote");
+        setTimeout(setupSignaturePad, 50);
     };
 
     window.submitSignedAndConvert = async function () {
         var id = document.getElementById("sq-quote-id").value;
-        var file = document.getElementById("sq-file").files[0];
-        if (!file) { alert("Veuillez joindre le devis signé."); return; }
         var q = state.quotes.find(function (x) { return x.id === id; });
         if (!q) return;
 
@@ -1083,11 +1390,24 @@
         btn.disabled = true; btn.textContent = "Envoi en cours…";
 
         try {
-            var ext = file.name.split(".").pop();
-            var path = state.user.id + "/devis-signe-" + q.number + "." + ext;
-            var uploadRes = await sb.storage.from("signed_quotes").upload(path, file, { upsert: true });
-            if (uploadRes.error) { alert("Erreur upload : " + uploadRes.error.message); return; }
-            var signedUrl = uploadRes.data.path;
+            var quoteUpdate = { status: "invoiced", signed_at: new Date().toISOString() };
+
+            if (sqMode === "sign") {
+                if (!sqHasDrawn) { alert("Veuillez signer dans la zone prévue ou choisir l'option upload."); return; }
+                var signerName = document.getElementById("sq-signer-name").value.trim();
+                if (!signerName) { alert("Veuillez indiquer le nom du signataire."); return; }
+                var canvas = document.getElementById("sq-canvas");
+                quoteUpdate.signature_data = canvas.toDataURL("image/png");
+                quoteUpdate.signer_name = signerName;
+            } else {
+                var file = document.getElementById("sq-file").files[0];
+                if (!file) { alert("Veuillez joindre le devis signé."); return; }
+                var ext = file.name.split(".").pop();
+                var path = state.user.id + "/devis-signe-" + q.number + "." + ext;
+                var uploadRes = await sb.storage.from("signed_quotes").upload(path, file, { upsert: true });
+                if (uploadRes.error) { alert("Erreur upload : " + uploadRes.error.message); return; }
+                quoteUpdate.signed_document_url = uploadRes.data.path;
+            }
 
             var today = new Date().toISOString().slice(0, 10);
             var due = new Date(); due.setDate(due.getDate() + 30);
@@ -1103,14 +1423,14 @@
                 tva_rate: q.tva_rate,
                 tva_amount: q.tva_amount,
                 total_ttc: q.total_ttc,
-                status: "pending"
+                status: "pending",
+                parent_quote_id: q.id
             };
             var insertRes = await sb.from("invoices").insert(invoicePayload).select().single();
             if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
 
-            await sb.from("quotes")
-                .update({ status: "invoiced", converted_invoice_id: insertRes.data.id, signed_document_url: signedUrl, signed_at: new Date().toISOString() })
-                .eq("id", id);
+            quoteUpdate.converted_invoice_id = insertRes.data.id;
+            await sb.from("quotes").update(quoteUpdate).eq("id", id);
 
             await refreshData();
             closeModal("modal-signed-quote");
@@ -1706,7 +2026,40 @@
         return expensesOfSupplier(sup).reduce(function (s, x) { return s + Number(x.amount_ttc); }, 0);
     }
 
+    function renderSupplierInsights() {
+        var box = document.getElementById("suppliers-insights");
+        if (!box) return;
+        if (!isPro() || state.suppliers.length === 0 || state.expenses.length === 0) { box.innerHTML = ""; return; }
+        var totals = state.suppliers.map(function (s) {
+            return { name: s.name, total: supplierTotal(s), count: expensesOfSupplier(s).length };
+        }).filter(function (s) { return s.total > 0; }).sort(function (a, b) { return b.total - a.total; });
+        if (totals.length === 0) { box.innerHTML = ""; return; }
+        var grandTotal = totals.reduce(function (s, x) { return s + x.total; }, 0);
+        var top5 = totals.slice(0, 5);
+        var dependanceTop1 = grandTotal > 0 ? Math.round(top5[0].total / grandTotal * 100) : 0;
+        var dependanceLevel = dependanceTop1 >= 50 ? "danger" : (dependanceTop1 >= 30 ? "warning" : "success");
+        var dependanceLabel = dependanceTop1 >= 50 ? "Forte dépendance" : (dependanceTop1 >= 30 ? "Dépendance modérée" : "Bien réparti");
+
+        var rows = top5.map(function (s) {
+            var pct = grandTotal > 0 ? (s.total / grandTotal * 100) : 0;
+            return '<div class="dep-row"><span class="dep-name">' + esc(s.name) + '</span>'
+                + '<span class="dep-bar"><span class="dep-fill" style="width:' + pct.toFixed(1) + '%"></span></span>'
+                + '<span class="dep-val">' + formatMoney(s.total) + '</span>'
+                + '<span class="dep-pct">' + pct.toFixed(0) + '%</span></div>';
+        }).join("");
+
+        box.innerHTML = '<div class="acct-grid">'
+            + '<div class="acct-card"><div class="acct-head">Top fournisseurs</div><div class="acct-body">' + rows + '</div></div>'
+            + '<div class="acct-card"><div class="acct-head">Dépendance fournisseurs</div><div class="acct-body">'
+            + '<div class="dep-score dep-score-' + dependanceLevel + '">' + dependanceTop1 + '%</div>'
+            + '<div class="dep-level dep-level-' + dependanceLevel + '">' + dependanceLabel + '</div>'
+            + '<p style="font-size:.82rem;color:var(--text-muted);margin-top:8px">Part du fournisseur principal dans vos achats. Au-delà de 50 %, vous êtes vulnérable à un défaut.</p>'
+            + '<div style="margin-top:14px;font-size:.85rem">Total achats : <strong>' + formatMoney(grandTotal) + '</strong> sur ' + totals.length + ' fournisseur(s)</div>'
+            + '</div></div></div>';
+    }
+
     function renderSuppliers() {
+        renderSupplierInsights();
         var container = document.getElementById("suppliers-list");
         if (!isPro()) { container.innerHTML = proGateHTML("Le carnet de fournisseurs"); return; }
         var term = (document.getElementById("supplier-search").value || "").trim().toLowerCase();
@@ -1762,12 +2115,14 @@
     document.getElementById("supplier-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         var editId = document.getElementById("supplier-edit-id").value;
+        var siret = document.getElementById("supplier-siret").value.trim();
+        if (!isValidSIRET(siret)) { alert("SIRET invalide (14 chiffres, contrôle Luhn)."); return; }
         var payload = {
             name: document.getElementById("supplier-name").value.trim(),
             email: document.getElementById("supplier-email").value.trim(),
             address: document.getElementById("supplier-address").value.trim(),
             city: document.getElementById("supplier-city").value.trim(),
-            siret: document.getElementById("supplier-siret").value.trim()
+            siret: siret
         };
         var res;
         if (editId) res = await sb.from("suppliers").update(payload).eq("id", editId);
@@ -1823,6 +2178,22 @@
         var res = await sb.storage.from("signed_quotes").createSignedUrl(path, 3600);
         if (res.error || !res.data) { alert("Impossible d'ouvrir le document signé."); return; }
         window.open(res.data.signedUrl, "_blank");
+    };
+    window.viewSignaturePreview = function (quoteId) {
+        var q = state.quotes.find(function (x) { return x.id === quoteId; });
+        if (!q || !q.signature_data) return;
+        var w = window.open("", "_blank");
+        if (!w) { alert("Pop-up bloquée."); return; }
+        w.document.write('<!DOCTYPE html><html><head><title>Signature — ' + esc(q.number) + '</title>'
+            + '<style>body{font-family:Arial,sans-serif;padding:40px;background:#F1F5F9;text-align:center}'
+            + '.card{background:#fff;padding:30px;border-radius:10px;display:inline-block;box-shadow:0 4px 12px rgba(0,0,0,.1)}'
+            + 'h2{margin-bottom:20px}img{border:1px solid #E2E8F0;border-radius:6px;background:#fff;max-width:540px}</style></head><body>'
+            + '<div class="card"><h2>Devis ' + esc(q.number) + ' — signature électronique</h2>'
+            + (q.signer_name ? '<p style="margin-bottom:14px">Signataire : <strong>' + esc(q.signer_name) + '</strong></p>' : '')
+            + '<img src="' + q.signature_data + '">'
+            + '<p style="margin-top:14px;color:#64748B;font-size:.85rem">Signé le ' + formatDate(q.signed_at) + '</p>'
+            + '</div></body></html>');
+        w.document.close();
     };
 
     // --- Performance (analytics devis) ---
@@ -2736,10 +3107,19 @@
         document.getElementById("prof-bank-name").value = p.bank_name || "";
         document.getElementById("prof-iban").value = p.iban || "";
         document.getElementById("prof-bic").value = p.bic || "";
+        document.getElementById("prof-template-color").value = p.template_color || "#4F46E5";
+        document.getElementById("prof-template-font").value = p.template_font || "Arial";
+        document.getElementById("prof-template-logo").value = p.template_logo_url || "";
     }
 
     document.getElementById("profile-form").addEventListener("submit", async function (e) {
         e.preventDefault();
+        var iban = document.getElementById("prof-iban").value.trim();
+        var bic = document.getElementById("prof-bic").value.trim();
+        var siret = document.getElementById("prof-siret").value.trim();
+        if (!isValidIBAN(iban)) { alert("IBAN invalide. Vérifiez les caractères et la longueur."); return; }
+        if (!isValidBIC(bic)) { alert("BIC invalide. Format attendu : 8 ou 11 caractères (ex : BNPAFRPP)."); return; }
+        if (!isValidSIRET(siret)) { alert("SIRET invalide. Le numéro doit comporter 14 chiffres et passer le contrôle Luhn."); return; }
         var payload = {
             id: state.user.id,
             name: document.getElementById("prof-name").value.trim(),
@@ -2759,6 +3139,9 @@
             bank_name: document.getElementById("prof-bank-name").value.trim() || null,
             iban: document.getElementById("prof-iban").value.trim() || null,
             bic: document.getElementById("prof-bic").value.trim() || null,
+            template_color: document.getElementById("prof-template-color").value || "#4F46E5",
+            template_font: document.getElementById("prof-template-font").value || "Arial",
+            template_logo_url: document.getElementById("prof-template-logo").value.trim() || null,
             updated_at: new Date().toISOString()
         };
         var res = await sb.from("profiles").upsert(payload).select().single();
@@ -2806,12 +3189,14 @@
     document.getElementById("client-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         var editId = document.getElementById("client-edit-id").value;
+        var siret = document.getElementById("client-siret").value.trim();
+        if (!isValidSIRET(siret)) { alert("SIRET invalide (14 chiffres, contrôle Luhn)."); return; }
         var payload = {
             name: document.getElementById("client-name").value.trim(),
             email: document.getElementById("client-email").value.trim(),
             address: document.getElementById("client-address").value.trim(),
             city: document.getElementById("client-city").value.trim(),
-            siret: document.getElementById("client-siret").value.trim()
+            siret: siret
         };
         var res;
         if (editId) {
@@ -2942,7 +3327,7 @@
     }
     function nextInvoiceNumber() {
         var year = new Date().getFullYear();
-        return year + "-" + String(maxSeqForYear(state.invoices, year) + 1).padStart(3, "0");
+        return "FAC-" + year + "-" + String(maxSeqForYear(state.invoices, year) + 1).padStart(3, "0");
     }
     function nextQuoteNumber() {
         var year = new Date().getFullYear();
@@ -2972,6 +3357,39 @@
             + '<p>' + esc(feature) + ' fait partie de la formule <strong>Pro</strong>.</p>'
             + '<button class="btn btn-primary" onclick="goSubscription()">Passer au Pro — 29,99 €/mois</button>'
             + '</div>';
+    }
+    // Validation IBAN (mod 97) — accepte les espaces, ignore la casse.
+    function isValidIBAN(iban) {
+        if (!iban) return true; // optionnel
+        var s = String(iban).replace(/\s+/g, "").toUpperCase();
+        if (!/^[A-Z]{2}\d{2}[A-Z0-9]{1,30}$/.test(s)) return false;
+        if (s.length < 15 || s.length > 34) return false;
+        var rearranged = s.slice(4) + s.slice(0, 4);
+        var num = rearranged.split("").map(function (c) {
+            var code = c.charCodeAt(0);
+            return code >= 65 ? String(code - 55) : c;
+        }).join("");
+        var remainder = 0;
+        for (var i = 0; i < num.length; i++) remainder = (remainder * 10 + Number(num[i])) % 97;
+        return remainder === 1;
+    }
+    // Validation SIRET (14 chiffres, algorithme de Luhn).
+    function isValidSIRET(siret) {
+        if (!siret) return true; // optionnel
+        var s = String(siret).replace(/\s+/g, "");
+        if (!/^\d{14}$/.test(s)) return false;
+        var sum = 0;
+        for (var i = 0; i < 14; i++) {
+            var d = Number(s[i]);
+            if (i % 2 === 0) { d *= 2; if (d > 9) d -= 9; }
+            sum += d;
+        }
+        return sum % 10 === 0;
+    }
+    // Validation BIC (8 ou 11 caractères).
+    function isValidBIC(bic) {
+        if (!bic) return true;
+        return /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(String(bic).replace(/\s+/g, "").toUpperCase());
     }
     function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
     function formatMoney(n) { return Number(n).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"; }

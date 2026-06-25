@@ -1233,6 +1233,9 @@
             + 'table.totals td{padding:6px 10px;}'
             + 'table.totals .grand td{font-weight:800;font-size:15px;border-top:2px solid ' + accent + ';color:' + accent + ';}'
             + '.mentions{margin-top:40px;padding-top:16px;border-top:1px solid #E2E8F0;color:#94A3B8;font-size:11px;}'
+            + '.terms{margin-top:16px;padding:12px 14px;background:#F8FAFC;border-left:3px solid ' + accent + ';font-size:11px;color:#475569;border-radius:4px;}'
+            + '.terms strong{display:block;color:#1E293B;margin-bottom:4px;font-size:12px;}'
+            + '.terms p{font-size:11px;line-height:1.5;}'
             + '.bank{margin-top:24px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:11px;color:#475569;}'
             + '.bank strong{display:block;font-size:12px;color:#1E293B;margin-bottom:4px;}'
             + '.bank .row{display:flex;gap:24px;flex-wrap:wrap;}'
@@ -1288,7 +1291,9 @@
                 + '</div>' + qrHtml + '</div>';
         }
 
+        var termsHtml = p.terms ? '<div class="terms"><strong>Conditions générales</strong><p>' + esc(p.terms).replace(/\n/g, "<br>") + '</p></div>' : "";
         html += mentions
+            + termsHtml
             + '<p class="footer">' + esc(opts.footerNote) + '</p>'
             + '</body></html>';
 
@@ -3289,6 +3294,7 @@
         document.getElementById("prof-tva").value = p.tva_number || "";
         document.getElementById("prof-tva-rate").value = p.tva_rate != null ? p.tva_rate : 20;
         document.getElementById("prof-mentions").value = p.mentions || "";
+        document.getElementById("prof-terms").value = p.terms || "";
         document.getElementById("prof-legal-status").value = p.legal_status || "";
         document.getElementById("prof-activity-type").value = p.activity_type || "bnc";
         document.getElementById("prof-urssaf-period").value = p.urssaf_period || "quarterly";
@@ -3323,6 +3329,7 @@
             tva_number: document.getElementById("prof-tva").value.trim(),
             tva_rate: parseFloat(document.getElementById("prof-tva-rate").value),
             mentions: document.getElementById("prof-mentions").value.trim(),
+            terms: document.getElementById("prof-terms").value.trim() || null,
             legal_status: document.getElementById("prof-legal-status").value || null,
             activity_type: document.getElementById("prof-activity-type").value || null,
             urssaf_period: document.getElementById("prof-urssaf-period").value || null,
@@ -3364,6 +3371,45 @@
         overlay.addEventListener("click", function (e) {
             if (e.target === overlay) overlay.classList.remove("open");
         });
+    });
+
+    // Global keyboard shortcuts.
+    var goSeq = null;
+    document.addEventListener("keydown", function (e) {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        var tag = (e.target.tagName || "").toLowerCase();
+        var inField = tag === "input" || tag === "textarea" || tag === "select" || e.target.isContentEditable;
+        var modalOpen = document.querySelector(".modal-overlay.open");
+        if (modalOpen) return;
+        if (e.key === "/" && !inField) {
+            e.preventDefault();
+            var page = document.querySelector(".page:not([style*='none'])");
+            var search = page && page.querySelector("input[type='search'], input[id$='-search']");
+            if (search) search.focus();
+            return;
+        }
+        if (inField) return;
+        if (e.key === "?") { e.preventDefault(); toast("Raccourcis : N facture · D devis · G puis i/q/c/d nav · / recherche · Esc fermer", "info"); return; }
+        if (e.key === "n" || e.key === "N") {
+            var btn = document.getElementById("btn-new-invoice");
+            if (btn) { e.preventDefault(); btn.click(); }
+            return;
+        }
+        if (e.key === "d" || e.key === "D") {
+            var btnQ = document.getElementById("btn-new-quote");
+            if (btnQ) { e.preventDefault(); btnQ.click(); }
+            return;
+        }
+        if (e.key === "g" || e.key === "G") {
+            goSeq = setTimeout(function () { goSeq = null; }, 800);
+            return;
+        }
+        if (goSeq) {
+            clearTimeout(goSeq); goSeq = null;
+            var map = { i: "invoices", q: "quotes", c: "clients", d: "dashboard", e: "expenses", s: "suppliers", a: "accounting", p: "profile" };
+            var target = map[e.key.toLowerCase()];
+            if (target) { e.preventDefault(); navigate(target); }
+        }
     });
 
     // Trap-focus inside the topmost open modal.

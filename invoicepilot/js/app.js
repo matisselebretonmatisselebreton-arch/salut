@@ -782,7 +782,8 @@
             return '<button class="btn btn-sm btn-outline" onclick="downloadCreditNotePDF(\'' + d.id + '\')">PDF</button>';
         }
         var inv = d.raw;
-        var h = '<button class="btn btn-sm btn-outline" onclick="downloadPDF(\'' + inv.id + '\')">PDF</button> ';
+        var h = '<button class="btn btn-sm btn-outline" onclick="downloadPDF(\'' + inv.id + '\')">PDF</button> '
+            + '<button class="btn btn-sm btn-outline" onclick="downloadUBL(\'' + inv.id + '\')" title="Export Chorus Pro / Factur-X">XML</button> ';
         if (inv.credit_note_id) {
             h += '<span style="color:var(--text-muted);font-size:.8rem">→ avoir émis</span>';
         } else if (inv.status === "paid") {
@@ -1309,6 +1310,102 @@
             metaDate: inv.due_date,
             footerNote: penaltyFooter()
         });
+    };
+
+    // --- UBL 2.1 XML export (Chorus Pro / Factur-X) ---
+    function xmlEsc(s) {
+        return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+    }
+    function buildUBL(inv) {
+        var p = state.profile || {};
+        var client = state.clients.find(function (c) { return c.id === inv.client_id; }) || {};
+        var rate = Number(inv.tva_rate) || 0;
+        var taxCategory = rate > 0 ? "S" : "E";
+        var lines = (inv.items || []).map(function (it, i) {
+            var qty = Number(it.quantity) || 1;
+            var unit = Number(it.unitPrice) || 0;
+            var lineTotal = Number(it.total) || (qty * unit);
+            return [
+                '  <cac:InvoiceLine>',
+                '    <cbc:ID>' + (i + 1) + '</cbc:ID>',
+                '    <cbc:InvoicedQuantity unitCode="C62">' + qty + '</cbc:InvoicedQuantity>',
+                '    <cbc:LineExtensionAmount currencyID="EUR">' + lineTotal.toFixed(2) + '</cbc:LineExtensionAmount>',
+                '    <cac:Item><cbc:Name>' + xmlEsc(it.description || "—") + '</cbc:Name>',
+                '      <cac:ClassifiedTaxCategory><cbc:ID>' + taxCategory + '</cbc:ID><cbc:Percent>' + rate.toFixed(2) + '</cbc:Percent>'
+                + '<cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:ClassifiedTaxCategory></cac:Item>',
+                '    <cac:Price><cbc:PriceAmount currencyID="EUR">' + unit.toFixed(2) + '</cbc:PriceAmount></cac:Price>',
+                '  </cac:InvoiceLine>'
+            ].join("\n");
+        }).join("\n");
+
+        var sub = Number(inv.subtotal_ht).toFixed(2);
+        var tva = Number(inv.tva_amount).toFixed(2);
+        var ttc = Number(inv.total_ttc).toFixed(2);
+
+        return '<?xml version="1.0" encoding="UTF-8"?>\n'
+            + '<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"\n'
+            + '  xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"\n'
+            + '  xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">\n'
+            + '  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0</cbc:CustomizationID>\n'
+            + '  <cbc:ID>' + xmlEsc(inv.number) + '</cbc:ID>\n'
+            + '  <cbc:IssueDate>' + xmlEsc(inv.date) + '</cbc:IssueDate>\n'
+            + '  <cbc:DueDate>' + xmlEsc(inv.due_date) + '</cbc:DueDate>\n'
+            + '  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>\n'
+            + '  <cbc:DocumentCurrencyCode>EUR</cbc:DocumentCurrencyCode>\n'
+            + (inv.po_number ? '  <cac:OrderReference><cbc:ID>' + xmlEsc(inv.po_number) + '</cbc:ID></cac:OrderReference>\n' : '')
+            + '  <cac:AccountingSupplierParty><cac:Party>\n'
+            + '    <cac:PartyName><cbc:Name>' + xmlEsc(p.name || "") + '</cbc:Name></cac:PartyName>\n'
+            + '    <cac:PostalAddress><cbc:StreetName>' + xmlEsc(p.address || "") + '</cbc:StreetName>'
+            + '<cbc:CityName>' + xmlEsc(p.city || "") + '</cbc:CityName>'
+            + '<cac:Country><cbc:IdentificationCode>FR</cbc:IdentificationCode></cac:Country></cac:PostalAddress>\n'
+            + (p.siret ? '    <cac:PartyLegalEntity><cbc:RegistrationName>' + xmlEsc(p.name || "") + '</cbc:RegistrationName>'
+                + '<cbc:CompanyID schemeID="0009">' + xmlEsc(p.siret) + '</cbc:CompanyID></cac:PartyLegalEntity>\n' : '')
+            + (p.tva_number ? '    <cac:PartyTaxScheme><cbc:CompanyID>' + xmlEsc(p.tva_number) + '</cbc:CompanyID>'
+                + '<cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:PartyTaxScheme>\n' : '')
+            + '  </cac:Party></cac:AccountingSupplierParty>\n'
+            + '  <cac:AccountingCustomerParty><cac:Party>\n'
+            + '    <cac:PartyName><cbc:Name>' + xmlEsc(client.name || "") + '</cbc:Name></cac:PartyName>\n'
+            + '    <cac:PostalAddress><cbc:StreetName>' + xmlEsc(client.address || "") + '</cbc:StreetName>'
+            + '<cbc:CityName>' + xmlEsc(client.city || "") + '</cbc:CityName>'
+            + '<cac:Country><cbc:IdentificationCode>FR</cbc:IdentificationCode></cac:Country></cac:PostalAddress>\n'
+            + (client.siret ? '    <cac:PartyLegalEntity><cbc:RegistrationName>' + xmlEsc(client.name || "") + '</cbc:RegistrationName>'
+                + '<cbc:CompanyID schemeID="0009">' + xmlEsc(client.siret) + '</cbc:CompanyID></cac:PartyLegalEntity>\n' : '')
+            + '  </cac:Party></cac:AccountingCustomerParty>\n'
+            + (p.iban ? '  <cac:PaymentMeans><cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>'
+                + '<cac:PayeeFinancialAccount><cbc:ID>' + xmlEsc(p.iban.replace(/\s/g, "")) + '</cbc:ID>'
+                + (p.bank_name ? '<cbc:Name>' + xmlEsc(p.bank_name) + '</cbc:Name>' : '')
+                + (p.bic ? '<cac:FinancialInstitutionBranch><cbc:ID>' + xmlEsc(p.bic) + '</cbc:ID></cac:FinancialInstitutionBranch>' : '')
+                + '</cac:PayeeFinancialAccount></cac:PaymentMeans>\n' : '')
+            + '  <cac:TaxTotal><cbc:TaxAmount currencyID="EUR">' + tva + '</cbc:TaxAmount>\n'
+            + '    <cac:TaxSubtotal><cbc:TaxableAmount currencyID="EUR">' + sub + '</cbc:TaxableAmount>'
+            + '<cbc:TaxAmount currencyID="EUR">' + tva + '</cbc:TaxAmount>'
+            + '<cac:TaxCategory><cbc:ID>' + taxCategory + '</cbc:ID><cbc:Percent>' + rate.toFixed(2) + '</cbc:Percent>'
+            + (rate === 0 ? '<cbc:TaxExemptionReasonCode>VATEX-EU-D</cbc:TaxExemptionReasonCode>'
+                + '<cbc:TaxExemptionReason>TVA non applicable, art. 293 B du CGI</cbc:TaxExemptionReason>' : '')
+            + '<cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory></cac:TaxSubtotal>\n'
+            + '  </cac:TaxTotal>\n'
+            + '  <cac:LegalMonetaryTotal>'
+            + '<cbc:LineExtensionAmount currencyID="EUR">' + sub + '</cbc:LineExtensionAmount>'
+            + '<cbc:TaxExclusiveAmount currencyID="EUR">' + sub + '</cbc:TaxExclusiveAmount>'
+            + '<cbc:TaxInclusiveAmount currencyID="EUR">' + ttc + '</cbc:TaxInclusiveAmount>'
+            + '<cbc:PayableAmount currencyID="EUR">' + ttc + '</cbc:PayableAmount>'
+            + '</cac:LegalMonetaryTotal>\n'
+            + lines + '\n'
+            + '</Invoice>';
+    }
+    window.downloadUBL = function (id) {
+        var inv = state.invoices.find(function (i) { return i.id === id; });
+        if (!inv) { toast("Facture introuvable.", "error"); return; }
+        var xml = buildUBL(inv);
+        var blob = new Blob([xml], { type: "application/xml;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = (inv.number || "facture") + ".xml";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        toast("Export UBL généré — compatible Chorus Pro / Factur-X.", "success");
     };
 
     // --- Quotes (devis) ---
@@ -3248,18 +3345,38 @@
     });
 
     // --- Modals ---
+    var focusBeforeModal = null;
+    var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
     window.closeModal = function (id) {
         document.getElementById(id).classList.remove("open");
+        if (focusBeforeModal && focusBeforeModal.focus) { try { focusBeforeModal.focus(); } catch (e) {} focusBeforeModal = null; }
     };
 
     function openModal(id) {
-        document.getElementById(id).classList.add("open");
+        focusBeforeModal = document.activeElement;
+        var el = document.getElementById(id);
+        el.classList.add("open");
+        var first = el.querySelector(FOCUSABLE);
+        if (first) setTimeout(function () { try { first.focus(); } catch (e) {} }, 10);
     }
 
     document.querySelectorAll(".modal-overlay").forEach(function (overlay) {
         overlay.addEventListener("click", function (e) {
             if (e.target === overlay) overlay.classList.remove("open");
         });
+    });
+
+    // Trap-focus inside the topmost open modal.
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Tab") return;
+        var open = document.querySelectorAll(".modal-overlay.open");
+        if (open.length === 0) return;
+        var modal = open[open.length - 1];
+        var nodes = modal.querySelectorAll(FOCUSABLE);
+        if (!nodes.length) return;
+        var first = nodes[0], last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
 
     // Esc to close the topmost open modal/overlay.

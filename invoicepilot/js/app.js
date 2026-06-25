@@ -4,6 +4,57 @@
     var cfg = window.IP_CONFIG;
     var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
 
+    // --- Toast / loading / confirm ---
+    function toast(msg, type) {
+        var c = document.getElementById("toast-container");
+        if (!c) { console.log(msg); return; }
+        var t = document.createElement("div");
+        t.className = "toast toast-" + (type || "info");
+        var span = document.createElement("span");
+        span.textContent = String(msg);
+        var btn = document.createElement("button");
+        btn.className = "toast-close"; btn.setAttribute("aria-label", "Fermer"); btn.textContent = "×";
+        var close = function () {
+            t.classList.add("toast-leaving");
+            setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 200);
+        };
+        btn.addEventListener("click", close);
+        t.appendChild(span); t.appendChild(btn);
+        c.appendChild(t);
+        setTimeout(close, type === "error" ? 6000 : 3500);
+    }
+    // Replace blocking alerts: infer level from common French error markers.
+    window.alert = function (msg) {
+        var s = String(msg || "");
+        var type = /erreur|impossible|invalide|échec/i.test(s) ? "error" : (/succès|enregistr|créé|mis à jour/i.test(s) ? "success" : "info");
+        toast(s, type);
+    };
+    window.iconfirm = function (msg) {
+        return new Promise(function (resolve) {
+            var modal = document.getElementById("confirm-modal");
+            document.getElementById("confirm-message").textContent = msg;
+            var ok = document.getElementById("confirm-ok");
+            var cancel = document.getElementById("confirm-cancel");
+            modal.classList.add("open");
+            ok.focus();
+            function cleanup(val) {
+                modal.classList.remove("open");
+                ok.removeEventListener("click", onOk);
+                cancel.removeEventListener("click", onCancel);
+                resolve(val);
+            }
+            function onOk() { cleanup(true); }
+            function onCancel() { cleanup(false); }
+            ok.addEventListener("click", onOk);
+            cancel.addEventListener("click", onCancel);
+        });
+    };
+    function showLoading(on) {
+        var el = document.getElementById("app-loading");
+        if (el) el.classList.toggle("active", !!on);
+    }
+    window.__toast = toast;
+
     // In-memory cache, refreshed from the database
     var state = {
         user: null,
@@ -58,27 +109,34 @@
     }
 
     async function refreshData() {
-        var results = await Promise.all([
-            sb.from("profiles").select("*").eq("id", state.user.id).maybeSingle(),
-            sb.from("clients").select("*").order("created_at", { ascending: false }),
-            sb.from("invoices").select("*").order("date", { ascending: false }),
-            sb.from("quotes").select("*").order("date", { ascending: false }),
-            sb.from("recurring_invoices").select("*").order("created_at", { ascending: false }),
-            sb.from("credit_notes").select("*").order("date", { ascending: false }),
-            sb.from("expenses").select("*").order("date", { ascending: false }),
-            sb.from("suppliers").select("*").order("created_at", { ascending: false }),
-            sb.from("urssaf_declarations").select("*").order("declared_at", { ascending: false })
-        ]);
-        state.profile = results[0].data || {};
-        state.clients = results[1].data || [];
-        state.invoices = results[2].data || [];
-        state.quotes = results[3].data || [];
-        state.recurring = results[4].data || [];
-        state.creditNotes = results[5].data || [];
-        state.expenses = results[6].data || [];
-        state.suppliers = results[7].data || [];
-        state.urssaf = results[8].data || [];
-        reservedSeq = { invoices: {}, quotes: {} };
+        showLoading(true);
+        try {
+            var results = await Promise.all([
+                sb.from("profiles").select("*").eq("id", state.user.id).maybeSingle(),
+                sb.from("clients").select("*").order("created_at", { ascending: false }),
+                sb.from("invoices").select("*").order("date", { ascending: false }),
+                sb.from("quotes").select("*").order("date", { ascending: false }),
+                sb.from("recurring_invoices").select("*").order("created_at", { ascending: false }),
+                sb.from("credit_notes").select("*").order("date", { ascending: false }),
+                sb.from("expenses").select("*").order("date", { ascending: false }),
+                sb.from("suppliers").select("*").order("created_at", { ascending: false }),
+                sb.from("urssaf_declarations").select("*").order("declared_at", { ascending: false })
+            ]);
+            var errored = results.filter(function (r) { return r.error; });
+            if (errored.length) toast("Certaines données n'ont pas pu être chargées. Vérifiez votre connexion.", "warning");
+            state.profile = results[0].data || {};
+            state.clients = results[1].data || [];
+            state.invoices = results[2].data || [];
+            state.quotes = results[3].data || [];
+            state.recurring = results[4].data || [];
+            state.creditNotes = results[5].data || [];
+            state.expenses = results[6].data || [];
+            state.suppliers = results[7].data || [];
+            state.urssaf = results[8].data || [];
+            reservedSeq = { invoices: {}, quotes: {} };
+        } finally {
+            showLoading(false);
+        }
     }
 
     // --- Auth UI ---
@@ -812,7 +870,7 @@
     };
 
     window.deleteInvoice = async function (id) {
-        if (!confirm("Supprimer cette facture ?")) return;
+        if (!await iconfirm("Supprimer cette facture ?")) return;
         var inv = state.invoices.find(function (i) { return i.id === id; });
         var linkedQuote = inv ? state.quotes.find(function (q) { return q.converted_invoice_id === id; }) : null;
         var res = await sb.from("invoices").delete().eq("id", id);
@@ -996,7 +1054,7 @@
         var deposit = state.invoices.find(function (i) { return i.id === depositInvoiceId; });
         if (!deposit || deposit.doc_type !== "deposit") return;
         if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
-        if (!confirm("Créer la facture de solde pour cet acompte ?")) return;
+        if (!await iconfirm("Créer la facture de solde pour cet acompte ?")) return;
         var q = deposit.parent_quote_id ? state.quotes.find(function (x) { return x.id === deposit.parent_quote_id; }) : null;
         if (!q) { alert("Devis lié introuvable."); return; }
         var pct = Number(deposit.deposit_percent) || 30;
@@ -1348,7 +1406,7 @@
     };
 
     window.deleteQuote = async function (id) {
-        if (!confirm("Supprimer ce devis ?")) return;
+        if (!await iconfirm("Supprimer ce devis ?")) return;
         var res = await sb.from("quotes").delete().eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
@@ -1680,7 +1738,7 @@
     };
 
     window.deleteRecurring = async function (id) {
-        if (!confirm("Supprimer cette récurrence ? Les factures déjà générées sont conservées.")) return;
+        if (!await iconfirm("Supprimer cette récurrence ? Les factures déjà générées sont conservées.")) return;
         var res = await sb.from("recurring_invoices").delete().eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
@@ -1904,7 +1962,7 @@
     };
 
     window.deleteClient = async function (id) {
-        if (!confirm("Supprimer ce client ?")) return;
+        if (!await iconfirm("Supprimer ce client ?")) return;
         var res = await sb.from("clients").delete().eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
@@ -2028,7 +2086,7 @@
     };
 
     window.deleteExpense = async function (id) {
-        if (!confirm("Supprimer cette dépense ?")) return;
+        if (!await iconfirm("Supprimer cette dépense ?")) return;
         var x = state.expenses.find(function (e) { return e.id === id; });
         if (x && x.file_path) { await sb.storage.from("receipts").remove([x.file_path]); }
         var res = await sb.from("expenses").delete().eq("id", id);
@@ -2156,7 +2214,7 @@
     });
 
     window.deleteSupplier = async function (id) {
-        if (!confirm("Supprimer ce fournisseur ? Les dépenses liées sont conservées.")) return;
+        if (!await iconfirm("Supprimer ce fournisseur ? Les dépenses liées sont conservées.")) return;
         var res = await sb.from("suppliers").delete().eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
@@ -3091,22 +3149,24 @@
         renderSubscription();
     }
 
-    document.getElementById("btn-select-pro").addEventListener("click", function () {
+    document.getElementById("btn-select-pro").addEventListener("click", async function () {
         if (isPro()) return;
-        if (!confirm("Activer la formule Pro (29,99 €/mois) ?\n\nLe paiement par carte via Stripe sera branché prochainement — pour l'instant l'activation est immédiate afin de tester les fonctionnalités Pro.")) return;
-        changePlan("pro").then(function () { alert("Formule Pro activée ! Vous avez maintenant accès aux factures illimitées, aux dépenses et à la comptabilité."); });
+        if (!await iconfirm("Activer la formule Pro (29,99 €/mois) ? Le paiement par carte via Stripe sera branché prochainement — l'activation est immédiate pour tester les fonctionnalités Pro.")) return;
+        await changePlan("pro");
+        toast("Formule Pro activée — factures illimitées, dépenses et comptabilité débloquées.", "success");
     });
 
-    document.getElementById("btn-select-standard").addEventListener("click", function () {
+    document.getElementById("btn-select-standard").addEventListener("click", async function () {
         if (planOf() === "standard") return;
-        if (!confirm("Activer la formule Standard (14,99 €/mois) ?\n\nFactures illimitées, sans le module comptabilité. Le paiement par carte via Stripe sera branché prochainement — l'activation est immédiate pour l'instant.")) return;
-        changePlan("standard").then(function () { alert("Formule Standard activée ! Vos factures sont désormais illimitées."); });
+        if (!await iconfirm("Activer la formule Standard (14,99 €/mois) ? Factures illimitées, sans le module comptabilité.")) return;
+        await changePlan("standard");
+        toast("Formule Standard activée — factures illimitées.", "success");
     });
 
-    document.getElementById("btn-select-free").addEventListener("click", function () {
+    document.getElementById("btn-select-free").addEventListener("click", async function () {
         if (planOf() === "free") return;
-        if (!confirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules payants.")) return;
-        changePlan("free");
+        if (!await iconfirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules payants.")) return;
+        await changePlan("free");
     });
 
     // --- Profile ---
@@ -3185,6 +3245,19 @@
         overlay.addEventListener("click", function (e) {
             if (e.target === overlay) overlay.classList.remove("open");
         });
+    });
+
+    // Esc to close the topmost open modal/overlay.
+    document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        var confirmEl = document.getElementById("confirm-modal");
+        if (confirmEl && confirmEl.classList.contains("open")) {
+            document.getElementById("confirm-cancel").click();
+            return;
+        }
+        var open = document.querySelectorAll(".modal-overlay.open");
+        if (open.length === 0) return;
+        open[open.length - 1].classList.remove("open");
     });
 
     // --- New / Edit Client ---

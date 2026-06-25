@@ -1084,6 +1084,20 @@
         </div>
     </div>
 
+    <!-- Toast / loading overlay -->
+    <div id="toast-container" aria-live="polite"></div>
+    <div id="app-loading" aria-hidden="true"><div class="app-loading-spinner"></div></div>
+    <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <div class="modal" style="max-width:420px">
+            <h2 id="confirm-title">Confirmation</h2>
+            <p id="confirm-message" style="margin:14px 0 22px;color:var(--text-muted)"></p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="confirm-cancel">Annuler</button>
+                <button class="btn btn-primary" id="confirm-ok">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="js/config.js"></script>

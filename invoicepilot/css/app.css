@@ -518,3 +518,158 @@ th.sortable:hover { color: var(--primary); }
 }
 .pag-info { font-size: .85rem; color: var(--text-muted); }
 .pag-btns { display: flex; gap: 8px; }
+
+/* Company selector */
+.company-selector {
+    padding: 8px 16px; border-top: 1px solid rgba(255,255,255,.08);
+    margin-top: auto; margin-bottom: 0;
+}
+.company-select {
+    width: 100%; padding: 8px 10px; border-radius: var(--radius-sm);
+    background: rgba(255,255,255,.1); color: #fff; border: 1px solid rgba(255,255,255,.15);
+    font-size: .82rem; cursor: pointer; outline: none;
+}
+.company-select option { background: #1E293B; color: #fff; }
+
+/* Role badge */
+.role-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: .7rem; font-weight: 700; letter-spacing: .02em;
+    margin-top: 2px;
+}
+.role-owner { background: rgba(16,185,129,.2); color: #10B981; }
+.role-employee { background: rgba(245,158,11,.2); color: #F59E0B; }
+
+/* Nav badge (approval count) */
+.nav-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    background: var(--danger); color: #fff; border-radius: 9px;
+    font-size: .7rem; font-weight: 700; margin-left: auto;
+}
+
+/* Approval status badge */
+.status-approval {
+    background: #FEF3C7; color: #92400E;
+    padding: 3px 10px; border-radius: 6px;
+    font-size: .78rem; font-weight: 600;
+}
+
+/* Plan grid 4 columns for business */
+.plan-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+/* Data table for employees/approvals */
+.data-table {
+    width: 100%; border-collapse: collapse;
+}
+.data-table th {
+    text-align: left; padding: 10px 14px; font-size: .82rem;
+    color: var(--text-muted); border-bottom: 1px solid var(--border);
+    font-weight: 600;
+}
+.data-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    font-size: .88rem;
+}
+.data-table tr:last-child td { border-bottom: none; }
+
+/* Status badges in tables */
+.status-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: .78rem; font-weight: 600;
+}
+.status-badge.success { background: var(--success-bg); color: #065F46; }
+.status-badge.warning { background: var(--warning-bg); color: #92400E; }
+.status-badge.danger { background: var(--danger-bg); color: #991B1B; }
+
+/* Button danger */
+.btn-danger {
+    background: var(--danger); color: #fff; border: none;
+}
+.btn-danger:hover { background: #DC2626; }
+
+/* === MOBILE RESPONSIVE (PWA employee) === */
+@media (max-width: 768px) {
+    :root { --sidebar-w: 0px; }
+
+    .sidebar {
+        position: fixed; left: -260px; width: 260px;
+        transition: left .25s ease; z-index: 200;
+    }
+    .sidebar.open { left: 0; }
+
+    .sidebar-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,.4); z-index: 199;
+    }
+    .sidebar-overlay.active { display: block; }
+
+    .main {
+        margin-left: 0 !important; padding: 16px !important;
+        width: 100%;
+    }
+
+    .page-header {
+        flex-direction: column; gap: 12px; align-items: flex-start !important;
+    }
+    .page-header h1 { font-size: 1.3rem; }
+    .page-header .btn { width: 100%; text-align: center; }
+
+    .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+    .acct-grid { grid-template-columns: 1fr !important; }
+    .dash-insights { grid-template-columns: 1fr !important; }
+
+    .form-row { flex-direction: column; gap: 10px; }
+    .modal { max-width: 95vw !important; margin: 8px; padding: 20px !important; max-height: 90vh; overflow-y: auto; }
+    .modal-lg { max-width: 95vw !important; }
+
+    table { font-size: .82rem; }
+    table th, table td { padding: 8px 6px; }
+    .col-desc { min-width: 120px; }
+
+    .plan-grid { grid-template-columns: 1fr !important; }
+    .plan-card { padding: 20px !important; }
+
+    .filter-bar { flex-wrap: wrap; gap: 6px; }
+    .search-bar { width: 100%; }
+
+    .items-table { font-size: .8rem; }
+    .items-table th, .items-table td { padding: 6px 4px; }
+    .col-qty, .col-price { width: 60px; }
+
+    .data-table { font-size: .82rem; }
+    .data-table th, .data-table td { padding: 8px 8px; }
+
+    .signature-pad-wrap canvas {
+        width: 100% !important; height: 150px !important;
+        touch-action: none;
+    }
+
+    .mobile-menu-btn {
+        display: flex !important; position: fixed; top: 12px; left: 12px; z-index: 201;
+        width: 40px; height: 40px; border-radius: 10px;
+        background: var(--primary); color: #fff; border: none;
+        align-items: center; justify-content: center; cursor: pointer;
+        box-shadow: var(--shadow-md);
+    }
+
+    #toast-container { bottom: 16px; right: 16px; left: 16px; }
+    .toast { max-width: 100%; }
+}
+
+@media (min-width: 769px) {
+    .mobile-menu-btn { display: none !important; }
+    .sidebar-overlay { display: none !important; }
+}
+
+/* Touch-friendly buttons on mobile */
+@media (pointer: coarse) {
+    .btn { min-height: 44px; }
+    .btn-sm { min-height: 36px; }
+    .sidebar-nav a { padding: 12px 22px; }
+    select, input, textarea { min-height: 44px; font-size: 16px !important; }
+}

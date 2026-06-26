@@ -68,14 +68,32 @@
         creditNotes: [],
         expenses: [],
         suppliers: [],
-        urssaf: []
+        urssaf: [],
+        companies: [],
+        memberships: [],
+        invitations: [],
+        activeCompanyId: null,
+        userRole: null
     };
 
     var FREE_INVOICE_LIMIT = 10;
     function planOf() { return (state.profile && state.profile.plan) || "free"; }
-    // Pro = accès complet (dépenses + comptabilité). Standard = factures illimitées seulement.
-    function isPro() { return planOf() === "pro"; }
-    function hasUnlimitedInvoices() { return planOf() === "standard" || planOf() === "pro"; }
+    function isPro() { var p = planOf(); return p === "pro" || p === "business"; }
+    function isBusiness() { return planOf() === "business"; }
+    function hasUnlimitedInvoices() { var p = planOf(); return p === "standard" || p === "pro" || p === "business"; }
+    function isOwner() { return state.userRole === "owner" || !state.activeCompanyId; }
+    function isEmployee() { return state.userRole === "employee"; }
+    function companyFields() {
+        var f = {};
+        if (state.activeCompanyId) {
+            f.company_id = state.activeCompanyId;
+            f.created_by = state.user.id;
+        }
+        return f;
+    }
+    function invoiceStatusForUser() {
+        return isEmployee() ? "pending_approval" : "pending";
+    }
     function invoicesThisMonth() {
         var now = new Date();
         var ym = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
@@ -106,8 +124,22 @@
         document.getElementById("user-display-name").textContent =
             (state.user.user_metadata && state.user.user_metadata.name) || state.user.email;
         await refreshData();
+        await checkPendingInvitations();
+        if (isBusiness() && state.companies.length === 0) {
+            await createDefaultCompany();
+        }
+        hideEmployeeOnlyPages();
         await processRecurring();
         navigate("dashboard");
+    }
+
+    function hideEmployeeOnlyPages() {
+        if (isEmployee()) {
+            ["suppliers", "expenses", "accounting", "performance", "recurring", "subscription", "profile"].forEach(function (p) {
+                var nav = document.querySelector('[data-page="' + p + '"]');
+                if (nav) nav.style.display = "none";
+            });
+        }
     }
 
     async function refreshData() {
@@ -122,7 +154,9 @@
                 sb.from("credit_notes").select("*").order("date", { ascending: false }),
                 sb.from("expenses").select("*").order("date", { ascending: false }),
                 sb.from("suppliers").select("*").order("created_at", { ascending: false }),
-                sb.from("urssaf_declarations").select("*").order("declared_at", { ascending: false })
+                sb.from("urssaf_declarations").select("*").order("declared_at", { ascending: false }),
+                sb.from("memberships").select("*").eq("user_id", state.user.id),
+                sb.from("companies").select("*")
             ]);
             var errored = results.filter(function (r) { return r.error; });
             if (errored.length) toast("Certaines données n'ont pas pu être chargées. Vérifiez votre connexion.", "warning");
@@ -135,10 +169,96 @@
             state.expenses = results[6].data || [];
             state.suppliers = results[7].data || [];
             state.urssaf = results[8].data || [];
+            state.memberships = results[9].data || [];
+            state.companies = results[10].data || [];
             reservedSeq = { invoices: {}, quotes: {} };
+
+            updateCompanyContext();
         } finally {
             showLoading(false);
         }
+    }
+
+    function updateCompanyContext() {
+        var memberships = state.memberships;
+        var companies = state.companies;
+        if (!memberships.length || !companies.length) {
+            state.activeCompanyId = null;
+            state.userRole = null;
+            updateCompanyUI();
+            return;
+        }
+        if (!state.activeCompanyId || !memberships.some(function (m) { return m.company_id === state.activeCompanyId; })) {
+            state.activeCompanyId = memberships[0].company_id;
+        }
+        var activeMembership = memberships.find(function (m) { return m.company_id === state.activeCompanyId; });
+        state.userRole = activeMembership ? activeMembership.role : null;
+        updateCompanyUI();
+    }
+
+    function updateCompanyUI() {
+        var selector = document.getElementById("company-selector");
+        var select = document.getElementById("active-company");
+        var navEmployees = document.getElementById("nav-employees");
+        var navApprovals = document.getElementById("nav-approvals");
+        var roleBadge = document.getElementById("user-role-badge");
+
+        if (!isBusiness() || state.companies.length === 0) {
+            selector.style.display = "none";
+            navEmployees.style.display = "none";
+            navApprovals.style.display = "none";
+            roleBadge.style.display = "none";
+            return;
+        }
+
+        selector.style.display = "";
+        select.innerHTML = "";
+        state.companies.forEach(function (c) {
+            var opt = document.createElement("option");
+            opt.value = c.id;
+            opt.textContent = c.name || "Entreprise sans nom";
+            if (c.id === state.activeCompanyId) opt.selected = true;
+            select.appendChild(opt);
+        });
+        if (state.companies.length > 1 || isOwner()) {
+            var addOpt = document.createElement("option");
+            addOpt.value = "__new__";
+            addOpt.textContent = "+ Ajouter une entreprise";
+            select.appendChild(addOpt);
+        }
+
+        if (isOwner()) {
+            navEmployees.style.display = "";
+            navApprovals.style.display = "";
+            roleBadge.style.display = "inline-block";
+            roleBadge.textContent = "Propriétaire";
+            roleBadge.className = "role-badge role-owner";
+            updateApprovalBadge();
+        } else {
+            navEmployees.style.display = "none";
+            navApprovals.style.display = "none";
+            roleBadge.style.display = "inline-block";
+            roleBadge.textContent = "Employé";
+            roleBadge.className = "role-badge role-employee";
+        }
+    }
+
+    function updateApprovalBadge() {
+        var badge = document.getElementById("approval-badge");
+        var count = state.invoices.filter(function (inv) {
+            return inv.status === "pending_approval" && inv.company_id === state.activeCompanyId;
+        }).length;
+        if (count > 0) {
+            badge.style.display = "inline-flex";
+            badge.textContent = count;
+        } else {
+            badge.style.display = "none";
+        }
+    }
+
+    function getActiveCompany() {
+        if (!state.activeCompanyId) return null;
+        return state.companies.find(function (c) { return c.id === state.activeCompanyId; }) || null;
     }
 
     // --- Auth UI ---
@@ -234,6 +354,8 @@
         if (page === "subscription") renderSubscription();
         if (page === "clients") renderClients();
         if (page === "profile") loadProfile();
+        if (page === "employees") renderEmployees();
+        if (page === "approvals") renderApprovals();
     }
 
     document.querySelectorAll(".sidebar-nav a").forEach(function (a) {
@@ -773,7 +895,9 @@
             pending: { cls: "status-pending", label: "En attente" },
             overdue: { cls: "status-overdue", label: "En retard" },
             cancelled: { cls: "status-overdue", label: "Annulée" },
-            credit: { cls: "status-pending", label: "Avoir" }
+            credit: { cls: "status-pending", label: "Avoir" },
+            pending_approval: { cls: "status-approval", label: "À valider" },
+            rejected: { cls: "status-overdue", label: "Refusée" }
         };
         var s = map[status] || map.pending;
         return '<span class="status ' + s.cls + '"><span class="status-dot"></span>' + s.label + '</span>';
@@ -1003,12 +1127,12 @@
                 var subDeposit = round2(Number(q.subtotal_ht) * ratio);
                 var tvaDeposit = round2(Number(q.tva_amount) * ratio);
                 var totalDeposit = round2(Number(q.total_ttc) * ratio);
-                var depositPayload = {
+                var depositPayload = Object.assign({
                     user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
                     date: today, due_date: dueDeposit.toISOString().slice(0, 10),
                     items: depositItems, subtotal_ht: subDeposit, tva_rate: q.tva_rate, tva_amount: tvaDeposit, total_ttc: totalDeposit,
-                    status: "pending", doc_type: "deposit", parent_quote_id: q.id, deposit_percent: pct
-                };
+                    status: invoiceStatusForUser(), doc_type: "deposit", parent_quote_id: q.id, deposit_percent: pct
+                }, companyFields());
                 var ins = await sb.from("invoices").insert(depositPayload).select().single();
                 if (ins.error) { alert("Erreur : " + dbErrorMessage(ins.error)); return; }
                 await sb.from("quotes").update({ status: "invoiced", converted_invoice_id: ins.data.id }).eq("id", q.id);
@@ -1034,13 +1158,13 @@
                         var u = isLast ? round2(Number(it.total) - base * (n - 1)) : base;
                         return { description: label + " — " + it.description, quantity: 1, unitPrice: u, total: u };
                     });
-                    var inst = {
+                    var inst = Object.assign({
                         user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
                         date: today, due_date: d.toISOString().slice(0, 10),
                         items: items, subtotal_ht: sub_i, tva_rate: q.tva_rate, tva_amount: tva_i, total_ttc: tot_i,
-                        status: "pending", doc_type: "installment", parent_quote_id: q.id,
+                        status: invoiceStatusForUser(), doc_type: "installment", parent_quote_id: q.id,
                         installment_index: i, installment_total: n
-                    };
+                    }, companyFields());
                     var insRes = await sb.from("invoices").insert(inst).select().single();
                     if (insRes.error) { alert("Erreur échéance " + i + " : " + dbErrorMessage(insRes.error)); return; }
                     if (i === 1) await sb.from("quotes").update({ status: "invoiced", converted_invoice_id: insRes.data.id }).eq("id", q.id);
@@ -1075,14 +1199,14 @@
         var subBal = round2(Number(q.subtotal_ht) - Number(deposit.subtotal_ht));
         var tvaBal = round2(Number(q.tva_amount) - Number(deposit.tva_amount));
         var totBal = round2(Number(q.total_ttc) - Number(deposit.total_ttc));
-        var payload = {
+        var payload = Object.assign({
             user_id: state.user.id, number: nextInvoiceNumber(), client_id: q.client_id,
             date: today, due_date: due.toISOString().slice(0, 10),
             items: items,
             subtotal_ht: subBal, tva_rate: q.tva_rate,
             tva_amount: tvaBal, total_ttc: totBal,
-            status: "pending", doc_type: "balance", parent_quote_id: q.id, parent_invoice_id: deposit.id
-        };
+            status: invoiceStatusForUser(), doc_type: "balance", parent_quote_id: q.id, parent_invoice_id: deposit.id
+        }, companyFields());
         var ins = await sb.from("invoices").insert(payload).select().single();
         if (ins.error) { alert("Erreur : " + dbErrorMessage(ins.error)); return; }
         await refreshData();
@@ -1630,7 +1754,7 @@
             var today = new Date().toISOString().slice(0, 10);
             var due = new Date(); due.setDate(due.getDate() + 30);
 
-            var invoicePayload = {
+            var invoicePayload = Object.assign({
                 user_id: state.user.id,
                 number: nextInvoiceNumber(),
                 client_id: q.client_id,
@@ -1641,9 +1765,9 @@
                 tva_rate: q.tva_rate,
                 tva_amount: q.tva_amount,
                 total_ttc: q.total_ttc,
-                status: "pending",
+                status: invoiceStatusForUser(),
                 parent_quote_id: q.id
-            };
+            }, companyFields());
             var insertRes = await sb.from("invoices").insert(invoicePayload).select().single();
             if (insertRes.error) { alert("Erreur : " + dbErrorMessage(insertRes.error)); return; }
 
@@ -1754,7 +1878,7 @@
         var rate = Number.isFinite(rateInput) ? Math.max(0, rateInput) : defaultRate;
         var tva = round2(subtotal * rate / 100);
 
-        var payload = {
+        var payload = Object.assign({
             user_id: state.user.id,
             number: nextQuoteNumber(),
             client_id: document.getElementById("q-client").value,
@@ -1765,8 +1889,9 @@
             tva_rate: rate,
             tva_amount: tva,
             total_ttc: round2(subtotal + tva),
-            status: "pending"
-        };
+            status: "pending",
+            created_by_role: isEmployee() ? "employee" : "owner"
+        }, companyFields());
 
         var res = await sb.from("quotes").insert(payload);
         if (res.error) { alert("Erreur : " + dbErrorMessage(res.error)); return; }
@@ -1809,7 +1934,7 @@
                 var tva = round2(subtotal * rate / 100);
                 var due = advanceDate(nextRun, "monthly"); // 30-day-ish due window
 
-                var insertRes = await sb.from("invoices").insert({
+                var insertRes = await sb.from("invoices").insert(Object.assign({
                     user_id: state.user.id,
                     number: nextInvoiceNumber(),
                     client_id: r.client_id,
@@ -1821,7 +1946,7 @@
                     tva_amount: tva,
                     total_ttc: round2(subtotal + tva),
                     status: "pending"
-                }).select().single();
+                }, companyFields())).select().single();
 
                 if (insertRes.error) break;
                 state.invoices.unshift(insertRes.data);
@@ -3868,7 +3993,8 @@
     var PLAN_META = {
         free: { tag: "Gratuit", label: "Gratuit" },
         standard: { tag: "Standard", label: "Standard — 14,99 €/mois" },
-        pro: { tag: "Pro", label: "Pro — 29,99 €/mois" }
+        pro: { tag: "Pro", label: "Pro — 29,99 €/mois" },
+        business: { tag: "Business", label: "Business — 39,99 €/mois" }
     };
 
     function renderSubscription() {
@@ -3879,7 +4005,7 @@
             + '<span class="plan-tag" style="' + (plan === "free" ? 'background:#F1F5F9;color:var(--text-muted)' : '') + '">' + meta.tag + '</span>'
             + '<span style="font-size:.9rem">Formule actuelle : <strong>' + meta.label + '</strong></span></div>';
 
-        ["free", "standard", "pro"].forEach(function (p) {
+        ["free", "standard", "pro", "business"].forEach(function (p) {
             document.getElementById("plan-card-" + p).classList.toggle("current-plan", plan === p);
             var btn = document.getElementById("btn-select-" + p);
             if (plan === p) {
@@ -3887,8 +4013,8 @@
                 btn.disabled = true;
             } else {
                 btn.disabled = false;
-                btn.textContent = p === "free" ? "Revenir au gratuit"
-                    : (p === "standard" ? "Choisir Standard" : "Passer au Pro");
+                var labels = { free: "Revenir au gratuit", standard: "Choisir Standard", pro: "Passer au Pro", business: "Passer au Business" };
+                btn.textContent = labels[p];
             }
         });
     }
@@ -3920,6 +4046,255 @@
         if (!await iconfirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules payants.")) return;
         await changePlan("free");
     });
+
+    document.getElementById("btn-select-business").addEventListener("click", async function () {
+        if (isBusiness()) return;
+        if (!await iconfirm("Activer la formule Business (39,99 €/mois) ? Multi-entreprises, comptes employés et workflow de validation débloqués.")) return;
+        await changePlan("business");
+        toast("Formule Business activée — multi-entreprises et employés débloqués.", "success");
+        if (state.companies.length === 0) {
+            await createDefaultCompany();
+        }
+    });
+
+    async function createDefaultCompany() {
+        var p = state.profile;
+        var payload = {
+            name: p.name || "Mon entreprise",
+            siret: p.siret || null,
+            address: p.address || null,
+            city: p.city || null,
+            postal_code: p.postal_code || null,
+            country: p.country || "FR",
+            email: p.email || null,
+            phone: p.phone || null,
+            tva_number: p.tva_number || null,
+            tva_rate: p.tva_rate || 20,
+            legal_status: p.legal_status || null,
+            activity_type: p.activity_type || null,
+            urssaf_period: p.urssaf_period || null,
+            tax_option: p.tax_option || null,
+            bank_holder: p.bank_holder || null,
+            bank_name: p.bank_name || null,
+            iban: p.iban || null,
+            bic: p.bic || null,
+            template_color: p.template_color || "#4F46E5",
+            template_logo_url: p.template_logo_url || null,
+            template_font: p.template_font || "Arial",
+            penalty_rate: p.penalty_rate || 0,
+            recovery_fee: p.recovery_fee != null ? p.recovery_fee : 40,
+            terms: p.terms || null,
+            mentions: p.mentions || null
+        };
+        var res = await sb.from("companies").insert(payload).select().single();
+        if (res.error) { toast("Erreur création entreprise : " + res.error.message, "error"); return; }
+        var company = res.data;
+        var memRes = await sb.from("memberships").insert({ user_id: state.user.id, company_id: company.id, role: "owner" }).select().single();
+        if (memRes.error) { toast("Erreur membership : " + memRes.error.message, "error"); return; }
+        await refreshData();
+    }
+
+    // --- Company selector ---
+    document.getElementById("active-company").addEventListener("change", async function () {
+        if (this.value === "__new__") {
+            openModal("modal-new-company");
+            this.value = state.activeCompanyId || "";
+            return;
+        }
+        state.activeCompanyId = this.value;
+        updateCompanyContext();
+        var currentPage = document.querySelector(".sidebar-nav a.active");
+        if (currentPage) navigate(currentPage.dataset.page);
+    });
+
+    document.getElementById("new-company-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var payload = {
+            name: document.getElementById("company-name").value.trim(),
+            siret: document.getElementById("company-siret").value.trim() || null,
+            email: document.getElementById("company-email").value.trim() || null,
+            phone: document.getElementById("company-phone").value.trim() || null,
+            address: document.getElementById("company-address").value.trim() || null,
+            postal_code: document.getElementById("company-postal-code").value.trim() || null,
+            city: document.getElementById("company-city").value.trim() || null
+        };
+        if (!payload.name) { toast("Le nom est obligatoire.", "error"); return; }
+        var res = await sb.from("companies").insert(payload).select().single();
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        await sb.from("memberships").insert({ user_id: state.user.id, company_id: res.data.id, role: "owner" });
+        closeModal("modal-new-company");
+        document.getElementById("new-company-form").reset();
+        await refreshData();
+        state.activeCompanyId = res.data.id;
+        updateCompanyContext();
+        toast("Entreprise \"" + payload.name + "\" créée.", "success");
+    });
+
+    // --- Employees management ---
+    async function loadEmployeesData() {
+        if (!state.activeCompanyId) return;
+        var res = await sb.from("memberships").select("*").eq("company_id", state.activeCompanyId);
+        var invRes = await sb.from("employee_invitations").select("*").eq("company_id", state.activeCompanyId).eq("status", "pending");
+        state.invitations = invRes.data || [];
+        return res.data || [];
+    }
+
+    async function renderEmployees() {
+        var container = document.getElementById("employees-list");
+        var invContainer = document.getElementById("invitations-list");
+        var members = await loadEmployeesData();
+        if (!members.length) {
+            container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucun membre dans cette entreprise.</p>';
+        } else {
+            var html = '<table class="data-table"><thead><tr><th>Utilisateur</th><th>Rôle</th><th>Depuis</th><th>Actions</th></tr></thead><tbody>';
+            members.forEach(function (m) {
+                var roleLabel = m.role === "owner" ? '<span class="status-badge success">Propriétaire</span>' : '<span class="status-badge warning">Employé</span>';
+                var date = m.created_at ? formatDate(m.created_at) : "—";
+                var actions = m.role === "employee" && m.user_id !== state.user.id
+                    ? '<button class="btn btn-sm btn-danger" onclick="removeEmployee(\'' + m.id + '\')">Retirer</button>'
+                    : '—';
+                html += '<tr><td>' + (m.user_id === state.user.id ? "Vous" : m.user_id.slice(0, 8) + "…") + '</td><td>' + roleLabel + '</td><td>' + date + '</td><td>' + actions + '</td></tr>';
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        if (!state.invitations.length) {
+            invContainer.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucune invitation en attente.</p>';
+        } else {
+            var invHtml = '<table class="data-table"><thead><tr><th>Email</th><th>Envoyée le</th><th>Expire le</th><th>Actions</th></tr></thead><tbody>';
+            state.invitations.forEach(function (inv) {
+                invHtml += '<tr><td>' + escapeHtml(inv.email) + '</td><td>' + formatDate(inv.created_at) + '</td><td>' + formatDate(inv.expires_at) + '</td>'
+                    + '<td><button class="btn btn-sm btn-danger" onclick="cancelInvitation(\'' + inv.id + '\')">Annuler</button></td></tr>';
+            });
+            invHtml += '</tbody></table>';
+            invContainer.innerHTML = invHtml;
+        }
+    }
+
+    window.removeEmployee = async function (membershipId) {
+        if (!await iconfirm("Retirer cet employé de l'entreprise ?")) return;
+        var res = await sb.from("memberships").delete().eq("id", membershipId);
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        toast("Employé retiré.", "success");
+        renderEmployees();
+    };
+
+    window.cancelInvitation = async function (invId) {
+        await sb.from("employee_invitations").delete().eq("id", invId);
+        toast("Invitation annulée.", "success");
+        renderEmployees();
+    };
+
+    document.getElementById("btn-invite-employee").addEventListener("click", function () {
+        if (!isBusiness()) {
+            toast("La gestion des employés nécessite le plan Business.", "error");
+            navigate("subscription");
+            return;
+        }
+        openModal("modal-invite-employee");
+    });
+
+    document.getElementById("invite-employee-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var email = document.getElementById("invite-email").value.trim();
+        if (!email) return;
+        var res = await sb.from("employee_invitations").insert({
+            company_id: state.activeCompanyId,
+            invited_by: state.user.id,
+            email: email
+        }).select().single();
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        closeModal("modal-invite-employee");
+        document.getElementById("invite-employee-form").reset();
+        toast("Invitation envoyée à " + email, "success");
+        renderEmployees();
+    });
+
+    // --- Approval workflow ---
+    function renderApprovals() {
+        var container = document.getElementById("approvals-list");
+        var pending = state.invoices.filter(function (inv) {
+            return inv.status === "pending_approval" && inv.company_id === state.activeCompanyId;
+        });
+
+        if (!pending.length) {
+            container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucune facture en attente de validation.</p>';
+            return;
+        }
+
+        var html = '<table class="data-table"><thead><tr><th>N°</th><th>Client</th><th>Montant TTC</th><th>Date</th><th>Créé par</th><th>Actions</th></tr></thead><tbody>';
+        pending.forEach(function (inv) {
+            var client = state.clients.find(function (c) { return c.id === inv.client_id; });
+            var clientName = client ? escapeHtml(client.name) : "—";
+            html += '<tr>'
+                + '<td><strong>' + escapeHtml(inv.number) + '</strong></td>'
+                + '<td>' + clientName + '</td>'
+                + '<td>' + formatMoney(inv.total_ttc) + '</td>'
+                + '<td>' + formatDate(inv.date) + '</td>'
+                + '<td>' + (inv.created_by ? inv.created_by.slice(0, 8) + "…" : "—") + '</td>'
+                + '<td style="display:flex;gap:6px">'
+                + '<button class="btn btn-sm btn-primary" onclick="approveInvoice(\'' + inv.id + '\')">Valider</button>'
+                + '<button class="btn btn-sm btn-danger" onclick="rejectInvoice(\'' + inv.id + '\')">Refuser</button>'
+                + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+
+    window.approveInvoice = async function (invoiceId) {
+        if (!await iconfirm("Valider cette facture et l'intégrer dans la comptabilité ?")) return;
+        var res = await sb.from("invoices").update({
+            status: "pending",
+            approved_by: state.user.id,
+            approved_at: new Date().toISOString()
+        }).eq("id", invoiceId);
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        await refreshData();
+        renderApprovals();
+        toast("Facture validée et intégrée.", "success");
+    };
+
+    window.rejectInvoice = async function (invoiceId) {
+        if (!await iconfirm("Refuser cette facture ?")) return;
+        var res = await sb.from("invoices").update({ status: "rejected" }).eq("id", invoiceId);
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        await refreshData();
+        renderApprovals();
+        toast("Facture refusée.", "success");
+    };
+
+    // --- Accept invitation flow (for employees logging in) ---
+    async function checkPendingInvitations() {
+        if (!state.user || !state.user.email) return;
+        var res = await sb.from("employee_invitations").select("*").eq("email", state.user.email).eq("status", "pending");
+        if (res.error || !res.data || !res.data.length) return;
+        for (var i = 0; i < res.data.length; i++) {
+            var inv = res.data[i];
+            if (new Date(inv.expires_at) < new Date()) continue;
+            var existing = state.memberships.find(function (m) { return m.company_id === inv.company_id; });
+            if (existing) {
+                await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv.id);
+                continue;
+            }
+            var company = state.companies.find(function (c) { return c.id === inv.company_id; });
+            var companyName = company ? company.name : "une entreprise";
+            if (await iconfirm("Vous avez été invité à rejoindre \"" + companyName + "\" en tant qu'employé. Accepter l'invitation ?")) {
+                var memRes = await sb.from("memberships").insert({ user_id: state.user.id, company_id: inv.company_id, role: "employee" });
+                if (!memRes.error) {
+                    await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv.id);
+                    toast("Vous avez rejoint \"" + companyName + "\" !", "success");
+                }
+            }
+        }
+        await refreshData();
+    }
+
+    function escapeHtml(s) {
+        var d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+    }
 
     // --- Profile ---
     function loadProfile() {
@@ -4214,7 +4589,7 @@
         var rate = Number.isFinite(rateInput) ? Math.max(0, rateInput) : defaultRate;
         var tva = round2(subtotal * rate / 100);
 
-        var payload = {
+        var payload = Object.assign({
             user_id: state.user.id,
             number: nextInvoiceNumber(),
             client_id: document.getElementById("inv-client").value,
@@ -4226,8 +4601,8 @@
             tva_rate: rate,
             tva_amount: tva,
             total_ttc: round2(subtotal + tva),
-            status: "pending"
-        };
+            status: invoiceStatusForUser()
+        }, companyFields());
 
         var res = await sb.from("invoices").insert(payload);
         if (res.error) { alert("Erreur : " + dbErrorMessage(res.error)); return; }
@@ -4402,6 +4777,22 @@
         var parts = String(d).slice(0, 10).split("-");
         return parts[2] + "/" + parts[1] + "/" + parts[0];
     }
+
+    // --- Mobile sidebar toggle ---
+    (function () {
+        var menuBtn = document.getElementById("mobile-menu-btn");
+        var sidebar = document.getElementById("app-sidebar");
+        var overlay = document.getElementById("sidebar-overlay");
+        function toggleSidebar(open) {
+            sidebar.classList.toggle("open", open);
+            overlay.classList.toggle("active", open);
+        }
+        menuBtn.addEventListener("click", function () { toggleSidebar(!sidebar.classList.contains("open")); });
+        overlay.addEventListener("click", function () { toggleSidebar(false); });
+        document.querySelectorAll(".sidebar-nav a").forEach(function (a) {
+            a.addEventListener("click", function () { toggleSidebar(false); });
+        });
+    })();
 
     // --- Init: restore session if present ---
     (async function init() {

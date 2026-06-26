@@ -44,7 +44,11 @@
 
     <!-- App -->
     <div id="app-screen" class="app" style="display:none">
-        <aside class="sidebar">
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-logo">
                 <span class="logo-mark">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
@@ -78,6 +82,13 @@
                 <a href="#" data-page="accounting">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="14" y="6" width="3" height="12"/></svg></span> Comptabilité
                 </a>
+                <a href="#" data-page="employees" id="nav-employees" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span> Employés
+                </a>
+                <a href="#" data-page="approvals" id="nav-approvals" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Validations
+                    <span class="nav-badge" id="approval-badge" style="display:none">0</span>
+                </a>
                 <a href="#" data-page="subscription">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Mon abonnement
                 </a>
@@ -85,8 +96,12 @@
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Mon profil
                 </a>
             </nav>
+            <div id="company-selector" class="company-selector" style="display:none">
+                <select id="active-company" class="company-select"></select>
+            </div>
             <div class="sidebar-user">
                 <div id="user-display-name"></div>
+                <div id="user-role-badge" style="display:none"></div>
                 <a href="#" id="logout-btn" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none">Déconnexion</a>
             </div>
         </aside>
@@ -521,6 +536,37 @@
                 </div>
             </div>
 
+            <!-- Employees -->
+            <div id="page-employees" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Gestion des employés</h1>
+                        <p class="page-subtitle">Invitez et gérez les employés de votre entreprise</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-invite-employee">+ Inviter un employé</button>
+                </div>
+                <div class="table-card">
+                    <div id="employees-list"></div>
+                </div>
+                <div class="table-card" style="margin-top:20px">
+                    <div class="table-header"><h2>Invitations en attente</h2></div>
+                    <div id="invitations-list"></div>
+                </div>
+            </div>
+
+            <!-- Approvals -->
+            <div id="page-approvals" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Validations en attente</h1>
+                        <p class="page-subtitle">Factures créées par vos employés nécessitant votre validation</p>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <div id="approvals-list"></div>
+                </div>
+            </div>
+
             <!-- Subscription -->
             <div id="page-subscription" class="page" style="display:none">
                 <div class="page-header">
@@ -564,6 +610,19 @@
                             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Suivi de TVA & déclaration URSSAF</li>
                         </ul>
                         <button class="btn btn-primary" style="width:100%" id="btn-select-pro">Passer au Pro</button>
+                    </div>
+                    <div class="plan-card" id="plan-card-business">
+                        <span class="plan-badge" style="background:#F59E0B;color:#78350F">Entreprise</span>
+                        <div class="plan-name">Business</div>
+                        <div class="plan-price">39,99 €<span> / mois</span></div>
+                        <ul class="plan-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Tout le plan Pro inclus</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Multi-entreprises</strong> (gérez plusieurs sociétés)</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Comptes employés</strong> avec workflow de validation</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Signature devis sur terrain (mobile)</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion des validations centralisée</li>
+                        </ul>
+                        <button class="btn btn-outline" style="width:100%;border-color:#F59E0B;color:#B45309" id="btn-select-business">Passer au Business</button>
                     </div>
                 </div>
             </div>
@@ -1136,6 +1195,71 @@
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-signed-quote')">Annuler</button>
                 <button type="button" class="btn btn-primary" id="sq-submit" onclick="submitSignedAndConvert()">Convertir en facture</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: Invite Employee -->
+    <div class="modal-overlay" id="modal-invite-employee">
+        <div class="modal">
+            <h2>Inviter un employé</h2>
+            <form id="invite-employee-form">
+                <div class="form-group">
+                    <label>Email de l'employé</label>
+                    <input type="email" id="invite-email" placeholder="employe@exemple.fr" required>
+                </div>
+                <p style="color:var(--text-muted);font-size:.85rem;margin:8px 0 16px">L'employé recevra un lien d'invitation par email. Il pourra créer des devis et les faire signer directement sur le terrain. Les factures créées nécessiteront votre validation.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-invite-employee')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Create Company -->
+    <div class="modal-overlay" id="modal-new-company">
+        <div class="modal">
+            <h2>Ajouter une entreprise</h2>
+            <form id="new-company-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom / Raison sociale</label>
+                        <input type="text" id="company-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET</label>
+                        <input type="text" id="company-siret" placeholder="123 456 789 00012">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="company-email">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="text" id="company-phone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="company-address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Code postal</label>
+                        <input type="text" id="company-postal-code" maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="company-city">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-company')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer l'entreprise</button>
+                </div>
+            </form>
         </div>
     </div>
 

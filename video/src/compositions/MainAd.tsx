@@ -3,6 +3,10 @@ import { theme, fontFamily, FPS } from "../ui/theme";
 import { SceneHook } from "../scenes/01-Hook";
 import { SceneLogo } from "../scenes/02-Logo";
 import { SceneCreateInvoice } from "../scenes/03-CreateInvoice";
+import { SceneDashboard } from "../scenes/04-Dashboard";
+import { SceneFeatures } from "../scenes/05-Features";
+import { SceneDifferenciateurs } from "../scenes/06-Differenciateurs";
+import { SceneCTA } from "../scenes/07-CTA";
 
 const s = (sec: number) => Math.round(sec * FPS);
 
@@ -27,7 +31,21 @@ export const MainAd: React.FC = () => {
         <SceneCreateInvoice />
       </Sequence>
 
-      {/* Placeholder pour les scènes 4-8 à venir */}
+      <Sequence from={s(20)} durationInFrames={s(5)}>
+        <SceneDashboard />
+      </Sequence>
+
+      <Sequence from={s(25)} durationInFrames={s(5)}>
+        <SceneFeatures />
+      </Sequence>
+
+      <Sequence from={s(30)} durationInFrames={s(4)}>
+        <SceneDifferenciateurs />
+      </Sequence>
+
+      <Sequence from={s(34)} durationInFrames={s(4)}>
+        <SceneCTA />
+      </Sequence>
     </AbsoluteFill>
   );
 };

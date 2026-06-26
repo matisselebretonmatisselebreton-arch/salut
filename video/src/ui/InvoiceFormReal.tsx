@@ -25,7 +25,7 @@ export const InvoiceFormReal: React.FC<Props> = ({
 }) => {
   const clientName = "Marketing Studio SARL";
   const description = "Refonte site web — phase 1";
-  const visibleClient = clientFilled >= 1 ? clientName : clientFilled > 0 ? "" : "";
+  const visibleClient = clientFilled >= 1 ? clientName : clientFilled > 0.5 ? clientName : "";
   const visibleDesc = description.substring(0, Math.floor(description.length * descFilled));
   const pu = Math.round(puFilled * 2400);
   const lineTotal = qtyValue * pu;

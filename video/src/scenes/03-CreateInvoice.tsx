@@ -6,74 +6,67 @@ import { InvoiceFormReal } from "../ui/InvoiceFormReal";
 import { Cursor } from "../components/Cursor";
 
 /**
- * Scène 3 — 8 s (240 frames @30fps).
- * L'app est toujours rendue en 16:10 paysage. Sur les formats verticaux
- * / carrés, on voit l'environnement bureau autour (gradient + ombre).
+ * Scène 3 — 12 s (360 frames @30fps). Allongée pour bien voir chaque étape.
  *
- * Timeline :
- *  0-15    AppShell apparaît, curseur arrive
- *  15-22   clic "+ Nouveau document"
- *  22-45   choice modal visible, curseur descend
- *  40-50   clic "Facture libre"
- *  50-65   form modal apparaît
- *  65-95   curseur Client dropdown, remplissage
- *  95-135  curseur Description, typing
- *  135-160 curseur Prix unit., 0 → 2400 + totaux live
- *  160-185 curseur "Créer la facture", clic
- *  185-205 form fade, toast "✓ Facture créée"
- *  205-240 hold
+ *  0-20    AppShell apparaît, curseur arrive sur "+ Nouveau document"
+ *  20-30   clic sur le bouton
+ *  30-70   modal de choix visible, curseur descend vers "Facture libre"
+ *  55-65   clic "Facture libre"
+ *  65-90   modal formulaire apparaît
+ *  90-130  curseur sur Client, sélection du client
+ *  130-190 curseur sur Description, typing bien visible
+ *  190-240 curseur sur Prix unit., total qui monte
+ *  240-280 curseur descend vers "Créer la facture", clic
+ *  280-310 form fade out, toast "✓ Facture créée"
+ *  310-360 hold final
  */
 export const SceneCreateInvoice: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   const isVertical = height > width;
 
-  // Animation entrée
   const shellIn = spring({ frame, fps, config: { damping: 18, stiffness: 100 }, durationInFrames: 16 });
   const shellY = interpolate(shellIn, [0, 1], [40, 0]);
   const shellOpacity = shellIn;
 
-  // Stage gating
-  const inChoice = frame >= 22 && frame < 65;
-  const inForm = frame >= 50 && frame < 205;
-  const showToast = frame >= 190;
+  // Stages
+  const inChoice = frame >= 30 && frame < 85;
+  const inForm = frame >= 65 && frame < 305;
+  const showToast = frame >= 290;
 
-  // Modals
-  const choiceOpacity = interpolate(frame, [22, 32, 60, 65], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const choiceScale = interpolate(frame, [22, 32, 60, 65], [0.92, 1, 1, 0.92], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const choiceHover = frame >= 32 ? 1 : -1;
+  // Choice modal
+  const choiceOpacity = interpolate(frame, [30, 42, 75, 85], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const choiceScale = interpolate(frame, [30, 42, 75, 85], [0.92, 1, 1, 0.92], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const choiceHover = frame >= 45 ? 1 : -1;
 
-  const formOpacity = interpolate(frame, [50, 60, 198, 205], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const formScale = interpolate(frame, [50, 60], [0.92, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Form modal
+  const formOpacity = interpolate(frame, [65, 80, 295, 305], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const formScale = interpolate(frame, [65, 80], [0.92, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
-  // Form inputs progression
-  const clientFilled = interpolate(frame, [78, 100], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const descFilled = interpolate(frame, [108, 135], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const puFilled = interpolate(frame, [142, 160], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const submitting = frame >= 180 && frame < 200;
+  // Form inputs — more time for each
+  const clientFilled = interpolate(frame, [100, 130], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const descFilled = interpolate(frame, [145, 190], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const puFilled = interpolate(frame, [205, 240], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const submitting = frame >= 270 && frame < 300;
 
-  // Curseur — coords en % du SCREEN de l'app (zone sous la browser bar).
-  // Mesures basées sur AppShell :
-  //   - sidebar = 220px ≈ 14% en horizontal
-  //   - button "+ Nouveau document" au top-right du main → (93, 8)
-  //   - choice modal centrée à 50% → item "Facture libre" 2e sur 4 → (50, 47)
-  //   - form modal centrée :
-  //       - Client (col gauche, row 1) → (33, 22)
-  //       - Cellule Description (ligne facturation) → (29, 61)
-  //       - Cellule Prix unit. → (55, 61)
-  //       - Bouton "Créer la facture" → (72, 89)
+  // Cursor — inside app zone, bigger for visibility
   const cursorPath = [
-    { at: 0, x: 60, y: 95 },
-    { at: 18, x: 93, y: 8, click: true },
-    { at: 30, x: 93, y: 8 },
-    { at: 45, x: 50, y: 47, click: true },
-    { at: 60, x: 50, y: 47 },
-    { at: 78, x: 33, y: 22, click: true },
-    { at: 108, x: 29, y: 61, click: true },
-    { at: 142, x: 55, y: 61, click: true },
-    { at: 175, x: 72, y: 89, click: true },
-    { at: 240, x: 72, y: 89 },
+    { at: 0, x: 60, y: 90 },
+    { at: 22, x: 93, y: 8, click: true },          // clic "+ Nouveau document"
+    { at: 38, x: 93, y: 8 },
+    { at: 58, x: 50, y: 47, click: true },          // clic "Facture libre"
+    { at: 80, x: 50, y: 47 },
+    { at: 100, x: 33, y: 22, click: true },         // clic Client
+    { at: 145, x: 29, y: 61, click: true },         // clic Description
+    { at: 205, x: 55, y: 61, click: true },         // clic Prix unit.
+    { at: 260, x: 72, y: 89, click: true },         // clic Créer la facture
+    { at: 360, x: 72, y: 89 },
   ];
+
+  // Chrono : 0:00 → 0:35
+  const seconds = Math.floor(interpolate(frame, [0, 280], [0, 35], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
+  const chronoColor = frame >= 280 ? theme.success : theme.primary;
+  const chronoOpacity = interpolate(frame, [0, 10], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   return (
     <AbsoluteFill
@@ -83,27 +76,59 @@ export const SceneCreateInvoice: React.FC = () => {
         alignItems: "center",
         justifyContent: "center",
         fontFamily,
-        padding: 0,
       }}
     >
-      {/* Ambiance desk : ombres + dégradé */}
+      {/* Ambiance desk */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           opacity: 0.5,
-          backgroundImage: `radial-gradient(circle at 30% 20%, rgba(79,70,229,0.10) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(129,140,248,0.10) 0%, transparent 50%)`,
+          backgroundImage: "radial-gradient(circle at 30% 20%, rgba(79,70,229,0.10) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(129,140,248,0.10) 0%, transparent 50%)",
         }}
       />
 
-      <DeviceFrame
-        isVertical={isVertical}
-        shellOpacity={shellOpacity}
-        shellY={shellY}
+      {/* Chrono flottant en haut */}
+      <div
+        style={{
+          position: "absolute",
+          top: isVertical ? 60 : 24,
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          padding: "10px 24px",
+          background: "#fff",
+          borderRadius: 999,
+          boxShadow: "0 10px 30px rgba(15,23,42,0.10)",
+          border: `1px solid ${theme.border}`,
+          zIndex: 30,
+          opacity: chronoOpacity,
+        }}
       >
+        <span style={{ fontSize: 22 }}>⏱️</span>
+        <span style={{ fontSize: 14, color: theme.textMuted, fontWeight: 600 }}>Création facture</span>
+        <span
+          style={{
+            fontSize: 24,
+            fontWeight: 800,
+            color: chronoColor,
+            fontVariantNumeric: "tabular-nums",
+            minWidth: 50,
+          }}
+        >
+          0:{seconds.toString().padStart(2, "0")}
+        </span>
+        {frame >= 280 && (
+          <span style={{ fontSize: 13, fontWeight: 700, color: theme.success }}>✓ créée !</span>
+        )}
+      </div>
+
+      <DeviceFrame isVertical={isVertical} shellOpacity={shellOpacity} shellY={shellY}>
         <BrowserBar />
         <div style={{ position: "relative", flex: 1, overflow: "hidden" }}>
-          <AppShell pageTitle="Factures & Avoirs" newDocPulse={frame >= 5 && frame < 22} />
+          <AppShell pageTitle="Factures & Avoirs" newDocPulse={frame >= 8 && frame < 25} />
 
           {inChoice && (
             <NouveauDocModal hoveredIndex={choiceHover} opacity={choiceOpacity} scale={choiceScale} />
@@ -118,41 +143,38 @@ export const SceneCreateInvoice: React.FC = () => {
               submitting={submitting}
             />
           )}
-          {showToast && <SuccessToast frame={frame - 190} />}
+          {showToast && <SuccessToast frame={frame - 290} />}
 
-          {/* Curseur dans la zone d'app — coords précises */}
-          <Cursor path={cursorPath} size={28} />
+          {/* Curseur : gros, contrasté, DANS la zone d'app */}
+          <Cursor path={cursorPath} size={38} color="#0F172A" />
         </div>
       </DeviceFrame>
     </AbsoluteFill>
   );
 };
 
-/** Cadre paysage 16:10 toujours, peu importe le format de sortie. */
-const DeviceFrame: React.FC<{ isVertical: boolean; shellOpacity: number; shellY: number; children: React.ReactNode }> = ({ isVertical, shellOpacity, shellY, children }) => {
-  return (
-    <div
-      style={{
-        position: "relative",
-        width: isVertical ? "94%" : "86%",
-        aspectRatio: "16 / 10",
-        maxHeight: "88%",
-        background: "#fff",
-        borderRadius: 18,
-        overflow: "hidden",
-        boxShadow:
-          "0 40px 100px rgba(15,23,42,0.25), 0 12px 36px rgba(79,70,229,0.18), 0 2px 8px rgba(0,0,0,0.08)",
-        border: `1px solid ${theme.border}`,
-        opacity: shellOpacity,
-        transform: `translateY(${shellY}px)`,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
+const DeviceFrame: React.FC<{ isVertical: boolean; shellOpacity: number; shellY: number; children: React.ReactNode }> = ({ isVertical, shellOpacity, shellY, children }) => (
+  <div
+    style={{
+      position: "relative",
+      width: isVertical ? "94%" : "86%",
+      aspectRatio: "16 / 10",
+      maxHeight: isVertical ? "65%" : "88%",
+      background: "#fff",
+      borderRadius: 18,
+      overflow: "hidden",
+      boxShadow:
+        "0 40px 100px rgba(15,23,42,0.25), 0 12px 36px rgba(79,70,229,0.18), 0 2px 8px rgba(0,0,0,0.08)",
+      border: `1px solid ${theme.border}`,
+      opacity: shellOpacity,
+      transform: `translateY(${shellY}px)`,
+      display: "flex",
+      flexDirection: "column",
+    }}
+  >
+    {children}
+  </div>
+);
 
 const BrowserBar: React.FC = () => (
   <div

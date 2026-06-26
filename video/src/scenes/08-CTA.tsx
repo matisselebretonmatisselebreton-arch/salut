@@ -2,7 +2,7 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import { theme, fontFamily } from "../ui/theme";
 
 /**
- * Scène 7 — 4 s (120 frames).
+ * Scène 8 — 4 s (120 frames).
  * CTA finale : logo + tagline + bouton + URL.
  */
 export const SceneCTA: React.FC = () => {

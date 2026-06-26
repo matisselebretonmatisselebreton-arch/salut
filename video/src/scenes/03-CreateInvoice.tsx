@@ -75,8 +75,8 @@ export const SceneCreateInvoice: React.FC = () => {
     { at: 112, x: 32, y: 20, click: true },          // clic Client → dropdown
     { at: 152, x: 32, y: 50, click: true },          // clic SARL TechVision
     { at: 175, x: 32, y: 50 },
-    { at: 220, x: 30, y: 31, click: true },          // clic Description
-    { at: 280, x: 59, y: 31, click: true },          // clic Prix unit.
+    { at: 220, x: 30, y: 39, click: true },          // clic Description (ligne Prestation)
+    { at: 280, x: 59, y: 39, click: true },          // clic Prix unit. (ligne Prestation)
     { at: 340, x: 75, y: 68, click: true },          // clic Créer la facture
     { at: 420, x: 75, y: 68 },
   ];

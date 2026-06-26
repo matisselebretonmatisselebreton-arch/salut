@@ -73,27 +73,27 @@ export const InvoiceFormReal: React.FC<Props> = ({
         </div>
 
         {/* Lignes */}
-        <div style={{ fontSize: 13, fontWeight: 700, color: theme.text, marginBottom: 8 }}>Lignes de facturation</div>
-        <div style={{ border: `1px solid ${theme.border}`, borderRadius: 8, overflow: "hidden", marginBottom: 14 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 100px 90px 26px", padding: "9px 12px", background: "#F8FAFC", fontSize: 10, fontWeight: 700, color: theme.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: theme.text, marginBottom: 10 }}>Lignes de facturation</div>
+        <div style={{ border: `1px solid ${theme.border}`, borderRadius: 10, overflow: "hidden", marginBottom: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 120px 110px 30px", padding: "12px 14px", background: "#F8FAFC", fontSize: 11, fontWeight: 700, color: theme.textMuted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
             <div>Description</div>
             <div style={{ textAlign: "center" }}>Qté</div>
             <div style={{ textAlign: "center" }}>Prix unit. (€)</div>
             <div style={{ textAlign: "right" }}>Total</div>
             <div />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 60px 100px 90px 26px", padding: "10px 12px", alignItems: "center", gap: 8, background: descFilled > 0 && descFilled < 1 ? "#FAFBFF" : "#fff" }}>
-            <CellInput value={visibleDesc} placeholder="Prestation" active={descFilled > 0 && descFilled < 1} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 120px 110px 30px", padding: "14px 14px", alignItems: "center", gap: 10, background: descFilled > 0 && descFilled < 1 ? "#F5F3FF" : "#fff", transition: "background 0.2s" }}>
+            <CellInput value={visibleDesc} placeholder="Prestation" active={descFilled > 0 && descFilled < 1} big />
             <CellInput value={String(qtyValue)} center />
             <CellInput value={pu > 0 ? String(pu) : "0"} center active={puFilled > 0 && puFilled < 1} />
-            <div style={{ fontSize: 13, color: lineTotal > 0 ? theme.text : theme.textMuted, textAlign: "right", fontWeight: 600 }}>
+            <div style={{ fontSize: 15, color: lineTotal > 0 ? theme.primary : theme.textMuted, textAlign: "right", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
               {lineTotal > 0 ? `${lineTotal.toLocaleString("fr-FR")},00 €` : "0,00 €"}
             </div>
-            <div style={{ color: theme.danger, fontSize: 14, textAlign: "center" }}>×</div>
+            <div style={{ color: theme.danger, fontSize: 16, textAlign: "center" }}>×</div>
           </div>
         </div>
-        <div style={{ marginBottom: 16 }}>
-          <span style={{ display: "inline-block", padding: "6px 12px", border: `1px dashed ${theme.border}`, borderRadius: 8, fontSize: 12, color: theme.textMuted, fontWeight: 600 }}>
+        <div style={{ marginBottom: 18 }}>
+          <span style={{ display: "inline-block", padding: "7px 14px", border: `1px dashed ${theme.border}`, borderRadius: 8, fontSize: 13, color: theme.textMuted, fontWeight: 600 }}>
             + Ajouter une ligne
           </span>
         </div>
@@ -164,15 +164,39 @@ const FormSelect: React.FC<{ label: string; value: string; placeholder: string; 
   </div>
 );
 
-const CellInput: React.FC<{ value: string; placeholder?: string; active?: boolean; center?: boolean }> = ({ value, placeholder, active, center }) => {
+const CellInput: React.FC<{ value: string; placeholder?: string; active?: boolean; center?: boolean; big?: boolean }> = ({ value, placeholder, active, center, big }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const blink = Math.floor((frame / fps) * 2) % 2;
   return (
-    <div style={{ border: `1px solid ${active ? theme.primary : theme.border}`, borderRadius: 6, padding: "6px 8px", fontSize: 13, color: value ? theme.text : theme.textMuted, textAlign: center ? "center" : "left", background: active ? "#F5F3FF" : "#fff", minHeight: 16 }}>
+    <div
+      style={{
+        border: `${active ? 2 : 1}px solid ${active ? theme.primary : theme.border}`,
+        borderRadius: 7,
+        padding: big ? "9px 12px" : "7px 10px",
+        fontSize: big ? 15 : 14,
+        color: value ? theme.text : theme.textMuted,
+        textAlign: center ? "center" : "left",
+        background: active ? "#fff" : "#fff",
+        boxShadow: active ? "0 0 0 4px rgba(79,70,229,0.12)" : "none",
+        minHeight: big ? 22 : 18,
+        fontWeight: value && big ? 600 : 400,
+        transition: "all 0.15s",
+      }}
+    >
       {value || placeholder}
       {active && (
-        <span style={{ display: "inline-block", width: 1.5, height: "1em", background: theme.primary, marginLeft: 2, verticalAlign: "middle", opacity: blink }} />
+        <span
+          style={{
+            display: "inline-block",
+            width: 2,
+            height: "1em",
+            background: theme.primary,
+            marginLeft: 2,
+            verticalAlign: "middle",
+            opacity: blink,
+          }}
+        />
       )}
     </div>
   );

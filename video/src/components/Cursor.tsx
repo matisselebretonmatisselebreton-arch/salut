@@ -62,9 +62,10 @@ export const Cursor: React.FC<Props> = ({ path, size = 32, color = "#0F172A" }) 
             transform: "translate(-50%, -50%)",
             borderRadius: "50%",
             background: color,
-            opacity: 0.18 * (1 - clickProgress),
+            opacity: 0.35 * (1 - clickProgress),
             scale: `${0.4 + clickProgress * 1.4}`,
             pointerEvents: "none",
+            zIndex: 99,
           }}
         />
       )}
@@ -77,15 +78,16 @@ export const Cursor: React.FC<Props> = ({ path, size = 32, color = "#0F172A" }) 
           width: size,
           height: size,
           transform: `translate(-20%, -10%) scale(${clickScale})`,
-          filter: "drop-shadow(0 4px 12px rgba(15,23,42,0.25))",
+          filter: "drop-shadow(0 6px 16px rgba(15,23,42,0.45)) drop-shadow(0 0 0 #fff)",
           pointerEvents: "none",
+          zIndex: 100,
         }}
       >
         <path
           d="M3 2 L3 18 L7.5 14 L10.5 21 L13 20 L10 13 L17 13 Z"
           fill={color}
           stroke="#fff"
-          strokeWidth="1.2"
+          strokeWidth="2.5"
           strokeLinejoin="round"
         />
       </svg>

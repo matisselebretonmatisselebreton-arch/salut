@@ -23,7 +23,7 @@ export const MainAd: React.FC = () => {
         <SceneLogo />
       </Sequence>
 
-      <Sequence from={s(6)} durationInFrames={s(6)}>
+      <Sequence from={s(6)} durationInFrames={s(8)}>
         <SceneCreateInvoice />
       </Sequence>
 

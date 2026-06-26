@@ -80,7 +80,13 @@
     function planOf() { return (state.profile && state.profile.plan) || "free"; }
     function isPro() { var p = planOf(); return p === "pro" || p === "business"; }
     function isBusiness() { return planOf() === "business"; }
-    function hasUnlimitedInvoices() { var p = planOf(); return p === "standard" || p === "pro" || p === "business"; }
+    function hasUnlimitedInvoices() {
+        var p = planOf();
+        if (p === "standard" || p === "pro" || p === "business") return true;
+        // Employee of any company inherits unlimited (company-scoped data is owner's responsibility)
+        if (isEmployee()) return true;
+        return false;
+    }
     function isOwner() { return state.userRole === "owner" || !state.activeCompanyId; }
     function isEmployee() { return state.userRole === "employee"; }
     function companyFields() {
@@ -94,10 +100,21 @@
     function invoiceStatusForUser() {
         return isEmployee() ? "pending_approval" : "pending";
     }
+
+    // Filter data by active company (multi-entreprise). Returns same array if no active company.
+    function inScope(arr) {
+        if (!state.activeCompanyId) return arr.filter(function (r) { return !r.company_id; });
+        return arr.filter(function (r) { return r.company_id === state.activeCompanyId; });
+    }
+    // Exclude documents that are not yet integrated into accounting/stats.
+    function isCountable(inv) {
+        return inv.status !== "pending_approval" && inv.status !== "rejected";
+    }
     function invoicesThisMonth() {
         var now = new Date();
         var ym = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
         return state.invoices.filter(function (inv) {
+            if (inv.status === "rejected") return false;
             return String(inv.date).slice(0, 7) === ym;
         }).length;
     }
@@ -174,9 +191,20 @@
             reservedSeq = { invoices: {}, quotes: {} };
 
             updateCompanyContext();
+            scopeStateToActiveCompany();
         } finally {
             showLoading(false);
         }
+    }
+
+    // Filter the business arrays to the active company so all renderers see only
+    // documents from the currently selected entity. Documents without a company_id
+    // (legacy/solo data) are kept when no company is active.
+    function scopeStateToActiveCompany() {
+        if (!state.activeCompanyId) return; // solo user: keep everything as-is
+        ["clients", "invoices", "quotes", "recurring", "creditNotes", "expenses", "suppliers", "urssaf"].forEach(function (k) {
+            state[k] = state[k].filter(function (r) { return r.company_id === state.activeCompanyId; });
+        });
     }
 
     function updateCompanyContext() {
@@ -337,7 +365,12 @@
     });
 
     // --- Navigation ---
+    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees"];
     function navigate(page) {
+        if (isEmployee() && EMPLOYEE_BLOCKED.indexOf(page) !== -1) {
+            toast("Cette section est réservée au propriétaire.", "warning");
+            page = "dashboard";
+        }
         document.querySelectorAll(".page").forEach(function (el) { el.style.display = "none"; });
         document.getElementById("page-" + page).style.display = "";
         document.querySelectorAll(".sidebar-nav a").forEach(function (a) {
@@ -396,6 +429,7 @@
         var currentYear = String(now.getFullYear());
         state.invoices.forEach(function (inv) {
             if (inv.credit_note_id) return;
+            if (!isCountable(inv)) return; // skip pending_approval / rejected
             if (inv.status === "paid") {
                 paid++;
                 if (String(inv.date).slice(0, 4) === currentYear) revenue += Number(inv.total_ttc);
@@ -4102,9 +4136,9 @@
             return;
         }
         state.activeCompanyId = this.value;
-        updateCompanyContext();
+        await refreshData();
         var currentPage = document.querySelector(".sidebar-nav a.active");
-        if (currentPage) navigate(currentPage.dataset.page);
+        navigate((currentPage && currentPage.dataset.page) || "dashboard");
     });
 
     document.getElementById("new-company-form").addEventListener("submit", async function (e) {

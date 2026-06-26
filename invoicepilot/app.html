@@ -872,6 +872,12 @@
                     <div class="total-line grand-total"><span>Total TTC</span><span id="q-total">0,00 €</span></div>
                 </div>
 
+                <div class="form-group" style="margin-top:14px">
+                    <label>Photos (chantier, plan, état des lieux)</label>
+                    <input type="file" id="quote-photos-input" accept="image/*" capture="environment" multiple onchange="handleQuotePhotoSelect(this)" style="font-size:.85rem">
+                    <div id="quote-photos-preview" class="quote-photos-preview"></div>
+                </div>
+
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="closeModal('modal-quote')">Annuler</button>
                     <button type="submit" class="btn btn-primary">Créer le devis</button>
@@ -1186,6 +1192,7 @@
                             <button type="button" class="btn btn-sm btn-outline mobile-only-btn" onclick="openFullscreenSignature()">Plein écran</button>
                         </div>
                     </div>
+                    <p style="font-size:.78rem;color:var(--text-muted);margin-top:6px">&#128205; La localisation sera enregistrée comme preuve (avec votre accord du navigateur).</p>
                 </div>
             </div>
 

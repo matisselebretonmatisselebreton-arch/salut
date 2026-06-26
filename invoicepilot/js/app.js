@@ -1801,6 +1801,15 @@
                 var canvas = document.getElementById("sq-canvas");
                 quoteUpdate.signature_data = canvas.toDataURL("image/png");
                 quoteUpdate.signer_name = signerName;
+                // Capture géolocalisation si disponible (employé terrain)
+                try {
+                    var geo = await captureGeolocation();
+                    if (geo) {
+                        quoteUpdate.signature_latitude = geo.lat;
+                        quoteUpdate.signature_longitude = geo.lng;
+                        quoteUpdate.signature_location_label = geo.label || null;
+                    }
+                } catch (e) { /* ignore */ }
             } else {
                 var file = document.getElementById("sq-file").files[0];
                 if (!file) { alert("Veuillez joindre le devis signé."); return; }
@@ -1923,6 +1932,7 @@
             return;
         }
         document.getElementById("quote-form").reset();
+        resetQuotePhotos();
         setupQuoteModal();
         openModal("modal-quote");
     });
@@ -1953,8 +1963,17 @@
             created_by_role: isEmployee() ? "employee" : "owner"
         }, companyFields());
 
+        // Upload photos jointes si présentes
+        if (pendingQuotePhotos.length) {
+            try {
+                var urls = await uploadQuotePhotos(payload.number);
+                if (urls.length) payload.photo_urls = urls;
+            } catch (err) { toast("Photos non envoyées : " + err.message, "warning"); }
+        }
+
         var res = await sb.from("quotes").insert(payload);
         if (res.error) { alert("Erreur : " + dbErrorMessage(res.error)); return; }
+        resetQuotePhotos();
         await refreshData();
         closeModal("modal-quote");
         navigate("quotes");
@@ -4206,11 +4225,10 @@
         if (!members.length) {
             container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucun membre dans cette entreprise.</p>';
         } else {
-            var html = '<table class="data-table"><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Depuis</th><th>Actions</th></tr></thead><tbody>';
+            var html = '<table class="data-table"><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Devis créés</th><th>Factures (validées / refusées / en attente)</th><th>CA généré</th><th>Actions</th></tr></thead><tbody>';
             for (var mi = 0; mi < members.length; mi++) {
                 var m = members[mi];
                 var roleLabel = m.role === "owner" ? '<span class="status-badge success">Propriétaire</span>' : '<span class="status-badge warning">Employé</span>';
-                var date = m.created_at ? formatDate(m.created_at) : "—";
                 var actions = m.role === "employee" && m.user_id !== state.user.id
                     ? '<button class="btn btn-sm btn-danger" onclick="removeEmployee(\'' + m.id + '\')">Retirer</button>'
                     : '—';
@@ -4227,7 +4245,24 @@
                         displayName = m.user_id.slice(0, 8) + "…";
                     }
                 }
-                html += '<tr><td>' + displayName + '</td><td>' + displayEmail + '</td><td>' + roleLabel + '</td><td>' + date + '</td><td>' + actions + '</td></tr>';
+                // Stats employé : devis créés, factures validées/refusées/en attente, CA généré
+                var memberQuotes = state.quotes.filter(function (q) { return q.created_by === m.user_id; }).length;
+                var memberInvoices = state.invoices.filter(function (inv) { return inv.created_by === m.user_id; });
+                var approved = memberInvoices.filter(function (inv) { return inv.status === "pending" || inv.status === "paid" || inv.status === "overdue"; }).length;
+                var rejected = memberInvoices.filter(function (inv) { return inv.status === "rejected"; }).length;
+                var pendingApp = memberInvoices.filter(function (inv) { return inv.status === "pending_approval"; }).length;
+                var revenueGenerated = memberInvoices
+                    .filter(function (inv) { return inv.status === "paid" && !inv.credit_note_id; })
+                    .reduce(function (s, inv) { return s + Number(inv.total_ttc); }, 0);
+
+                html += '<tr>'
+                    + '<td>' + displayName + '</td>'
+                    + '<td>' + displayEmail + '</td>'
+                    + '<td>' + roleLabel + '</td>'
+                    + '<td>' + memberQuotes + '</td>'
+                    + '<td>' + approved + ' / ' + rejected + ' / ' + pendingApp + '</td>'
+                    + '<td>' + formatMoney(revenueGenerated) + '</td>'
+                    + '<td>' + actions + '</td></tr>';
             }
             html += '</tbody></table>';
             container.innerHTML = html;
@@ -5010,6 +5045,77 @@
     function formatDate(d) {
         var parts = String(d).slice(0, 10).split("-");
         return parts[2] + "/" + parts[1] + "/" + parts[0];
+    }
+
+    // --- Geolocation capture ---
+    function captureGeolocation() {
+        return new Promise(function (resolve) {
+            if (!navigator.geolocation) { resolve(null); return; }
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                var lat = pos.coords.latitude;
+                var lng = pos.coords.longitude;
+                // Reverse-geocode via Nominatim (best effort)
+                fetch("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" + lat + "&lon=" + lng + "&zoom=14")
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        var label = d && d.display_name ? d.display_name.split(",").slice(0, 3).join(",").trim() : null;
+                        resolve({ lat: lat, lng: lng, label: label });
+                    })
+                    .catch(function () { resolve({ lat: lat, lng: lng, label: null }); });
+            }, function () { resolve(null); }, { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 });
+        });
+    }
+
+    // --- Quote photos (mobile field capture) ---
+    var pendingQuotePhotos = [];
+
+    window.handleQuotePhotoSelect = async function (input) {
+        var files = Array.from(input.files || []);
+        var preview = document.getElementById("quote-photos-preview");
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+            if (f.size > 5 * 1024 * 1024) { toast("Photo trop volumineuse (max 5 Mo) : " + f.name, "warning"); continue; }
+            var reader = new FileReader();
+            await new Promise(function (resolve) {
+                reader.onload = function (e) {
+                    var idx = pendingQuotePhotos.length;
+                    pendingQuotePhotos.push(f);
+                    var div = document.createElement("div");
+                    div.className = "quote-photo-thumb";
+                    div.innerHTML = '<img src="' + e.target.result + '" alt="Photo"><button type="button" onclick="removeQuotePhoto(' + idx + ', this)">×</button>';
+                    preview.appendChild(div);
+                    resolve();
+                };
+                reader.readAsDataURL(f);
+            });
+        }
+        input.value = "";
+    };
+
+    window.removeQuotePhoto = function (idx, btn) {
+        pendingQuotePhotos[idx] = null;
+        btn.parentNode.remove();
+    };
+
+    async function uploadQuotePhotos(quoteNumber) {
+        var urls = [];
+        for (var i = 0; i < pendingQuotePhotos.length; i++) {
+            var f = pendingQuotePhotos[i];
+            if (!f) continue;
+            var ext = f.name.split(".").pop().toLowerCase();
+            var companyPrefix = state.activeCompanyId || state.user.id;
+            var path = companyPrefix + "/" + quoteNumber + "-" + Date.now() + "-" + i + "." + ext;
+            var res = await sb.storage.from("quote_photos").upload(path, f, { upsert: false });
+            if (!res.error) urls.push(res.data.path);
+        }
+        pendingQuotePhotos = [];
+        return urls;
+    }
+
+    function resetQuotePhotos() {
+        pendingQuotePhotos = [];
+        var preview = document.getElementById("quote-photos-preview");
+        if (preview) preview.innerHTML = "";
     }
 
     // --- Mobile FAB (Floating Action Button) ---

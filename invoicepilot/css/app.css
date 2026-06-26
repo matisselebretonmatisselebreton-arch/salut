@@ -724,6 +724,25 @@ th.sortable:hover { color: var(--primary); }
     .mobile-only-btn { display: none !important; }
 }
 
+/* Quote photos preview */
+.quote-photos-preview {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+}
+.quote-photo-thumb {
+    position: relative; width: 80px; height: 80px; border-radius: 8px;
+    overflow: hidden; border: 1px solid var(--border);
+}
+.quote-photo-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.quote-photo-thumb button {
+    position: absolute; top: 2px; right: 2px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,.65); color: #fff; border: none;
+    cursor: pointer; font-size: 14px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+}
+
 /* Fullscreen signature overlay */
 .fs-signature-overlay {
     position: fixed; inset: 0; z-index: 9999;

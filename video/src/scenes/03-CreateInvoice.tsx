@@ -77,8 +77,8 @@ export const SceneCreateInvoice: React.FC = () => {
     { at: 175, x: 32, y: 50 },
     { at: 220, x: 30, y: 39, click: true },          // clic Description (ligne Prestation)
     { at: 280, x: 59, y: 39, click: true },          // clic Prix unit. (ligne Prestation)
-    { at: 340, x: 75, y: 68, click: true },          // clic Créer la facture
-    { at: 420, x: 75, y: 68 },
+    { at: 340, x: 78, y: 80, click: true },          // clic Créer la facture
+    { at: 420, x: 78, y: 80 },
   ];
 
   // Chrono : 0:00 → 0:38, devient gros et vert à la fin

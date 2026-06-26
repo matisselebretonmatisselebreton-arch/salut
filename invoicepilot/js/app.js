@@ -188,7 +188,7 @@
             state.urssaf = results[8].data || [];
             state.memberships = results[9].data || [];
             state.companies = results[10].data || [];
-            reservedSeq = { invoices: {}, quotes: {} };
+            reservedSeq = {};
 
             updateCompanyContext();
             scopeStateToActiveCompany();
@@ -826,7 +826,7 @@
     window.goSubscription = function () { navigate("subscription"); };
 
     // --- Invoices & Credit notes (module unifié) ---
-    var invoiceFilter = { type: "all", status: "all", search: "" };
+    var invoiceFilter = { type: "all", status: "all", search: "", createdBy: "all" };
     var invoiceSort = { key: "date", dir: "desc" };
 
     function invoiceStatusOf(inv) {
@@ -859,6 +859,7 @@
             if (invoiceFilter.type === "invoice" && d.kind !== "invoice") return false;
             if (invoiceFilter.type === "credit" && d.kind !== "credit") return false;
             if (invoiceFilter.status !== "all" && d.status !== invoiceFilter.status) return false;
+            if (invoiceFilter.createdBy !== "all" && d.raw.created_by !== invoiceFilter.createdBy) return false;
             if (term) {
                 var client = state.clients.find(function (c) { return c.id === d.client_id; });
                 var hay = (d.number + " " + (client ? client.name : "")).toLowerCase();
@@ -977,13 +978,38 @@
             { t: "invoice", s: "pending", label: "En attente" },
             { t: "invoice", s: "overdue", label: "En retard" }
         ];
-        bar.innerHTML = pills.map(function (p) {
+        var html = pills.map(function (p) {
             var active = invoiceFilter.type === p.t && invoiceFilter.status === p.s;
             return '<button class="filter-pill' + (active ? " active" : "") + '" onclick="setInvoiceFilter(\'' + p.t + '\',\'' + p.s + '\')">' + p.label + '</button>';
         }).join("");
+        if (isBusiness() && isOwner()) {
+            var creators = [];
+            var seen = {};
+            state.invoices.forEach(function (inv) {
+                if (inv.created_by && !seen[inv.created_by]) {
+                    seen[inv.created_by] = true;
+                    creators.push(inv.created_by);
+                }
+            });
+            if (creators.length > 1) {
+                html += ' <select class="filter-select-employee" onchange="setCreatedByFilter(this.value)">';
+                html += '<option value="all"' + (invoiceFilter.createdBy === "all" ? " selected" : "") + '>Tous les créateurs</option>';
+                creators.forEach(function (uid) {
+                    var label = uid === state.user.id ? "Moi" : uid.slice(0, 8) + "…";
+                    html += '<option value="' + uid + '"' + (invoiceFilter.createdBy === uid ? " selected" : "") + '>' + label + '</option>';
+                });
+                html += '</select>';
+            }
+        }
+        bar.innerHTML = html;
     }
     window.setInvoiceFilter = function (type, status) {
         invoiceFilter.type = type; invoiceFilter.status = status;
+        renderInvoices();
+    };
+    window.setCreatedByFilter = function (uid) {
+        invoiceFilter.createdBy = uid;
+        pageState.invoices = 1;
         renderInvoices();
     };
 
@@ -4180,15 +4206,29 @@
         if (!members.length) {
             container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucun membre dans cette entreprise.</p>';
         } else {
-            var html = '<table class="data-table"><thead><tr><th>Utilisateur</th><th>Rôle</th><th>Depuis</th><th>Actions</th></tr></thead><tbody>';
-            members.forEach(function (m) {
+            var html = '<table class="data-table"><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Depuis</th><th>Actions</th></tr></thead><tbody>';
+            for (var mi = 0; mi < members.length; mi++) {
+                var m = members[mi];
                 var roleLabel = m.role === "owner" ? '<span class="status-badge success">Propriétaire</span>' : '<span class="status-badge warning">Employé</span>';
                 var date = m.created_at ? formatDate(m.created_at) : "—";
                 var actions = m.role === "employee" && m.user_id !== state.user.id
                     ? '<button class="btn btn-sm btn-danger" onclick="removeEmployee(\'' + m.id + '\')">Retirer</button>'
                     : '—';
-                html += '<tr><td>' + (m.user_id === state.user.id ? "Vous" : m.user_id.slice(0, 8) + "…") + '</td><td>' + roleLabel + '</td><td>' + date + '</td><td>' + actions + '</td></tr>';
-            });
+                var displayName = "—", displayEmail = "—";
+                if (m.user_id === state.user.id) {
+                    displayName = escapeHtml(state.profile.name || "Vous");
+                    displayEmail = escapeHtml(state.user.email);
+                } else {
+                    var profRes = await sb.from("profiles").select("name, email").eq("id", m.user_id).maybeSingle();
+                    if (profRes.data) {
+                        displayName = escapeHtml(profRes.data.name || m.user_id.slice(0, 8) + "…");
+                        displayEmail = escapeHtml(profRes.data.email || "—");
+                    } else {
+                        displayName = m.user_id.slice(0, 8) + "…";
+                    }
+                }
+                html += '<tr><td>' + displayName + '</td><td>' + displayEmail + '</td><td>' + roleLabel + '</td><td>' + date + '</td><td>' + actions + '</td></tr>';
+            }
             html += '</tbody></table>';
             container.innerHTML = html;
         }
@@ -4196,10 +4236,16 @@
         if (!state.invitations.length) {
             invContainer.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucune invitation en attente.</p>';
         } else {
-            var invHtml = '<table class="data-table"><thead><tr><th>Email</th><th>Envoyée le</th><th>Expire le</th><th>Actions</th></tr></thead><tbody>';
+            var invHtml = '<table class="data-table"><thead><tr><th>Nom</th><th>Email</th><th>Téléphone</th><th>Statut</th><th>Actions</th></tr></thead><tbody>';
             state.invitations.forEach(function (inv) {
-                invHtml += '<tr><td>' + escapeHtml(inv.email) + '</td><td>' + formatDate(inv.created_at) + '</td><td>' + formatDate(inv.expires_at) + '</td>'
-                    + '<td><button class="btn btn-sm btn-danger" onclick="cancelInvitation(\'' + inv.id + '\')">Annuler</button></td></tr>';
+                var fullName = escapeHtml((inv.first_name || "") + " " + (inv.last_name || "")).trim() || "—";
+                var statusLabel = inv.status === "pending"
+                    ? '<span class="status-badge warning">En attente</span>'
+                    : '<span class="status-badge success">Acceptée</span>';
+                invHtml += '<tr><td>' + fullName + '</td><td>' + escapeHtml(inv.email) + '</td><td>' + escapeHtml(inv.phone || "—") + '</td>'
+                    + '<td>' + statusLabel + '</td>'
+                    + '<td><button class="btn btn-sm btn-outline" onclick="resendInvitation(\'' + inv.id + '\')">Renvoyer</button> '
+                    + '<button class="btn btn-sm btn-danger" onclick="cancelInvitation(\'' + inv.id + '\')">Supprimer</button></td></tr>';
             });
             invHtml += '</tbody></table>';
             invContainer.innerHTML = invHtml;
@@ -4229,21 +4275,76 @@
         openModal("modal-invite-employee");
     });
 
+    window.resendInvitation = async function (invId) {
+        var inv = state.invitations.find(function (i) { return i.id === invId; });
+        if (!inv) return;
+        var company = getActiveCompany();
+        var companyName = company ? company.name : "votre entreprise";
+        var inviteUrl = window.location.origin + "/app.html?invite=" + inv.token;
+        try {
+            await sb.functions.invoke("send-invite-email", {
+                body: { email: inv.email, first_name: inv.first_name, company_name: companyName, invite_url: inviteUrl }
+            });
+            toast("Invitation renvoyée à " + inv.email, "success");
+        } catch (err) {
+            toast("Email non envoyé. Lien d'invitation : " + inviteUrl, "info");
+        }
+    };
+
     document.getElementById("invite-employee-form").addEventListener("submit", async function (e) {
         e.preventDefault();
+        var firstName = document.getElementById("invite-first-name").value.trim();
+        var lastName = document.getElementById("invite-last-name").value.trim();
         var email = document.getElementById("invite-email").value.trim();
-        if (!email) return;
+        var phone = document.getElementById("invite-phone").value.trim();
+        if (!email || !firstName || !lastName) { toast("Nom, prénom et email sont obligatoires.", "error"); return; }
+
+        var token = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(function(b) { return b.toString(16).padStart(2, "0"); }).join("");
+        var expires = new Date();
+        expires.setDate(expires.getDate() + 30);
+
         var res = await sb.from("employee_invitations").insert({
             company_id: state.activeCompanyId,
             invited_by: state.user.id,
-            email: email
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone || null,
+            token: token,
+            expires_at: expires.toISOString()
         }).select().single();
         if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+
+        var company = getActiveCompany();
+        var companyName = company ? company.name : "votre entreprise";
+        var inviteUrl = window.location.origin + "/app.html?invite=" + token;
+        try {
+            await sb.functions.invoke("send-invite-email", {
+                body: { email: email, first_name: firstName, company_name: companyName, invite_url: inviteUrl }
+            });
+            toast("Profil créé et invitation envoyée à " + email, "success");
+        } catch (err) {
+            toast("Profil créé. Lien d'invitation (email non envoyé) :", "info");
+            await showInviteLink(inviteUrl);
+        }
+
         closeModal("modal-invite-employee");
         document.getElementById("invite-employee-form").reset();
-        toast("Invitation envoyée à " + email, "success");
         renderEmployees();
     });
+
+    async function showInviteLink(url) {
+        var modal = document.getElementById("modal-invite-link");
+        document.getElementById("invite-link-url").value = url;
+        openModal("modal-invite-link");
+    }
+
+    window.copyInviteLink = function () {
+        var input = document.getElementById("invite-link-url");
+        input.select();
+        document.execCommand("copy");
+        toast("Lien copié !", "success");
+    };
 
     // --- Approval workflow ---
     function renderApprovals() {
@@ -4254,19 +4355,24 @@
 
         if (!pending.length) {
             container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucune facture en attente de validation.</p>';
+            document.getElementById("btn-approve-all") && (document.getElementById("btn-approve-all").style.display = "none");
             return;
         }
+
+        var btnAll = document.getElementById("btn-approve-all");
+        if (btnAll) { btnAll.style.display = pending.length > 1 ? "" : "none"; }
 
         var html = '<table class="data-table"><thead><tr><th>N°</th><th>Client</th><th>Montant TTC</th><th>Date</th><th>Créé par</th><th>Actions</th></tr></thead><tbody>';
         pending.forEach(function (inv) {
             var client = state.clients.find(function (c) { return c.id === inv.client_id; });
             var clientName = client ? escapeHtml(client.name) : "—";
+            var creatorLabel = inv.created_by === state.user.id ? "Moi" : (inv.created_by ? inv.created_by.slice(0, 8) + "…" : "—");
             html += '<tr>'
                 + '<td><strong>' + escapeHtml(inv.number) + '</strong></td>'
                 + '<td>' + clientName + '</td>'
                 + '<td>' + formatMoney(inv.total_ttc) + '</td>'
                 + '<td>' + formatDate(inv.date) + '</td>'
-                + '<td>' + (inv.created_by ? inv.created_by.slice(0, 8) + "…" : "—") + '</td>'
+                + '<td>' + creatorLabel + '</td>'
                 + '<td style="display:flex;gap:6px">'
                 + '<button class="btn btn-sm btn-primary" onclick="approveInvoice(\'' + inv.id + '\')">Valider</button>'
                 + '<button class="btn btn-sm btn-danger" onclick="rejectInvoice(\'' + inv.id + '\')">Refuser</button>'
@@ -4298,31 +4404,122 @@
         toast("Facture refusée.", "success");
     };
 
-    // --- Accept invitation flow (for employees logging in) ---
     async function checkPendingInvitations() {
         if (!state.user || !state.user.email) return;
+        var urlToken = new URLSearchParams(window.location.search).get("invite");
+        if (urlToken) {
+            var tokenRes = await sb.from("employee_invitations").select("*").eq("token", urlToken).eq("status", "pending").maybeSingle();
+            if (tokenRes.data && new Date(tokenRes.data.expires_at) > new Date()) {
+                var inv = tokenRes.data;
+                var existing = state.memberships.find(function (m) { return m.company_id === inv.company_id; });
+                if (!existing) {
+                    var compRes = await sb.from("companies").select("name").eq("id", inv.company_id).maybeSingle();
+                    var companyName = compRes.data ? compRes.data.name : "une entreprise";
+                    if (await iconfirm("Vous avez été invité à rejoindre \"" + companyName + "\" en tant qu'employé. Accepter ?")) {
+                        var memRes = await sb.from("memberships").insert({ user_id: state.user.id, company_id: inv.company_id, role: "employee" });
+                        if (!memRes.error) {
+                            await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv.id);
+                            toast("Bienvenue chez \"" + companyName + "\" !", "success");
+                        }
+                    }
+                } else {
+                    await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv.id);
+                }
+                window.history.replaceState({}, "", window.location.pathname);
+                await refreshData();
+                return;
+            }
+        }
         var res = await sb.from("employee_invitations").select("*").eq("email", state.user.email).eq("status", "pending");
         if (res.error || !res.data || !res.data.length) return;
         for (var i = 0; i < res.data.length; i++) {
-            var inv = res.data[i];
-            if (new Date(inv.expires_at) < new Date()) continue;
-            var existing = state.memberships.find(function (m) { return m.company_id === inv.company_id; });
-            if (existing) {
-                await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv.id);
+            var inv2 = res.data[i];
+            if (new Date(inv2.expires_at) < new Date()) continue;
+            var existing2 = state.memberships.find(function (m) { return m.company_id === inv2.company_id; });
+            if (existing2) {
+                await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv2.id);
                 continue;
             }
-            var company = state.companies.find(function (c) { return c.id === inv.company_id; });
-            var companyName = company ? company.name : "une entreprise";
-            if (await iconfirm("Vous avez été invité à rejoindre \"" + companyName + "\" en tant qu'employé. Accepter l'invitation ?")) {
-                var memRes = await sb.from("memberships").insert({ user_id: state.user.id, company_id: inv.company_id, role: "employee" });
-                if (!memRes.error) {
-                    await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv.id);
-                    toast("Vous avez rejoint \"" + companyName + "\" !", "success");
+            var compRes2 = await sb.from("companies").select("name").eq("id", inv2.company_id).maybeSingle();
+            var companyName2 = compRes2.data ? compRes2.data.name : "une entreprise";
+            if (await iconfirm("Vous avez été invité à rejoindre \"" + companyName2 + "\" en tant qu'employé. Accepter l'invitation ?")) {
+                var memRes2 = await sb.from("memberships").insert({ user_id: state.user.id, company_id: inv2.company_id, role: "employee" });
+                if (!memRes2.error) {
+                    await sb.from("employee_invitations").update({ status: "accepted" }).eq("id", inv2.id);
+                    toast("Vous avez rejoint \"" + companyName2 + "\" !", "success");
                 }
             }
         }
         await refreshData();
     }
+
+    // --- Batch approval ---
+    window.approveAll = async function () {
+        var pending = state.invoices.filter(function (inv) {
+            return inv.status === "pending_approval" && inv.company_id === state.activeCompanyId;
+        });
+        if (!pending.length) return;
+        if (!await iconfirm("Valider les " + pending.length + " facture(s) en attente ?")) return;
+        for (var i = 0; i < pending.length; i++) {
+            await sb.from("invoices").update({
+                status: "pending",
+                approved_by: state.user.id,
+                approved_at: new Date().toISOString()
+            }).eq("id", pending[i].id);
+        }
+        await refreshData();
+        renderApprovals();
+        toast(pending.length + " facture(s) validée(s).", "success");
+    };
+
+    // --- Fullscreen signature for mobile ---
+    window.openFullscreenSignature = function () {
+        var overlay = document.getElementById("fullscreen-signature");
+        overlay.style.display = "flex";
+        var c = document.getElementById("fs-canvas");
+        c.width = window.innerWidth;
+        c.height = window.innerHeight - 80;
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.strokeStyle = "#1E293B";
+        var drawing = false, lx = 0, ly = 0;
+        function pos(e) {
+            var t = e.touches ? e.touches[0] : e;
+            return { x: t.clientX, y: t.clientY - 0 };
+        }
+        function start(e) { e.preventDefault(); drawing = true; var p = pos(e); lx = p.x; ly = p.y; }
+        function move(e) {
+            if (!drawing) return; e.preventDefault();
+            var p = pos(e);
+            ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke();
+            lx = p.x; ly = p.y;
+        }
+        function end() { drawing = false; }
+        c.onmousedown = start; c.onmousemove = move; c.onmouseup = end; c.onmouseleave = end;
+        c.ontouchstart = start; c.ontouchmove = move; c.ontouchend = end;
+    };
+
+    window.clearFsSignature = function () {
+        var c = document.getElementById("fs-canvas");
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, c.width, c.height);
+    };
+
+    window.validateFsSignature = function () {
+        var fsCanvas = document.getElementById("fs-canvas");
+        var sqCanvas = document.getElementById("sq-canvas");
+        var sqCtx = sqCanvas.getContext("2d");
+        sqCtx.clearRect(0, 0, sqCanvas.width, sqCanvas.height);
+        sqCtx.drawImage(fsCanvas, 0, 0, sqCanvas.width, sqCanvas.height);
+        sqHasDrawn = true;
+        document.getElementById("fullscreen-signature").style.display = "none";
+    };
+
+    window.closeFsSignature = function () {
+        document.getElementById("fullscreen-signature").style.display = "none";
+    };
 
     function escapeHtml(s) {
         var d = document.createElement("div");
@@ -4658,11 +4855,14 @@
         return max;
     }
     function round2(v) { return Math.round((Number(v) || 0) * 100) / 100; }
-    var reservedSeq = { invoices: {}, quotes: {} };
+    var reservedSeq = {};
+    function seqKey(kind) { return kind + ":" + (state.activeCompanyId || "_solo"); }
     function reserveSeq(kind, list, year) {
-        var prev = reservedSeq[kind][year] || 0;
+        var k = seqKey(kind);
+        if (!reservedSeq[k]) reservedSeq[k] = {};
+        var prev = reservedSeq[k][year] || 0;
         var next = Math.max(maxSeqForYear(list, year), prev) + 1;
-        reservedSeq[kind][year] = next;
+        reservedSeq[k][year] = next;
         return next;
     }
     function nextInvoiceNumber() {
@@ -4811,6 +5011,37 @@
         var parts = String(d).slice(0, 10).split("-");
         return parts[2] + "/" + parts[1] + "/" + parts[0];
     }
+
+    // --- Mobile FAB (Floating Action Button) ---
+    (function () {
+        var fab = document.getElementById("fab-new");
+        var fabMenu = document.getElementById("fab-menu");
+        if (!fab) return;
+        fab.addEventListener("click", function () {
+            fabMenu.classList.toggle("open");
+        });
+        document.addEventListener("click", function (e) {
+            if (!fab.contains(e.target) && !fabMenu.contains(e.target)) {
+                fabMenu.classList.remove("open");
+            }
+        });
+    })();
+
+    window.fabNewQuote = function () {
+        document.getElementById("fab-menu").classList.remove("open");
+        if (state.clients.length === 0) { alert("Ajoutez d'abord un client."); navigate("clients"); return; }
+        document.getElementById("quote-form").reset();
+        setupQuoteModal();
+        openModal("modal-quote");
+    };
+    window.fabNewInvoice = function () {
+        document.getElementById("fab-menu").classList.remove("open");
+        if (!canCreateInvoice()) { quotaBlockedAlert(); return; }
+        if (state.clients.length === 0) { alert("Ajoutez d'abord un client."); navigate("clients"); return; }
+        document.getElementById("invoice-form").reset();
+        setupInvoiceModal();
+        openModal("modal-invoice");
+    };
 
     // --- Mobile sidebar toggle ---
     (function () {

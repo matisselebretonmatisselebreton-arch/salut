@@ -673,3 +673,69 @@ th.sortable:hover { color: var(--primary); }
     .sidebar-nav a { padding: 12px 22px; }
     select, input, textarea { min-height: 44px; font-size: 16px !important; }
 }
+
+/* Invite info box */
+.invite-info-box {
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 14px 16px; margin: 12px 0 16px; font-size: .85rem; color: var(--text-muted);
+}
+.invite-info-box ul { margin: 6px 0 0 18px; }
+.invite-info-box li { margin-bottom: 4px; }
+
+/* Employee filter select */
+.filter-select-employee {
+    display: inline-block; padding: 6px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface); font-size: .82rem;
+    color: var(--text); margin-left: 8px; vertical-align: middle; cursor: pointer;
+}
+
+/* Mobile FAB */
+.fab-container { display: none; }
+
+@media (max-width: 768px) {
+    .fab-container {
+        display: block; position: fixed; bottom: 24px; right: 20px; z-index: 190;
+    }
+    .fab-btn {
+        width: 56px; height: 56px; border-radius: 28px; border: none;
+        background: var(--primary); color: #fff; cursor: pointer;
+        box-shadow: 0 4px 16px rgba(79,70,229,.4);
+        display: flex; align-items: center; justify-content: center;
+        transition: transform .2s;
+    }
+    .fab-btn:active { transform: scale(.92); }
+    .fab-menu {
+        display: none; flex-direction: column; gap: 8px;
+        position: absolute; bottom: 64px; right: 0;
+        background: var(--surface); border-radius: var(--radius); padding: 8px;
+        box-shadow: var(--shadow-lg); min-width: 200px;
+    }
+    .fab-menu.open { display: flex; }
+    .fab-item {
+        display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+        border: none; background: none; cursor: pointer; font-size: .9rem;
+        color: var(--text); border-radius: var(--radius-sm); text-align: left;
+    }
+    .fab-item:hover, .fab-item:active { background: var(--bg); }
+
+    .mobile-only-btn { display: inline-flex !important; }
+}
+@media (min-width: 769px) {
+    .mobile-only-btn { display: none !important; }
+}
+
+/* Fullscreen signature overlay */
+.fs-signature-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #fff; display: flex; flex-direction: column;
+}
+.fs-signature-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.fs-signature-footer {
+    padding: 10px 16px; border-top: 1px solid var(--border);
+    display: flex; justify-content: center;
+}
+.fs-signature-footer .btn { width: 100%; max-width: 400px; }
+#fs-canvas { flex: 1; touch-action: none; }

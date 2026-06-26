@@ -541,15 +541,16 @@
                 <div class="page-header">
                     <div>
                         <h1>Gestion des employés</h1>
-                        <p class="page-subtitle">Invitez et gérez les employés de votre entreprise</p>
+                        <p class="page-subtitle">Créez les profils de vos employés et gérez leur accès</p>
                     </div>
-                    <button class="btn btn-primary" id="btn-invite-employee">+ Inviter un employé</button>
+                    <button class="btn btn-primary" id="btn-invite-employee">+ Créer un employé</button>
                 </div>
                 <div class="table-card">
+                    <div class="table-header"><h2>Membres de l'entreprise</h2></div>
                     <div id="employees-list"></div>
                 </div>
                 <div class="table-card" style="margin-top:20px">
-                    <div class="table-header"><h2>Invitations en attente</h2></div>
+                    <div class="table-header"><h2>Invitations envoyées</h2></div>
                     <div id="invitations-list"></div>
                 </div>
             </div>
@@ -561,6 +562,7 @@
                         <h1>Validations en attente</h1>
                         <p class="page-subtitle">Factures créées par vos employés nécessitant votre validation</p>
                     </div>
+                    <button class="btn btn-primary" id="btn-approve-all" onclick="approveAll()" style="display:none">Tout valider</button>
                 </div>
                 <div class="table-card">
                     <div id="approvals-list"></div>
@@ -1179,7 +1181,10 @@
                     <label>Signature (souris ou doigt)</label>
                     <div class="signature-pad-wrap">
                         <canvas id="sq-canvas" width="540" height="200"></canvas>
-                        <button type="button" class="btn btn-sm btn-outline" onclick="clearSignature()" style="margin-top:8px">Effacer</button>
+                        <div style="display:flex;gap:8px;margin-top:8px">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearSignature()">Effacer</button>
+                            <button type="button" class="btn btn-sm btn-outline mobile-only-btn" onclick="openFullscreenSignature()">Plein écran</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1198,21 +1203,60 @@
         </div>
     </div>
 
-    <!-- Modal: Invite Employee -->
+    <!-- Modal: Créer un employé -->
     <div class="modal-overlay" id="modal-invite-employee">
         <div class="modal">
-            <h2>Inviter un employé</h2>
+            <h2>Créer un profil employé</h2>
             <form id="invite-employee-form">
-                <div class="form-group">
-                    <label>Email de l'employé</label>
-                    <input type="email" id="invite-email" placeholder="employe@exemple.fr" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prénom *</label>
+                        <input type="text" id="invite-first-name" placeholder="Jean" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="invite-last-name" placeholder="Dupont" required>
+                    </div>
                 </div>
-                <p style="color:var(--text-muted);font-size:.85rem;margin:8px 0 16px">L'employé recevra un lien d'invitation par email. Il pourra créer des devis et les faire signer directement sur le terrain. Les factures créées nécessiteront votre validation.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="invite-email" placeholder="jean@exemple.fr" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" id="invite-phone" placeholder="06 12 34 56 78">
+                    </div>
+                </div>
+                <div class="invite-info-box">
+                    <strong>Ce qui se passe ensuite :</strong>
+                    <ul>
+                        <li>Un email est envoyé avec un lien de création de compte</li>
+                        <li>L'employé crée son mot de passe et accède à l'app</li>
+                        <li>Il peut créer des devis et les faire signer sur le terrain</li>
+                        <li>Les factures créées nécessitent votre validation</li>
+                    </ul>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="closeModal('modal-invite-employee')">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Envoyer l'invitation</button>
+                    <button type="submit" class="btn btn-primary">Créer et envoyer l'invitation</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: Lien d'invitation -->
+    <div class="modal-overlay" id="modal-invite-link">
+        <div class="modal" style="max-width:520px">
+            <h2>Lien d'invitation</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:12px">L'email n'a pas pu être envoyé automatiquement. Envoyez ce lien manuellement à l'employé :</p>
+            <div style="display:flex;gap:8px">
+                <input type="text" id="invite-link-url" readonly style="flex:1;font-size:.85rem">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyInviteLink()">Copier</button>
+            </div>
+            <div class="modal-actions" style="margin-top:16px">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-invite-link')">Fermer</button>
+            </div>
         </div>
     </div>
 
@@ -1274,6 +1318,36 @@
                 <button class="btn btn-outline" id="confirm-cancel">Annuler</button>
                 <button class="btn btn-primary" id="confirm-ok">Confirmer</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Mobile FAB -->
+    <div class="fab-container" id="fab-container">
+        <div class="fab-menu" id="fab-menu">
+            <button class="fab-item" onclick="fabNewQuote()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                Nouveau devis
+            </button>
+            <button class="fab-item" onclick="fabNewInvoice()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+                Nouvelle facture
+            </button>
+        </div>
+        <button class="fab-btn" id="fab-new" aria-label="Créer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+    </div>
+
+    <!-- Fullscreen signature (mobile) -->
+    <div id="fullscreen-signature" class="fs-signature-overlay" style="display:none">
+        <div class="fs-signature-header">
+            <button class="btn btn-outline btn-sm" onclick="closeFsSignature()">Annuler</button>
+            <span style="font-weight:600">Signature</span>
+            <button class="btn btn-outline btn-sm" onclick="clearFsSignature()">Effacer</button>
+        </div>
+        <canvas id="fs-canvas"></canvas>
+        <div class="fs-signature-footer">
+            <button class="btn btn-primary" onclick="validateFsSignature()">Valider la signature</button>
         </div>
     </div>
 

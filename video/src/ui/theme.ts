@@ -16,7 +16,7 @@ export const theme = {
 } as const;
 
 export const FPS = 30;
-export const DURATION_FRAMES = 45 * FPS;
+export const DURATION_FRAMES = 52 * FPS;
 
 export const fontFamily =
   '"Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';

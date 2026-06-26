@@ -12,16 +12,16 @@ import { Cursor } from "../components/Cursor";
  *  22-32   clic, modal choix apparaît
  *  32-70   curseur descend vers "Facture libre"
  *  65-75   clic "Facture libre"
- *  75-100  modal formulaire apparaît, curseur va sur Client
+ *  75-100  modal formulaire apparaît
  *  100-115 clic Client → dropdown s'ouvre
- *  115-160 curseur descend dans la liste vers "SARL TechVision"
+ *  115-155 curseur descend vers "SARL TechVision"
  *  155-165 clic → dropdown se ferme, client sélectionné
- *  165-200 form scrolle vers le bas (révèle Lignes + Totaux + Boutons)
- *  200-260 curseur sur Description, typing "Refonte site web — phase 1"
- *  260-320 curseur sur Prix unit., 0 → 2400, totaux montent
- *  320-360 curseur sur "Créer la facture", clic
- *  340-380 form fade out, toast "✓ Facture créée"
- *  380-420 hold final
+ *  165-200 form scrolle vers le bas
+ *  200-260 curseur sur Description, typing
+ *  260-320 curseur sur Prix unit., 0 → 2400
+ *  320-355 curseur sur "Créer la facture", clic
+ *  355-385 form fade out, toast + grosse banderole "Facture créée en 38s"
+ *  385-420 hold
  */
 export const SceneCreateInvoice: React.FC = () => {
   const frame = useCurrentFrame();
@@ -32,65 +32,64 @@ export const SceneCreateInvoice: React.FC = () => {
   const shellY = interpolate(shellIn, [0, 1], [40, 0]);
   const shellOpacity = shellIn;
 
-  // Stages
   const inChoice = frame >= 22 && frame < 95;
   const inForm = frame >= 75 && frame < 380;
-  const showToast = frame >= 365;
+  const showToast = frame >= 360;
 
-  // Choice modal
   const choiceOpacity = interpolate(frame, [22, 35, 85, 95], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const choiceScale = interpolate(frame, [22, 35, 85, 95], [0.92, 1, 1, 0.92], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const choiceHover = frame >= 38 ? 1 : -1;
 
-  // Form modal
   const formOpacity = interpolate(frame, [75, 95, 370, 380], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const formScale = interpolate(frame, [75, 95], [0.92, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
-  // Dropdown client : ouvert 110-160
-  const dropdownOpen = frame >= 110 && frame < 162;
-  const selectedClientName = frame >= 162 ? "SARL TechVision" : "";
-  const clientFilled = interpolate(frame, [100, 115, 162, 180], [0, 1, 1, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Dropdown : ouvert pendant que le curseur descend, fermé après clic
+  const dropdownOpen = frame >= 110 && frame < 160;
+  // SARL TechVision est en index 3 (après Sélectionner / Mairie / Association)
+  // Pré-surligné quand le curseur approche (frame 140+)
+  const selectedClientName = frame >= 140 ? "SARL TechVision" : "";
+  const clientFilled = interpolate(frame, [100, 115], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
-  // Scroll du form : 0 jusqu'à 165, puis -260 (révèle bas) à partir de 180
-  const scrollY = interpolate(frame, [165, 195], [0, -260], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Scroll : 0 jusqu'à 165, transition vers -200 entre 165 et 195
+  const scrollY = interpolate(frame, [165, 195], [0, -200], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
 
   // Form inputs
-  const descFilled = interpolate(frame, [205, 260], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const puFilled = interpolate(frame, [270, 315], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
-  const submitting = frame >= 348 && frame < 370;
+  const descFilled = interpolate(frame, [210, 260], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const puFilled = interpolate(frame, [275, 315], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const submitting = frame >= 343 && frame < 365;
 
-  // Cursor path — coords ajustées pour les différents états (scroll + dropdown)
-  //
-  // Avant scroll (scrollY=0) :
-  //   - Client field : (33, 22)
-  //   - Dropdown items (sous le Client) :
-  //       0 "Sélectionner" y≈30, 1 Marketing y≈34, 2 Mairie y≈38,
-  //       3 Asso y≈42, 4 SARL TechVision y≈46, 5 Restaurant y≈50, 6 Cabinet y≈54
-  //   - SARL TechVision est en position 4 → y≈46
-  //
-  // Après scroll (scrollY=-260) :
-  //   - Description cell : (29, 33)
-  //   - Prix unit. cell : (55, 33)
-  //   - Créer la facture : (75, 82)
+  // Cursor path — coords précises calculées d'après la mise en page :
+  //   "+ Nouveau document" (top-right main) : (89, 6)
+  //   "Facture libre" (2e item choice modal) : (50, 43)
+  //   Client field (row 1 col gauche) : (32, 20)
+  //   SARL TechVision (dropdown item 3 sur 7) : (32, 50)
+  //   Description (après scroll -200) : (30, 31)
+  //   Prix unit. (après scroll -200) : (59, 31)
+  //   Créer la facture (après scroll -200) : (75, 68)
   const cursorPath = [
     { at: 0, x: 60, y: 90 },
-    { at: 25, x: 93, y: 8, click: true },              // clic "+ Nouveau document"
-    { at: 45, x: 93, y: 8 },
-    { at: 70, x: 50, y: 47, click: true },             // clic "Facture libre"
-    { at: 92, x: 50, y: 47 },
-    { at: 112, x: 33, y: 22, click: true },            // clic Client (dropdown s'ouvre)
-    { at: 158, x: 33, y: 46, click: true },            // clic "SARL TechVision"
-    { at: 175, x: 33, y: 46 },
-    { at: 215, x: 29, y: 33, click: true },            // clic Description (après scroll)
-    { at: 275, x: 55, y: 33, click: true },            // clic Prix unit.
-    { at: 345, x: 75, y: 82, click: true },            // clic "Créer la facture"
-    { at: 420, x: 75, y: 82 },
+    { at: 25, x: 89, y: 6, click: true },
+    { at: 45, x: 89, y: 6 },
+    { at: 70, x: 50, y: 43, click: true },
+    { at: 92, x: 50, y: 43 },
+    { at: 112, x: 32, y: 20, click: true },          // clic Client → dropdown
+    { at: 152, x: 32, y: 50, click: true },          // clic SARL TechVision
+    { at: 175, x: 32, y: 50 },
+    { at: 220, x: 30, y: 31, click: true },          // clic Description
+    { at: 280, x: 59, y: 31, click: true },          // clic Prix unit.
+    { at: 340, x: 75, y: 68, click: true },          // clic Créer la facture
+    { at: 420, x: 75, y: 68 },
   ];
 
-  // Chrono : 0:00 → 0:38
-  const seconds = Math.floor(interpolate(frame, [0, 350], [0, 38], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
-  const chronoColor = frame >= 350 ? theme.success : theme.primary;
-  const chronoOpacity = interpolate(frame, [0, 10], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // Chrono : 0:00 → 0:38, devient gros et vert à la fin
+  const seconds = Math.floor(interpolate(frame, [0, 345], [0, 38], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
+  const chronoFinished = frame >= 345;
+  const chronoColor = chronoFinished ? theme.success : theme.primary;
+  const chronoOpacity = interpolate(frame, [0, 12], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const chronoSuccessScale = chronoFinished
+    ? spring({ frame: frame - 345, fps, config: { damping: 10, stiffness: 200 }, durationInFrames: 18 })
+    : 0;
+  const chronoScale = 1 + 0.08 * chronoSuccessScale;
 
   return (
     <AbsoluteFill
@@ -110,33 +109,6 @@ export const SceneCreateInvoice: React.FC = () => {
           backgroundImage: "radial-gradient(circle at 30% 20%, rgba(79,70,229,0.10) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(129,140,248,0.10) 0%, transparent 50%)",
         }}
       />
-
-      {/* Chrono */}
-      <div
-        style={{
-          position: "absolute",
-          top: isVertical ? 60 : 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          padding: "10px 24px",
-          background: "#fff",
-          borderRadius: 999,
-          boxShadow: "0 10px 30px rgba(15,23,42,0.10)",
-          border: `1px solid ${theme.border}`,
-          zIndex: 30,
-          opacity: chronoOpacity,
-        }}
-      >
-        <span style={{ fontSize: 22 }}>⏱️</span>
-        <span style={{ fontSize: 14, color: theme.textMuted, fontWeight: 600 }}>Création facture</span>
-        <span style={{ fontSize: 24, fontWeight: 800, color: chronoColor, fontVariantNumeric: "tabular-nums", minWidth: 50 }}>
-          0:{seconds.toString().padStart(2, "0")}
-        </span>
-        {frame >= 350 && <span style={{ fontSize: 13, fontWeight: 700, color: theme.success }}>✓ créée !</span>}
-      </div>
 
       <DeviceFrame isVertical={isVertical} shellOpacity={shellOpacity} shellY={shellY}>
         <BrowserBar />
@@ -159,11 +131,56 @@ export const SceneCreateInvoice: React.FC = () => {
               submitting={submitting}
             />
           )}
-          {showToast && <SuccessToast frame={frame - 365} />}
+          {showToast && <SuccessToast frame={frame - 360} />}
 
-          <Cursor path={cursorPath} size={38} color="#0F172A" />
+          <Cursor path={cursorPath} size={40} color="#0F172A" />
         </div>
       </DeviceFrame>
+
+      {/* Chrono — gros, par-dessus tout, ne peut pas être manqué */}
+      <div
+        style={{
+          position: "absolute",
+          top: isVertical ? 80 : 32,
+          left: "50%",
+          transform: `translateX(-50%) scale(${chronoScale})`,
+          display: "flex",
+          alignItems: "center",
+          gap: 18,
+          padding: "16px 32px",
+          background: "#fff",
+          borderRadius: 999,
+          boxShadow: chronoFinished
+            ? `0 20px 50px rgba(16,185,129,0.4), 0 0 0 6px rgba(16,185,129,0.15)`
+            : "0 20px 50px rgba(15,23,42,0.18), 0 4px 12px rgba(79,70,229,0.18)",
+          border: `2px solid ${chronoColor}`,
+          zIndex: 1000,
+          opacity: chronoOpacity,
+          transition: "box-shadow 0.3s, border-color 0.3s",
+        }}
+      >
+        <span style={{ fontSize: 32 }}>{chronoFinished ? "🎉" : "⏱️"}</span>
+        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.05 }}>
+          <span style={{ fontSize: 12, color: theme.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            {chronoFinished ? "Facture créée en" : "Création facture"}
+          </span>
+          <span
+            style={{
+              fontSize: chronoFinished ? 42 : 36,
+              fontWeight: 900,
+              color: chronoColor,
+              fontVariantNumeric: "tabular-nums",
+              letterSpacing: "-0.02em",
+              transition: "all 0.3s",
+            }}
+          >
+            {chronoFinished ? `${seconds} sec` : `0:${seconds.toString().padStart(2, "0")}`}
+          </span>
+        </div>
+        {chronoFinished && (
+          <span style={{ fontSize: 28, fontWeight: 800, color: theme.success, marginLeft: 4 }}>✓</span>
+        )}
+      </div>
     </AbsoluteFill>
   );
 };
@@ -174,7 +191,7 @@ const DeviceFrame: React.FC<{ isVertical: boolean; shellOpacity: number; shellY:
       position: "relative",
       width: isVertical ? "94%" : "86%",
       aspectRatio: "16 / 10",
-      maxHeight: isVertical ? "65%" : "88%",
+      maxHeight: isVertical ? "62%" : "85%",
       background: "#fff",
       borderRadius: 18,
       overflow: "hidden",

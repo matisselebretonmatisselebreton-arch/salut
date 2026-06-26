@@ -17,12 +17,12 @@ type Props = {
 
 const CLIENTS = [
   "Sélectionner un client",
-  "Marketing Studio SARL",
   "Mairie de Saint-Cloud",
   "Association Sportive Olympique",
   "SARL TechVision",
   "Restaurant Le Gourmet",
   "Cabinet Médical Lévy",
+  "Boulangerie Dupont",
 ];
 
 const TVA_RATE = 0.20;

@@ -724,6 +724,19 @@ th.sortable:hover { color: var(--primary); }
     .mobile-only-btn { display: none !important; }
 }
 
+/* Offline indicator */
+.offline-indicator {
+    position: fixed; top: 12px; right: 12px; z-index: 195;
+    padding: 6px 12px; border-radius: 20px;
+    font-size: .78rem; font-weight: 600;
+    box-shadow: var(--shadow-md);
+}
+.offline-indicator.offline { background: #FEF3C7; color: #92400E; }
+.offline-indicator.syncing { background: #DBEAFE; color: #1E40AF; }
+@media (max-width: 768px) {
+    .offline-indicator { top: 12px; right: 60px; }
+}
+
 /* Onboarding tour */
 .tour-overlay {
     position: fixed; inset: 0; z-index: 9998;

@@ -76,6 +76,142 @@
         userRole: null
     };
 
+    // --- Offline mode (IndexedDB cache + sync queue) ---
+    var DB_NAME = "invoicepilot-offline";
+    var DB_VERSION = 1;
+    var dbInstance = null;
+
+    function openOfflineDB() {
+        if (dbInstance) return Promise.resolve(dbInstance);
+        return new Promise(function (resolve, reject) {
+            var req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = function () {
+                var db = req.result;
+                if (!db.objectStoreNames.contains("state")) db.createObjectStore("state", { keyPath: "key" });
+                if (!db.objectStoreNames.contains("queue")) db.createObjectStore("queue", { keyPath: "id", autoIncrement: true });
+            };
+            req.onsuccess = function () { dbInstance = req.result; resolve(dbInstance); };
+            req.onerror = function () { reject(req.error); };
+        });
+    }
+
+    async function saveStateSnapshot() {
+        if (!state.user) return;
+        try {
+            var db = await openOfflineDB();
+            var tx = db.transaction("state", "readwrite");
+            tx.objectStore("state").put({
+                key: "snapshot_" + state.user.id,
+                data: {
+                    profile: state.profile,
+                    clients: state.clients,
+                    invoices: state.invoices,
+                    quotes: state.quotes,
+                    recurring: state.recurring,
+                    creditNotes: state.creditNotes,
+                    expenses: state.expenses,
+                    suppliers: state.suppliers,
+                    urssaf: state.urssaf,
+                    memberships: state.memberships,
+                    companies: state.companies,
+                    activeCompanyId: state.activeCompanyId,
+                    userRole: state.userRole,
+                    savedAt: Date.now()
+                }
+            });
+        } catch (e) { /* ignore */ }
+    }
+
+    async function loadStateSnapshot() {
+        if (!state.user) return null;
+        try {
+            var db = await openOfflineDB();
+            return await new Promise(function (resolve) {
+                var tx = db.transaction("state", "readonly");
+                var req = tx.objectStore("state").get("snapshot_" + state.user.id);
+                req.onsuccess = function () { resolve(req.result ? req.result.data : null); };
+                req.onerror = function () { resolve(null); };
+            });
+        } catch (e) { return null; }
+    }
+
+    async function enqueueMutation(op) {
+        try {
+            var db = await openOfflineDB();
+            var tx = db.transaction("queue", "readwrite");
+            tx.objectStore("queue").add({ op: op, at: Date.now() });
+            updateOfflineBadge();
+        } catch (e) { /* ignore */ }
+    }
+
+    async function getQueuedMutations() {
+        try {
+            var db = await openOfflineDB();
+            return await new Promise(function (resolve) {
+                var items = [];
+                var tx = db.transaction("queue", "readonly");
+                var cursor = tx.objectStore("queue").openCursor();
+                cursor.onsuccess = function (e) {
+                    var c = e.target.result;
+                    if (c) { items.push({ id: c.key, op: c.value.op }); c.continue(); }
+                    else resolve(items);
+                };
+                cursor.onerror = function () { resolve([]); };
+            });
+        } catch (e) { return []; }
+    }
+
+    async function removeQueuedMutation(id) {
+        try {
+            var db = await openOfflineDB();
+            var tx = db.transaction("queue", "readwrite");
+            tx.objectStore("queue").delete(id);
+        } catch (e) { /* ignore */ }
+    }
+
+    async function flushQueue() {
+        var items = await getQueuedMutations();
+        if (!items.length) return;
+        toast("Synchronisation de " + items.length + " action(s) hors-ligne…", "info");
+        var ok = 0, fail = 0;
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            try {
+                var q = sb.from(item.op.table);
+                var res;
+                if (item.op.type === "insert") res = await q.insert(item.op.payload);
+                else if (item.op.type === "update") res = await q.update(item.op.payload).eq("id", item.op.id);
+                else if (item.op.type === "delete") res = await q.delete().eq("id", item.op.id);
+                if (res && res.error) { fail++; }
+                else { ok++; await removeQueuedMutation(item.id); }
+            } catch (e) { fail++; }
+        }
+        updateOfflineBadge();
+        if (ok) { await refreshData(); }
+        toast("Sync : " + ok + " ok, " + fail + " échec(s)", fail ? "warning" : "success");
+    }
+
+    async function updateOfflineBadge() {
+        var badge = document.getElementById("offline-badge");
+        if (!badge) return;
+        var items = await getQueuedMutations();
+        var isOffline = !navigator.onLine;
+        if (isOffline) {
+            badge.style.display = "";
+            badge.textContent = items.length ? "Hors-ligne · " + items.length + " en attente" : "Hors-ligne";
+            badge.className = "offline-indicator offline";
+        } else if (items.length) {
+            badge.style.display = "";
+            badge.textContent = "Sync · " + items.length;
+            badge.className = "offline-indicator syncing";
+        } else {
+            badge.style.display = "none";
+        }
+    }
+
+    window.addEventListener("online", function () { updateOfflineBadge(); flushQueue(); });
+    window.addEventListener("offline", updateOfflineBadge);
+
     var FREE_INVOICE_LIMIT = 10;
     function planOf() { return (state.profile && state.profile.plan) || "free"; }
     function isPro() { var p = planOf(); return p === "pro" || p === "business"; }
@@ -141,6 +277,8 @@
         document.getElementById("user-display-name").textContent =
             (state.user.user_metadata && state.user.user_metadata.name) || state.user.email;
         await refreshData();
+        if (navigator.onLine) { await flushQueue(); }
+        updateOfflineBadge();
         await checkPendingInvitations();
         if (isBusiness() && state.companies.length === 0) {
             await createDefaultCompany();
@@ -277,6 +415,30 @@
     async function refreshData() {
         showLoading(true);
         try {
+            if (!navigator.onLine) {
+                var snap = await loadStateSnapshot();
+                if (snap) {
+                    state.profile = snap.profile || {};
+                    state.clients = snap.clients || [];
+                    state.invoices = snap.invoices || [];
+                    state.quotes = snap.quotes || [];
+                    state.recurring = snap.recurring || [];
+                    state.creditNotes = snap.creditNotes || [];
+                    state.expenses = snap.expenses || [];
+                    state.suppliers = snap.suppliers || [];
+                    state.urssaf = snap.urssaf || [];
+                    state.memberships = snap.memberships || [];
+                    state.companies = snap.companies || [];
+                    state.activeCompanyId = snap.activeCompanyId || null;
+                    state.userRole = snap.userRole || null;
+                    reservedSeq = {};
+                    updateCompanyContext();
+                    scopeStateToActiveCompany();
+                    updateOfflineBadge();
+                    toast("Mode hors-ligne — données du " + new Date(snap.savedAt).toLocaleString("fr-FR"), "info");
+                    return;
+                }
+            }
             var results = await Promise.all([
                 sb.from("profiles").select("*").eq("id", state.user.id).maybeSingle(),
                 sb.from("clients").select("*").order("created_at", { ascending: false }),
@@ -307,6 +469,8 @@
 
             updateCompanyContext();
             scopeStateToActiveCompany();
+            saveStateSnapshot();
+            updateOfflineBadge();
         } finally {
             showLoading(false);
         }
@@ -2084,12 +2248,25 @@
             created_by_role: isEmployee() ? "employee" : "owner"
         }, companyFields());
 
-        // Upload photos jointes si présentes
-        if (pendingQuotePhotos.length) {
+        // Upload photos jointes si présentes (impossible en offline)
+        if (pendingQuotePhotos.length && navigator.onLine) {
             try {
                 var urls = await uploadQuotePhotos(payload.number);
                 if (urls.length) payload.photo_urls = urls;
             } catch (err) { toast("Photos non envoyées : " + err.message, "warning"); }
+        }
+
+        if (!navigator.onLine) {
+            // Optimistic local insert + enqueue for sync
+            payload.id = "offline-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+            state.quotes.unshift(payload);
+            await enqueueMutation({ table: "quotes", type: "insert", payload: payload });
+            await saveStateSnapshot();
+            resetQuotePhotos();
+            closeModal("modal-quote");
+            navigate("quotes");
+            toast("Devis créé hors-ligne — sera synchronisé à la reconnexion.", "info");
+            return;
         }
 
         var res = await sb.from("quotes").insert(payload);

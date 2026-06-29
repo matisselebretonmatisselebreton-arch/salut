@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Signature de devis — InvoicePilot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #F1F5F9; color: #1E293B; line-height: 1.6; padding: 16px; }
+        .sign-container { max-width: 720px; margin: 0 auto; }
+        .sign-card { background: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 4px 12px rgba(15,23,42,.08); margin-bottom: 16px; }
+        h1 { font-size: 1.4rem; margin-bottom: 8px; color: #4F46E5; }
+        h2 { font-size: 1rem; margin-bottom: 12px; color: #64748B; }
+        .quote-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .quote-summary div { padding: 10px; background: #F1F5F9; border-radius: 8px; }
+        .quote-summary label { font-size: .75rem; color: #64748B; display: block; }
+        .quote-summary strong { font-size: .95rem; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .88rem; }
+        th { text-align: left; padding: 8px; border-bottom: 2px solid #E2E8F0; font-size: .78rem; color: #64748B; }
+        td { padding: 8px; border-bottom: 1px solid #E2E8F0; }
+        .total-row td { font-weight: 700; font-size: 1rem; background: #F1F5F9; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .9rem; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 16px; }
+        canvas { width: 100%; height: 200px; background: #fff; border: 2px dashed #E2E8F0; border-radius: 8px; touch-action: none; }
+        .btn { display: inline-block; padding: 14px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; }
+        .btn-primary { background: #4F46E5; color: #fff; width: 100%; }
+        .btn-outline { background: #fff; border: 1px solid #E2E8F0; color: #1E293B; }
+        .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+        .signed { text-align: center; padding: 40px 20px; }
+        .signed .check { font-size: 4rem; color: #10B981; margin-bottom: 12px; }
+        .signed h1 { color: #10B981; }
+        .error { color: #DC2626; text-align: center; padding: 40px 20px; }
+        @media (min-width: 600px) {
+            body { padding: 32px; }
+            .quote-summary { grid-template-columns: repeat(4, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sign-container">
+    <div id="loading" class="sign-card" style="text-align:center;padding:40px"><p>Chargement du devis…</p></div>
+    <div id="signed-screen" class="sign-card signed" style="display:none">
+        <div class="check">&#10004;</div>
+        <h1>Devis signé avec succès</h1>
+        <p>Merci ! L'entreprise va recevoir votre signature et reviendra vers vous.</p>
+    </div>
+    <div id="error-screen" class="sign-card error" style="display:none">
+        <h1>Devis introuvable ou expiré</h1>
+        <p id="error-msg"></p>
+    </div>
+    <div id="quote-screen" style="display:none">
+        <div class="sign-card">
+            <h1 id="company-name">—</h1>
+            <h2>Devis <span id="quote-number"></span></h2>
+            <div class="quote-summary">
+                <div><label>Date</label><strong id="quote-date">—</strong></div>
+                <div><label>Valable jusqu'au</label><strong id="quote-valid">—</strong></div>
+                <div><label>Total HT</label><strong id="quote-ht">—</strong></div>
+                <div><label>Total TTC</label><strong id="quote-ttc">—</strong></div>
+            </div>
+            <table id="items-table">
+                <thead><tr><th>Description</th><th>Qté</th><th>Prix HT</th><th>Total HT</th></tr></thead>
+                <tbody id="items-body"></tbody>
+            </table>
+        </div>
+
+        <div class="sign-card">
+            <h2>Signature du devis</h2>
+            <div class="form-group">
+                <label>Votre nom complet *</label>
+                <input type="text" id="signer-name" placeholder="Nom et prénom" required>
+            </div>
+            <div class="form-group">
+                <label>Signature *</label>
+                <canvas id="sig-canvas"></canvas>
+                <div class="btn-row">
+                    <button type="button" class="btn btn-outline" onclick="clearSig()">Effacer</button>
+                </div>
+            </div>
+            <p style="font-size:.78rem;color:#64748B;margin:10px 0 16px">En signant, vous acceptez le devis « Bon pour accord » et autorisez l'entreprise à émettre une facture pour les prestations listées.</p>
+            <button type="button" class="btn btn-primary" id="btn-submit" onclick="submitSignature()">Signer le devis</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script>
+(function () {
+    var cfg = window.IP_CONFIG;
+    var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_KEY);
+    var token = new URLSearchParams(window.location.search).get("t");
+    var quote = null;
+
+    function fmtMoney(v) { return Number(v).toLocaleString("fr-FR", { style: "currency", currency: "EUR" }); }
+    function fmtDate(d) { var p = String(d).slice(0, 10).split("-"); return p[2] + "/" + p[1] + "/" + p[0]; }
+
+    function showError(msg) {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("error-screen").style.display = "";
+        document.getElementById("error-msg").textContent = msg || "";
+    }
+
+    async function loadQuote() {
+        if (!token) { showError("Lien invalide."); return; }
+        var res = await sb.rpc("quote_by_token", { p_token: token });
+        if (res.error || !res.data || !res.data.length) { showError("Ce lien de signature n'existe pas ou a expiré."); return; }
+        quote = res.data[0];
+        if (quote.signed_at) {
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("signed-screen").style.display = "";
+            return;
+        }
+        if (quote.valid_until && new Date(quote.valid_until) < new Date()) {
+            showError("Ce devis a expiré le " + fmtDate(quote.valid_until));
+            return;
+        }
+        var companyRes = await sb.from("companies").select("name").eq("id", quote.company_id).maybeSingle();
+        document.getElementById("company-name").textContent = (companyRes.data && companyRes.data.name) || "InvoicePilot";
+        document.getElementById("quote-number").textContent = quote.number;
+        document.getElementById("quote-date").textContent = fmtDate(quote.date);
+        document.getElementById("quote-valid").textContent = fmtDate(quote.valid_until);
+        document.getElementById("quote-ht").textContent = fmtMoney(quote.subtotal_ht);
+        document.getElementById("quote-ttc").textContent = fmtMoney(quote.total_ttc);
+        var body = document.getElementById("items-body");
+        (quote.items || []).forEach(function (it) {
+            var tr = document.createElement("tr");
+            tr.innerHTML = "<td>" + escapeHtml(it.description) + "</td><td>" + it.quantity + "</td><td>" + fmtMoney(it.unitPrice) + "</td><td>" + fmtMoney(it.total) + "</td>";
+            body.appendChild(tr);
+        });
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("quote-screen").style.display = "";
+        setupCanvas();
+    }
+
+    function escapeHtml(s) { var d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+
+    var hasDrawn = false;
+    function setupCanvas() {
+        var c = document.getElementById("sig-canvas");
+        var dpr = window.devicePixelRatio || 1;
+        var rect = c.getBoundingClientRect();
+        c.width = rect.width * dpr; c.height = 200 * dpr;
+        var ctx = c.getContext("2d");
+        ctx.scale(dpr, dpr);
+        ctx.lineWidth = 2.5; ctx.lineCap = "round"; ctx.strokeStyle = "#1E293B";
+        var drawing = false, lx = 0, ly = 0;
+        function pos(e) {
+            var r = c.getBoundingClientRect();
+            var t = e.touches ? e.touches[0] : e;
+            return { x: t.clientX - r.left, y: t.clientY - r.top };
+        }
+        function start(e) { e.preventDefault(); drawing = true; var p = pos(e); lx = p.x; ly = p.y; hasDrawn = true; }
+        function move(e) { if (!drawing) return; e.preventDefault(); var p = pos(e); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke(); lx = p.x; ly = p.y; }
+        function end() { drawing = false; }
+        c.onmousedown = start; c.onmousemove = move; c.onmouseup = end; c.onmouseleave = end;
+        c.ontouchstart = start; c.ontouchmove = move; c.ontouchend = end;
+    }
+
+    window.clearSig = function () {
+        var c = document.getElementById("sig-canvas");
+        c.getContext("2d").clearRect(0, 0, c.width, c.height);
+        hasDrawn = false;
+    };
+
+    window.submitSignature = async function () {
+        if (!quote) return;
+        var name = document.getElementById("signer-name").value.trim();
+        if (!name) { alert("Veuillez indiquer votre nom."); return; }
+        if (!hasDrawn) { alert("Veuillez signer dans la zone prévue."); return; }
+        var btn = document.getElementById("btn-submit");
+        btn.disabled = true; btn.textContent = "Envoi…";
+        var canvas = document.getElementById("sig-canvas");
+        var res = await sb.rpc("sign_quote_by_token", {
+            p_token: token,
+            p_signature_data: canvas.toDataURL("image/png"),
+            p_signer_name: name
+        });
+        if (res.error || res.data === false) { alert("Erreur : signature impossible (lien expiré ou déjà signé)."); btn.disabled = false; btn.textContent = "Signer le devis"; return; }
+        document.getElementById("quote-screen").style.display = "none";
+        document.getElementById("signed-screen").style.display = "";
+    };
+
+    loadQuote();
+})();
+</script>
+</body>
+</html>

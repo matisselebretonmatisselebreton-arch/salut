@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvoicePilot — App</title>
+    <link rel="stylesheet" href="css/app.css?v=16">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4F46E5">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
+</head>
+<body>
+
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+            </div>
+            <h1 id="auth-title">Connexion</h1>
+            <p class="subtitle" id="auth-subtitle">Accédez à votre espace de facturation</p>
+            <form id="auth-form">
+                <div class="form-group" id="auth-name-group" style="display:none">
+                    <label>Nom complet</label>
+                    <input type="text" id="auth-name" placeholder="Jean Dupont">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="auth-email" placeholder="jean@exemple.fr" required>
+                </div>
+                <div class="form-group">
+                    <label>Mot de passe</label>
+                    <input type="password" id="auth-password" placeholder="Votre mot de passe" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg" id="auth-submit">Se connecter</button>
+            </form>
+            <p class="auth-switch">
+                <span id="auth-switch-text">Pas encore de compte ?</span>
+                <a href="#" id="auth-switch-link">Créer un compte</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div id="app-screen" class="app" style="display:none">
+        <div id="offline-badge" class="offline-indicator" style="display:none">Hors-ligne</div>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-logo">
+                <span class="logo-mark">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                </span> InvoicePilot
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="active" data-page="dashboard">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span> Tableau de bord
+                </a>
+                <a href="#" data-page="quotes">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span> Devis
+                </a>
+                <a href="#" data-page="invoices">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg></span> Factures & Avoirs
+                </a>
+                <a href="#" data-page="recurring">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span> Récurrences
+                </a>
+                <a href="#" data-page="clients">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Clients
+                </a>
+                <a href="#" data-page="suppliers">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/></svg></span> Fournisseurs
+                </a>
+                <a href="#" data-page="expenses">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg></span> Dépenses
+                </a>
+                <a href="#" data-page="performance">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span> Performance
+                </a>
+                <a href="#" data-page="accounting">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8"/><rect x="14" y="6" width="3" height="12"/></svg></span> Comptabilité
+                </a>
+                <a href="#" data-page="employees" id="nav-employees" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span> Employés
+                </a>
+                <a href="#" data-page="approvals" id="nav-approvals" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Validations
+                    <span class="nav-badge" id="approval-badge" style="display:none">0</span>
+                </a>
+                <a href="#" data-page="audit" id="nav-audit" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Journal d'activité
+                </a>
+                <a href="#" data-page="trash">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></span> Corbeille
+                </a>
+                <a href="#" data-page="subscription">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Mon abonnement
+                </a>
+                <a href="#" data-page="profile">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Mon profil
+                </a>
+            </nav>
+            <div id="company-selector" class="company-selector" style="display:none">
+                <select id="active-company" class="company-select"></select>
+            </div>
+            <div class="sidebar-user">
+                <div id="user-display-name"></div>
+                <div id="user-role-badge" style="display:none"></div>
+                <a href="#" id="logout-btn" style="color:rgba(255,255,255,.4);font-size:.8rem;text-decoration:none">Déconnexion</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <!-- Dashboard -->
+            <div id="page-dashboard" class="page">
+                <div class="page-header">
+                    <h1>Tableau de bord</h1>
+                    <button class="btn btn-primary" id="btn-new-invoice-dash">+ Nouvelle facture</button>
+                </div>
+                <div class="usage-card" id="usage-card" style="display:none">
+                    <div class="usage-head">
+                        <span class="usage-title">Factures ce mois-ci</span>
+                        <span class="usage-count" id="usage-count">0 / 10</span>
+                    </div>
+                    <div class="usage-track"><div class="usage-fill" id="usage-fill" style="width:0%"></div></div>
+                    <p id="usage-hint" style="margin-top:10px;font-size:.82rem;color:var(--text-muted)"></p>
+                </div>
+                <div id="dash-relance"></div>
+                <div id="dash-smart-alerts"></div>
+                <div class="stats-grid">
+                    <div class="stat-card clickable" onclick="openRevenueDetail()">
+                        <div class="stat-label">Chiffre d'affaires</div>
+                        <div class="stat-value" id="stat-revenue">0 €</div>
+                        <div class="stat-spark-row">
+                            <span class="stat-spark" id="revenue-spark"></span>
+                            <span class="stat-delta" id="revenue-delta"></span>
+                        </div>
+                    </div>
+                    <div class="stat-card success clickable" onclick="gotoInvoices('paid')">
+                        <div class="stat-label">Payées</div>
+                        <div class="stat-value" id="stat-paid">0</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                    <div class="stat-card warning clickable" onclick="gotoInvoices('pending')">
+                        <div class="stat-label">En attente</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                    <div class="stat-card danger clickable" onclick="gotoInvoices('overdue')">
+                        <div class="stat-label">En retard</div>
+                        <div class="stat-value" id="stat-overdue">0</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                </div>
+                <div class="dash-insights">
+                    <div class="insight-card" id="dash-health"></div>
+                    <div class="insight-card" id="dash-forecast"></div>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h2>Dernières factures</h2>
+                    </div>
+                    <div id="dashboard-invoices-list"></div>
+                </div>
+            </div>
+
+            <!-- Quotes -->
+            <div id="page-quotes" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Devis</h1>
+                    <button class="btn btn-primary" id="btn-new-quote">+ Nouveau devis</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-header" style="flex-direction:column;align-items:stretch;gap:12px">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="quote-search" placeholder="Rechercher (n° de devis, client)…">
+                        </div>
+                        <div class="filter-bar" id="quote-filters"></div>
+                    </div>
+                    <div id="quotes-list"></div>
+                </div>
+            </div>
+
+            <!-- Invoices & Credit notes -->
+            <div id="page-invoices" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Factures &amp; Avoirs</h1>
+                    <button class="btn btn-primary" onclick="openNewDocMenu()">+ Nouveau document</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-header" style="flex-direction:column;align-items:stretch;gap:12px">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="invoice-search" placeholder="Rechercher (n° de document, client)…">
+                        </div>
+                        <div class="filter-bar" id="invoice-filters"></div>
+                    </div>
+                    <div id="invoices-list"></div>
+                </div>
+            </div>
+
+            <!-- Hidden trigger conservé pour le flux "facture libre" -->
+            <button id="btn-new-invoice" style="display:none"></button>
+
+            <!-- Recurring -->
+            <div id="page-recurring" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Factures récurrentes</h1>
+                    <button class="btn btn-primary" id="btn-new-recurring">+ Nouvelle récurrence</button>
+                </div>
+                <div class="table-card">
+                    <div id="recurring-list"></div>
+                </div>
+            </div>
+
+            <!-- Clients -->
+            <div id="page-clients" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Clients</h1>
+                    <button class="btn btn-primary" id="btn-new-client">+ Nouveau client</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="client-search" placeholder="Rechercher un client (nom, email, ville)…">
+                        </div>
+                    </div>
+                    <div id="clients-list"></div>
+                </div>
+            </div>
+
+            <!-- Suppliers -->
+            <div id="page-suppliers" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Fournisseurs</h1>
+                        <p class="page-subtitle">Carnet de fournisseurs et historique des achats</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-new-supplier">+ Nouveau fournisseur</button>
+                </div>
+                <div id="suppliers-insights" style="margin-bottom:20px"></div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="supplier-search" placeholder="Rechercher un fournisseur (nom, email, ville)…">
+                        </div>
+                    </div>
+                    <div id="suppliers-list"></div>
+                </div>
+            </div>
+
+            <!-- Performance -->
+            <div id="page-performance" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Performance commerciale</h1>
+                        <p class="page-subtitle">Suivi des devis et taux de transformation</p>
+                    </div>
+                    <div id="perf-range" class="range-controls"></div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card clickable" onclick="openPerfDetail('total')">
+                        <div class="stat-label">Devis émis</div>
+                        <div class="stat-value" id="perf-total">0</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                    <div class="stat-card success clickable" onclick="openPerfDetail('conv')">
+                        <div class="stat-label">Taux de transformation</div>
+                        <div class="stat-value" id="perf-conv">0%</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                    <div class="stat-card clickable" onclick="openPerfDetail('ca')">
+                        <div class="stat-label">Convertis en facture</div>
+                        <div class="stat-value" id="perf-ca">0%</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                    <div class="stat-card warning clickable" onclick="openPerfDetail('avg')">
+                        <div class="stat-label">Montant moyen / devis</div>
+                        <div class="stat-value" id="perf-avg">0 €</div>
+                        <div class="stat-link">Voir le détail →</div>
+                    </div>
+                </div>
+                <div class="acct-grid">
+                    <div class="acct-card">
+                        <div class="acct-head">Entonnoir de conversion</div>
+                        <div class="acct-body" id="perf-funnel"></div>
+                    </div>
+                    <div class="acct-card">
+                        <div class="acct-head">Top clients (devis validés)</div>
+                        <div class="acct-body" id="perf-top-clients"></div>
+                    </div>
+                </div>
+                <div class="acct-card" style="margin-top:20px">
+                    <div class="acct-head">Devis à relancer (en attente &gt; 30 jours)</div>
+                    <div class="acct-body" id="perf-stale"></div>
+                </div>
+            </div>
+
+            <!-- Profile -->
+            <div id="page-profile" class="page" style="display:none">
+                <div class="page-header">
+                    <h1>Mon profil entreprise</h1>
+                </div>
+                <div class="table-card" style="padding:32px">
+                    <form id="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nom / Raison sociale</label>
+                                <input type="text" id="prof-name" placeholder="Mon Entreprise">
+                            </div>
+                            <div class="form-group">
+                                <label>SIRET</label>
+                                <input type="text" id="prof-siret" placeholder="123 456 789 00012">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Adresse</label>
+                                <input type="text" id="prof-address" placeholder="12 rue de Paris">
+                            </div>
+                            <div class="form-group">
+                                <label>Code postal</label>
+                                <input type="text" id="prof-postal-code" maxlength="10" placeholder="75001">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ville</label>
+                                <input type="text" id="prof-city" placeholder="Paris">
+                            </div>
+                            <div class="form-group">
+                                <label>Pays (code ISO)</label>
+                                <input type="text" id="prof-country" maxlength="2" value="FR">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email professionnel</label>
+                                <input type="email" id="prof-email" placeholder="contact@monentreprise.fr">
+                            </div>
+                            <div class="form-group">
+                                <label>Téléphone</label>
+                                <input type="text" id="prof-phone" placeholder="06 12 34 56 78">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>N° TVA intracommunautaire</label>
+                                <input type="text" id="prof-tva" placeholder="FR 12 345678901 (laisser vide si non assujetti)">
+                            </div>
+                            <div class="form-group">
+                                <label>Taux de TVA par défaut (%)</label>
+                                <select id="prof-tva-rate">
+                                    <option value="0">Non assujetti (0%)</option>
+                                    <option value="5.5">5,5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="20" selected>20%</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Mentions légales supplémentaires</label>
+                            <textarea id="prof-mentions" rows="3" placeholder="Ex: TVA non applicable, art. 293 B du CGI"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Conditions générales de vente / paiement</label>
+                            <textarea id="prof-terms" rows="4" maxlength="4000" placeholder="Ex: Paiement à 30 jours fin de mois par virement bancaire. Escompte pour paiement anticipé : néant."></textarea>
+                        </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Apparence des PDF</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Couleur d'accent</label>
+                                <input type="color" id="prof-template-color" value="#4F46E5" style="height:42px;padding:4px">
+                            </div>
+                            <div class="form-group">
+                                <label>Police</label>
+                                <select id="prof-template-font">
+                                    <option value="Arial">Arial (par défaut)</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Georgia">Georgia (serif)</option>
+                                    <option value="Times New Roman">Times New Roman</option>
+                                    <option value="Courier New">Courier New (mono)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>URL du logo (optionnel — affiché sur les PDF)</label>
+                            <input type="url" id="prof-template-logo" placeholder="https://exemple.fr/logo.png">
+                        </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Coordonnées bancaires (RIB)</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Titulaire du compte</label>
+                                <input type="text" id="prof-bank-holder" placeholder="Nom du titulaire">
+                            </div>
+                            <div class="form-group">
+                                <label>Banque</label>
+                                <input type="text" id="prof-bank-name" placeholder="Ex: Crédit Mutuel">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>IBAN</label>
+                                <input type="text" id="prof-iban" placeholder="FR76 1234 5678 9012 3456 7890 123">
+                            </div>
+                            <div class="form-group">
+                                <label>BIC / SWIFT</label>
+                                <input type="text" id="prof-bic" placeholder="CMCIFRPP">
+                            </div>
+                        </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Pénalités de retard</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Taux de pénalités (%)</label>
+                                <input type="number" id="prof-penalty-rate" min="0" max="100" step="0.01" placeholder="Ex: 15 (3× taux BCE)">
+                            </div>
+                            <div class="form-group">
+                                <label>Indemnité forfaitaire (€)</label>
+                                <input type="number" id="prof-recovery-fee" min="0" step="1" value="40" placeholder="40">
+                            </div>
+                        </div>
+                        <h3 style="font-size:1rem;margin:24px 0 12px;font-weight:700">Statut & cotisations URSSAF</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Statut juridique</label>
+                                <select id="prof-legal-status">
+                                    <option value="">— Non renseigné —</option>
+                                    <option value="micro">Micro-entrepreneur</option>
+                                    <option value="ei">Entreprise individuelle (réel)</option>
+                                    <option value="eurl">EURL / SARL</option>
+                                    <option value="sas">SAS / SASU</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Type d'activité (micro)</label>
+                                <select id="prof-activity-type">
+                                    <option value="bnc">Prestations libérales (BNC)</option>
+                                    <option value="bic_services">Prestations de services (BIC)</option>
+                                    <option value="bic_sales">Vente de marchandises (BIC)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Périodicité de déclaration URSSAF</label>
+                                <select id="prof-urssaf-period">
+                                    <option value="quarterly">Trimestrielle</option>
+                                    <option value="monthly">Mensuelle</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Option fiscale (micro)</label>
+                                <select id="prof-tax-option">
+                                    <option value="bareme">Impôt au barème progressif</option>
+                                    <option value="vfl">Versement libératoire de l'impôt</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Expenses (factures reçues) -->
+            <div id="page-expenses" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Dépenses</h1>
+                        <p class="page-subtitle">Vos factures reçues (achats, charges, services)</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-new-expense">+ Nouvelle dépense</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <div class="search-bar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                            <input type="text" id="expense-search" placeholder="Rechercher un fournisseur…">
+                        </div>
+                    </div>
+                    <div id="expenses-list"></div>
+                </div>
+            </div>
+
+            <!-- Accounting -->
+            <div id="page-accounting" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Comptabilité</h1>
+                        <p class="page-subtitle">Compte de résultat & bilan simplifié</p>
+                    </div>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                        <div id="acct-range" class="range-controls"></div>
+                        <button class="btn btn-outline btn-sm" onclick="openExportModal()">Export comptable</button>
+                    </div>
+                </div>
+                <div id="accounting-pro-gate" style="display:none"></div>
+                <div id="accounting-content">
+                    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+                        <div class="stat-card success clickable" onclick="openAcctDetail('products')">
+                            <div class="stat-label">Produits (encaissés)</div>
+                            <div class="stat-value" id="acct-products">0 €</div>
+                            <div class="stat-link">Voir le détail →</div>
+                        </div>
+                        <div class="stat-card danger clickable" onclick="openAcctDetail('charges')">
+                            <div class="stat-label">Charges</div>
+                            <div class="stat-value" id="acct-charges">0 €</div>
+                            <div class="stat-link">Voir le détail →</div>
+                        </div>
+                        <div class="stat-card clickable" onclick="openAcctDetail('result')">
+                            <div class="stat-label">Résultat net</div>
+                            <div class="stat-value" id="acct-result">0 €</div>
+                            <div class="stat-link">Voir le détail →</div>
+                        </div>
+                    </div>
+                    <div class="acct-card" style="margin-top:20px">
+                        <div class="acct-head">Trésorerie &amp; fonds de roulement</div>
+                        <div class="acct-body">
+                            <div class="treasury-grid" id="acct-treasury"></div>
+                            <div id="acct-treasury-detail" style="margin-top:8px"></div>
+                        </div>
+                    </div>
+                    <div class="acct-grid" style="margin-top:20px">
+                        <div class="acct-card">
+                            <div class="acct-head">Compte de résultat</div>
+                            <div class="acct-body" id="acct-income-statement"></div>
+                        </div>
+                        <div class="acct-card">
+                            <div class="acct-head">Bilan simplifié</div>
+                            <div class="acct-body" id="acct-balance-sheet"></div>
+                        </div>
+                    </div>
+                    <div id="acct-urssaf" style="margin-top:20px"></div>
+                    <p style="margin-top:16px;font-size:.8rem;color:var(--text-muted)">
+                        Estimation indicative basée sur vos factures encaissées et vos dépenses enregistrées.
+                        Pour une comptabilité officielle, faites valider ces données par un expert-comptable.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Employees -->
+            <div id="page-employees" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Gestion des employés</h1>
+                        <p class="page-subtitle">Créez les profils de vos employés et gérez leur accès</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-invite-employee">+ Créer un employé</button>
+                </div>
+                <div class="table-card">
+                    <div class="table-header"><h2>Membres de l'entreprise</h2></div>
+                    <div id="employees-list"></div>
+                </div>
+                <div class="table-card" style="margin-top:20px">
+                    <div class="table-header"><h2>Invitations envoyées</h2></div>
+                    <div id="invitations-list"></div>
+                </div>
+            </div>
+
+            <!-- Trash -->
+            <div id="page-trash" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Corbeille</h1>
+                        <p class="page-subtitle">Éléments supprimés. Restaurez-les ou purgez-les définitivement.</p>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <div id="trash-list"></div>
+                </div>
+            </div>
+
+            <!-- Audit log -->
+            <div id="page-audit" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Journal d'activité</h1>
+                        <p class="page-subtitle">Toutes les actions effectuées sur l'entreprise (100 dernières)</p>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <div id="audit-log-list"></div>
+                </div>
+            </div>
+
+            <!-- Approvals -->
+            <div id="page-approvals" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Validations en attente</h1>
+                        <p class="page-subtitle">Factures créées par vos employés nécessitant votre validation</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-approve-all" onclick="approveAll()" style="display:none">Tout valider</button>
+                </div>
+                <div class="table-card">
+                    <div id="approvals-list"></div>
+                </div>
+            </div>
+
+            <!-- Subscription -->
+            <div id="page-subscription" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Mon abonnement</h1>
+                        <p class="page-subtitle">Gérez votre formule InvoicePilot</p>
+                    </div>
+                </div>
+                <div id="current-plan-banner" style="margin-bottom:24px"></div>
+                <div class="plan-grid">
+                    <div class="plan-card" id="plan-card-free">
+                        <div class="plan-name">Gratuit</div>
+                        <div class="plan-price">0 €<span> / mois</span></div>
+                        <ul class="plan-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 10 factures par mois</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 10 devis par mois</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Export PDF conforme</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion clients</li>
+                        </ul>
+                        <button class="btn btn-outline" style="width:100%" id="btn-select-free">Formule actuelle</button>
+                    </div>
+                    <div class="plan-card" id="plan-card-standard">
+                        <div class="plan-name">Standard</div>
+                        <div class="plan-price">14,99 €<span> / mois</span></div>
+                        <ul class="plan-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Factures & devis illimités</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Factures récurrentes</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion clients & export PDF</li>
+                        </ul>
+                        <button class="btn btn-outline" style="width:100%" id="btn-select-standard">Choisir Standard</button>
+                    </div>
+                    <div class="plan-card featured" id="plan-card-pro">
+                        <span class="plan-badge">Recommandé</span>
+                        <div class="plan-name">Pro</div>
+                        <div class="plan-price">29,99 €<span> / mois</span></div>
+                        <ul class="plan-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Factures & devis illimités</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Fournisseurs & dépenses</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Comptabilité : bilan & compte de résultat</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion trésorerie</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Suivi de TVA & déclaration URSSAF</li>
+                        </ul>
+                        <button class="btn btn-primary" style="width:100%" id="btn-select-pro">Passer au Pro</button>
+                    </div>
+                    <div class="plan-card" id="plan-card-business">
+                        <span class="plan-badge" style="background:#F59E0B;color:#78350F">Entreprise</span>
+                        <div class="plan-name">Business</div>
+                        <div class="plan-price">39,99 €<span> / mois</span></div>
+                        <ul class="plan-features">
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Tout le plan Pro inclus</strong></li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Multi-entreprises</strong> (gérez plusieurs sociétés)</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <strong>Comptes employés</strong> avec workflow de validation</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Signature devis sur terrain (mobile)</li>
+                            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Gestion des validations centralisée</li>
+                        </ul>
+                        <button class="btn btn-outline" style="width:100%;border-color:#F59E0B;color:#B45309" id="btn-select-business">Passer au Business</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: New Client -->
+    <div class="modal-overlay" id="modal-client">
+        <div class="modal">
+            <h2 id="modal-client-title">Nouveau client</h2>
+            <form id="client-form">
+                <input type="hidden" id="client-edit-id" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom / Entreprise</label>
+                        <input type="text" id="client-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="client-email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="client-address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Code postal</label>
+                        <input type="text" id="client-postal-code" maxlength="10" placeholder="75001">
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="client-city" placeholder="Paris">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Pays (code ISO)</label>
+                        <input type="text" id="client-country" maxlength="2" placeholder="FR" value="FR">
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET (optionnel)</label>
+                        <input type="text" id="client-siret">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-client')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New Invoice -->
+    <div class="modal-overlay" id="modal-invoice">
+        <div class="modal">
+            <h2>Nouvelle facture</h2>
+            <form id="invoice-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client</label>
+                        <select id="inv-client" required>
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="inv-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Échéance</label>
+                        <input type="date" id="inv-due-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Numéro de facture</label>
+                        <input type="text" id="inv-number" readonly>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Bon de commande / Référence client (optionnel)</label>
+                        <input type="text" id="inv-po" placeholder="Ex: PO-2026-0042">
+                    </div>
+                    <div class="form-group">
+                        <label>Taux TVA (%)</label>
+                        <input type="number" id="inv-tva-rate" min="0" max="100" step="0.01" value="20">
+                    </div>
+                </div>
+
+                <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes de facturation</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-desc">Description</th>
+                            <th class="col-qty">Qté</th>
+                            <th class="col-price">Prix unit. (€)</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items">
+                        <tr>
+                            <td><input type="text" class="item-desc" placeholder="Prestation"></td>
+                            <td><input type="number" class="item-qty" value="1" min="1"></td>
+                            <td><input type="number" class="item-price" value="0" min="0" step="0.01"></td>
+                            <td class="item-total">0,00 €</td>
+                            <td><button type="button" class="remove-item" title="Supprimer">&times;</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-add-item">+ Ajouter une ligne</button>
+
+                <div class="invoice-totals">
+                    <div class="total-line"><span>Sous-total HT</span><span id="inv-subtotal">0,00 €</span></div>
+                    <div class="total-line"><span>TVA (<span id="inv-tva-rate-display">20</span>%)</span><span id="inv-tva-amount">0,00 €</span></div>
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="inv-total">0,00 €</span></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-invoice')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer la facture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New Recurring -->
+    <div class="modal-overlay" id="modal-recurring">
+        <div class="modal">
+            <h2>Nouvelle facture récurrente</h2>
+            <form id="recurring-form">
+                <div class="form-group">
+                    <label>Libellé (interne)</label>
+                    <input type="text" id="r-label" placeholder="Ex: Abonnement mensuel — Client X" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client</label>
+                        <select id="r-client" required>
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fréquence</label>
+                        <select id="r-frequency">
+                            <option value="monthly">Mensuelle</option>
+                            <option value="quarterly">Trimestrielle</option>
+                            <option value="yearly">Annuelle</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Première émission le</label>
+                        <input type="date" id="r-next-run" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Taux TVA (%)</label>
+                        <input type="number" id="r-tva-rate" min="0" max="100" step="0.01" value="20">
+                    </div>
+                </div>
+
+                <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes de la facture</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-desc">Description</th>
+                            <th class="col-qty">Qté</th>
+                            <th class="col-price">Prix unit. (€)</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="recurring-items"></tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-add-recurring-item">+ Ajouter une ligne</button>
+
+                <div class="invoice-totals">
+                    <div class="total-line"><span>Sous-total HT</span><span id="r-subtotal">0,00 €</span></div>
+                    <div class="total-line"><span>TVA (<span id="r-tva-rate-display">20</span>%)</span><span id="r-tva-amount">0,00 €</span></div>
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="r-total">0,00 €</span></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-recurring')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Activer la récurrence</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New Quote -->
+    <div class="modal-overlay" id="modal-quote">
+        <div class="modal">
+            <h2>Nouveau devis</h2>
+            <form id="quote-form">
+                <div class="quote-template-bar">
+                    <span style="font-size:.82rem;color:var(--text-muted);margin-right:8px">Modèle :</span>
+                    <select onchange="if(this.value){applyQuoteTemplate(this.value);this.value=''}" class="filter-select-employee">
+                        <option value="">Aucun (vierge)</option>
+                        <option value="batiment">Bâtiment / Travaux</option>
+                        <option value="services">Services / Conseil</option>
+                        <option value="web">Développement web</option>
+                        <option value="evenementiel">Événementiel / Traiteur</option>
+                        <option value="transport">Transport / Livraison</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Client</label>
+                        <select id="q-client" required>
+                            <option value="">Sélectionner un client</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="q-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Valable jusqu'au</label>
+                        <input type="date" id="q-valid-until" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Numéro de devis</label>
+                        <input type="text" id="q-number" readonly>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Taux TVA (%)</label>
+                    <input type="number" id="q-tva-rate" min="0" max="100" step="0.01" value="20" style="max-width:160px">
+                </div>
+
+                <h3 style="font-size:.9rem;margin:20px 0 8px;font-weight:600">Lignes du devis</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="col-desc">Description</th>
+                            <th class="col-qty">Qté</th>
+                            <th class="col-price">Prix unit. (€)</th>
+                            <th class="col-total">Total</th>
+                            <th class="col-action"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="quote-items"></tbody>
+                </table>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-add-quote-item">+ Ajouter une ligne</button>
+
+                <div class="invoice-totals">
+                    <div class="total-line"><span>Sous-total HT</span><span id="q-subtotal">0,00 €</span></div>
+                    <div class="total-line"><span>TVA (<span id="q-tva-rate-display">20</span>%)</span><span id="q-tva-amount">0,00 €</span></div>
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="q-total">0,00 €</span></div>
+                </div>
+
+                <div class="form-group" style="margin-top:14px">
+                    <label>Photos (chantier, plan, état des lieux)</label>
+                    <input type="file" id="quote-photos-input" accept="image/*" capture="environment" multiple onchange="handleQuotePhotoSelect(this)" style="font-size:.85rem">
+                    <div id="quote-photos-preview" class="quote-photos-preview"></div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-quote')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer le devis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Client detail -->
+    <div class="modal-overlay" id="modal-client-detail">
+        <div class="modal modal-lg">
+            <h2 id="cd-title">Fiche client</h2>
+            <div id="client-detail-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-client-detail')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: New Expense -->
+    <div class="modal-overlay" id="modal-expense">
+        <div class="modal">
+            <h2>Nouvelle dépense</h2>
+            <form id="expense-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fournisseur</label>
+                        <input type="text" id="exp-supplier" list="supplier-datalist" placeholder="Ex: OVH, Fournitures SARL" required>
+                        <datalist id="supplier-datalist"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="exp-date" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Catégorie</label>
+                        <select id="exp-category">
+                            <option value="achats">Achats de marchandises</option>
+                            <option value="services">Services extérieurs</option>
+                            <option value="fournitures">Fournitures</option>
+                            <option value="loyer">Loyer & charges</option>
+                            <option value="logiciels">Logiciels & abonnements</option>
+                            <option value="deplacements">Déplacements</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Justificatif (PDF/image, optionnel)</label>
+                        <input type="file" id="exp-file" accept=".pdf,image/*">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Montant HT (€)</label>
+                        <input type="number" id="exp-ht" value="0" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>TVA (€)</label>
+                        <input type="number" id="exp-tva" value="0" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Note (optionnel)</label>
+                    <input type="text" id="exp-note" placeholder="Détail de la dépense">
+                </div>
+                <div class="invoice-totals">
+                    <div class="total-line grand-total"><span>Total TTC</span><span id="exp-ttc">0,00 €</span></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-expense')">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="exp-submit">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Credit Note -->
+    <div class="modal-overlay" id="modal-credit-note">
+        <div class="modal">
+            <h2>Émettre un avoir</h2>
+            <form id="credit-note-form">
+                <input type="hidden" id="cn-invoice-id">
+                <div class="form-group">
+                    <label>Facture concernée</label>
+                    <input type="text" id="cn-invoice-ref" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Numéro d'avoir</label>
+                    <input type="text" id="cn-number" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Motif de l'avoir</label>
+                    <textarea id="cn-reason" rows="2" placeholder="Ex: Annulation de la prestation, erreur de facturation…" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Montant TTC annulé</label>
+                    <input type="text" id="cn-total" readonly>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-credit-note')">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Émettre l'avoir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: New document chooser -->
+    <div class="modal-overlay" id="modal-newdoc">
+        <div class="modal">
+            <h2>Nouveau document</h2>
+            <div id="newdoc-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-newdoc')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: New / Edit Supplier -->
+    <div class="modal-overlay" id="modal-supplier">
+        <div class="modal">
+            <h2 id="modal-supplier-title">Nouveau fournisseur</h2>
+            <form id="supplier-form">
+                <input type="hidden" id="supplier-edit-id" value="">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom / Entreprise</label>
+                        <input type="text" id="supplier-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="supplier-email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="supplier-address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Code postal & Ville</label>
+                        <input type="text" id="supplier-city">
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET (optionnel)</label>
+                        <input type="text" id="supplier-siret">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-supplier')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Supplier detail -->
+    <div class="modal-overlay" id="modal-supplier-detail">
+        <div class="modal modal-lg">
+            <h2 id="sd-title">Fiche fournisseur</h2>
+            <div id="supplier-detail-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-supplier-detail')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Generic drill-down detail -->
+    <div class="modal-overlay" id="modal-detail">
+        <div class="modal modal-lg">
+            <h2 id="detail-title">Détail</h2>
+            <div id="detail-body"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-detail')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Revenue chart -->
+    <div class="modal-overlay" id="modal-revenue">
+        <div class="modal modal-lg">
+            <h2>Évolution du chiffre d'affaires</h2>
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+                <div>
+                    <div class="stat-label" id="rev-total-label">CA</div>
+                    <div class="stat-value" id="rev-total" style="font-size:1.8rem">0 €</div>
+                    <div id="rev-compare" style="font-size:.82rem;color:var(--text-muted);margin-top:2px"></div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                    <select id="rev-mode" onchange="renderRevenueChartFromUI()" class="range-sel">
+                        <option value="month">Par mois</option>
+                        <option value="quarter">Par trimestre</option>
+                        <option value="year">Par année</option>
+                    </select>
+                    <select id="rev-year" onchange="renderRevenueChartFromUI()" class="range-sel"></select>
+                    <label style="display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text-muted);cursor:pointer">
+                        <input type="checkbox" id="rev-compare-toggle" onchange="renderRevenueChartFromUI()"> N-1
+                    </label>
+                </div>
+            </div>
+            <div id="rev-chart" style="min-height:280px;position:relative"></div>
+            <div id="rev-chart-tooltip" class="chart-tooltip" style="display:none"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-revenue')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Export comptable -->
+    <div class="modal-overlay" id="modal-export">
+        <div class="modal">
+            <h2>Exporter les documents comptables</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Une page <strong>Synthèse</strong> et un onglet <strong>Données graphiques</strong> sont automatiquement ajoutés.</p>
+            <div class="export-options">
+                <label class="export-opt"><input type="checkbox" value="income" checked> Compte de résultat</label>
+                <label class="export-opt"><input type="checkbox" value="balance" checked> Bilan simplifié</label>
+                <label class="export-opt"><input type="checkbox" value="sales" checked> Journal des ventes</label>
+                <label class="export-opt"><input type="checkbox" value="purchases" checked> Journal des achats</label>
+                <label class="export-opt"><input type="checkbox" value="aged"> Balance âgée clients</label>
+                <label class="export-opt"><input type="checkbox" value="vat" checked> Détail TVA</label>
+                <label class="export-opt"><input type="checkbox" value="urssaf"> Récapitulatif URSSAF</label>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.88rem">
+                <input type="checkbox" id="export-compare-yoy" checked> Inclure la comparaison année précédente (N-1)
+            </label>
+            <div class="modal-actions" style="flex-wrap:wrap;gap:8px">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-export')">Annuler</button>
+                <button type="button" class="btn btn-outline" onclick="doExportFEC()" title="Fichier des Écritures Comptables conforme art. A47 A-1 LPF">Export FEC (fiscal)</button>
+                <button type="button" class="btn btn-primary" onclick="doExportXLSX()">Télécharger .xlsx</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Acompte / échéancier -->
+    <div class="modal-overlay" id="modal-deposit">
+        <div class="modal modal-lg">
+            <h2>Acompte ou échéancier</h2>
+            <input type="hidden" id="dep-quote-id">
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:14px"><span id="dep-quote-info"></span></p>
+
+            <div class="form-group">
+                <label>Mode</label>
+                <select id="dep-mode" onchange="updateDepositPreview()">
+                    <option value="deposit">Acompte + solde (2 factures)</option>
+                    <option value="installments">Échéancier (3, 6, 12 fois…)</option>
+                </select>
+            </div>
+
+            <div id="dep-pane-deposit">
+                <div class="form-group">
+                    <label>Pourcentage d'acompte (%)</label>
+                    <input type="number" id="dep-percent" value="30" min="1" max="99" oninput="updateDepositPreview()">
+                </div>
+            </div>
+
+            <div id="dep-pane-installments" style="display:none">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre d'échéances</label>
+                        <select id="dep-installments" onchange="updateDepositPreview()">
+                            <option value="2">2 fois</option>
+                            <option value="3" selected>3 fois</option>
+                            <option value="4">4 fois</option>
+                            <option value="6">6 fois</option>
+                            <option value="12">12 fois</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Intervalle entre échéances (jours)</label>
+                        <select id="dep-frequency" onchange="updateDepositPreview()">
+                            <option value="30" selected>Mensuel (30 jours)</option>
+                            <option value="14">Bimensuel (14 jours)</option>
+                            <option value="90">Trimestriel (90 jours)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-list" id="dep-preview" style="margin-top:14px"></div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-deposit')">Annuler</button>
+                <button type="button" class="btn btn-primary" id="dep-submit" onclick="submitDeposit()">Créer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Devis signé requis -->
+    <div class="modal-overlay" id="modal-signed-quote">
+        <div class="modal">
+            <h2>Devis signé requis</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:16px">Pour convertir ce devis en facture, le client doit avoir donné son accord. Deux options :</p>
+            <input type="hidden" id="sq-quote-id">
+
+            <div class="sq-tabs">
+                <button type="button" class="sq-tab active" onclick="setSqMode('sign')">&#9997; Signer en ligne</button>
+                <button type="button" class="sq-tab" onclick="setSqMode('upload')">&#128206; Uploader un PDF signé</button>
+            </div>
+
+            <div id="sq-pane-sign">
+                <div class="form-group">
+                    <label>Nom du signataire</label>
+                    <input type="text" id="sq-signer-name" placeholder="Nom et prénom du client">
+                </div>
+                <div class="form-group">
+                    <label>Signature (souris ou doigt)</label>
+                    <div class="signature-pad-wrap">
+                        <canvas id="sq-canvas" width="540" height="200"></canvas>
+                        <div style="display:flex;gap:8px;margin-top:8px">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="clearSignature()">Effacer</button>
+                            <button type="button" class="btn btn-sm btn-outline mobile-only-btn" onclick="openFullscreenSignature()">Plein écran</button>
+                        </div>
+                    </div>
+                    <p style="font-size:.78rem;color:var(--text-muted);margin-top:6px">&#128205; La localisation sera enregistrée comme preuve (avec votre accord du navigateur).</p>
+                </div>
+            </div>
+
+            <div id="sq-pane-upload" style="display:none">
+                <div class="form-group">
+                    <label>Document signé (PDF ou image)</label>
+                    <input type="file" id="sq-file" accept=".pdf,image/jpeg,image/png,image/webp">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-signed-quote')">Annuler</button>
+                <button type="button" class="btn btn-primary" id="sq-submit" onclick="submitSignedAndConvert()">Convertir en facture</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Créer un employé -->
+    <div class="modal-overlay" id="modal-invite-employee">
+        <div class="modal">
+            <h2>Créer un profil employé</h2>
+            <form id="invite-employee-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prénom *</label>
+                        <input type="text" id="invite-first-name" placeholder="Jean" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom *</label>
+                        <input type="text" id="invite-last-name" placeholder="Dupont" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="invite-email" placeholder="jean@exemple.fr" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" id="invite-phone" placeholder="06 12 34 56 78">
+                    </div>
+                </div>
+                <div class="invite-info-box">
+                    <strong>Ce qui se passe ensuite :</strong>
+                    <ul>
+                        <li>Un email est envoyé avec un lien de création de compte</li>
+                        <li>L'employé crée son mot de passe et accède à l'app</li>
+                        <li>Il peut créer des devis et les faire signer sur le terrain</li>
+                        <li>Les factures créées nécessitent votre validation</li>
+                    </ul>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-invite-employee')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer et envoyer l'invitation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Share quote for remote signature -->
+    <div class="modal-overlay" id="modal-share-signature">
+        <div class="modal" style="max-width:480px">
+            <h2>Signature à distance</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:14px">Partagez ce QR code ou le lien avec votre client. Il pourra signer le devis directement depuis son téléphone.</p>
+            <div id="share-qr" style="text-align:center;margin:18px 0"></div>
+            <div style="display:flex;gap:8px">
+                <input type="text" id="share-link-url" readonly style="flex:1;font-size:.82rem">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyShareLink()">Copier</button>
+            </div>
+            <div class="modal-actions" style="margin-top:16px">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-share-signature')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Lien d'invitation -->
+    <div class="modal-overlay" id="modal-invite-link">
+        <div class="modal" style="max-width:520px">
+            <h2>Lien d'invitation</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:12px">L'email n'a pas pu être envoyé automatiquement. Envoyez ce lien manuellement à l'employé :</p>
+            <div style="display:flex;gap:8px">
+                <input type="text" id="invite-link-url" readonly style="flex:1;font-size:.85rem">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyInviteLink()">Copier</button>
+            </div>
+            <div class="modal-actions" style="margin-top:16px">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-invite-link')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Create Company -->
+    <div class="modal-overlay" id="modal-new-company">
+        <div class="modal">
+            <h2>Ajouter une entreprise</h2>
+            <form id="new-company-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom / Raison sociale</label>
+                        <input type="text" id="company-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>SIRET</label>
+                        <input type="text" id="company-siret" placeholder="123 456 789 00012">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="company-email">
+                    </div>
+                    <div class="form-group">
+                        <label>Téléphone</label>
+                        <input type="text" id="company-phone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="company-address">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Code postal</label>
+                        <input type="text" id="company-postal-code" maxlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="company-city">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-new-company')">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Créer l'entreprise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast / loading overlay -->
+    <div id="toast-container" aria-live="polite"></div>
+    <div id="app-loading" aria-hidden="true"><div class="app-loading-spinner"></div></div>
+    <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <div class="modal" style="max-width:420px">
+            <h2 id="confirm-title">Confirmation</h2>
+            <p id="confirm-message" style="margin:14px 0 22px;color:var(--text-muted)"></p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="confirm-cancel">Annuler</button>
+                <button class="btn btn-primary" id="confirm-ok">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile FAB -->
+    <div class="fab-container" id="fab-container">
+        <div class="fab-menu" id="fab-menu">
+            <button class="fab-item" onclick="fabNewQuote()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                Nouveau devis
+            </button>
+            <button class="fab-item" onclick="fabNewInvoice()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg>
+                Nouvelle facture
+            </button>
+        </div>
+        <button class="fab-btn" id="fab-new" aria-label="Créer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+    </div>
+
+    <!-- Fullscreen signature (mobile) -->
+    <div id="fullscreen-signature" class="fs-signature-overlay" style="display:none">
+        <div class="fs-signature-header">
+            <button class="btn btn-outline btn-sm" onclick="closeFsSignature()">Annuler</button>
+            <span style="font-weight:600">Signature</span>
+            <button class="btn btn-outline btn-sm" onclick="clearFsSignature()">Effacer</button>
+        </div>
+        <canvas id="fs-canvas"></canvas>
+        <div class="fs-signature-footer">
+            <button class="btn btn-primary" onclick="validateFsSignature()">Valider la signature</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/xlsx-js-style@v1.2.0/dist/xlsx.bundle.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/app.js?v=16"></script>
+</body>
+</html>

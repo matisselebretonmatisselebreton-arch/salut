@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InvoicePilot — App</title>
-    <link rel="stylesheet" href="css/app.css?v=21">
+    <link rel="stylesheet" href="css/app.css?v=22">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4F46E5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -129,6 +129,9 @@
                 </a>
                 <a href="#" data-page="trash">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></span> Corbeille
+                </a>
+                <a href="#" data-page="admin" id="nav-admin" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span> Admin
                 </a>
                 <a href="#" data-page="subscription">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Mon abonnement
@@ -607,6 +610,18 @@
                 <div class="table-card">
                     <div id="trash-list"></div>
                 </div>
+            </div>
+
+            <!-- Admin panel -->
+            <div id="page-admin" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Administration</h1>
+                        <p class="page-subtitle">Pilotage global de la plateforme</p>
+                    </div>
+                </div>
+                <div id="admin-tabs" class="admin-tabs"></div>
+                <div id="admin-content"></div>
             </div>
 
             <!-- Audit log -->
@@ -1456,6 +1471,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/xlsx-js-style@v1.2.0/dist/xlsx.bundle.js"></script>
     <script src="js/config.js"></script>
-    <script src="js/app.js?v=21"></script>
+    <script src="js/app.js?v=22"></script>
 </body>
 </html>

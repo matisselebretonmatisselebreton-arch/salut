@@ -738,6 +738,41 @@ th.sortable:hover { color: var(--primary); }
     .offline-indicator { top: 12px; right: 60px; }
 }
 
+/* Admin panel */
+.admin-tabs {
+    display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border); padding-bottom: 8px;
+}
+.admin-tab {
+    background: none; border: none; padding: 10px 16px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: .88rem; font-weight: 600; color: var(--text-muted);
+    transition: all .15s;
+}
+.admin-tab:hover { background: var(--bg); color: var(--text); }
+.admin-tab.active { background: var(--primary); color: #fff; }
+.admin-kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+}
+.admin-kpi {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.admin-kpi::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--primary-grad);
+}
+.admin-kpi-success::before { background: linear-gradient(90deg, #34D399, #10B981); }
+.admin-kpi-danger::before { background: linear-gradient(90deg, #F87171, #EF4444); }
+.admin-kpi-label { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+.admin-kpi-value { font-size: 1.5rem; font-weight: 800; margin-top: 6px; letter-spacing: -.02em; }
+.admin-section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow);
+}
+.admin-section h2 { font-size: 1.05rem; margin-bottom: 12px; }
+.admin-section code { background: var(--bg); padding: 2px 6px; border-radius: 4px; font-size: .82rem; }
+
 /* Trash sections */
 .trash-section { margin-bottom: 24px; }
 .trash-section h3 {

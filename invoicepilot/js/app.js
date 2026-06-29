@@ -76,7 +76,8 @@
         memberships: [],
         invitations: [],
         activeCompanyId: null,
-        userRole: null
+        userRole: null,
+        isAdmin: false
     };
 
     // --- Offline mode (IndexedDB cache + sync queue) ---
@@ -279,6 +280,28 @@
     }
     function isOwner() { return state.userRole === "owner" || !state.activeCompanyId; }
     function isEmployee() { return state.userRole === "employee"; }
+    function isAdmin() { return !!state.isAdmin; }
+
+    // Insertion non-bloquante d'un évènement de connexion
+    function logLoginEvent(eventType) {
+        try {
+            if (!state.user) return;
+            sb.from("login_history").insert({
+                user_id: state.user.id,
+                email: state.user.email || null,
+                user_agent: navigator.userAgent || null,
+                event: eventType
+            }).then(function () {});
+        } catch (e) { /* ignore */ }
+    }
+
+    async function loadAdminStatus() {
+        try {
+            var res = await sb.rpc("is_admin");
+            state.isAdmin = !!res.data;
+        } catch (e) { state.isAdmin = false; }
+        updateAdminNav();
+    }
     function companyFields() {
         var f = {};
         if (state.activeCompanyId) {
@@ -331,6 +354,7 @@
         document.getElementById("user-display-name").textContent =
             (state.user.user_metadata && state.user.user_metadata.name) || state.user.email;
         await refreshData();
+        await loadAdminStatus();
         if (navigator.onLine) { await flushQueue(); }
         updateOfflineBadge();
         await checkPendingInvitations();
@@ -612,6 +636,11 @@
         }
     }
 
+    function updateAdminNav() {
+        var navAdmin = document.getElementById("nav-admin");
+        if (navAdmin) navAdmin.style.display = isAdmin() ? "" : "none";
+    }
+
     function updateApprovalBadge() {
         var badge = document.getElementById("approval-badge");
         var count = state.invoices.filter(function (inv) {
@@ -675,11 +704,13 @@
                     return;
                 }
                 state.user = signupRes.data.user;
+                logLoginEvent("signup");
                 await showApp();
             } else {
                 var loginRes = await sb.auth.signInWithPassword({ email: email, password: password });
                 if (loginRes.error) { alert(translateAuthError(loginRes.error.message)); return; }
                 state.user = loginRes.data.user;
+                logLoginEvent("login");
                 await showApp();
             }
         } catch (err) {
@@ -706,10 +737,14 @@
     });
 
     // --- Navigation ---
-    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees", "audit", "trash"];
+    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees", "audit", "trash", "admin"];
     function navigate(page) {
         if (isEmployee() && EMPLOYEE_BLOCKED.indexOf(page) !== -1) {
             toast("Cette section est réservée au propriétaire.", "warning");
+            page = "dashboard";
+        }
+        if (page === "admin" && !isAdmin()) {
+            toast("Accès refusé.", "error");
             page = "dashboard";
         }
         document.querySelectorAll(".page").forEach(function (el) { el.style.display = "none"; });
@@ -732,6 +767,7 @@
         if (page === "approvals") renderApprovals();
         if (page === "audit") renderAuditLog();
         if (page === "trash") renderTrash();
+        if (page === "admin") renderAdmin();
     }
 
     document.querySelectorAll(".sidebar-nav a").forEach(function (a) {
@@ -5621,6 +5657,229 @@
         logAction("purge", table, id, null);
         renderTrash();
     };
+
+    // ============================================================
+    // ADMIN PANEL
+    // ============================================================
+    var adminTab = "dashboard";
+    var adminUsersCache = null;
+
+    async function renderAdmin() {
+        if (!isAdmin()) return;
+        var tabs = ["dashboard", "users", "subscriptions", "logins", "audit", "tech"];
+        var tabLabels = {
+            dashboard: "Vue d'ensemble",
+            users: "Utilisateurs",
+            subscriptions: "Abonnements",
+            logins: "Connexions",
+            audit: "Audit global",
+            tech: "Technique"
+        };
+        var nav = document.getElementById("admin-tabs");
+        nav.innerHTML = tabs.map(function (t) {
+            return '<button class="admin-tab' + (t === adminTab ? " active" : "") + '" onclick="setAdminTab(\'' + t + '\')">' + tabLabels[t] + '</button>';
+        }).join("");
+        var container = document.getElementById("admin-content");
+        container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Chargement…</p>';
+        if (adminTab === "dashboard") await renderAdminDashboard(container);
+        else if (adminTab === "users") await renderAdminUsers(container);
+        else if (adminTab === "subscriptions") await renderAdminSubscriptions(container);
+        else if (adminTab === "logins") await renderAdminLogins(container);
+        else if (adminTab === "audit") await renderAdminAudit(container);
+        else if (adminTab === "tech") await renderAdminTech(container);
+    }
+
+    window.setAdminTab = function (t) { adminTab = t; renderAdmin(); };
+
+    async function callAdmin(action, params) {
+        var res = await sb.functions.invoke("admin-action", { body: Object.assign({ action: action }, params || {}) });
+        if (res.error) throw new Error(res.error.message || String(res.error));
+        if (res.data && res.data.error) throw new Error(res.data.error);
+        return res.data;
+    }
+
+    async function renderAdminDashboard(container) {
+        try {
+            var stats = await callAdmin("stats");
+            container.innerHTML =
+                '<div class="admin-kpi-grid">'
+                + adminKpi("Utilisateurs totaux", stats.users_total, "primary")
+                + adminKpi("Suspendus", stats.users_suspended, "danger")
+                + adminKpi("Entreprises", stats.companies_total, "primary")
+                + adminKpi("Factures émises", stats.invoices_total, "primary")
+                + adminKpi("MRR (mensuel)", formatMoney(stats.mrr), "success")
+                + adminKpi("ARR (annuel)", formatMoney(stats.arr), "success")
+                + adminKpi("Connexions 24h", stats.logins_24h, "primary")
+                + '</div>'
+                + '<div class="admin-section">'
+                + '<h2>Répartition des plans</h2>'
+                + '<table class="data-table"><thead><tr><th>Plan</th><th>Utilisateurs</th><th>Revenu mensuel</th></tr></thead><tbody>'
+                + planRow("Gratuit", stats.plan_count.free, 0)
+                + planRow("Standard", stats.plan_count.standard, 14.99)
+                + planRow("Pro", stats.plan_count.pro, 29.99)
+                + planRow("Business", stats.plan_count.business, 39.99)
+                + '</tbody></table></div>';
+        } catch (err) {
+            container.innerHTML = '<p style="color:var(--danger)">Erreur : ' + escapeHtml(err.message) + '</p>';
+        }
+    }
+
+    function adminKpi(label, value, level) {
+        return '<div class="admin-kpi admin-kpi-' + level + '"><div class="admin-kpi-label">' + label + '</div><div class="admin-kpi-value">' + value + '</div></div>';
+    }
+    function planRow(label, count, price) {
+        var rev = (count || 0) * price;
+        return '<tr><td>' + label + '</td><td>' + (count || 0) + '</td><td>' + formatMoney(rev) + '</td></tr>';
+    }
+
+    async function renderAdminUsers(container) {
+        try {
+            var data = await callAdmin("list_users");
+            adminUsersCache = data.users || [];
+            var html = '<div class="admin-section">'
+                + '<div style="margin-bottom:12px"><input type="search" id="admin-user-search" placeholder="Rechercher (email, nom)…" oninput="filterAdminUsers(this.value)" style="width:100%;max-width:360px"></div>'
+                + '<table class="data-table"><thead><tr>'
+                + '<th>Email</th><th>Nom</th><th>Plan</th><th>Statut</th><th>Inscription</th><th>Dernière connexion</th><th>Actions</th>'
+                + '</tr></thead><tbody id="admin-users-body"></tbody></table></div>';
+            container.innerHTML = html;
+            filterAdminUsers("");
+        } catch (err) {
+            container.innerHTML = '<p style="color:var(--danger)">Erreur : ' + escapeHtml(err.message) + '</p>';
+        }
+    }
+
+    window.filterAdminUsers = function (term) {
+        var t = (term || "").toLowerCase().trim();
+        var body = document.getElementById("admin-users-body");
+        if (!body) return;
+        var list = adminUsersCache.filter(function (u) {
+            if (!t) return true;
+            return (u.email || "").toLowerCase().indexOf(t) !== -1 || (u.name || "").toLowerCase().indexOf(t) !== -1;
+        });
+        body.innerHTML = list.map(function (u) {
+            var planBadge = '<span class="status-badge ' + (u.plan === "business" ? "success" : u.plan === "pro" ? "warning" : "") + '">' + (u.plan || "free") + '</span>';
+            var status = u.suspended_at
+                ? '<span class="status-badge danger">Suspendu</span>'
+                : '<span class="status-badge success">Actif</span>';
+            var lastSign = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString("fr-FR") : "—";
+            return '<tr>'
+                + '<td>' + escapeHtml(u.email || "—") + '</td>'
+                + '<td>' + escapeHtml(u.name || "—") + '</td>'
+                + '<td>' + planBadge + '</td>'
+                + '<td>' + status + '</td>'
+                + '<td>' + new Date(u.created_at).toLocaleDateString("fr-FR") + '</td>'
+                + '<td>' + lastSign + '</td>'
+                + '<td style="display:flex;gap:6px;flex-wrap:wrap">'
+                + '<button class="btn btn-sm btn-outline" onclick="adminChangePlan(\'' + u.id + '\',\'' + escapeHtml(u.email || "") + '\')">Plan</button> '
+                + '<button class="btn btn-sm btn-outline" onclick="adminToggleSuspend(\'' + u.id + '\')">' + (u.suspended_at ? "Réactiver" : "Suspendre") + '</button> '
+                + '<button class="btn btn-sm btn-danger" onclick="adminDeleteUser(\'' + u.id + '\',\'' + escapeHtml(u.email || "") + '\')">Supprimer</button>'
+                + '</td></tr>';
+        }).join("");
+        if (!list.length) body.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--text-muted);text-align:center">Aucun utilisateur trouvé.</td></tr>';
+    };
+
+    window.adminChangePlan = async function (userId, email) {
+        var newPlan = prompt("Nouveau plan pour " + email + " (free / standard / pro / business) :");
+        if (!newPlan) return;
+        try {
+            await callAdmin("change_plan", { user_id: userId, plan: newPlan.trim().toLowerCase() });
+            toast("Plan mis à jour.", "success");
+            renderAdmin();
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminToggleSuspend = async function (userId) {
+        if (!await iconfirm("Modifier l'état de suspension de cet utilisateur ?")) return;
+        try {
+            var res = await callAdmin("toggle_suspend", { user_id: userId });
+            toast(res.suspended ? "Utilisateur suspendu." : "Utilisateur réactivé.", "success");
+            renderAdmin();
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminDeleteUser = async function (userId, email) {
+        if (!await iconfirm("Supprimer DÉFINITIVEMENT le compte " + email + " ? Toutes ses données seront perdues.")) return;
+        try {
+            await callAdmin("delete_user", { user_id: userId });
+            toast("Utilisateur supprimé.", "success");
+            renderAdmin();
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    async function renderAdminSubscriptions(container) {
+        var res = await sb.from("profiles").select("id, name, email, plan, plan_since, stripe_customer_id, stripe_subscription_id, subscription_current_period_end").neq("plan", "free").order("plan_since", { ascending: false, nullsLast: true });
+        if (res.error) { container.innerHTML = '<p style="color:var(--danger)">' + res.error.message + '</p>'; return; }
+        var rows = (res.data || []).map(function (p) {
+            return '<tr>'
+                + '<td>' + escapeHtml(p.email || "—") + '</td>'
+                + '<td>' + escapeHtml(p.name || "—") + '</td>'
+                + '<td><span class="status-badge ' + (p.plan === "business" ? "success" : "warning") + '">' + p.plan + '</span></td>'
+                + '<td>' + (p.plan_since ? new Date(p.plan_since).toLocaleDateString("fr-FR") : "—") + '</td>'
+                + '<td>' + (p.subscription_current_period_end ? new Date(p.subscription_current_period_end).toLocaleDateString("fr-FR") : "—") + '</td>'
+                + '<td>' + (p.stripe_customer_id ? "<code>" + p.stripe_customer_id.slice(0, 14) + "…</code>" : "test mode") + '</td>'
+                + '</tr>';
+        }).join("");
+        container.innerHTML = '<div class="admin-section"><h2>Abonnements actifs (' + (res.data || []).length + ')</h2>'
+            + '<table class="data-table"><thead><tr><th>Email</th><th>Nom</th><th>Plan</th><th>Depuis</th><th>Prochain renouvellement</th><th>Stripe</th></tr></thead>'
+            + '<tbody>' + (rows || '<tr><td colspan="6" style="padding:20px;color:var(--text-muted);text-align:center">Aucun abonnement payant.</td></tr>') + '</tbody></table></div>';
+    }
+
+    async function renderAdminLogins(container) {
+        var res = await sb.from("login_history").select("*").order("created_at", { ascending: false }).limit(200);
+        if (res.error) { container.innerHTML = '<p style="color:var(--danger)">' + res.error.message + '</p>'; return; }
+        var rows = (res.data || []).map(function (l) {
+            return '<tr>'
+                + '<td>' + new Date(l.created_at).toLocaleString("fr-FR") + '</td>'
+                + '<td>' + escapeHtml(l.email || l.user_id?.slice(0, 8) || "—") + '</td>'
+                + '<td><span class="status-badge ' + (l.event === "signup" ? "success" : "") + '">' + l.event + '</span></td>'
+                + '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escapeHtml(l.user_agent || "") + '">' + escapeHtml((l.user_agent || "").slice(0, 60)) + '</td>'
+                + '</tr>';
+        }).join("");
+        container.innerHTML = '<div class="admin-section"><h2>Historique des connexions (200 dernières)</h2>'
+            + '<table class="data-table"><thead><tr><th>Date</th><th>Utilisateur</th><th>Évènement</th><th>Navigateur</th></tr></thead>'
+            + '<tbody>' + (rows || '<tr><td colspan="4" style="padding:20px;color:var(--text-muted);text-align:center">Aucune connexion enregistrée.</td></tr>') + '</tbody></table></div>';
+    }
+
+    async function renderAdminAudit(container) {
+        var res = await sb.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200);
+        if (res.error) { container.innerHTML = '<p style="color:var(--danger)">' + res.error.message + '</p>'; return; }
+        var rows = (res.data || []).map(function (l) {
+            return '<tr>'
+                + '<td>' + new Date(l.created_at).toLocaleString("fr-FR") + '</td>'
+                + '<td>' + escapeHtml(l.action) + '</td>'
+                + '<td>' + escapeHtml(l.entity_type) + '</td>'
+                + '<td>' + escapeHtml(l.entity_label || "—") + '</td>'
+                + '<td><code>' + (l.user_id ? l.user_id.slice(0, 8) : "—") + '</code></td>'
+                + '<td><code>' + (l.company_id ? l.company_id.slice(0, 8) : "—") + '</code></td>'
+                + '</tr>';
+        }).join("");
+        container.innerHTML = '<div class="admin-section"><h2>Audit global (200 dernières actions)</h2>'
+            + '<table class="data-table"><thead><tr><th>Date</th><th>Action</th><th>Entité</th><th>Label</th><th>User</th><th>Company</th></tr></thead>'
+            + '<tbody>' + (rows || '<tr><td colspan="6" style="padding:20px;color:var(--text-muted);text-align:center">Aucune action enregistrée.</td></tr>') + '</tbody></table></div>';
+    }
+
+    async function renderAdminTech(container) {
+        container.innerHTML =
+            '<div class="admin-section"><h2>État du système</h2>'
+            + '<p style="color:var(--text-muted)">Liens utiles pour le diagnostic et la configuration :</p>'
+            + '<ul style="line-height:2">'
+            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/functions">📦 Edge Functions Supabase</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/logs/explorer">📋 Logs Supabase</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/auth/users">👥 Auth users dashboard</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/storage/buckets">🪣 Storage</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://resend.com/emails">✉️ Resend (emails)</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://dashboard.stripe.com">💳 Stripe Dashboard</a></li>'
+            + '</ul></div>'
+            + '<div class="admin-section"><h2>Configuration restante</h2>'
+            + '<ul style="line-height:2;color:var(--text-muted)">'
+            + '<li><strong>Resend</strong> : configurer RESEND_API_KEY + vérifier le domaine pour les emails</li>'
+            + '<li><strong>Stripe</strong> : 6 secrets à configurer (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*, APP_URL)</li>'
+            + '<li><strong>Cron daily-recap</strong> : à programmer avec pg_cron + CRON_SECRET</li>'
+            + '</ul></div>';
+    }
+    // ============================================================
+    // END ADMIN PANEL
+    // ============================================================
 
     // --- Quote templates by sector ---
     var QUOTE_TEMPLATES = {

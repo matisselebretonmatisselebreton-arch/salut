@@ -408,7 +408,8 @@ th.sortable:hover { color: var(--primary); }
     .sidebar { display: none; }
     .main { margin-left: 0; padding: 24px 18px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .plan-grid, .acct-grid { grid-template-columns: 1fr; }
+    .acct-grid { grid-template-columns: 1fr; }
+    .plan-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 600px) {
     .stats-grid { grid-template-columns: 1fr; }
@@ -556,12 +557,7 @@ th.sortable:hover { color: var(--primary); }
     font-size: .78rem; font-weight: 600;
 }
 
-/* Plan grid 4 columns for business */
-.plan-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 20px;
-}
+/* (la définition de .plan-grid se trouve plus haut, ligne ~260) */
 
 /* Data table for employees/approvals */
 .data-table {

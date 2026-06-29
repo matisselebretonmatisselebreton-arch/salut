@@ -546,7 +546,25 @@
             state.suppliers = (results[7].data || []).filter(notDeleted);
             state.urssaf = results[8].data || [];
             state.memberships = results[9].data || [];
-            state.companies = results[10].data || [];
+            // Pour les admins, RLS retourne TOUTES les entreprises. On filtre côté client
+            // pour ne garder que les entreprises où l'utilisateur a une membership active —
+            // la vue "globale" n'a sa place que dans le panneau Admin, pas dans le dashboard quotidien.
+            var memberCompanyIds = new Set(state.memberships.map(function (m) { return m.company_id; }));
+            state.companies = (results[10].data || []).filter(function (c) { return memberCompanyIds.has(c.id); });
+            // De même, les données business ne doivent contenir que celles des entreprises de l'utilisateur,
+            // ou les données legacy sans company_id si solo.
+            var allowedCompanyIds = state.memberships.length > 0 ? memberCompanyIds : null;
+            function scopeByCompany(arr) {
+                if (!allowedCompanyIds) return arr.filter(function (r) { return !r.company_id; });
+                return arr.filter(function (r) { return !r.company_id || allowedCompanyIds.has(r.company_id); });
+            }
+            state.clients = scopeByCompany(state.clients);
+            state.invoices = scopeByCompany(state.invoices);
+            state.quotes = scopeByCompany(state.quotes);
+            state.recurring = scopeByCompany(state.recurring);
+            state.creditNotes = scopeByCompany(state.creditNotes);
+            state.expenses = scopeByCompany(state.expenses);
+            state.suppliers = scopeByCompany(state.suppliers);
             reservedSeq = {};
 
             updateCompanyContext();

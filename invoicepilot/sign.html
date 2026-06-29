@@ -106,9 +106,9 @@
 
     async function loadQuote() {
         if (!token) { showError("Lien invalide."); return; }
-        var res = await sb.from("quotes").select("*").eq("public_signature_token", token).maybeSingle();
-        if (res.error || !res.data) { showError("Ce lien de signature n'existe pas ou a expiré."); return; }
-        quote = res.data;
+        var res = await sb.rpc("quote_by_token", { p_token: token });
+        if (res.error || !res.data || !res.data.length) { showError("Ce lien de signature n'existe pas ou a expiré."); return; }
+        quote = res.data[0];
         if (quote.signed_at) {
             document.getElementById("loading").style.display = "none";
             document.getElementById("signed-screen").style.display = "";
@@ -174,13 +174,12 @@
         var btn = document.getElementById("btn-submit");
         btn.disabled = true; btn.textContent = "Envoi…";
         var canvas = document.getElementById("sig-canvas");
-        var payload = {
-            signature_data: canvas.toDataURL("image/png"),
-            signer_name: name,
-            signed_at: new Date().toISOString()
-        };
-        var res = await sb.from("quotes").update(payload).eq("public_signature_token", token);
-        if (res.error) { alert("Erreur : " + res.error.message); btn.disabled = false; btn.textContent = "Signer le devis"; return; }
+        var res = await sb.rpc("sign_quote_by_token", {
+            p_token: token,
+            p_signature_data: canvas.toDataURL("image/png"),
+            p_signer_name: name
+        });
+        if (res.error || res.data === false) { alert("Erreur : signature impossible (lien expiré ou déjà signé)."); btn.disabled = false; btn.textContent = "Signer le devis"; return; }
         document.getElementById("quote-screen").style.display = "none";
         document.getElementById("signed-screen").style.display = "";
     };

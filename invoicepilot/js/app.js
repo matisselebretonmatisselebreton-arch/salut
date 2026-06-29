@@ -312,12 +312,11 @@
             var key = "ip_tour_seen_v1_" + state.user.id;
             if (localStorage.getItem(key)) return;
             var steps = isEmployee() ? TOUR_STEPS_EMPLOYEE : TOUR_STEPS_OWNER;
-            startTour(steps);
-            localStorage.setItem(key, "1");
+            startTour(steps, function () { try { localStorage.setItem(key, "1"); } catch (e) {} });
         } catch (e) { /* ignore */ }
     }
 
-    window.startTour = function (steps) {
+    window.startTour = function (steps, onComplete) {
         var idx = 0;
         var overlay = document.createElement("div");
         overlay.className = "tour-overlay";
@@ -353,6 +352,7 @@
 
         function close() {
             if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            if (typeof onComplete === "function") onComplete();
         }
 
         overlay.querySelector("#tour-next").addEventListener("click", function () {
@@ -366,11 +366,11 @@
 
     // --- Browser notifications ---
     var notificationLastCheck = 0;
+    var approvalPollHandle = null;
     function requestNotificationPermissionIfBusiness() {
         if (!isBusiness() || !isOwner()) return;
         if (!("Notification" in window)) return;
         if (Notification.permission === "default") {
-            // Ask later, with a soft prompt
             setTimeout(function () {
                 if (Notification.permission === "default") {
                     Notification.requestPermission();
@@ -381,23 +381,26 @@
     }
 
     function startApprovalPolling() {
-        // Poll every 60s for new pending_approval invoices created by employees
-        setInterval(async function () {
-            if (!isOwner() || !state.activeCompanyId) return;
-            var sinceISO = new Date(notificationLastCheck || Date.now() - 60000).toISOString();
+        if (approvalPollHandle) return; // already running
+        notificationLastCheck = Date.now();
+        approvalPollHandle = setInterval(async function () {
+            if (!isOwner() || !state.activeCompanyId || !navigator.onLine) return;
+            if (Notification.permission !== "granted") return;
+            var sinceISO = new Date(notificationLastCheck).toISOString();
             var res = await sb.from("invoices")
                 .select("number, total_ttc, created_by, created_at")
                 .eq("company_id", state.activeCompanyId)
                 .eq("status", "pending_approval")
                 .gt("created_at", sinceISO);
             notificationLastCheck = Date.now();
-            if (res.data && res.data.length && Notification.permission === "granted") {
+            if (res.data && res.data.length) {
                 res.data.forEach(function (inv) {
-                    new Notification("InvoicePilot — Facture à valider", {
-                        body: "Facture " + inv.number + " (" + Number(inv.total_ttc).toFixed(2) + " €) en attente de votre validation.",
-                        tag: "invoice-" + inv.number,
-                        icon: "/manifest.json"
-                    });
+                    try {
+                        new Notification("InvoicePilot — Facture à valider", {
+                            body: "Facture " + inv.number + " (" + Number(inv.total_ttc).toFixed(2) + " €) en attente.",
+                            tag: "invoice-" + inv.number
+                        });
+                    } catch (e) { /* ignore */ }
                 });
             }
         }, 60000);
@@ -2257,9 +2260,11 @@
         }
 
         if (!navigator.onLine) {
-            // Optimistic local insert + enqueue for sync
-            payload.id = "offline-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-            state.quotes.unshift(payload);
+            // Optimistic local insert + enqueue for sync.
+            // Local-only placeholder id (NOT sent to DB — server will assign UUID).
+            var localId = "offline-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+            var localCopy = Object.assign({}, payload, { id: localId, _offline: true });
+            state.quotes.unshift(localCopy);
             await enqueueMutation({ table: "quotes", type: "insert", payload: payload });
             await saveStateSnapshot();
             resetQuotePhotos();
@@ -4668,15 +4673,19 @@
         var company = getActiveCompany();
         var companyName = company ? company.name : "votre entreprise";
         var inviteUrl = window.location.origin + "/app.html?invite=" + inv.token;
-        try {
-            await sb.functions.invoke("send-invite-email", {
-                body: { email: inv.email, first_name: inv.first_name, company_name: companyName, invite_url: inviteUrl }
-            });
-            toast("Invitation renvoyée à " + inv.email, "success");
-        } catch (err) {
-            toast("Email non envoyé. Lien d'invitation : " + inviteUrl, "info");
-        }
+        var ok = await tryInvokeEmail({ email: inv.email, first_name: inv.first_name, company_name: companyName, invite_url: inviteUrl });
+        if (ok) toast("Invitation renvoyée à " + inv.email, "success");
+        else await showInviteLink(inviteUrl);
     };
+
+    async function tryInvokeEmail(body) {
+        try {
+            var res = await sb.functions.invoke("send-invite-email", { body: body });
+            if (res.error) return false;
+            if (res.data && res.data.error) return false;
+            return true;
+        } catch (e) { return false; }
+    }
 
     document.getElementById("invite-employee-form").addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -4705,15 +4714,9 @@
         var company = getActiveCompany();
         var companyName = company ? company.name : "votre entreprise";
         var inviteUrl = window.location.origin + "/app.html?invite=" + token;
-        try {
-            await sb.functions.invoke("send-invite-email", {
-                body: { email: email, first_name: firstName, company_name: companyName, invite_url: inviteUrl }
-            });
-            toast("Profil créé et invitation envoyée à " + email, "success");
-        } catch (err) {
-            toast("Profil créé. Lien d'invitation (email non envoyé) :", "info");
-            await showInviteLink(inviteUrl);
-        }
+        var sent = await tryInvokeEmail({ email: email, first_name: firstName, company_name: companyName, invite_url: inviteUrl });
+        if (sent) toast("Profil créé et invitation envoyée à " + email, "success");
+        else { toast("Profil créé. Email non envoyé — partagez le lien manuellement.", "warning"); await showInviteLink(inviteUrl); }
 
         closeModal("modal-invite-employee");
         document.getElementById("invite-employee-form").reset();
@@ -4851,16 +4854,20 @@
         });
         if (!pending.length) return;
         if (!await iconfirm("Valider les " + pending.length + " facture(s) en attente ?")) return;
+        var ok = 0, fail = 0;
         for (var i = 0; i < pending.length; i++) {
-            await sb.from("invoices").update({
+            var res = await sb.from("invoices").update({
                 status: "pending",
                 approved_by: state.user.id,
                 approved_at: new Date().toISOString()
             }).eq("id", pending[i].id);
+            if (res.error) fail++;
+            else { ok++; logAction("approve_invoice", "invoice", pending[i].id, pending[i].number); }
         }
         await refreshData();
         renderApprovals();
-        toast(pending.length + " facture(s) validée(s).", "success");
+        if (fail === 0) toast(ok + " facture(s) validée(s).", "success");
+        else toast(ok + " validée(s), " + fail + " échec(s).", "warning");
     };
 
     // --- Fullscreen signature for mobile ---
@@ -5458,6 +5465,10 @@
     async function renderAuditLog() {
         var container = document.getElementById("audit-log-list");
         if (!container) return;
+        if (!state.activeCompanyId || !isOwner()) {
+            container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Le journal n\'est disponible qu\'aux propriétaires d\'une entreprise.</p>';
+            return;
+        }
         var res = await sb.from("audit_log").select("*").eq("company_id", state.activeCompanyId).order("created_at", { ascending: false }).limit(100);
         if (res.error) { container.innerHTML = '<p style="color:var(--danger)">Erreur de chargement</p>'; return; }
         if (!res.data || !res.data.length) {

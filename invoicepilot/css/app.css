@@ -724,6 +724,19 @@ th.sortable:hover { color: var(--primary); }
     .mobile-only-btn { display: none !important; }
 }
 
+/* Quote template bar */
+.quote-template-bar {
+    background: var(--bg); border-radius: var(--radius-sm);
+    padding: 10px 12px; margin-bottom: 14px;
+    display: flex; align-items: center; flex-wrap: wrap;
+}
+
+/* Share signature QR */
+#share-qr img {
+    max-width: 200px; border-radius: 8px;
+    border: 1px solid var(--border); padding: 8px; background: #fff;
+}
+
 /* Quote photos preview */
 .quote-photos-preview {
     display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;

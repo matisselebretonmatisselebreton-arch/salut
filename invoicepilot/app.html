@@ -89,6 +89,9 @@
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span> Validations
                     <span class="nav-badge" id="approval-badge" style="display:none">0</span>
                 </a>
+                <a href="#" data-page="audit" id="nav-audit" style="display:none">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span> Journal d'activité
+                </a>
                 <a href="#" data-page="subscription">
                     <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> Mon abonnement
                 </a>
@@ -555,6 +558,19 @@
                 </div>
             </div>
 
+            <!-- Audit log -->
+            <div id="page-audit" class="page" style="display:none">
+                <div class="page-header">
+                    <div>
+                        <h1>Journal d'activité</h1>
+                        <p class="page-subtitle">Toutes les actions effectuées sur l'entreprise (100 dernières)</p>
+                    </div>
+                </div>
+                <div class="table-card">
+                    <div id="audit-log-list"></div>
+                </div>
+            </div>
+
             <!-- Approvals -->
             <div id="page-approvals" class="page" style="display:none">
                 <div class="page-header">
@@ -824,6 +840,17 @@
         <div class="modal">
             <h2>Nouveau devis</h2>
             <form id="quote-form">
+                <div class="quote-template-bar">
+                    <span style="font-size:.82rem;color:var(--text-muted);margin-right:8px">Modèle :</span>
+                    <select onchange="if(this.value){applyQuoteTemplate(this.value);this.value=''}" class="filter-select-employee">
+                        <option value="">Aucun (vierge)</option>
+                        <option value="batiment">Bâtiment / Travaux</option>
+                        <option value="services">Services / Conseil</option>
+                        <option value="web">Développement web</option>
+                        <option value="evenementiel">Événementiel / Traiteur</option>
+                        <option value="transport">Transport / Livraison</option>
+                    </select>
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Client</label>
@@ -1249,6 +1276,22 @@
                     <button type="submit" class="btn btn-primary">Créer et envoyer l'invitation</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: Share quote for remote signature -->
+    <div class="modal-overlay" id="modal-share-signature">
+        <div class="modal" style="max-width:480px">
+            <h2>Signature à distance</h2>
+            <p style="color:var(--text-muted);font-size:.88rem;margin-bottom:14px">Partagez ce QR code ou le lien avec votre client. Il pourra signer le devis directement depuis son téléphone.</p>
+            <div id="share-qr" style="text-align:center;margin:18px 0"></div>
+            <div style="display:flex;gap:8px">
+                <input type="text" id="share-link-url" readonly style="flex:1;font-size:.82rem">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyShareLink()">Copier</button>
+            </div>
+            <div class="modal-actions" style="margin-top:16px">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-share-signature')">Fermer</button>
+            </div>
         </div>
     </div>
 

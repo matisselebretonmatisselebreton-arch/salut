@@ -229,12 +229,14 @@
         var select = document.getElementById("active-company");
         var navEmployees = document.getElementById("nav-employees");
         var navApprovals = document.getElementById("nav-approvals");
+        var navAudit = document.getElementById("nav-audit");
         var roleBadge = document.getElementById("user-role-badge");
 
         if (!isBusiness() || state.companies.length === 0) {
             selector.style.display = "none";
             navEmployees.style.display = "none";
             navApprovals.style.display = "none";
+            if (navAudit) navAudit.style.display = "none";
             roleBadge.style.display = "none";
             return;
         }
@@ -258,6 +260,7 @@
         if (isOwner()) {
             navEmployees.style.display = "";
             navApprovals.style.display = "";
+            if (navAudit) navAudit.style.display = "";
             roleBadge.style.display = "inline-block";
             roleBadge.textContent = "Propriétaire";
             roleBadge.className = "role-badge role-owner";
@@ -265,6 +268,7 @@
         } else {
             navEmployees.style.display = "none";
             navApprovals.style.display = "none";
+            if (navAudit) navAudit.style.display = "none";
             roleBadge.style.display = "inline-block";
             roleBadge.textContent = "Employé";
             roleBadge.className = "role-badge role-employee";
@@ -365,7 +369,7 @@
     });
 
     // --- Navigation ---
-    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees"];
+    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees", "audit"];
     function navigate(page) {
         if (isEmployee() && EMPLOYEE_BLOCKED.indexOf(page) !== -1) {
             toast("Cette section est réservée au propriétaire.", "warning");
@@ -389,6 +393,7 @@
         if (page === "profile") loadProfile();
         if (page === "employees") renderEmployees();
         if (page === "approvals") renderApprovals();
+        if (page === "audit") renderAuditLog();
     }
 
     document.querySelectorAll(".sidebar-nav a").forEach(function (a) {
@@ -1691,6 +1696,7 @@
             html += '<td>';
             html += '<button class="btn btn-sm btn-outline" onclick="downloadQuotePDF(\'' + q.id + '\')">PDF</button> ';
             if (q.status === "pending") {
+                html += '<button class="btn btn-sm btn-outline" onclick="shareForSignature(\'' + q.id + '\')">&#128279; Signer à distance</button> ';
                 html += '<button class="btn btn-sm btn-outline" onclick="setQuoteStatus(\'' + q.id + '\',\'accepted\')">Accepter</button> ';
                 html += '<button class="btn btn-sm btn-outline" onclick="setQuoteStatus(\'' + q.id + '\',\'rejected\')">Refuser</button> ';
             }
@@ -4419,12 +4425,14 @@
 
     window.approveInvoice = async function (invoiceId) {
         if (!await iconfirm("Valider cette facture et l'intégrer dans la comptabilité ?")) return;
+        var inv = state.invoices.find(function (i) { return i.id === invoiceId; });
         var res = await sb.from("invoices").update({
             status: "pending",
             approved_by: state.user.id,
             approved_at: new Date().toISOString()
         }).eq("id", invoiceId);
         if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        logAction("approve_invoice", "invoice", invoiceId, inv ? inv.number : null);
         await refreshData();
         renderApprovals();
         toast("Facture validée et intégrée.", "success");
@@ -4432,8 +4440,10 @@
 
     window.rejectInvoice = async function (invoiceId) {
         if (!await iconfirm("Refuser cette facture ?")) return;
+        var inv = state.invoices.find(function (i) { return i.id === invoiceId; });
         var res = await sb.from("invoices").update({ status: "rejected" }).eq("id", invoiceId);
         if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        logAction("reject_invoice", "invoice", invoiceId, inv ? inv.number : null);
         await refreshData();
         renderApprovals();
         toast("Facture refusée.", "success");
@@ -5045,6 +5055,159 @@
     function formatDate(d) {
         var parts = String(d).slice(0, 10).split("-");
         return parts[2] + "/" + parts[1] + "/" + parts[0];
+    }
+
+    // --- Audit log ---
+    async function logAction(action, entityType, entityId, label, metadata) {
+        if (!state.activeCompanyId) return;
+        try {
+            await sb.from("audit_log").insert({
+                company_id: state.activeCompanyId,
+                user_id: state.user.id,
+                action: action,
+                entity_type: entityType,
+                entity_id: entityId,
+                entity_label: label || null,
+                metadata: metadata || null
+            });
+        } catch (e) { /* non-blocking */ }
+    }
+
+    // --- Share quote for remote signature ---
+    window.shareForSignature = async function (quoteId) {
+        var q = state.quotes.find(function (x) { return x.id === quoteId; });
+        if (!q) return;
+        var token = q.public_signature_token;
+        if (!token) {
+            token = Array.from(crypto.getRandomValues(new Uint8Array(32))).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+            var upd = await sb.from("quotes").update({ public_signature_token: token }).eq("id", quoteId);
+            if (upd.error) { toast("Erreur : " + upd.error.message, "error"); return; }
+            q.public_signature_token = token;
+        }
+        var url = window.location.origin + "/sign.html?t=" + token;
+        document.getElementById("share-link-url").value = url;
+        // Generate QR code
+        var qrDiv = document.getElementById("share-qr");
+        qrDiv.innerHTML = "";
+        try {
+            var qr = qrcode(0, "M");
+            qr.addData(url);
+            qr.make();
+            qrDiv.innerHTML = qr.createImgTag(5, 8);
+        } catch (e) {
+            qrDiv.innerHTML = '<p style="color:var(--text-muted);font-size:.85rem">QR non disponible — utilisez le lien.</p>';
+        }
+        openModal("modal-share-signature");
+        logAction("share_signature", "quote", quoteId, q.number);
+    };
+
+    window.copyShareLink = function () {
+        var input = document.getElementById("share-link-url");
+        input.select();
+        document.execCommand("copy");
+        toast("Lien copié !", "success");
+    };
+
+    // --- Render audit log ---
+    async function renderAuditLog() {
+        var container = document.getElementById("audit-log-list");
+        if (!container) return;
+        var res = await sb.from("audit_log").select("*").eq("company_id", state.activeCompanyId).order("created_at", { ascending: false }).limit(100);
+        if (res.error) { container.innerHTML = '<p style="color:var(--danger)">Erreur de chargement</p>'; return; }
+        if (!res.data || !res.data.length) {
+            container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Aucune action enregistrée.</p>';
+            return;
+        }
+        var actionLabels = {
+            create_invoice: "Création facture",
+            create_quote: "Création devis",
+            approve_invoice: "Validation facture",
+            reject_invoice: "Refus facture",
+            share_signature: "Lien signature partagé",
+            sign_quote: "Devis signé"
+        };
+        var html = '<table class="data-table"><thead><tr><th>Date</th><th>Action</th><th>Élément</th><th>Utilisateur</th></tr></thead><tbody>';
+        for (var i = 0; i < res.data.length; i++) {
+            var log = res.data[i];
+            var dt = new Date(log.created_at);
+            var dtStr = dt.toLocaleDateString("fr-FR") + " " + dt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+            html += '<tr>'
+                + '<td>' + dtStr + '</td>'
+                + '<td>' + escapeHtml(actionLabels[log.action] || log.action) + '</td>'
+                + '<td>' + escapeHtml(log.entity_label || "—") + '</td>'
+                + '<td>' + (log.user_id === state.user.id ? "Moi" : log.user_id.slice(0, 8) + "…") + '</td>'
+                + '</tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    }
+    window.__renderAuditLog = renderAuditLog;
+
+    // --- Quote templates by sector ---
+    var QUOTE_TEMPLATES = {
+        batiment: {
+            label: "Bâtiment / Travaux",
+            items: [
+                { description: "Préparation du chantier et protection", quantity: 1, unitPrice: 150 },
+                { description: "Fourniture matériaux", quantity: 1, unitPrice: 0 },
+                { description: "Main d'œuvre (heures)", quantity: 8, unitPrice: 45 },
+                { description: "Nettoyage et évacuation", quantity: 1, unitPrice: 80 }
+            ]
+        },
+        services: {
+            label: "Services / Conseil",
+            items: [
+                { description: "Audit initial et cahier des charges", quantity: 1, unitPrice: 500 },
+                { description: "Prestation de conseil (jours)", quantity: 5, unitPrice: 600 },
+                { description: "Livraison et présentation finale", quantity: 1, unitPrice: 200 }
+            ]
+        },
+        web: {
+            label: "Développement web",
+            items: [
+                { description: "Conception maquettes / wireframes", quantity: 1, unitPrice: 800 },
+                { description: "Développement front-end (jours)", quantity: 5, unitPrice: 500 },
+                { description: "Développement back-end (jours)", quantity: 5, unitPrice: 550 },
+                { description: "Tests et mise en production", quantity: 1, unitPrice: 400 }
+            ]
+        },
+        evenementiel: {
+            label: "Événementiel / Traiteur",
+            items: [
+                { description: "Prestation par convive", quantity: 50, unitPrice: 35 },
+                { description: "Location matériel et vaisselle", quantity: 1, unitPrice: 250 },
+                { description: "Service en salle (heures)", quantity: 6, unitPrice: 30 }
+            ]
+        },
+        transport: {
+            label: "Transport / Livraison",
+            items: [
+                { description: "Forfait livraison", quantity: 1, unitPrice: 50 },
+                { description: "Kilomètres supplémentaires", quantity: 10, unitPrice: 0.6 },
+                { description: "Manutention", quantity: 1, unitPrice: 30 }
+            ]
+        }
+    };
+
+    window.applyQuoteTemplate = function (key) {
+        var tpl = QUOTE_TEMPLATES[key];
+        if (!tpl) return;
+        var tbody = document.getElementById("quote-items");
+        tbody.innerHTML = "";
+        tpl.items.forEach(function (item) {
+            tbody.insertAdjacentHTML("beforeend", itemRowFilled(item));
+        });
+        recalcQuote();
+        toast("Modèle « " + tpl.label + " » appliqué", "success");
+    };
+
+    function itemRowFilled(item) {
+        return '<tr>'
+            + '<td><input type="text" class="item-desc" value="' + escapeHtml(item.description) + '"></td>'
+            + '<td><input type="number" class="item-qty" value="' + item.quantity + '" min="1"></td>'
+            + '<td><input type="number" class="item-price" value="' + item.unitPrice + '" min="0" step="0.01"></td>'
+            + '<td class="item-total">0,00 €</td>'
+            + '<td><button type="button" class="remove-item" title="Supprimer">&times;</button></td></tr>';
     }
 
     // --- Geolocation capture ---

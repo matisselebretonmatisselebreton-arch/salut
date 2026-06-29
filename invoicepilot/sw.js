@@ -1,8 +1,9 @@
 // InvoicePilot — service worker (cache-first sur les assets statiques uniquement)
-var CACHE = "invoicepilot-v7";
+var CACHE = "invoicepilot-v8";
 var ASSETS = [
     "/app.html",
     "/index.html",
+    "/sign.html",
     "/css/app.css",
     "/css/landing.css",
     "/js/app.js",

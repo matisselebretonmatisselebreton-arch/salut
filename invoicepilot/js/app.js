@@ -459,7 +459,7 @@
 
     function hideEmployeeOnlyPages() {
         if (isEmployee()) {
-            ["suppliers", "expenses", "accounting", "performance", "recurring", "subscription", "profile"].forEach(function (p) {
+            ["suppliers", "expenses", "accounting", "performance", "recurring", "subscription", "profile", "trash"].forEach(function (p) {
                 var nav = document.querySelector('[data-page="' + p + '"]');
                 if (nav) nav.style.display = "none";
             });
@@ -703,7 +703,7 @@
     });
 
     // --- Navigation ---
-    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees", "audit"];
+    var EMPLOYEE_BLOCKED = ["accounting", "subscription", "profile", "recurring", "suppliers", "expenses", "performance", "employees", "audit", "trash"];
     function navigate(page) {
         if (isEmployee() && EMPLOYEE_BLOCKED.indexOf(page) !== -1) {
             toast("Cette section est réservée au propriétaire.", "warning");
@@ -728,6 +728,7 @@
         if (page === "employees") renderEmployees();
         if (page === "approvals") renderApprovals();
         if (page === "audit") renderAuditLog();
+        if (page === "trash") renderTrash();
     }
 
     document.querySelectorAll(".sidebar-nav a").forEach(function (a) {
@@ -5551,6 +5552,61 @@
         container.innerHTML = html;
     }
     window.__renderAuditLog = renderAuditLog;
+
+    // --- Trash (soft-deleted items) ---
+    var TRASH_TABLES = [
+        { table: "quotes", label: "Devis", numberField: "number" },
+        { table: "invoices", label: "Factures", numberField: "number" },
+        { table: "clients", label: "Clients", numberField: "name" },
+        { table: "expenses", label: "Dépenses", numberField: "description" },
+        { table: "suppliers", label: "Fournisseurs", numberField: "name" }
+    ];
+
+    async function renderTrash() {
+        var container = document.getElementById("trash-list");
+        if (!container) return;
+        container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Chargement…</p>';
+        var sections = [];
+        for (var i = 0; i < TRASH_TABLES.length; i++) {
+            var t = TRASH_TABLES[i];
+            var q = sb.from(t.table).select("*").not("deleted_at", "is", null).order("deleted_at", { ascending: false }).limit(50);
+            if (state.activeCompanyId) q = q.eq("company_id", state.activeCompanyId);
+            var res = await q;
+            if (res.error || !res.data || !res.data.length) continue;
+            var rowsHtml = res.data.map(function (r) {
+                var lbl = escapeHtml(r[t.numberField] || "—");
+                var dt = new Date(r.deleted_at).toLocaleString("fr-FR");
+                return '<tr><td>' + lbl + '</td><td>' + dt + '</td>'
+                    + '<td><button class="btn btn-sm btn-outline" onclick="restoreItem(\'' + t.table + '\',\'' + r.id + '\')">Restaurer</button> '
+                    + '<button class="btn btn-sm btn-danger" onclick="purgeItem(\'' + t.table + '\',\'' + r.id + '\')">Supprimer définitivement</button></td></tr>';
+            }).join("");
+            sections.push('<div class="trash-section"><h3>' + t.label + ' (' + res.data.length + ')</h3>'
+                + '<table class="data-table"><thead><tr><th>Élément</th><th>Supprimé le</th><th>Actions</th></tr></thead>'
+                + '<tbody>' + rowsHtml + '</tbody></table></div>');
+        }
+        container.innerHTML = sections.length
+            ? sections.join("")
+            : '<p style="padding:20px;color:var(--text-muted)">La corbeille est vide.</p>';
+    }
+
+    window.restoreItem = async function (table, id) {
+        if (!await iconfirm("Restaurer cet élément ?")) return;
+        var res = await sb.from(table).update({ deleted_at: null }).eq("id", id);
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        toast("Élément restauré.", "success");
+        logAction("restore", table, id, null);
+        await refreshData();
+        renderTrash();
+    };
+
+    window.purgeItem = async function (table, id) {
+        if (!await iconfirm("Suppression DÉFINITIVE — irrécupérable. Confirmer ?")) return;
+        var res = await sb.from(table).delete().eq("id", id);
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        toast("Suppression définitive.", "success");
+        logAction("purge", table, id, null);
+        renderTrash();
+    };
 
     // --- Quote templates by sector ---
     var QUOTE_TEMPLATES = {

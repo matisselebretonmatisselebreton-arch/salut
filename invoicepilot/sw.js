@@ -1,5 +1,5 @@
 // InvoicePilot — service worker (cache-first sur les assets statiques uniquement)
-var CACHE = "invoicepilot-v17";
+var CACHE = "invoicepilot-v20";
 var ASSETS = [
     "/app.html",
     "/index.html",
@@ -14,6 +14,12 @@ var ASSETS = [
 self.addEventListener("install", function (event) {
     event.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(ASSETS).catch(function () { /* ignore missing */ }); }));
     self.skipWaiting();
+});
+
+self.addEventListener("message", function (event) {
+    if (event.data && event.data.type === "SKIP_WAITING") {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener("activate", function (event) {

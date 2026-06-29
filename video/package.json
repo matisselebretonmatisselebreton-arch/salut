@@ -1,0 +1,26 @@
+{
+  "name": "invoicepilot-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "InvoicePilot marketing videos built with Remotion",
+  "scripts": {
+    "dev": "remotion studio",
+    "build:vertical": "remotion render MainAd-Vertical out/invoicepilot-vertical.mp4",
+    "build:horizontal": "remotion render MainAd-Horizontal out/invoicepilot-horizontal.mp4",
+    "build:square": "remotion render MainAd-Square out/invoicepilot-square.mp4",
+    "build:all": "npm run build:vertical && npm run build:horizontal && npm run build:square",
+    "upgrade": "remotion upgrade"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5"
+  }
+}

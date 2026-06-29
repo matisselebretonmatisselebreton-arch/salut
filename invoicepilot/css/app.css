@@ -503,10 +503,13 @@ th.sortable:hover { color: var(--primary); }
 
 /* Loading overlay */
 #app-loading {
-    position: fixed; inset: 0; background: rgba(255,255,255,.7); z-index: 9998;
+    position: fixed; inset: 0; background: rgba(255,255,255,.7); z-index: 150;
     display: none; align-items: center; justify-content: center;
 }
 #app-loading.active { display: flex; }
+/* Quand une modale est ouverte, le loader reste derrière (z-index 200 sur modal-overlay).
+   Le confirm-modal est porté à 9999 pour pouvoir interrompre tout traitement. */
+#confirm-modal.modal-overlay { z-index: 9999; }
 .app-loading-spinner {
     width: 48px; height: 48px; border-radius: 50%;
     border: 4px solid #E2E8F0; border-top-color: var(--primary);

@@ -4,11 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InvoicePilot — App</title>
-    <link rel="stylesheet" href="css/app.css?v=16">
+    <link rel="stylesheet" href="css/app.css?v=19">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4F46E5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}</script>
+    <script>
+    // Auto-refresh on SW update: purge old caches and reload the page once when
+    // a new service worker activates, so users always run the latest version
+    // without needing devtools.
+    (function () {
+        if (!('serviceWorker' in navigator)) return;
+        var APP_VERSION = "19";
+        var reloaded = sessionStorage.getItem("ip_reloaded_v") === APP_VERSION;
+        navigator.serviceWorker.register('sw.js').then(function (reg) {
+            // Force check for SW updates on every load.
+            try { reg.update(); } catch (e) {}
+            // When a waiting worker is ready, tell it to take over immediately.
+            function activate(worker) {
+                if (!worker) return;
+                worker.addEventListener('statechange', function () {
+                    if (worker.state === 'activated' && !reloaded) {
+                        sessionStorage.setItem("ip_reloaded_v", APP_VERSION);
+                        window.location.reload();
+                    }
+                });
+            }
+            if (reg.waiting) { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); activate(reg.waiting); }
+            reg.addEventListener('updatefound', function () { activate(reg.installing); });
+        });
+
+        // Also purge HTTP cache for the current page if the script URL is stale.
+        // Best-effort: if older versions of sw.js or app.js are cached, force one reload.
+        if (!reloaded && performance.getEntriesByType) {
+            var entries = performance.getEntriesByType('navigation');
+            if (entries[0] && entries[0].type === 'navigate') {
+                // Nothing to do here; cache-bust query params on css/js already force fresh fetches.
+            }
+        }
+    })();
+    </script>
 </head>
 <body>
 
@@ -1422,6 +1456,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/xlsx-js-style@v1.2.0/dist/xlsx.bundle.js"></script>
     <script src="js/config.js"></script>
-    <script src="js/app.js?v=16"></script>
+    <script src="js/app.js?v=19"></script>
 </body>
 </html>

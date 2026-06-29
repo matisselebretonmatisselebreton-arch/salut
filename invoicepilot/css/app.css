@@ -724,6 +724,29 @@ th.sortable:hover { color: var(--primary); }
     .mobile-only-btn { display: none !important; }
 }
 
+/* Onboarding tour */
+.tour-overlay {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(15,23,42,.7); pointer-events: none;
+}
+.tour-highlight {
+    position: absolute; border-radius: 10px;
+    box-shadow: 0 0 0 9999px rgba(15,23,42,.7);
+    pointer-events: none; transition: all .25s ease;
+}
+.tour-tooltip {
+    position: absolute; background: #fff; border-radius: 12px;
+    padding: 18px 20px; max-width: 340px; pointer-events: auto;
+    box-shadow: 0 12px 32px rgba(15,23,42,.3);
+    transition: all .25s ease;
+}
+.tour-tooltip h3 { font-size: 1.05rem; margin-bottom: 8px; color: var(--primary); }
+.tour-tooltip p { color: var(--text); font-size: .9rem; margin-bottom: 14px; line-height: 1.5; }
+.tour-actions {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.tour-progress { font-size: .78rem; color: var(--text-muted); }
+
 /* Quote template bar */
 .quote-template-bar {
     background: var(--bg); border-radius: var(--radius-sm);

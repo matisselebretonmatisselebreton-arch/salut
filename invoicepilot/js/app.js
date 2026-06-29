@@ -148,6 +148,121 @@
         hideEmployeeOnlyPages();
         await processRecurring();
         navigate("dashboard");
+        maybeStartOnboardingTour();
+        requestNotificationPermissionIfBusiness();
+    }
+
+    // --- Onboarding tour ---
+    var TOUR_STEPS_OWNER = [
+        { selector: '[data-page="dashboard"]', title: "Tableau de bord", text: "Vos KPIs en un coup d'œil : CA, factures, retards, alertes." },
+        { selector: '[data-page="quotes"]', title: "Devis", text: "Créez et envoyez des devis. Signature en ligne ou par QR code à distance." },
+        { selector: '[data-page="invoices"]', title: "Factures & Avoirs", text: "Toutes vos factures et avoirs, avec relances et statuts." },
+        { selector: '[data-page="clients"]', title: "Clients", text: "Votre carnet d'adresses centralisé. Fiche détaillée par client." },
+        { selector: '[data-page="employees"]', title: "Employés (Business)", text: "Invitez vos commerciaux. Ils créent des devis sur le terrain, vous validez leurs factures." },
+        { selector: '[data-page="approvals"]', title: "Validations", text: "Vos employés créent des factures, vous validez avant l'intégration en compta." },
+        { selector: '[data-page="audit"]', title: "Journal d'activité", text: "Tout est tracé : qui a fait quoi, et quand. Idéal pour la conformité." }
+    ];
+    var TOUR_STEPS_EMPLOYEE = [
+        { selector: '[data-page="dashboard"]', title: "Bienvenue !", text: "Voici votre tableau de bord employé." },
+        { selector: '[data-page="quotes"]', title: "Créer un devis", text: "Sur le terrain, créez vos devis et faites-les signer par les clients." },
+        { selector: '[data-page="invoices"]', title: "Factures", text: "Vos factures sont créées en mode 'à valider'. Le propriétaire les approuve avant l'envoi." },
+        { selector: '[data-page="clients"]', title: "Clients", text: "Accédez au carnet clients de l'entreprise." }
+    ];
+
+    function maybeStartOnboardingTour() {
+        try {
+            var key = "ip_tour_seen_v1_" + state.user.id;
+            if (localStorage.getItem(key)) return;
+            var steps = isEmployee() ? TOUR_STEPS_EMPLOYEE : TOUR_STEPS_OWNER;
+            startTour(steps);
+            localStorage.setItem(key, "1");
+        } catch (e) { /* ignore */ }
+    }
+
+    window.startTour = function (steps) {
+        var idx = 0;
+        var overlay = document.createElement("div");
+        overlay.className = "tour-overlay";
+        overlay.innerHTML = '<div class="tour-tooltip"><h3 id="tour-title"></h3><p id="tour-text"></p><div class="tour-actions">'
+            + '<span id="tour-progress" class="tour-progress"></span>'
+            + '<div><button class="btn btn-outline btn-sm" id="tour-skip">Passer</button> '
+            + '<button class="btn btn-primary btn-sm" id="tour-next">Suivant</button></div></div></div>';
+        document.body.appendChild(overlay);
+
+        function show() {
+            var step = steps[idx];
+            if (!step) { close(); return; }
+            var target = document.querySelector(step.selector);
+            if (!target || target.offsetParent === null) { idx++; show(); return; }
+            document.getElementById("tour-title").textContent = step.title;
+            document.getElementById("tour-text").textContent = step.text;
+            document.getElementById("tour-progress").textContent = (idx + 1) + " / " + steps.length;
+            document.getElementById("tour-next").textContent = idx === steps.length - 1 ? "Terminer" : "Suivant";
+            var rect = target.getBoundingClientRect();
+            var hl = overlay.querySelector(".tour-highlight") || (function () {
+                var d = document.createElement("div"); d.className = "tour-highlight"; overlay.appendChild(d); return d;
+            })();
+            hl.style.top = (rect.top - 4) + "px";
+            hl.style.left = (rect.left - 4) + "px";
+            hl.style.width = (rect.width + 8) + "px";
+            hl.style.height = (rect.height + 8) + "px";
+            var tt = overlay.querySelector(".tour-tooltip");
+            var ttTop = rect.bottom + 12;
+            if (ttTop + 200 > window.innerHeight) ttTop = Math.max(20, rect.top - 220);
+            tt.style.top = ttTop + "px";
+            tt.style.left = Math.max(20, Math.min(rect.left, window.innerWidth - 360)) + "px";
+        }
+
+        function close() {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }
+
+        overlay.querySelector("#tour-next").addEventListener("click", function () {
+            idx++;
+            if (idx >= steps.length) close(); else show();
+        });
+        overlay.querySelector("#tour-skip").addEventListener("click", close);
+
+        show();
+    };
+
+    // --- Browser notifications ---
+    var notificationLastCheck = 0;
+    function requestNotificationPermissionIfBusiness() {
+        if (!isBusiness() || !isOwner()) return;
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "default") {
+            // Ask later, with a soft prompt
+            setTimeout(function () {
+                if (Notification.permission === "default") {
+                    Notification.requestPermission();
+                }
+            }, 15000);
+        }
+        startApprovalPolling();
+    }
+
+    function startApprovalPolling() {
+        // Poll every 60s for new pending_approval invoices created by employees
+        setInterval(async function () {
+            if (!isOwner() || !state.activeCompanyId) return;
+            var sinceISO = new Date(notificationLastCheck || Date.now() - 60000).toISOString();
+            var res = await sb.from("invoices")
+                .select("number, total_ttc, created_by, created_at")
+                .eq("company_id", state.activeCompanyId)
+                .eq("status", "pending_approval")
+                .gt("created_at", sinceISO);
+            notificationLastCheck = Date.now();
+            if (res.data && res.data.length && Notification.permission === "granted") {
+                res.data.forEach(function (inv) {
+                    new Notification("InvoicePilot — Facture à valider", {
+                        body: "Facture " + inv.number + " (" + Number(inv.total_ttc).toFixed(2) + " €) en attente de votre validation.",
+                        tag: "invoice-" + inv.number,
+                        icon: "/manifest.json"
+                    });
+                });
+            }
+        }, 60000);
     }
 
     function hideEmployeeOnlyPages() {

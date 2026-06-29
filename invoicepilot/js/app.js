@@ -4574,7 +4574,7 @@
             email: p.email || null,
             phone: p.phone || null,
             tva_number: p.tva_number || null,
-            tva_rate: p.tva_rate || 20,
+            tva_rate: p.tva_rate != null ? String(p.tva_rate) : "20",
             legal_status: p.legal_status || null,
             activity_type: p.activity_type || null,
             urssaf_period: p.urssaf_period || null,
@@ -4586,16 +4586,15 @@
             template_color: p.template_color || "#4F46E5",
             template_logo_url: p.template_logo_url || null,
             template_font: p.template_font || "Arial",
-            penalty_rate: p.penalty_rate || 0,
-            recovery_fee: p.recovery_fee != null ? p.recovery_fee : 40,
+            penalty_rate: String(p.penalty_rate || 0),
+            recovery_fee: String(p.recovery_fee != null ? p.recovery_fee : 40),
             terms: p.terms || null,
             mentions: p.mentions || null
         };
-        var res = await sb.from("companies").insert(payload).select().single();
+        // Utilise une fonction SECURITY DEFINER atomique qui crée company + membership
+        // (contournement du chicken-and-egg RLS SELECT-after-INSERT)
+        var res = await sb.rpc("create_company_with_owner", { p_company: payload });
         if (res.error) { toast("Erreur création entreprise : " + res.error.message, "error"); return; }
-        var company = res.data;
-        var memRes = await sb.from("memberships").insert({ user_id: state.user.id, company_id: company.id, role: "owner" }).select().single();
-        if (memRes.error) { toast("Erreur membership : " + memRes.error.message, "error"); return; }
         await refreshData();
     }
 
@@ -4624,13 +4623,12 @@
             city: document.getElementById("company-city").value.trim() || null
         };
         if (!payload.name) { toast("Le nom est obligatoire.", "error"); return; }
-        var res = await sb.from("companies").insert(payload).select().single();
+        var res = await sb.rpc("create_company_with_owner", { p_company: payload });
         if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
-        await sb.from("memberships").insert({ user_id: state.user.id, company_id: res.data.id, role: "owner" });
         closeModal("modal-new-company");
         document.getElementById("new-company-form").reset();
         await refreshData();
-        state.activeCompanyId = res.data.id;
+        if (res.data && res.data.id) state.activeCompanyId = res.data.id;
         updateCompanyContext();
         toast("Entreprise \"" + payload.name + "\" créée.", "success");
     });

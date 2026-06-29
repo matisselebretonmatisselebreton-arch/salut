@@ -4378,9 +4378,17 @@
         var plan = planOf();
         var meta = PLAN_META[plan] || PLAN_META.free;
         var banner = document.getElementById("current-plan-banner");
-        banner.innerHTML = '<div style="display:inline-flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;box-shadow:var(--shadow)">'
+        var renewalInfo = "";
+        if (state.profile.subscription_current_period_end) {
+            renewalInfo = ' <span style="color:var(--text-muted);font-size:.85rem;margin-left:8px">— prochain renouvellement le ' + formatDate(state.profile.subscription_current_period_end) + '</span>';
+        }
+        var portalBtn = state.profile.stripe_customer_id
+            ? '<button class="btn btn-outline btn-sm" onclick="openCustomerPortal()" style="margin-left:auto">Gérer mon abonnement</button>'
+            : "";
+        banner.innerHTML = '<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;box-shadow:var(--shadow)">'
             + '<span class="plan-tag" style="' + (plan === "free" ? 'background:#F1F5F9;color:var(--text-muted)' : '') + '">' + meta.tag + '</span>'
-            + '<span style="font-size:.9rem">Formule actuelle : <strong>' + meta.label + '</strong></span></div>';
+            + '<span style="font-size:.9rem">Formule actuelle : <strong>' + meta.label + '</strong>' + renewalInfo + '</span>'
+            + portalBtn + '</div>';
 
         ["free", "standard", "pro", "business"].forEach(function (p) {
             document.getElementById("plan-card-" + p).classList.toggle("current-plan", plan === p);
@@ -4404,35 +4412,81 @@
         renderSubscription();
     }
 
-    document.getElementById("btn-select-pro").addEventListener("click", async function () {
-        if (isPro()) return;
-        if (!await iconfirm("Activer la formule Pro (29,99 €/mois) ? Le paiement par carte via Stripe sera branché prochainement — l'activation est immédiate pour tester les fonctionnalités Pro.")) return;
-        await changePlan("pro");
-        toast("Formule Pro activée — factures illimitées, dépenses et comptabilité débloquées.", "success");
+    async function startCheckout(plan) {
+        showLoading(true);
+        try {
+            var res = await sb.functions.invoke("stripe-checkout", { body: { plan: plan } });
+            if (res.error || !res.data || !res.data.url) {
+                // Fallback : activation directe (Stripe non configuré)
+                if (!await iconfirm("Paiement Stripe non configuré pour le moment. Activer la formule en mode test ?")) return;
+                await changePlan(plan);
+                toast("Formule " + plan + " activée (mode test).", "success");
+                if (plan === "business" && state.companies.length === 0) {
+                    await createDefaultCompany();
+                }
+                return;
+            }
+            window.location.href = res.data.url;
+        } catch (err) {
+            toast("Erreur : " + err.message, "error");
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    async function openCustomerPortal() {
+        showLoading(true);
+        try {
+            var res = await sb.functions.invoke("stripe-portal");
+            if (res.error || !res.data || !res.data.url) {
+                toast("Portail de gestion indisponible.", "error");
+                return;
+            }
+            window.location.href = res.data.url;
+        } finally {
+            showLoading(false);
+        }
+    }
+    window.openCustomerPortal = openCustomerPortal;
+
+    document.getElementById("btn-select-pro").addEventListener("click", function () {
+        if (planOf() === "pro") return;
+        startCheckout("pro");
     });
 
-    document.getElementById("btn-select-standard").addEventListener("click", async function () {
+    document.getElementById("btn-select-standard").addEventListener("click", function () {
         if (planOf() === "standard") return;
-        if (!await iconfirm("Activer la formule Standard (14,99 €/mois) ? Factures illimitées, sans le module comptabilité.")) return;
-        await changePlan("standard");
-        toast("Formule Standard activée — factures illimitées.", "success");
+        startCheckout("standard");
+    });
+
+    document.getElementById("btn-select-business").addEventListener("click", function () {
+        if (planOf() === "business") return;
+        startCheckout("business");
     });
 
     document.getElementById("btn-select-free").addEventListener("click", async function () {
         if (planOf() === "free") return;
-        if (!await iconfirm("Revenir à la formule gratuite ? Vous serez limité à " + FREE_INVOICE_LIMIT + " factures par mois et perdrez l'accès aux modules payants.")) return;
+        if (!await iconfirm("Revenir à la formule gratuite ? Si vous avez un abonnement Stripe actif, gérez-le via le portail de gestion.")) return;
+        if (state.profile.stripe_customer_id) {
+            await openCustomerPortal();
+            return;
+        }
         await changePlan("free");
     });
 
-    document.getElementById("btn-select-business").addEventListener("click", async function () {
-        if (isBusiness()) return;
-        if (!await iconfirm("Activer la formule Business (39,99 €/mois) ? Multi-entreprises, comptes employés et workflow de validation débloqués.")) return;
-        await changePlan("business");
-        toast("Formule Business activée — multi-entreprises et employés débloqués.", "success");
-        if (state.companies.length === 0) {
-            await createDefaultCompany();
+    // Handle Stripe return
+    (function () {
+        var params = new URLSearchParams(window.location.search);
+        var stripe = params.get("stripe");
+        if (stripe === "success") {
+            toast("Paiement confirmé ! Votre abonnement sera activé dans quelques secondes.", "success");
+            window.history.replaceState({}, "", window.location.pathname);
+            setTimeout(function () { refreshData().then(function () { navigate("subscription"); }); }, 4000);
+        } else if (stripe === "cancel") {
+            toast("Paiement annulé.", "info");
+            window.history.replaceState({}, "", window.location.pathname);
         }
-    });
+    })();
 
     async function createDefaultCompany() {
         var p = state.profile;

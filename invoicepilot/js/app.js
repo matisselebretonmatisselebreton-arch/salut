@@ -4472,21 +4472,34 @@
 
     async function startCheckout(plan) {
         showLoading(true);
+        var res;
         try {
-            var res = await sb.functions.invoke("stripe-checkout", { body: { plan: plan } });
-            if (res.error || !res.data || !res.data.url) {
-                // Fallback : activation directe (Stripe non configuré)
-                if (!await iconfirm("Paiement Stripe non configuré pour le moment. Activer la formule en mode test ?")) return;
-                await changePlan(plan);
-                toast("Formule " + plan + " activée (mode test).", "success");
-                if (plan === "business" && state.companies.length === 0) {
-                    await createDefaultCompany();
-                }
-                return;
-            }
-            window.location.href = res.data.url;
+            res = await sb.functions.invoke("stripe-checkout", { body: { plan: plan } });
         } catch (err) {
-            toast("Erreur : " + err.message, "error");
+            res = { error: err };
+        }
+        showLoading(false);
+
+        if (res && res.data && res.data.url) {
+            window.location.href = res.data.url;
+            return;
+        }
+
+        // Stripe non configuré → fallback test
+        var stripeErr = (res && res.error && res.error.message) ? res.error.message : "Stripe non configuré";
+        if (!await iconfirm("Paiement Stripe indisponible (" + stripeErr + "). Activer la formule en mode test ?")) return;
+
+        showLoading(true);
+        try {
+            await changePlan(plan);
+            if (plan === "business" && state.companies.length === 0) {
+                await createDefaultCompany();
+            }
+            await refreshData();
+            renderSubscription();
+            toast("Formule " + plan + " activée (mode test).", "success");
+        } catch (err) {
+            toast("Erreur : " + (err && err.message || err), "error");
         } finally {
             showLoading(false);
         }

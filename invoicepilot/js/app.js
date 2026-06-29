@@ -31,6 +31,9 @@
     };
     window.iconfirm = function (msg) {
         return new Promise(function (resolve) {
+            // Toujours masquer le loader avant d'afficher une modale de confirmation
+            // (sinon le spinner reste superposé et bloque l'UX).
+            try { showLoading(false); } catch (e) {}
             var modal = document.getElementById("confirm-modal");
             document.getElementById("confirm-message").textContent = msg;
             var ok = document.getElementById("confirm-ok");

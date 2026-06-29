@@ -302,6 +302,22 @@
         } catch (e) { state.isAdmin = false; }
         updateAdminNav();
     }
+
+    async function loadGlobalAnnouncement() {
+        try {
+            var res = await sb.from("global_announcements").select("*").eq("active", true).order("created_at", { ascending: false }).limit(1);
+            var banner = document.getElementById("global-announcement");
+            if (!banner) return;
+            if (res.data && res.data.length) {
+                var a = res.data[0];
+                banner.className = "global-announcement level-" + a.level;
+                banner.textContent = a.message;
+                banner.style.display = "";
+            } else {
+                banner.style.display = "none";
+            }
+        } catch (e) { /* ignore */ }
+    }
     function companyFields() {
         var f = {};
         if (state.activeCompanyId) {
@@ -355,6 +371,7 @@
             (state.user.user_metadata && state.user.user_metadata.name) || state.user.email;
         await refreshData();
         await loadAdminStatus();
+        await loadGlobalAnnouncement();
         if (navigator.onLine) { await flushQueue(); }
         updateOfflineBadge();
         await checkPendingInvitations();
@@ -5681,32 +5698,37 @@
     // ============================================================
     var adminTab = "dashboard";
     var adminUsersCache = null;
+    var adminFilter = { search: "", plan: "all", status: "all" };
+    var adminSelection = new Set();
 
     async function renderAdmin() {
         if (!isAdmin()) return;
-        var tabs = ["dashboard", "users", "subscriptions", "logins", "audit", "tech"];
-        var tabLabels = {
-            dashboard: "Vue d'ensemble",
-            users: "Utilisateurs",
-            subscriptions: "Abonnements",
-            logins: "Connexions",
-            audit: "Audit global",
-            tech: "Technique"
-        };
-        var nav = document.getElementById("admin-tabs");
-        nav.innerHTML = tabs.map(function (t) {
-            return '<button class="admin-tab' + (t === adminTab ? " active" : "") + '" onclick="setAdminTab(\'' + t + '\')">' + tabLabels[t] + '</button>';
+        var tabs = [
+            { k: "dashboard", l: "Vue d'ensemble" },
+            { k: "users", l: "Utilisateurs" },
+            { k: "subscriptions", l: "Abonnements" },
+            { k: "logins", l: "Connexions" },
+            { k: "audit", l: "Audit global" },
+            { k: "announcements", l: "Annonces" },
+            { k: "tech", l: "Technique" }
+        ];
+        document.getElementById("admin-tabs").innerHTML = tabs.map(function (t) {
+            return '<button class="admin-tab' + (t.k === adminTab ? " active" : "") + '" onclick="setAdminTab(\'' + t.k + '\')">' + t.l + '</button>';
         }).join("");
         var container = document.getElementById("admin-content");
         container.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Chargement…</p>';
-        if (adminTab === "dashboard") await renderAdminDashboard(container);
-        else if (adminTab === "users") await renderAdminUsers(container);
-        else if (adminTab === "subscriptions") await renderAdminSubscriptions(container);
-        else if (adminTab === "logins") await renderAdminLogins(container);
-        else if (adminTab === "audit") await renderAdminAudit(container);
-        else if (adminTab === "tech") await renderAdminTech(container);
+        try {
+            if (adminTab === "dashboard") await renderAdminDashboard(container);
+            else if (adminTab === "users") await renderAdminUsers(container);
+            else if (adminTab === "subscriptions") await renderAdminSubscriptions(container);
+            else if (adminTab === "logins") await renderAdminLogins(container);
+            else if (adminTab === "audit") await renderAdminAudit(container);
+            else if (adminTab === "announcements") await renderAdminAnnouncements(container);
+            else if (adminTab === "tech") await renderAdminTech(container);
+        } catch (err) {
+            container.innerHTML = '<p style="color:var(--danger);padding:20px">Erreur : ' + escapeHtml(err.message) + '</p>';
+        }
     }
-
     window.setAdminTab = function (t) { adminTab = t; renderAdmin(); };
 
     async function callAdmin(action, params) {
@@ -5716,30 +5738,44 @@
         return res.data;
     }
 
+    // Mini sparkline SVG inline
+    function sparklineSVGData(data, w, h, color) {
+        if (!data.length) return "";
+        var max = Math.max.apply(null, data.map(function (d) { return d.count || d.mrr || 0; })) || 1;
+        var min = 0;
+        var stepX = w / (data.length - 1 || 1);
+        var pts = data.map(function (d, i) {
+            var v = d.count != null ? d.count : (d.mrr || 0);
+            var y = h - ((v - min) / (max - min || 1)) * (h - 4) - 2;
+            return (i * stepX).toFixed(1) + "," + y.toFixed(1);
+        }).join(" ");
+        return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">'
+            + '<polyline fill="none" stroke="' + (color || "#6366F1") + '" stroke-width="2" points="' + pts + '"/></svg>';
+    }
+
     async function renderAdminDashboard(container) {
-        try {
-            var stats = await callAdmin("stats");
-            container.innerHTML =
-                '<div class="admin-kpi-grid">'
-                + adminKpi("Utilisateurs totaux", stats.users_total, "primary")
-                + adminKpi("Suspendus", stats.users_suspended, "danger")
-                + adminKpi("Entreprises", stats.companies_total, "primary")
-                + adminKpi("Factures émises", stats.invoices_total, "primary")
-                + adminKpi("MRR (mensuel)", formatMoney(stats.mrr), "success")
-                + adminKpi("ARR (annuel)", formatMoney(stats.arr), "success")
-                + adminKpi("Connexions 24h", stats.logins_24h, "primary")
-                + '</div>'
-                + '<div class="admin-section">'
-                + '<h2>Répartition des plans</h2>'
-                + '<table class="data-table"><thead><tr><th>Plan</th><th>Utilisateurs</th><th>Revenu mensuel</th></tr></thead><tbody>'
-                + planRow("Gratuit", stats.plan_count.free, 0)
-                + planRow("Standard", stats.plan_count.standard, 14.99)
-                + planRow("Pro", stats.plan_count.pro, 29.99)
-                + planRow("Business", stats.plan_count.business, 39.99)
-                + '</tbody></table></div>';
-        } catch (err) {
-            container.innerHTML = '<p style="color:var(--danger)">Erreur : ' + escapeHtml(err.message) + '</p>';
-        }
+        var stats = await callAdmin("stats");
+        var signupSpark = sparklineSVGData(stats.signup_series || [], 240, 50, "#6366F1");
+        var mrrSpark = sparklineSVGData(stats.mrr_series || [], 240, 50, "#10B981");
+        container.innerHTML =
+            '<div class="admin-kpi-grid">'
+            + adminKpi("Utilisateurs totaux", stats.users_total, "primary")
+            + adminKpi("Suspendus", stats.users_suspended, "danger")
+            + adminKpi("Entreprises", stats.companies_total, "primary")
+            + adminKpi("Factures émises", stats.invoices_total, "primary")
+            + adminKpi("MRR (mensuel)", formatMoney(stats.mrr), "success")
+            + adminKpi("ARR (annuel)", formatMoney(stats.arr), "success")
+            + adminKpi("Connexions 24h", stats.logins_24h, "primary")
+            + '</div>'
+            + '<div class="admin-section"><h2>Inscriptions — 30 derniers jours</h2>' + signupSpark + '</div>'
+            + '<div class="admin-section"><h2>MRR — 12 derniers mois</h2>' + mrrSpark + '</div>'
+            + '<div class="admin-section"><h2>Répartition des plans</h2>'
+            + '<table class="data-table"><thead><tr><th>Plan</th><th>Utilisateurs</th><th>Revenu mensuel</th></tr></thead><tbody>'
+            + planRow("Gratuit", stats.plan_count.free, 0)
+            + planRow("Standard", stats.plan_count.standard, 14.99)
+            + planRow("Pro", stats.plan_count.pro, 29.99)
+            + planRow("Business", stats.plan_count.business, 39.99)
+            + '</tbody></table></div>';
     }
 
     function adminKpi(label, value, level) {
@@ -5751,49 +5787,341 @@
     }
 
     async function renderAdminUsers(container) {
-        try {
-            var data = await callAdmin("list_users");
-            adminUsersCache = data.users || [];
-            var html = '<div class="admin-section">'
-                + '<div style="margin-bottom:12px"><input type="search" id="admin-user-search" placeholder="Rechercher (email, nom)…" oninput="filterAdminUsers(this.value)" style="width:100%;max-width:360px"></div>'
-                + '<table class="data-table"><thead><tr>'
-                + '<th>Email</th><th>Nom</th><th>Plan</th><th>Statut</th><th>Inscription</th><th>Dernière connexion</th><th>Actions</th>'
-                + '</tr></thead><tbody id="admin-users-body"></tbody></table></div>';
-            container.innerHTML = html;
-            filterAdminUsers("");
-        } catch (err) {
-            container.innerHTML = '<p style="color:var(--danger)">Erreur : ' + escapeHtml(err.message) + '</p>';
-        }
+        var data = await callAdmin("list_users");
+        adminUsersCache = data.users || [];
+        adminSelection.clear();
+        container.innerHTML =
+            '<div class="admin-section">'
+            + '<div class="admin-filters">'
+            + '<input type="search" id="admin-user-search" placeholder="Rechercher (email, nom)…" oninput="setAdminFilter(\'search\', this.value)">'
+            + '<select onchange="setAdminFilter(\'plan\', this.value)">'
+            + '<option value="all">Tous les plans</option>'
+            + '<option value="free">Gratuit</option><option value="standard">Standard</option><option value="pro">Pro</option><option value="business">Business</option>'
+            + '</select>'
+            + '<select onchange="setAdminFilter(\'status\', this.value)">'
+            + '<option value="all">Tous statuts</option><option value="active">Actifs</option><option value="suspended">Suspendus</option>'
+            + '</select>'
+            + '<button class="btn btn-sm btn-outline" onclick="adminExportCSV()">Exporter CSV</button>'
+            + '</div>'
+            + '<div id="admin-bulk-bar" class="admin-bulk-bar" style="display:none"></div>'
+            + '<table class="data-table"><thead><tr>'
+            + '<th><input type="checkbox" onchange="adminSelectAll(this.checked)"></th>'
+            + '<th>Email</th><th>Nom</th><th>Plan</th><th>Statut</th><th>Tags</th><th>Notes</th><th>Inscription</th><th>Dernière connexion</th><th>Actions</th>'
+            + '</tr></thead><tbody id="admin-users-body"></tbody></table></div>';
+        refreshAdminUsersTable();
     }
 
-    window.filterAdminUsers = function (term) {
-        var t = (term || "").toLowerCase().trim();
+    window.setAdminFilter = function (key, value) {
+        adminFilter[key] = value;
+        refreshAdminUsersTable();
+    };
+
+    function refreshAdminUsersTable() {
         var body = document.getElementById("admin-users-body");
         if (!body) return;
-        var list = adminUsersCache.filter(function (u) {
-            if (!t) return true;
-            return (u.email || "").toLowerCase().indexOf(t) !== -1 || (u.name || "").toLowerCase().indexOf(t) !== -1;
+        var t = (adminFilter.search || "").toLowerCase().trim();
+        var list = (adminUsersCache || []).filter(function (u) {
+            if (adminFilter.plan !== "all" && (u.plan || "free") !== adminFilter.plan) return false;
+            if (adminFilter.status === "active" && u.suspended_at) return false;
+            if (adminFilter.status === "suspended" && !u.suspended_at) return false;
+            if (t && (u.email || "").toLowerCase().indexOf(t) === -1 && (u.name || "").toLowerCase().indexOf(t) === -1) return false;
+            return true;
         });
         body.innerHTML = list.map(function (u) {
+            var checked = adminSelection.has(u.id) ? " checked" : "";
             var planBadge = '<span class="status-badge ' + (u.plan === "business" ? "success" : u.plan === "pro" ? "warning" : "") + '">' + (u.plan || "free") + '</span>';
             var status = u.suspended_at
                 ? '<span class="status-badge danger">Suspendu</span>'
                 : '<span class="status-badge success">Actif</span>';
             var lastSign = u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString("fr-FR") : "—";
+            var tagsHtml = (u.tags || []).map(function (tg) {
+                return '<span class="user-tag" style="background:' + (tg.color || "#6366F1") + '">' + escapeHtml(tg.label) + '</span>';
+            }).join(" ");
             return '<tr>'
-                + '<td>' + escapeHtml(u.email || "—") + '</td>'
+                + '<td><input type="checkbox"' + checked + ' onchange="adminToggleSelect(\'' + u.id + '\', this.checked)"></td>'
+                + '<td><a href="#" onclick="adminOpenUser(\'' + u.id + '\');return false">' + escapeHtml(u.email || "—") + '</a></td>'
                 + '<td>' + escapeHtml(u.name || "—") + '</td>'
                 + '<td>' + planBadge + '</td>'
                 + '<td>' + status + '</td>'
+                + '<td>' + tagsHtml + '</td>'
+                + '<td>' + (u.notes_count || 0) + '</td>'
                 + '<td>' + new Date(u.created_at).toLocaleDateString("fr-FR") + '</td>'
                 + '<td>' + lastSign + '</td>'
-                + '<td style="display:flex;gap:6px;flex-wrap:wrap">'
-                + '<button class="btn btn-sm btn-outline" onclick="adminChangePlan(\'' + u.id + '\',\'' + escapeHtml(u.email || "") + '\')">Plan</button> '
-                + '<button class="btn btn-sm btn-outline" onclick="adminToggleSuspend(\'' + u.id + '\')">' + (u.suspended_at ? "Réactiver" : "Suspendre") + '</button> '
-                + '<button class="btn btn-sm btn-danger" onclick="adminDeleteUser(\'' + u.id + '\',\'' + escapeHtml(u.email || "") + '\')">Supprimer</button>'
-                + '</td></tr>';
+                + '<td><button class="btn btn-sm btn-outline" onclick="adminOpenUser(\'' + u.id + '\')">Fiche</button></td>'
+                + '</tr>';
         }).join("");
-        if (!list.length) body.innerHTML = '<tr><td colspan="7" style="padding:20px;color:var(--text-muted);text-align:center">Aucun utilisateur trouvé.</td></tr>';
+        if (!list.length) body.innerHTML = '<tr><td colspan="10" style="padding:20px;color:var(--text-muted);text-align:center">Aucun utilisateur trouvé.</td></tr>';
+        refreshBulkBar();
+    }
+
+    window.adminToggleSelect = function (id, checked) {
+        if (checked) adminSelection.add(id); else adminSelection.delete(id);
+        refreshBulkBar();
+    };
+
+    window.adminSelectAll = function (checked) {
+        var body = document.getElementById("admin-users-body");
+        var checkboxes = body.querySelectorAll('input[type="checkbox"]');
+        adminSelection.clear();
+        if (checked) {
+            checkboxes.forEach(function (cb) {
+                cb.checked = true;
+                var row = cb.closest("tr");
+                var a = row.querySelector("a[onclick]");
+                if (a) {
+                    var match = a.getAttribute("onclick").match(/adminOpenUser\('([^']+)'\)/);
+                    if (match) adminSelection.add(match[1]);
+                }
+            });
+        } else {
+            checkboxes.forEach(function (cb) { cb.checked = false; });
+        }
+        refreshBulkBar();
+    };
+
+    function refreshBulkBar() {
+        var bar = document.getElementById("admin-bulk-bar");
+        if (!bar) return;
+        if (adminSelection.size === 0) { bar.style.display = "none"; return; }
+        bar.style.display = "";
+        bar.innerHTML = '<strong>' + adminSelection.size + ' sélectionné(s)</strong>'
+            + ' <button class="btn btn-sm btn-outline" onclick="adminBulk(\'suspend\')">Suspendre</button>'
+            + ' <button class="btn btn-sm btn-outline" onclick="adminBulk(\'unsuspend\')">Réactiver</button>'
+            + ' <button class="btn btn-sm btn-outline" onclick="adminBulkPlan()">Changer plan</button>'
+            + ' <button class="btn btn-sm btn-primary" onclick="adminBulkEmail()">Email groupé</button>'
+            + ' <button class="btn btn-sm btn-danger" onclick="adminBulk(\'delete\')">Supprimer</button>';
+    }
+
+    window.adminBulk = async function (op) {
+        if (!adminSelection.size) return;
+        var label = { suspend: "Suspendre", unsuspend: "Réactiver", delete: "SUPPRIMER DÉFINITIVEMENT" }[op] || op;
+        if (!await iconfirm(label + " " + adminSelection.size + " utilisateur(s) ?")) return;
+        try {
+            var res = await callAdmin("bulk_action", { user_ids: Array.from(adminSelection), op: op });
+            toast(res.ok + " ok, " + res.fail + " échec(s)", res.fail ? "warning" : "success");
+            adminSelection.clear();
+            renderAdmin();
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminBulkPlan = async function () {
+        var plan = prompt("Nouveau plan (free / standard / pro / business) :");
+        if (!plan) return;
+        try {
+            var res = await callAdmin("bulk_action", { user_ids: Array.from(adminSelection), op: "change_plan", plan: plan.trim().toLowerCase() });
+            toast(res.ok + " mis à jour", "success");
+            adminSelection.clear();
+            renderAdmin();
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminBulkEmail = function () {
+        document.getElementById("admin-email-to-ids").value = Array.from(adminSelection).join(",");
+        document.getElementById("admin-email-recipients").textContent = adminSelection.size + " destinataire(s)";
+        document.getElementById("admin-email-subject").value = "";
+        document.getElementById("admin-email-body").value = "";
+        openModal("modal-admin-email");
+    };
+
+    window.adminSendMassEmail = async function () {
+        var subject = document.getElementById("admin-email-subject").value.trim();
+        var bodyText = document.getElementById("admin-email-body").value.trim();
+        var ids = document.getElementById("admin-email-to-ids").value.split(",").filter(Boolean);
+        if (!subject || !bodyText || !ids.length) { toast("Sujet, corps et destinataires obligatoires.", "error"); return; }
+        var html = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#1E293B;line-height:1.6">'
+            + bodyText.replace(/\n/g, "<br>") + '</div>';
+        try {
+            var res = await callAdmin("mass_email", { user_ids: ids, subject: subject, html: html });
+            toast("Envoi : " + res.sent + " ok, " + res.failed + " échec(s)", res.failed ? "warning" : "success");
+            closeModal("modal-admin-email");
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminExportCSV = function () {
+        var rows = [["email", "name", "plan", "status", "tags", "notes_count", "created_at", "last_sign_in_at"]];
+        (adminUsersCache || []).forEach(function (u) {
+            rows.push([
+                u.email || "",
+                u.name || "",
+                u.plan || "free",
+                u.suspended_at ? "suspended" : "active",
+                (u.tags || []).map(function (t) { return t.label; }).join("|"),
+                u.notes_count || 0,
+                u.created_at || "",
+                u.last_sign_in_at || ""
+            ]);
+        });
+        var csv = rows.map(function (r) {
+            return r.map(function (c) {
+                var s = String(c == null ? "" : c).replace(/"/g, '""');
+                return /[",\n]/.test(s) ? '"' + s + '"' : s;
+            }).join(",");
+        }).join("\n");
+        var blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = "invoicepilot-users-" + new Date().toISOString().slice(0, 10) + ".csv";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    // ----- User detail modal -----
+    window.adminOpenUser = async function (userId) {
+        openModal("modal-admin-user");
+        var content = document.getElementById("admin-user-detail");
+        content.innerHTML = '<p style="padding:20px;color:var(--text-muted)">Chargement…</p>';
+        try {
+            var d = await callAdmin("user_detail", { user_id: userId });
+            renderUserDetail(content, d, userId);
+        } catch (err) {
+            content.innerHTML = '<p style="color:var(--danger);padding:20px">Erreur : ' + escapeHtml(err.message) + '</p>';
+        }
+    };
+
+    function renderUserDetail(container, d, userId) {
+        var p = d.profile || {};
+        var au = d.auth_user || {};
+        var tagsHtml = (d.tags || []).map(function (tg) {
+            return '<span class="user-tag" style="background:' + (tg.color || "#6366F1") + '" onclick="adminRemoveTag(\'' + tg.id + '\',\'' + userId + '\')" title="Cliquez pour supprimer">' + escapeHtml(tg.label) + ' ✕</span>';
+        }).join(" ");
+        var notesHtml = (d.notes || []).map(function (n) {
+            return '<div class="admin-note"><div class="admin-note-meta">' + new Date(n.created_at).toLocaleString("fr-FR") + ' <button class="link-btn" onclick="adminDeleteNote(\'' + n.id + '\',\'' + userId + '\')">✕</button></div><div>' + escapeHtml(n.body) + '</div></div>';
+        }).join("") || '<p style="color:var(--text-muted);font-size:.85rem">Aucune note.</p>';
+        var planChangesHtml = (d.plan_changes || []).map(function (c) {
+            return '<tr><td>' + new Date(c.created_at).toLocaleDateString("fr-FR") + '</td><td>' + (c.from_plan || "—") + '</td><td>→ ' + c.to_plan + '</td></tr>';
+        }).join("") || '<tr><td colspan="3" style="color:var(--text-muted)">Aucun changement.</td></tr>';
+        var companiesHtml = (d.companies || []).map(function (c) {
+            return '<li>' + escapeHtml(c.name || "—") + ' <span class="status-badge ' + (c.role === "owner" ? "success" : "warning") + '">' + c.role + '</span></li>';
+        }).join("") || '<li style="color:var(--text-muted)">Aucune entreprise.</li>';
+        var loginsHtml = (d.logins || []).slice(0, 10).map(function (l) {
+            return '<tr><td>' + new Date(l.created_at).toLocaleString("fr-FR") + '</td><td>' + l.event + '</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml((l.user_agent || "").slice(0, 60)) + '</td></tr>';
+        }).join("") || '<tr><td colspan="3" style="color:var(--text-muted)">Aucune connexion.</td></tr>';
+        var invoicesHtml = (d.invoices.recent || []).map(function (i) {
+            return '<tr><td>' + escapeHtml(i.number) + '</td><td>' + formatMoney(i.total_ttc) + '</td><td>' + i.status + '</td><td>' + new Date(i.date).toLocaleDateString("fr-FR") + '</td></tr>';
+        }).join("") || '<tr><td colspan="4" style="color:var(--text-muted)">Aucune facture.</td></tr>';
+
+        container.innerHTML =
+            '<div class="admin-detail-header">'
+            + '<div><h2 style="margin:0">' + escapeHtml(p.name || au.email || "—") + '</h2>'
+            + '<p style="color:var(--text-muted);margin:4px 0">' + escapeHtml(au.email || "—") + ' · <code>' + userId.slice(0,8) + '…</code></p></div>'
+            + '<div class="admin-detail-actions">'
+            + '<button class="btn btn-sm btn-outline" onclick="adminChangePlan(\'' + userId + '\',\'' + escapeHtml(au.email || "") + '\')">Changer plan</button> '
+            + '<button class="btn btn-sm btn-outline" onclick="adminToggleSuspend(\'' + userId + '\')">' + (p.suspended_at ? "Réactiver" : "Suspendre") + '</button> '
+            + '<button class="btn btn-sm btn-outline" onclick="adminResetPwd(\'' + userId + '\',\'' + escapeHtml(au.email || "") + '\')">Reset mot de passe</button> '
+            + '<button class="btn btn-sm btn-outline" onclick="adminForceLogout(\'' + userId + '\')">Force logout</button> '
+            + '<button class="btn btn-sm btn-outline" onclick="adminSendDirectEmail(\'' + userId + '\',\'' + escapeHtml(au.email || "") + '\')">Email</button> '
+            + '<button class="btn btn-sm btn-outline" onclick="adminExportUser(\'' + userId + '\')">Export RGPD</button> '
+            + '<button class="btn btn-sm btn-danger" onclick="adminDeleteUser(\'' + userId + '\',\'' + escapeHtml(au.email || "") + '\')">Supprimer</button>'
+            + '</div></div>'
+
+            + '<div class="admin-detail-grid">'
+
+            + '<div class="admin-detail-card"><h3>Profil</h3><dl class="kv">'
+            + kvRow("Plan", '<span class="status-badge ' + (p.plan === "business" ? "success" : p.plan === "pro" ? "warning" : "") + '">' + (p.plan || "free") + '</span>')
+            + kvRow("Statut", p.suspended_at ? '<span class="status-badge danger">Suspendu</span>' : '<span class="status-badge success">Actif</span>')
+            + kvRow("Téléphone", escapeHtml(p.phone || "—"))
+            + kvRow("SIRET", escapeHtml(p.siret || "—"))
+            + kvRow("Adresse", escapeHtml([p.address, p.postal_code, p.city].filter(Boolean).join(", ") || "—"))
+            + kvRow("Inscrit le", new Date(au.created_at || p.created_at || Date.now()).toLocaleString("fr-FR"))
+            + kvRow("Dernière connexion", au.last_sign_in_at ? new Date(au.last_sign_in_at).toLocaleString("fr-FR") : "—")
+            + kvRow("Email confirmé", au.email_confirmed ? "✅" : "❌")
+            + '</dl></div>'
+
+            + '<div class="admin-detail-card"><h3>Statistiques</h3><dl class="kv">'
+            + kvRow("Entreprises", d.memberships_count)
+            + kvRow("Clients", d.clients_count)
+            + kvRow("Devis", d.quotes.total_count)
+            + kvRow("Factures", d.invoices.total_count + " · " + formatMoney(d.invoices.total_amount))
+            + kvRow("Dépenses", d.expenses.total_count + " · " + formatMoney(d.expenses.total_amount))
+            + '</dl></div>'
+
+            + '<div class="admin-detail-card"><h3>Stripe</h3><dl class="kv">'
+            + kvRow("Customer ID", p.stripe_customer_id ? '<code>' + p.stripe_customer_id + '</code>' : "—")
+            + kvRow("Subscription", p.stripe_subscription_id ? '<code>' + p.stripe_subscription_id + '</code>' : "—")
+            + kvRow("Prochain renouvellement", p.subscription_current_period_end ? new Date(p.subscription_current_period_end).toLocaleDateString("fr-FR") : "—")
+            + '</dl></div>'
+
+            + '<div class="admin-detail-card"><h3>Tags <button class="btn btn-sm btn-outline" onclick="adminAddTag(\'' + userId + '\')">+ Ajouter</button></h3>'
+            + '<div class="user-tag-list">' + (tagsHtml || '<span style="color:var(--text-muted);font-size:.85rem">Aucun tag</span>') + '</div></div>'
+
+            + '<div class="admin-detail-card admin-detail-wide"><h3>Notes <button class="btn btn-sm btn-outline" onclick="adminAddNote(\'' + userId + '\')">+ Ajouter</button></h3>'
+            + '<div class="admin-notes-list">' + notesHtml + '</div></div>'
+
+            + '<div class="admin-detail-card admin-detail-wide"><h3>Historique du plan</h3>'
+            + '<table class="data-table"><thead><tr><th>Date</th><th>De</th><th>À</th></tr></thead><tbody>' + planChangesHtml + '</tbody></table></div>'
+
+            + '<div class="admin-detail-card admin-detail-wide"><h3>Entreprises</h3><ul style="line-height:2">' + companiesHtml + '</ul></div>'
+
+            + '<div class="admin-detail-card admin-detail-wide"><h3>Dernières factures</h3>'
+            + '<table class="data-table"><thead><tr><th>N°</th><th>Montant</th><th>Statut</th><th>Date</th></tr></thead><tbody>' + invoicesHtml + '</tbody></table></div>'
+
+            + '<div class="admin-detail-card admin-detail-wide"><h3>Connexions récentes</h3>'
+            + '<table class="data-table"><thead><tr><th>Date</th><th>Évènement</th><th>Navigateur</th></tr></thead><tbody>' + loginsHtml + '</tbody></table></div>'
+
+            + '</div>';
+    }
+
+    function kvRow(k, v) {
+        return '<dt>' + k + '</dt><dd>' + v + '</dd>';
+    }
+
+    window.adminAddTag = async function (userId) {
+        var label = prompt("Label du tag (ex: VIP, Prospect chaud, …) :");
+        if (!label) return;
+        try { await callAdmin("add_tag", { user_id: userId, label: label.trim() }); adminOpenUser(userId); }
+        catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminRemoveTag = async function (tagId, userId) {
+        if (!await iconfirm("Supprimer ce tag ?")) return;
+        try { await callAdmin("remove_tag", { tag_id: tagId }); adminOpenUser(userId); }
+        catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminAddNote = async function (userId) {
+        var body = prompt("Nouvelle note :");
+        if (!body || !body.trim()) return;
+        try { await callAdmin("add_note", { user_id: userId, note: body.trim() }); adminOpenUser(userId); }
+        catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminDeleteNote = async function (noteId, userId) {
+        if (!await iconfirm("Supprimer cette note ?")) return;
+        try { await callAdmin("delete_note", { note_id: noteId }); adminOpenUser(userId); }
+        catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminResetPwd = async function (userId, email) {
+        if (!await iconfirm("Envoyer un lien de réinitialisation à " + email + " ?")) return;
+        try { await callAdmin("reset_password", { user_id: userId }); toast("Email de reset envoyé.", "success"); }
+        catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminForceLogout = async function (userId) {
+        if (!await iconfirm("Forcer la déconnexion de toutes les sessions de cet utilisateur ?")) return;
+        try { await callAdmin("force_logout", { user_id: userId }); toast("Sessions invalidées.", "success"); }
+        catch (err) { toast("Erreur : " + err.message, "error"); }
+    };
+
+    window.adminSendDirectEmail = function (userId, email) {
+        document.getElementById("admin-email-to-ids").value = userId;
+        document.getElementById("admin-email-recipients").textContent = "À : " + email;
+        document.getElementById("admin-email-subject").value = "";
+        document.getElementById("admin-email-body").value = "";
+        openModal("modal-admin-email");
+    };
+
+    window.adminExportUser = async function (userId) {
+        try {
+            var data = await callAdmin("export_user_data", { user_id: userId });
+            var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url; a.download = "invoicepilot-export-" + userId.slice(0, 8) + ".json";
+            a.click();
+            URL.revokeObjectURL(url);
+            toast("Export téléchargé.", "success");
+        } catch (err) { toast("Erreur : " + err.message, "error"); }
     };
 
     window.adminChangePlan = async function (userId, email) {
@@ -5802,7 +6130,8 @@
         try {
             await callAdmin("change_plan", { user_id: userId, plan: newPlan.trim().toLowerCase() });
             toast("Plan mis à jour.", "success");
-            renderAdmin();
+            if (document.getElementById("modal-admin-user").classList.contains("open")) adminOpenUser(userId);
+            else renderAdmin();
         } catch (err) { toast("Erreur : " + err.message, "error"); }
     };
 
@@ -5811,7 +6140,8 @@
         try {
             var res = await callAdmin("toggle_suspend", { user_id: userId });
             toast(res.suspended ? "Utilisateur suspendu." : "Utilisateur réactivé.", "success");
-            renderAdmin();
+            if (document.getElementById("modal-admin-user").classList.contains("open")) adminOpenUser(userId);
+            else renderAdmin();
         } catch (err) { toast("Erreur : " + err.message, "error"); }
     };
 
@@ -5820,16 +6150,18 @@
         try {
             await callAdmin("delete_user", { user_id: userId });
             toast("Utilisateur supprimé.", "success");
+            closeModal("modal-admin-user");
             renderAdmin();
         } catch (err) { toast("Erreur : " + err.message, "error"); }
     };
 
+    // ----- Subscriptions, logins, audit, announcements, tech -----
     async function renderAdminSubscriptions(container) {
         var res = await sb.from("profiles").select("id, name, email, plan, plan_since, stripe_customer_id, stripe_subscription_id, subscription_current_period_end").neq("plan", "free").order("plan_since", { ascending: false, nullsLast: true });
         if (res.error) { container.innerHTML = '<p style="color:var(--danger)">' + res.error.message + '</p>'; return; }
         var rows = (res.data || []).map(function (p) {
             return '<tr>'
-                + '<td>' + escapeHtml(p.email || "—") + '</td>'
+                + '<td><a href="#" onclick="adminOpenUser(\'' + p.id + '\');return false">' + escapeHtml(p.email || "—") + '</a></td>'
                 + '<td>' + escapeHtml(p.name || "—") + '</td>'
                 + '<td><span class="status-badge ' + (p.plan === "business" ? "success" : "warning") + '">' + p.plan + '</span></td>'
                 + '<td>' + (p.plan_since ? new Date(p.plan_since).toLocaleDateString("fr-FR") : "—") + '</td>'
@@ -5848,7 +6180,7 @@
         var rows = (res.data || []).map(function (l) {
             return '<tr>'
                 + '<td>' + new Date(l.created_at).toLocaleString("fr-FR") + '</td>'
-                + '<td>' + escapeHtml(l.email || l.user_id?.slice(0, 8) || "—") + '</td>'
+                + '<td>' + (l.user_id ? '<a href="#" onclick="adminOpenUser(\'' + l.user_id + '\');return false">' + escapeHtml(l.email || l.user_id.slice(0, 8)) + '</a>' : "—") + '</td>'
                 + '<td><span class="status-badge ' + (l.event === "signup" ? "success" : "") + '">' + l.event + '</span></td>'
                 + '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escapeHtml(l.user_agent || "") + '">' + escapeHtml((l.user_agent || "").slice(0, 60)) + '</td>'
                 + '</tr>';
@@ -5867,7 +6199,7 @@
                 + '<td>' + escapeHtml(l.action) + '</td>'
                 + '<td>' + escapeHtml(l.entity_type) + '</td>'
                 + '<td>' + escapeHtml(l.entity_label || "—") + '</td>'
-                + '<td><code>' + (l.user_id ? l.user_id.slice(0, 8) : "—") + '</code></td>'
+                + '<td>' + (l.user_id ? '<a href="#" onclick="adminOpenUser(\'' + l.user_id + '\');return false"><code>' + l.user_id.slice(0, 8) + '</code></a>' : "—") + '</td>'
                 + '<td><code>' + (l.company_id ? l.company_id.slice(0, 8) : "—") + '</code></td>'
                 + '</tr>';
         }).join("");
@@ -5876,23 +6208,66 @@
             + '<tbody>' + (rows || '<tr><td colspan="6" style="padding:20px;color:var(--text-muted);text-align:center">Aucune action enregistrée.</td></tr>') + '</tbody></table></div>';
     }
 
+    async function renderAdminAnnouncements(container) {
+        var res = await sb.from("global_announcements").select("*").order("created_at", { ascending: false }).limit(50);
+        var rows = (res.data || []).map(function (a) {
+            return '<tr>'
+                + '<td><span class="status-badge ' + (a.level === "danger" ? "danger" : a.level === "warning" ? "warning" : a.level === "success" ? "success" : "") + '">' + a.level + '</span></td>'
+                + '<td>' + escapeHtml(a.message) + '</td>'
+                + '<td>' + (a.active ? "✅" : "❌") + '</td>'
+                + '<td>' + new Date(a.created_at).toLocaleDateString("fr-FR") + '</td>'
+                + '<td><button class="btn btn-sm btn-danger" onclick="adminDeleteAnnouncement(\'' + a.id + '\')">Supprimer</button></td>'
+                + '</tr>';
+        }).join("");
+        container.innerHTML = '<div class="admin-section"><h2>Annonce globale (bannière in-app)</h2>'
+            + '<form onsubmit="adminCreateAnnouncement(event)" style="margin-bottom:18px;display:flex;gap:8px;flex-wrap:wrap">'
+            + '<input type="text" id="ann-msg" placeholder="Message" required style="flex:1;min-width:240px">'
+            + '<select id="ann-level"><option value="info">Info</option><option value="warning">Attention</option><option value="danger">Urgent</option><option value="success">Succès</option></select>'
+            + '<button type="submit" class="btn btn-primary btn-sm">Publier</button></form>'
+            + '<table class="data-table"><thead><tr><th>Niveau</th><th>Message</th><th>Actif</th><th>Créé le</th><th>Actions</th></tr></thead><tbody>'
+            + (rows || '<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:20px">Aucune annonce.</td></tr>')
+            + '</tbody></table></div>';
+    }
+
+    window.adminCreateAnnouncement = async function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("ann-msg").value.trim();
+        var level = document.getElementById("ann-level").value;
+        if (!msg) return;
+        var res = await sb.from("global_announcements").insert({ message: msg, level: level, created_by: state.user.id });
+        if (res.error) { toast("Erreur : " + res.error.message, "error"); return; }
+        toast("Annonce publiée.", "success");
+        renderAdmin();
+    };
+
+    window.adminDeleteAnnouncement = async function (id) {
+        if (!await iconfirm("Supprimer cette annonce ?")) return;
+        await sb.from("global_announcements").delete().eq("id", id);
+        renderAdmin();
+    };
+
     async function renderAdminTech(container) {
+        var health = await callAdmin("tech_health");
+        var countRows = Object.entries(health.counts || {}).map(function (e) {
+            return '<tr><td>' + e[0] + '</td><td>' + e[1].toLocaleString("fr-FR") + '</td></tr>';
+        }).join("");
         container.innerHTML =
-            '<div class="admin-section"><h2>État du système</h2>'
-            + '<p style="color:var(--text-muted)">Liens utiles pour le diagnostic et la configuration :</p>'
+            '<div class="admin-section"><h2>Volumétrie DB</h2>'
+            + '<table class="data-table"><thead><tr><th>Table</th><th>Lignes</th></tr></thead><tbody>' + countRows + '</tbody></table></div>'
+            + '<div class="admin-section"><h2>Outils externes</h2>'
             + '<ul style="line-height:2">'
-            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/functions">📦 Edge Functions Supabase</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/functions">📦 Edge Functions</a></li>'
             + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/logs/explorer">📋 Logs Supabase</a></li>'
-            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/auth/users">👥 Auth users dashboard</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/auth/users">👥 Auth users</a></li>'
             + '<li><a target="_blank" rel="noopener" href="https://supabase.com/dashboard/project/uuwlttcmqtrslpjlnqjh/storage/buckets">🪣 Storage</a></li>'
-            + '<li><a target="_blank" rel="noopener" href="https://resend.com/emails">✉️ Resend (emails)</a></li>'
-            + '<li><a target="_blank" rel="noopener" href="https://dashboard.stripe.com">💳 Stripe Dashboard</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://resend.com/emails">✉️ Resend</a></li>'
+            + '<li><a target="_blank" rel="noopener" href="https://dashboard.stripe.com">💳 Stripe</a></li>'
             + '</ul></div>'
-            + '<div class="admin-section"><h2>Configuration restante</h2>'
+            + '<div class="admin-section"><h2>Configuration requise</h2>'
             + '<ul style="line-height:2;color:var(--text-muted)">'
-            + '<li><strong>Resend</strong> : configurer RESEND_API_KEY + vérifier le domaine pour les emails</li>'
-            + '<li><strong>Stripe</strong> : 6 secrets à configurer (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*, APP_URL)</li>'
-            + '<li><strong>Cron daily-recap</strong> : à programmer avec pg_cron + CRON_SECRET</li>'
+            + '<li><strong>Resend</strong> : RESEND_API_KEY + domaine vérifié</li>'
+            + '<li><strong>Stripe</strong> : STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_*, APP_URL</li>'
+            + '<li><strong>Cron daily-recap</strong> : pg_cron + CRON_SECRET</li>'
             + '</ul></div>';
     }
     // ============================================================

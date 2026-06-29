@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>InvoicePilot — App</title>
-    <link rel="stylesheet" href="css/app.css?v=23">
+    <link rel="stylesheet" href="css/app.css?v=24">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4F46E5">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -79,6 +79,7 @@
     <!-- App -->
     <div id="app-screen" class="app" style="display:none">
         <div id="offline-badge" class="offline-indicator" style="display:none">Hors-ligne</div>
+        <div id="global-announcement" class="global-announcement" style="display:none"></div>
         <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
@@ -1346,6 +1347,37 @@
     </div>
 
     <!-- Modal: Share quote for remote signature -->
+    <!-- Modal: fiche utilisateur (admin) -->
+    <div class="modal-overlay" id="modal-admin-user">
+        <div class="modal modal-lg" style="max-width:1100px">
+            <div id="admin-user-detail"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-admin-user')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: email admin -->
+    <div class="modal-overlay" id="modal-admin-email">
+        <div class="modal">
+            <h2>Envoyer un email</h2>
+            <input type="hidden" id="admin-email-to-ids">
+            <p style="color:var(--text-muted);font-size:.88rem"><span id="admin-email-recipients"></span></p>
+            <div class="form-group">
+                <label>Sujet</label>
+                <input type="text" id="admin-email-subject" placeholder="Sujet de l'email">
+            </div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="admin-email-body" rows="8" placeholder="Votre message…"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-admin-email')">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="adminSendMassEmail()">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modal-share-signature">
         <div class="modal" style="max-width:480px">
             <h2>Signature à distance</h2>
@@ -1471,6 +1503,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/xlsx-js-style@v1.2.0/dist/xlsx.bundle.js"></script>
     <script src="js/config.js"></script>
-    <script src="js/app.js?v=23"></script>
+    <script src="js/app.js?v=24"></script>
 </body>
 </html>

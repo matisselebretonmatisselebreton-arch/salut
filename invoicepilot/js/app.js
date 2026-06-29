@@ -169,11 +169,33 @@
         } catch (e) { /* ignore */ }
     }
 
+    var MAX_QUEUE_ATTEMPTS = 5;
+
+    async function incrementQueueAttempts(id, lastError) {
+        try {
+            var db = await openOfflineDB();
+            var tx = db.transaction("queue", "readwrite");
+            var store = tx.objectStore("queue");
+            var getReq = store.get(id);
+            getReq.onsuccess = function () {
+                var v = getReq.result;
+                if (!v) return;
+                v.attempts = (v.attempts || 0) + 1;
+                v.lastError = lastError || null;
+                if (v.attempts >= MAX_QUEUE_ATTEMPTS) {
+                    v.abandoned = true;
+                }
+                store.put(v);
+            };
+        } catch (e) { /* ignore */ }
+    }
+
     async function flushQueue() {
         var items = await getQueuedMutations();
+        items = items.filter(function (it) { return !it.op._abandoned; });
         if (!items.length) return;
         toast("Synchronisation de " + items.length + " action(s) hors-ligne…", "info");
-        var ok = 0, fail = 0;
+        var ok = 0, fail = 0, abandoned = 0;
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             try {
@@ -182,13 +204,42 @@
                 if (item.op.type === "insert") res = await q.insert(item.op.payload);
                 else if (item.op.type === "update") res = await q.update(item.op.payload).eq("id", item.op.id);
                 else if (item.op.type === "delete") res = await q.delete().eq("id", item.op.id);
-                if (res && res.error) { fail++; }
-                else { ok++; await removeQueuedMutation(item.id); }
-            } catch (e) { fail++; }
+                if (res && res.error) {
+                    await incrementQueueAttempts(item.id, res.error.message);
+                    var refreshed = await getOneQueued(item.id);
+                    if (refreshed && refreshed.abandoned) {
+                        await removeQueuedMutation(item.id);
+                        abandoned++;
+                    } else {
+                        fail++;
+                    }
+                } else {
+                    ok++;
+                    await removeQueuedMutation(item.id);
+                }
+            } catch (e) {
+                await incrementQueueAttempts(item.id, String(e && e.message));
+                fail++;
+            }
         }
         updateOfflineBadge();
         if (ok) { await refreshData(); }
-        toast("Sync : " + ok + " ok, " + fail + " échec(s)", fail ? "warning" : "success");
+        var msg = "Sync : " + ok + " ok";
+        if (fail) msg += ", " + fail + " échec(s) (à réessayer)";
+        if (abandoned) msg += ", " + abandoned + " abandonnée(s)";
+        toast(msg, (fail || abandoned) ? "warning" : "success");
+    }
+
+    async function getOneQueued(id) {
+        try {
+            var db = await openOfflineDB();
+            return await new Promise(function (resolve) {
+                var tx = db.transaction("queue", "readonly");
+                var req = tx.objectStore("queue").get(id);
+                req.onsuccess = function () { resolve(req.result || null); };
+                req.onerror = function () { resolve(null); };
+            });
+        } catch (e) { return null; }
     }
 
     async function updateOfflineBadge() {
@@ -457,14 +508,15 @@
             ]);
             var errored = results.filter(function (r) { return r.error; });
             if (errored.length) toast("Certaines données n'ont pas pu être chargées. Vérifiez votre connexion.", "warning");
+            var notDeleted = function (r) { return !r.deleted_at; };
             state.profile = results[0].data || {};
-            state.clients = results[1].data || [];
-            state.invoices = results[2].data || [];
-            state.quotes = results[3].data || [];
+            state.clients = (results[1].data || []).filter(notDeleted);
+            state.invoices = (results[2].data || []).filter(notDeleted);
+            state.quotes = (results[3].data || []).filter(notDeleted);
             state.recurring = results[4].data || [];
-            state.creditNotes = results[5].data || [];
-            state.expenses = results[6].data || [];
-            state.suppliers = results[7].data || [];
+            state.creditNotes = (results[5].data || []).filter(notDeleted);
+            state.expenses = (results[6].data || []).filter(notDeleted);
+            state.suppliers = (results[7].data || []).filter(notDeleted);
             state.urssaf = results[8].data || [];
             state.memberships = results[9].data || [];
             state.companies = results[10].data || [];
@@ -1350,7 +1402,7 @@
         if (!await iconfirm("Supprimer cette facture ?")) return;
         var inv = state.invoices.find(function (i) { return i.id === id; });
         var linkedQuote = inv ? state.quotes.find(function (q) { return q.converted_invoice_id === id; }) : null;
-        var res = await sb.from("invoices").delete().eq("id", id);
+        var res = await sb.from("invoices").update({ deleted_at: new Date().toISOString() }).eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         if (linkedQuote) {
             await sb.from("quotes").update({ status: "accepted", converted_invoice_id: null }).eq("id", linkedQuote.id);
@@ -2010,7 +2062,7 @@
 
     window.deleteQuote = async function (id) {
         if (!await iconfirm("Supprimer ce devis ?")) return;
-        var res = await sb.from("quotes").delete().eq("id", id);
+        var res = await sb.from("quotes").update({ deleted_at: new Date().toISOString() }).eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         renderQuotes();
@@ -2601,7 +2653,7 @@
 
     window.deleteClient = async function (id) {
         if (!await iconfirm("Supprimer ce client ?")) return;
-        var res = await sb.from("clients").delete().eq("id", id);
+        var res = await sb.from("clients").update({ deleted_at: new Date().toISOString() }).eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         renderClients();
@@ -2730,7 +2782,7 @@
         if (!await iconfirm("Supprimer cette dépense ?")) return;
         var x = state.expenses.find(function (e) { return e.id === id; });
         if (x && x.file_path) { await sb.storage.from("receipts").remove([x.file_path]); }
-        var res = await sb.from("expenses").delete().eq("id", id);
+        var res = await sb.from("expenses").update({ deleted_at: new Date().toISOString() }).eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         renderExpenses();
@@ -2859,7 +2911,7 @@
 
     window.deleteSupplier = async function (id) {
         if (!await iconfirm("Supprimer ce fournisseur ? Les dépenses liées sont conservées.")) return;
-        var res = await sb.from("suppliers").delete().eq("id", id);
+        var res = await sb.from("suppliers").update({ deleted_at: new Date().toISOString() }).eq("id", id);
         if (res.error) { alert("Erreur : " + res.error.message); return; }
         await refreshData();
         renderSuppliers();

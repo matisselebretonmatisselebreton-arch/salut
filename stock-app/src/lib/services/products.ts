@@ -1,59 +1,63 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, Product, ProductValidationStatus } from "@/types/database";
+import type { Database, Product } from "@/types/database";
 
 type Client = SupabaseClient<Database>;
 
-// Seed categories always offered in the product form. The list stays
-// extensible: any category typed on the site is picked up as a suggestion
-// afterwards (see listCategories), no migration needed.
-export const DEFAULT_CATEGORIES = [
-  "Chaussures",
-  "Vêtements",
-  "Accessoire",
-  "Produit électronique",
-];
-
 export interface ProductFilters {
   category?: string;
-  supplierId?: string;
-  validationStatus?: ProductValidationStatus;
+  brand?: string;
+  search?: string;
 }
 
 export async function listProducts(supabase: Client, filters: ProductFilters = {}) {
   let query = supabase
     .from("products")
-    .select("*, suppliers(name), product_images(id, storage_path, position)")
-    .order("created_at", { ascending: false });
+    .select("*, product_images(id, storage_path, position)")
+    .order("category")
+    .order("brand", { nullsFirst: false })
+    .order("name");
 
   if (filters.category) query = query.eq("category", filters.category);
-  if (filters.supplierId) query = query.eq("supplier_id", filters.supplierId);
-  if (filters.validationStatus) query = query.eq("validation_status", filters.validationStatus);
+  if (filters.brand) query = query.eq("brand", filters.brand);
+  if (filters.search) query = query.ilike("name", `%${filters.search}%`);
 
   const { data, error } = await query;
   if (error) throw error;
   return data;
 }
 
-export async function getProductWithImages(supabase: Client, id: string) {
+export async function getProduct(supabase: Client, id: string) {
   const { data, error } = await supabase
     .from("products")
-    .select("*, suppliers(id, name), product_images(id, storage_path, position)")
+    .select("*, product_images(id, storage_path, position)")
     .eq("id", id)
     .single();
   if (error) throw error;
   return data;
 }
 
-export async function listCategories(supabase: Client, userId: string) {
+// The received items of a product carry the reception ratings/comments that we
+// surface back on the catalog page — a feedback loop on that model's quality.
+export async function getProductRatings(supabase: Client, productId: string) {
+  const { data, error } = await supabase
+    .from("items")
+    .select("id, rating, rating_comment, unit_number, created_at")
+    .eq("product_id", productId)
+    .not("rating", "is", null)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function listBrands(supabase: Client, userId: string) {
   const { data, error } = await supabase
     .from("products")
-    .select("category")
+    .select("brand")
     .eq("user_id", userId)
-    .not("category", "is", null);
+    .not("brand", "is", null);
   if (error) throw error;
-
-  const categories = new Set((data ?? []).map((row) => row.category as string));
-  return Array.from(categories).sort();
+  const brands = new Set((data ?? []).map((row) => row.brand as string));
+  return Array.from(brands).sort();
 }
 
 export async function createProduct(
@@ -83,6 +87,11 @@ export async function updateProduct(
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function deleteProduct(supabase: Client, id: string) {
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw error;
 }
 
 export async function addProductImage(

@@ -22,36 +22,16 @@ export function Badge({
   );
 }
 
-export const SUPPLIER_STATUS_BADGE: Record<string, { label: string; color: keyof typeof COLORS }> = {
-  to_test: { label: "En test", color: "amber" },
-  validated: { label: "Validé", color: "green" },
-  to_avoid: { label: "À éviter", color: "red" },
-};
-
-export const PRODUCT_VALIDATION_BADGE: Record<string, { label: string; color: keyof typeof COLORS }> = {
-  pending_test: { label: "En attente de test", color: "amber" },
-  validated: { label: "Validé", color: "green" },
-  rejected: { label: "Refusé", color: "red" },
-};
-
 export const ORDER_STATUS_BADGE: Record<string, { label: string; color: keyof typeof COLORS }> = {
-  ordered: { label: "Commandé", color: "zinc" },
+  draft: { label: "Panier", color: "zinc" },
+  ordered: { label: "Commandée", color: "blue" },
+  at_warehouse: { label: "À l'entrepôt", color: "amber" },
   in_transit: { label: "En transit", color: "blue" },
-  received: { label: "Reçu", color: "amber" },
-  inspected: { label: "Contrôlé", color: "green" },
-};
-
-export const QC_STATUS_BADGE: Record<string, { label: string; color: keyof typeof COLORS }> = {
-  pending: { label: "À contrôler", color: "amber" },
-  conforming: { label: "Conforme", color: "green" },
-  minor_defect: { label: "Défaut mineur", color: "amber" },
-  rejected: { label: "Refusé", color: "red" },
-  to_return: { label: "À retourner", color: "red" },
+  received: { label: "Reçue", color: "green" },
 };
 
 export const STOCK_STATUS_BADGE: Record<string, { label: string; color: keyof typeof COLORS }> = {
-  in_stock: { label: "En stock", color: "green" },
-  reserved: { label: "Réservé", color: "blue" },
-  sold: { label: "Vendu", color: "zinc" },
-  returned: { label: "Retourné", color: "red" },
+  received: { label: "Reçu", color: "amber" },
+  for_sale: { label: "En vente", color: "blue" },
+  sold: { label: "Vendu", color: "green" },
 };

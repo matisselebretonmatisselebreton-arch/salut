@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/dashboard", label: "Tableau de bord" },
-  { href: "/suppliers", label: "Fournisseurs" },
-  { href: "/products", label: "Produits" },
+  { href: "/products", label: "Catalogue" },
   { href: "/orders", label: "Commandes" },
-  { href: "/stock", label: "Stock & ventes" },
+  { href: "/stock", label: "Ventes & stock" },
 ];
 
 export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

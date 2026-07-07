@@ -1,8 +1,10 @@
 # Stock App — Achat/revente Chine
 
 Application mono-utilisateur pour piloter l'activité d'achat en Chine et de
-revente à l'unité : fournisseurs, produits, commandes, contrôle qualité à la
-réception, stock et ventes, avec calcul automatique des marges.
+revente à l'unité : **catalogue** de produits (par catégorie puis par marque),
+**commandes** (panier) avec livraison estimée puis réévaluée, réception et
+**note** de chaque exemplaire, mise en **vente** (ex. Vinted) et calcul du
+**CA réel/potentiel** et du **bénéfice net**.
 
 - **Frontend/Backend** : Next.js 16 (App Router) + Tailwind CSS
 - **Base de données & Auth & Storage** : Supabase (PostgreSQL, Auth email/mot de passe, Storage privé)
@@ -13,13 +15,14 @@ réception, stock et ventes, avec calcul automatique des marges.
 
 1. Crée un projet sur [supabase.com](https://supabase.com).
 2. Dans **SQL Editor**, exécute les migrations du dossier
-   `supabase/migrations/` **dans l'ordre** :
-   - `0001_init.sql` — crée toutes les tables (`suppliers`, `products`,
-     `orders`, `order_lines`, `items`, …), les policies RLS (scopées par
-     `user_id`) et les deux buckets de Storage privés `product-photos` et
-     `qc-photos`.
-   - `0002_product_url.sql` — ajoute le champ lien (`product_url`) sur les
-     produits.
+   `supabase/migrations/` **dans l'ordre** (`0001` → `0004`) :
+   - `0001_init.sql` — tables initiales, policies RLS (scopées par `user_id`)
+     et les deux buckets de Storage privés `product-photos` et `qc-photos`.
+   - `0002_product_url.sql` — champ lien sur les produits.
+   - `0003_harden_function_search_path.sql` — durcissement d'une fonction.
+   - `0004_catalog_pivot.sql` — modèle actuel : suppression des fournisseurs,
+     catalogue (catégorie/marque, prix de référence, prix de revente estimé),
+     commandes avec livraison estimée/réelle, articles notés puis vendus.
 3. Dans **Authentication > Providers**, laisse Email activé, puis dans
    **Authentication > Users**, crée ton propre utilisateur (email + mot de
    passe) — c'est le seul compte dont l'app a besoin.
@@ -68,11 +71,10 @@ src/
 ├── app/
 │   ├── login/                # Connexion (Supabase Auth)
 │   └── (app)/                 # Routes protégées (redirigent vers /login sinon)
-│       ├── dashboard/         # Marge totale, meilleurs fournisseurs, produits rentables…
-│       ├── suppliers/         # CRUD fournisseurs + historique de commandes
-│       ├── products/          # CRUD produits + photos
-│       ├── orders/            # Commandes multi-lignes, réception, contrôle qualité
-│       └── stock/              # Stock disponible, marquer vendu, marge
+│       ├── dashboard/         # CA réel/potentiel, bénéfice net, top produits/marques
+│       ├── products/          # Catalogue par catégorie → marque, photos, notes des exemplaires
+│       ├── orders/            # Panier, livraison estimée→réelle, réception + note
+│       └── stock/              # Reçu → en vente → vendu, marge nette
 ├── components/                 # UI réutilisable + composants métier par domaine
 ├── lib/
 │   ├── supabase/               # Clients Supabase (browser / server / proxy)
@@ -89,14 +91,19 @@ src/
   ~1600px / ~1 Mo max) avant upload, pour ne pas exploser le quota gratuit de
   Supabase Storage. Les buckets sont privés ; l'app génère des URLs signées à
   l'affichage.
-- **Génération des exemplaires** : quand une commande passe de "en transit" à
-  "reçue", un exemplaire (`items`) est créé par unité commandée, avec les
-  frais de livraison Chine→moi répartis automatiquement si non renseignés
-  ligne par ligne. Chaque exemplaire est ensuite contrôlé et revendu
-  individuellement.
-- **Marge** : colonne calculée en base (`resale_price - purchase_price -
-  shipping_cost_in - shipping_cost_out`), donc toujours cohérente et
-  interrogeable directement en SQL pour le reporting.
+- **Catalogue** : produits organisés par catégorie (8 catégories) puis par
+  marque. Chaque produit porte un prix d'achat de référence et un prix de
+  revente estimé (sert à valoriser le stock).
+- **Livraison** : chaque commande a une livraison France estimée (à la
+  commande) réévaluée en réelle à l'entrepôt. À la réception, un exemplaire
+  (`items`) est créé par unité, la livraison connue étant répartie sur chaque
+  exemplaire pour son coût de revient.
+- **Note à la réception** : chaque exemplaire reçoit une note (1–5) + un
+  commentaire, agrégés et affichés sur la fiche produit.
+- **Marge & CA** : marge nette = colonne calculée (`sold_price -
+  purchase_price - shipping_cost_in - vinted_fee`). Le tableau de bord montre
+  le CA/bénéfice **réel** (articles vendus) et **potentiel** (réel + stock
+  valorisé au prix demandé ou estimé).
 - **Multi-utilisateur futur** : chaque table racine porte un `user_id` et des
   policies RLS `auth.uid() = user_id`. Ajouter un second utilisateur ne
   demandera aucune migration de schéma.

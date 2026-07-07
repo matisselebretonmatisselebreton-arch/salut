@@ -5,8 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import * as ordersService from "@/lib/services/orders";
 import * as itemsService from "@/lib/services/items";
-import { deletePhoto } from "@/lib/storage/upload";
-import type { OrderStatus, QcStatus } from "@/types/database";
+import type { OrderStatus } from "@/types/database";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -24,21 +23,20 @@ export async function createOrderAction(formData: FormData) {
     productId: string;
     quantity: number;
     unitPurchasePrice: number;
-    shippingCostAllocated: number;
+    comment: string;
   }[];
 
-  if (rawLines.length === 0) throw new Error("Ajoute au moins une ligne de produit.");
-
   const order = await ordersService.createOrder(supabase, userId, {
-    supplierId: String(formData.get("supplier_id")),
+    label: (formData.get("label") as string) || null,
     orderDate: String(formData.get("order_date")),
-    shippingCost: Number(formData.get("shipping_cost") || 0),
+    shippingFranceEstimated: Number(formData.get("shipping_france_estimated") || 0),
     notes: (formData.get("notes") as string) || null,
-    lines: rawLines.map((line) => ({
-      productId: line.productId,
-      quantity: line.quantity,
-      unitPurchasePrice: line.unitPurchasePrice,
-      shippingCostAllocated: line.shippingCostAllocated,
+    status: (formData.get("status") as OrderStatus) || "draft",
+    lines: rawLines.map((l) => ({
+      productId: l.productId,
+      quantity: l.quantity,
+      unitPurchasePrice: l.unitPurchasePrice,
+      comment: l.comment || null,
     })),
   });
 
@@ -53,36 +51,37 @@ export async function updateOrderStatusAction(orderId: string, status: OrderStat
   revalidatePath("/orders");
 }
 
+export async function setShippingActualAction(orderId: string, formData: FormData) {
+  const { supabase } = await requireUser();
+  await ordersService.setShippingActual(supabase, orderId, Number(formData.get("shipping_actual") || 0));
+  revalidatePath(`/orders/${orderId}`);
+  revalidatePath("/orders");
+}
+
 export async function receiveOrderAction(orderId: string) {
   const { supabase, userId } = await requireUser();
   await ordersService.receiveOrder(supabase, userId, orderId);
   revalidatePath(`/orders/${orderId}`);
   revalidatePath("/orders");
   revalidatePath("/stock");
+  revalidatePath("/dashboard");
 }
 
-export async function updateItemQcAction(
+export async function rateItemAction(
   orderId: string,
   itemId: string,
-  qcStatus: QcStatus,
-  qcNotes: string | null
+  rating: number | null,
+  ratingComment: string | null
 ) {
   const { supabase } = await requireUser();
-  await itemsService.updateItemQc(supabase, itemId, { qcStatus, qcNotes });
+  await itemsService.rateItem(supabase, itemId, { rating, ratingComment });
   revalidatePath(`/orders/${orderId}`);
-  revalidatePath("/orders");
   revalidatePath("/stock");
 }
 
-export async function addItemImageAction(orderId: string, itemId: string, storagePath: string) {
-  const { supabase, userId } = await requireUser();
-  await itemsService.addItemImage(supabase, userId, itemId, storagePath);
-  revalidatePath(`/orders/${orderId}`);
-}
-
-export async function removeItemImageAction(orderId: string, imageId: string, storagePath: string) {
+export async function deleteOrderAction(orderId: string) {
   const { supabase } = await requireUser();
-  await supabase.from("item_images").delete().eq("id", imageId);
-  await deletePhoto("qc-photos", storagePath);
-  revalidatePath(`/orders/${orderId}`);
+  await ordersService.deleteOrder(supabase, orderId);
+  revalidatePath("/orders");
+  redirect("/orders");
 }

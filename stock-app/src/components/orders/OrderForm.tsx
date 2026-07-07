@@ -1,84 +1,75 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
-import type { Product, Supplier } from "@/types/database";
+
+interface CatalogProduct {
+  id: string;
+  name: string;
+  brand: string | null;
+  category: string;
+  reference_purchase_price: number | null;
+}
 
 interface LineDraft {
   productId: string;
   quantity: number;
   unitPurchasePrice: number;
-  shippingCostAllocated: number;
+  comment: string;
 }
 
-const EMPTY_LINE: LineDraft = {
-  productId: "",
-  quantity: 1,
-  unitPurchasePrice: 0,
-  shippingCostAllocated: 0,
-};
+const EMPTY_LINE: LineDraft = { productId: "", quantity: 1, unitPurchasePrice: 0, comment: "" };
 
 export function OrderForm({
-  suppliers,
   products,
   action,
 }: {
-  suppliers: Pick<Supplier, "id" | "name">[];
-  products: Pick<Product, "id" | "name" | "supplier_id">[];
+  products: CatalogProduct[];
   action: (formData: FormData) => void;
 }) {
-  const [supplierId, setSupplierId] = useState("");
   const [lines, setLines] = useState<LineDraft[]>([{ ...EMPTY_LINE }]);
-  const hiddenInputRef = useRef<HTMLInputElement>(null);
-
-  const availableProducts = supplierId
-    ? products.filter((p) => p.supplier_id === supplierId)
-    : products;
+  const hiddenRef = useRef<HTMLInputElement>(null);
+  const productById = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
 
   function updateLine(index: number, patch: Partial<LineDraft>) {
-    setLines((current) => current.map((line, i) => (i === index ? { ...line, ...patch } : line)));
+    setLines((cur) => cur.map((l, i) => (i === index ? { ...l, ...patch } : l)));
   }
 
-  const total =
-    lines.reduce((sum, line) => sum + line.quantity * line.unitPurchasePrice, 0);
+  // When a product is picked, prefill its reference purchase price (editable).
+  function pickProduct(index: number, productId: string) {
+    const ref = productById.get(productId)?.reference_purchase_price ?? 0;
+    updateLine(index, { productId, unitPurchasePrice: ref });
+  }
+
+  const validLines = lines.filter((l) => l.productId);
+  const articlesTotal = validLines.reduce((s, l) => s + l.quantity * l.unitPurchasePrice, 0);
 
   return (
     <form
       action={action}
       onSubmit={() => {
-        if (hiddenInputRef.current) {
-          hiddenInputRef.current.value = JSON.stringify(lines);
-        }
+        if (hiddenRef.current) hiddenRef.current.value = JSON.stringify(validLines);
       }}
       className="space-y-4"
     >
-      <input ref={hiddenInputRef} type="hidden" name="lines_json" />
+      <input ref={hiddenRef} type="hidden" name="lines_json" />
 
-      <Select
-        id="supplier_id"
-        name="supplier_id"
-        label="Fournisseur"
-        required
-        value={supplierId}
-        onChange={(e) => setSupplierId(e.target.value)}
-      >
-        <option value="" disabled>
-          Choisir un fournisseur
-        </option>
-        {suppliers.map((supplier) => (
-          <option key={supplier.id} value={supplier.id}>
-            {supplier.name}
-          </option>
-        ))}
-      </Select>
+      <Input id="label" name="label" label="Nom du panier (optionnel)" placeholder="ex. Commande mars" />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input id="order_date" name="order_date" label="Date de commande" type="date" required />
         <Input
-          id="shipping_cost"
-          name="shipping_cost"
-          label="Frais de livraison Chine → moi (€)"
+          id="order_date"
+          name="order_date"
+          label="Date"
+          type="date"
+          required
+          defaultValue={new Date().toISOString().slice(0, 10)}
+        />
+        <Input
+          id="shipping_france_estimated"
+          name="shipping_france_estimated"
+          label="Livraison France estimée (€)"
           type="number"
           step="0.01"
           min="0"
@@ -87,59 +78,55 @@ export function OrderForm({
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Articles commandés
-        </p>
+        <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">Articles</p>
         <div className="space-y-3">
           {lines.map((line, index) => (
             <div
               key={index}
-              className="grid grid-cols-2 gap-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800 sm:grid-cols-5"
+              className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
             >
-              <select
-                value={line.productId}
-                onChange={(e) => updateLine(index, { productId: e.target.value })}
-                className="col-span-2 rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900 sm:col-span-2"
-              >
-                <option value="">Produit…</option>
-                {availableProducts.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                min="1"
-                placeholder="Qté"
-                value={line.quantity}
-                onChange={(e) => updateLine(index, { quantity: Number(e.target.value) })}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              />
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="Prix unitaire €"
-                value={line.unitPurchasePrice}
-                onChange={(e) => updateLine(index, { unitPurchasePrice: Number(e.target.value) })}
-                className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-              />
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <select
+                  value={line.productId}
+                  onChange={(e) => pickProduct(index, e.target.value)}
+                  className="col-span-2 rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                >
+                  <option value="">Produit…</option>
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.category} · {p.brand ? `${p.brand} · ` : ""}
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Qté"
+                  value={line.quantity}
+                  onChange={(e) => updateLine(index, { quantity: Number(e.target.value) })}
+                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                />
                 <input
                   type="number"
                   step="0.01"
                   min="0"
-                  placeholder="Livraison ligne €"
-                  value={line.shippingCostAllocated}
-                  onChange={(e) =>
-                    updateLine(index, { shippingCostAllocated: Number(e.target.value) })
-                  }
+                  placeholder="Prix achat €"
+                  value={line.unitPurchasePrice}
+                  onChange={(e) => updateLine(index, { unitPurchasePrice: Number(e.target.value) })}
+                  className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+                />
+              </div>
+              <div className="mt-2 flex gap-2">
+                <input
+                  placeholder="Commentaire (taille, modèle, couleur…)"
+                  value={line.comment}
+                  onChange={(e) => updateLine(index, { comment: e.target.value })}
                   className="w-full rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
                 />
                 <button
                   type="button"
-                  onClick={() => setLines((current) => current.filter((_, i) => i !== index))}
+                  onClick={() => setLines((cur) => cur.filter((_, i) => i !== index))}
                   disabled={lines.length === 1}
                   className="rounded-lg px-2 text-zinc-400 hover:text-red-600 disabled:opacity-30"
                 >
@@ -151,20 +138,25 @@ export function OrderForm({
         </div>
         <button
           type="button"
-          onClick={() => setLines((current) => [...current, { ...EMPTY_LINE }])}
+          onClick={() => setLines((cur) => [...cur, { ...EMPTY_LINE }])}
           className="mt-2 text-sm font-medium text-zinc-600 hover:underline dark:text-zinc-300"
         >
-          + Ajouter une ligne
+          + Ajouter un article
         </button>
       </div>
 
       <p className="text-sm text-zinc-500 dark:text-zinc-400">
-        Total articles : {total.toFixed(2)} € (hors livraison)
+        Total articles : {articlesTotal.toFixed(2)} € (hors livraison)
       </p>
 
       <Textarea id="notes" name="notes" label="Notes" />
 
-      <Button type="submit">Créer la commande</Button>
+      <Select id="status" name="status" label="État" defaultValue="ordered">
+        <option value="draft">Panier (brouillon)</option>
+        <option value="ordered">Commandée / payée</option>
+      </Select>
+
+      <Button type="submit">Enregistrer la commande</Button>
     </form>
   );
 }

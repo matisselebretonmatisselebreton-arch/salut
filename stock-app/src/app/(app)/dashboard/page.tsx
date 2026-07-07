@@ -10,7 +10,7 @@ export default async function DashboardPage({
 }) {
   const { from, to } = await searchParams;
   const supabase = await createClient();
-  const summary = await getDashboardSummary(supabase, { from, to });
+  const s = await getDashboardSummary(supabase, { from, to });
 
   return (
     <div>
@@ -39,47 +39,62 @@ export default async function DashboardPage({
         </form>
       </div>
 
+      <div className="mb-3 text-sm font-medium text-zinc-500">Réalisé (articles vendus)</div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatTile
+          label="CA réalisé"
+          value={formatEuros(s.realCA)}
+          hint={from || to ? "Sur la période" : "Total"}
+        />
+        <StatTile label="Bénéfice net réalisé" value={formatEuros(s.realProfit)} hint="Après achat, livraison, frais Vinted" />
+      </div>
+
+      <div className="mb-3 mt-6 text-sm font-medium text-zinc-500">
+        Potentiel (réalisé + estimation du stock)
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <StatTile
+          label="CA potentiel"
+          value={formatEuros(s.potentialCA)}
+          hint={`dont ${formatEuros(s.stockEstimatedCA)} de stock estimé`}
+        />
+        <StatTile label="Bénéfice potentiel" value={formatEuros(s.potentialProfit)} />
+      </div>
+
+      <div className="mb-3 mt-6 text-sm font-medium text-zinc-500">Stock</div>
       <div className="grid gap-4 sm:grid-cols-3">
+        <StatTile label="Valeur du stock (coût)" value={formatEuros(s.stockCost)} />
         <StatTile
-          label="Marge totale réalisée"
-          value={formatEuros(summary.totalMargin)}
-          hint={from || to ? "Sur la période sélectionnée" : "Toutes ventes confondues"}
+          label="Exemplaires"
+          value={`${s.counts.received + s.counts.forSale}`}
+          hint={`${s.counts.received} reçus · ${s.counts.forSale} en vente · ${s.counts.sold} vendus`}
         />
         <StatTile
-          label="Valeur du stock actuel"
-          value={formatEuros(summary.stockValue)}
-          hint={`${summary.stockCount} exemplaire(s) en stock`}
-        />
-        <StatTile
-          label="Taux de défaut qualité global"
-          value={`${(summary.globalDefectRate * 100).toFixed(0)} %`}
+          label="Délai moyen de vente"
+          value={s.avgDaysToSell !== null ? `${Math.round(s.avgDaysToSell)} j` : "—"}
         />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-4 font-medium text-zinc-900 dark:text-zinc-50">
-            Fournisseurs — marge moyenne & taux de défaut
-          </h2>
-          {summary.bestSuppliers.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Pas encore de données.</p>
+          <h2 className="mb-4 font-medium text-zinc-900 dark:text-zinc-50">Produits les plus rentables</h2>
+          {s.topProducts.length === 0 ? (
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Pas encore de ventes.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-zinc-500">
-                  <th className="pb-2">Fournisseur</th>
-                  <th className="pb-2">Marge moyenne</th>
-                  <th className="pb-2">Défauts</th>
+                  <th className="pb-2">Produit</th>
+                  <th className="pb-2">Vendus</th>
+                  <th className="pb-2">Bénéfice</th>
                 </tr>
               </thead>
               <tbody>
-                {summary.bestSuppliers.map((s) => (
-                  <tr key={s.supplierId} className="border-t border-zinc-100 dark:border-zinc-900">
-                    <td className="py-2">{s.name}</td>
-                    <td className="py-2">{s.averageMargin !== null ? formatEuros(s.averageMargin) : "—"}</td>
-                    <td className="py-2">
-                      {s.defectRate !== null ? `${(s.defectRate * 100).toFixed(0)} %` : "—"}
-                    </td>
+                {s.topProducts.map((p) => (
+                  <tr key={p.productId} className="border-t border-zinc-100 dark:border-zinc-900">
+                    <td className="py-2">{p.name}</td>
+                    <td className="py-2">{p.unitsSold}</td>
+                    <td className="py-2">{formatEuros(p.profit)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -88,26 +103,24 @@ export default async function DashboardPage({
         </Card>
 
         <Card>
-          <h2 className="mb-4 font-medium text-zinc-900 dark:text-zinc-50">
-            Produits les plus rentables
-          </h2>
-          {summary.topProducts.length === 0 ? (
+          <h2 className="mb-4 font-medium text-zinc-900 dark:text-zinc-50">Marques les plus rentables</h2>
+          {s.topBrands.length === 0 ? (
             <p className="text-sm text-zinc-500 dark:text-zinc-400">Pas encore de ventes.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-zinc-500">
-                  <th className="pb-2">Produit</th>
-                  <th className="pb-2">Unités vendues</th>
-                  <th className="pb-2">Marge totale</th>
+                  <th className="pb-2">Marque</th>
+                  <th className="pb-2">Vendus</th>
+                  <th className="pb-2">Bénéfice</th>
                 </tr>
               </thead>
               <tbody>
-                {summary.topProducts.map((p) => (
-                  <tr key={p.productId} className="border-t border-zinc-100 dark:border-zinc-900">
-                    <td className="py-2">{p.name}</td>
-                    <td className="py-2">{p.unitsSold}</td>
-                    <td className="py-2">{formatEuros(p.totalMargin)}</td>
+                {s.topBrands.map((b) => (
+                  <tr key={b.brand} className="border-t border-zinc-100 dark:border-zinc-900">
+                    <td className="py-2">{b.brand}</td>
+                    <td className="py-2">{b.unitsSold}</td>
+                    <td className="py-2">{formatEuros(b.profit)}</td>
                   </tr>
                 ))}
               </tbody>

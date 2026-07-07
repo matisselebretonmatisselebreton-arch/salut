@@ -1,16 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
-import { listSuppliers } from "@/lib/services/suppliers";
 import { Card } from "@/components/ui/Card";
 import { OrderForm } from "@/components/orders/OrderForm";
 import { createOrderAction } from "@/app/(app)/orders/actions";
 
 export default async function NewOrderPage() {
   const supabase = await createClient();
-
-  const [suppliers, { data: products, error }] = await Promise.all([
-    listSuppliers(supabase),
-    supabase.from("products").select("id, name, supplier_id").order("name"),
-  ]);
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("id, name, brand, category, reference_purchase_price")
+    .order("category")
+    .order("name");
   if (error) throw error;
 
   return (
@@ -19,12 +18,12 @@ export default async function NewOrderPage() {
         Nouvelle commande
       </h1>
       <Card>
-        {suppliers.length === 0 ? (
+        {(products ?? []).length === 0 ? (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Crée d&apos;abord un fournisseur et au moins un produit avant de passer une commande.
+            Ajoute d&apos;abord des produits au catalogue avant de créer une commande.
           </p>
         ) : (
-          <OrderForm suppliers={suppliers} products={products ?? []} action={createOrderAction} />
+          <OrderForm products={products ?? []} action={createOrderAction} />
         )}
       </Card>
     </div>

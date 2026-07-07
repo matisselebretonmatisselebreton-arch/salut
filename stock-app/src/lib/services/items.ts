@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database, QcStatus, StockStatus } from "@/types/database";
+import type { Database, StockStatus } from "@/types/database";
 
 type Client = SupabaseClient<Database>;
 
@@ -11,7 +11,7 @@ export interface StockFilters {
 export async function listItems(supabase: Client, filters: StockFilters = {}) {
   let query = supabase
     .from("items")
-    .select("*, products(id, name, category), item_images(id, storage_path, position)")
+    .select("*, products(id, name, brand, category), item_images(id, storage_path, position)")
     .order("created_at", { ascending: false });
 
   if (filters.productId) query = query.eq("product_id", filters.productId);
@@ -26,7 +26,7 @@ export async function getItem(supabase: Client, id: string) {
   const { data, error } = await supabase
     .from("items")
     .select(
-      "*, products(id, name, category, suppliers(id, name)), item_images(id, storage_path, position), order_lines(order_id)"
+      "*, products(id, name, brand, category, estimated_resale_price), item_images(id, storage_path, position)"
     )
     .eq("id", id)
     .single();
@@ -34,49 +34,57 @@ export async function getItem(supabase: Client, id: string) {
   return data;
 }
 
-export interface QcUpdateInput {
-  qcStatus: QcStatus;
-  qcNotes?: string | null;
+export interface RatingInput {
+  rating: number | null;
+  ratingComment?: string | null;
 }
 
-// A rejected / to-return unit can no longer be sold, so it drops out of
-// stock automatically. Once every item on an order has been through QC,
-// the order itself flips to "inspected".
-export async function updateItemQc(supabase: Client, id: string, input: QcUpdateInput) {
-  const stockStatus: StockStatus =
-    input.qcStatus === "rejected" || input.qcStatus === "to_return" ? "returned" : "in_stock";
-
-  const { data: item, error } = await supabase
+export async function rateItem(supabase: Client, id: string, input: RatingInput) {
+  const { data, error } = await supabase
     .from("items")
-    .update({ qc_status: input.qcStatus, qc_notes: input.qcNotes ?? null, stock_status: stockStatus })
+    .update({ rating: input.rating, rating_comment: input.ratingComment ?? null })
     .eq("id", id)
-    .select("*, order_lines(order_id)")
+    .select()
     .single();
   if (error) throw error;
-
-  const orderId = (item as unknown as { order_lines: { order_id: string } }).order_lines.order_id;
-  await maybeMarkOrderInspected(supabase, orderId);
-
-  return item;
+  return data;
 }
 
-async function maybeMarkOrderInspected(supabase: Client, orderId: string) {
-  const { data: pendingItems, error } = await supabase
+// Put an item up for sale with an asking price and channel (e.g. Vinted).
+export async function listForSale(
+  supabase: Client,
+  id: string,
+  input: { askingPrice: number; saleChannel?: string | null; listedAt?: string }
+) {
+  const { data, error } = await supabase
     .from("items")
-    .select("id, order_lines!inner(order_id)")
-    .eq("order_lines.order_id", orderId)
-    .eq("qc_status", "pending")
-    .limit(1);
+    .update({
+      asking_price: input.askingPrice,
+      sale_channel: input.saleChannel ?? null,
+      listed_at: input.listedAt ?? new Date().toISOString().slice(0, 10),
+      stock_status: "for_sale",
+    })
+    .eq("id", id)
+    .select()
+    .single();
   if (error) throw error;
+  return data;
+}
 
-  if (!pendingItems || pendingItems.length === 0) {
-    await supabase.from("orders").update({ status: "inspected" }).eq("id", orderId);
-  }
+export async function unlist(supabase: Client, id: string) {
+  const { data, error } = await supabase
+    .from("items")
+    .update({ asking_price: null, listed_at: null, stock_status: "received" })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 export interface SaleInput {
-  resalePrice: number;
-  shippingCostOut?: number;
+  soldPrice: number;
+  vintedFee?: number;
   saleChannel?: string | null;
   saleDate: string;
 }
@@ -85,8 +93,8 @@ export async function sellItem(supabase: Client, id: string, input: SaleInput) {
   const { data, error } = await supabase
     .from("items")
     .update({
-      resale_price: input.resalePrice,
-      shipping_cost_out: input.shippingCostOut ?? 0,
+      sold_price: input.soldPrice,
+      vinted_fee: input.vintedFee ?? 0,
       sale_channel: input.saleChannel ?? null,
       sale_date: input.saleDate,
       stock_status: "sold",
@@ -98,16 +106,11 @@ export async function sellItem(supabase: Client, id: string, input: SaleInput) {
   return data;
 }
 
-export async function unsellItem(supabase: Client, id: string) {
+// Revert a sale back to "for sale" (keeps the asking price if it was set).
+export async function cancelSale(supabase: Client, id: string) {
   const { data, error } = await supabase
     .from("items")
-    .update({
-      resale_price: null,
-      shipping_cost_out: 0,
-      sale_channel: null,
-      sale_date: null,
-      stock_status: "in_stock",
-    })
+    .update({ sold_price: null, vinted_fee: 0, sale_date: null, stock_status: "for_sale" })
     .eq("id", id)
     .select()
     .single();

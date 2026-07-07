@@ -7,21 +7,22 @@ export interface NewOrderLine {
   productId: string;
   quantity: number;
   unitPurchasePrice: number;
-  shippingCostAllocated?: number;
+  comment?: string | null;
 }
 
 export interface NewOrderInput {
-  supplierId: string;
+  label?: string | null;
   orderDate: string;
-  shippingCost: number;
+  shippingFranceEstimated: number;
   notes?: string | null;
+  status: OrderStatus;
   lines: NewOrderLine[];
 }
 
 export async function listOrders(supabase: Client, filters: { status?: OrderStatus } = {}) {
   let query = supabase
     .from("orders")
-    .select("*, suppliers(name)")
+    .select("*, order_lines(id, quantity, unit_purchase_price)")
     .order("order_date", { ascending: false });
 
   if (filters.status) query = query.eq("status", filters.status);
@@ -34,14 +35,14 @@ export async function listOrders(supabase: Client, filters: { status?: OrderStat
 export async function getOrderWithLines(supabase: Client, id: string) {
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("*, suppliers(id, name)")
+    .select("*")
     .eq("id", id)
     .single();
   if (orderError) throw orderError;
 
   const { data: lines, error: linesError } = await supabase
     .from("order_lines")
-    .select("*, products(id, name), items(*, item_images(id, storage_path, position))")
+    .select("*, products(id, name, brand, category), items(*, item_images(id, storage_path, position))")
     .eq("order_id", id)
     .order("created_at");
   if (linesError) throw linesError;
@@ -49,13 +50,15 @@ export async function getOrderWithLines(supabase: Client, id: string) {
   return { order, lines: lines ?? [] };
 }
 
-// Order total = sum of purchase costs across lines + the global shipping cost.
+// Order total = purchase cost of every unit + the France shipping we know
+// about (actual once re-evaluated, otherwise the estimate).
 export function computeOrderTotal(
-  lines: Pick<NewOrderLine, "quantity" | "unitPurchasePrice">[],
-  shippingCost: number
+  lines: { quantity: number; unit_purchase_price: number }[],
+  shippingEstimated: number,
+  shippingActual: number | null
 ) {
-  const linesTotal = lines.reduce((sum, line) => sum + line.quantity * line.unitPurchasePrice, 0);
-  return linesTotal + shippingCost;
+  const linesTotal = lines.reduce((sum, l) => sum + l.quantity * l.unit_purchase_price, 0);
+  return linesTotal + (shippingActual ?? shippingEstimated);
 }
 
 export async function createOrder(supabase: Client, userId: string, input: NewOrderInput) {
@@ -63,31 +66,31 @@ export async function createOrder(supabase: Client, userId: string, input: NewOr
     .from("orders")
     .insert({
       user_id: userId,
-      supplier_id: input.supplierId,
+      label: input.label ?? null,
       order_date: input.orderDate,
-      shipping_cost: input.shippingCost,
+      shipping_france_estimated: input.shippingFranceEstimated,
       notes: input.notes ?? null,
-      status: "ordered",
+      status: input.status,
     })
     .select()
     .single();
   if (orderError) throw orderError;
 
-  const { error: linesError } = await supabase.from("order_lines").insert(
-    input.lines.map((line) => ({
-      user_id: userId,
-      order_id: order.id,
-      product_id: line.productId,
-      quantity: line.quantity,
-      unit_purchase_price: line.unitPurchasePrice,
-      shipping_cost_allocated: line.shippingCostAllocated ?? 0,
-    }))
-  );
-
-  if (linesError) {
-    // Roll back the order so we don't leave an order with zero lines behind.
-    await supabase.from("orders").delete().eq("id", order.id);
-    throw linesError;
+  if (input.lines.length > 0) {
+    const { error: linesError } = await supabase.from("order_lines").insert(
+      input.lines.map((line) => ({
+        user_id: userId,
+        order_id: order.id,
+        product_id: line.productId,
+        quantity: line.quantity,
+        unit_purchase_price: line.unitPurchasePrice,
+        comment: line.comment ?? null,
+      }))
+    );
+    if (linesError) {
+      await supabase.from("orders").delete().eq("id", order.id);
+      throw linesError;
+    }
   }
 
   return order;
@@ -98,9 +101,18 @@ export async function updateOrderStatus(supabase: Client, id: string, status: Or
   if (error) throw error;
 }
 
-// Generates one `items` row per unit ordered, splitting the order-level
-// shipping cost evenly across units unless a line already has its own
-// allocation. This is the "réception + génération des unités" step.
+// Re-evaluated France shipping, entered when the parcel reaches the warehouse.
+export async function setShippingActual(supabase: Client, id: string, amount: number) {
+  const { error } = await supabase
+    .from("orders")
+    .update({ shipping_france_actual: amount, status: "at_warehouse" })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+// Reception: one item per unit ordered. The known France shipping (actual if
+// re-evaluated, else the estimate) is split evenly across every unit so each
+// item carries its true landed cost for margin.
 export async function receiveOrder(supabase: Client, userId: string, orderId: string) {
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -114,27 +126,23 @@ export async function receiveOrder(supabase: Client, userId: string, orderId: st
     .select("*")
     .eq("order_id", orderId);
   if (linesError) throw linesError;
-  if (!lines || lines.length === 0) throw new Error("Cette commande n'a aucune ligne de produit.");
+  if (!lines || lines.length === 0) throw new Error("Cette commande n'a aucune ligne.");
 
   const totalQuantity = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const shipping = order.shipping_france_actual ?? order.shipping_france_estimated;
+  const perUnitShipping = totalQuantity > 0 ? shipping / totalQuantity : 0;
 
-  const itemsToInsert = lines.flatMap((line) => {
-    const perUnitShipping =
-      line.shipping_cost_allocated > 0
-        ? line.shipping_cost_allocated / line.quantity
-        : order.shipping_cost / totalQuantity;
-
-    return Array.from({ length: line.quantity }, (_, index) => ({
+  const itemsToInsert = lines.flatMap((line) =>
+    Array.from({ length: line.quantity }, (_, index) => ({
       user_id: userId,
       order_line_id: line.id,
       product_id: line.product_id,
       unit_number: index + 1,
       purchase_price: line.unit_purchase_price,
       shipping_cost_in: perUnitShipping,
-      qc_status: "pending" as const,
-      stock_status: "in_stock" as const,
-    }));
-  });
+      stock_status: "received" as const,
+    }))
+  );
 
   const { error: itemsError } = await supabase.from("items").insert(itemsToInsert);
   if (itemsError) throw itemsError;
@@ -144,4 +152,9 @@ export async function receiveOrder(supabase: Client, userId: string, orderId: st
     .update({ status: "received", received_at: new Date().toISOString().slice(0, 10) })
     .eq("id", orderId);
   if (updateError) throw updateError;
+}
+
+export async function deleteOrder(supabase: Client, id: string) {
+  const { error } = await supabase.from("orders").delete().eq("id", id);
+  if (error) throw error;
 }

@@ -1,8 +1,10 @@
 import type { Item } from "@/types/database";
 
+// Net margin of a sold item: final price minus purchase, inbound shipping
+// allocation and the Vinted fee. Mirrors the generated `margin` column.
 export function computeMargin(
-  item: Pick<Item, "resale_price" | "purchase_price" | "shipping_cost_in" | "shipping_cost_out">
+  item: Pick<Item, "sold_price" | "purchase_price" | "shipping_cost_in" | "vinted_fee">
 ): number | null {
-  if (item.resale_price === null) return null;
-  return item.resale_price - item.purchase_price - item.shipping_cost_in - item.shipping_cost_out;
+  if (item.sold_price === null) return null;
+  return item.sold_price - item.purchase_price - item.shipping_cost_in - item.vinted_fee;
 }

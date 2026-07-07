@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import * as productsService from "@/lib/services/products";
 import { deletePhoto } from "@/lib/storage/upload";
-import type { ProductValidationStatus } from "@/types/database";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -16,17 +15,23 @@ async function requireUser() {
   return { supabase, userId: user.id };
 }
 
+function parsePrice(value: FormDataEntryValue | null): number | null {
+  if (value === null || value === "") return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 export async function createProductAction(formData: FormData) {
   const { supabase, userId } = await requireUser();
 
   const product = await productsService.createProduct(supabase, userId, {
     name: String(formData.get("name")),
-    supplier_id: String(formData.get("supplier_id")),
-    category: (formData.get("category") as string) || null,
+    category: String(formData.get("category")),
+    brand: (formData.get("brand") as string) || null,
     description: (formData.get("description") as string) || null,
     product_url: (formData.get("product_url") as string) || null,
-    validation_status: (formData.get("validation_status") as ProductValidationStatus) || "pending_test",
-    quality_notes: (formData.get("quality_notes") as string) || null,
+    reference_purchase_price: parsePrice(formData.get("reference_purchase_price")),
+    estimated_resale_price: parsePrice(formData.get("estimated_resale_price")),
   });
 
   revalidatePath("/products");
@@ -38,16 +43,23 @@ export async function updateProductAction(id: string, formData: FormData) {
 
   await productsService.updateProduct(supabase, id, {
     name: String(formData.get("name")),
-    supplier_id: String(formData.get("supplier_id")),
-    category: (formData.get("category") as string) || null,
+    category: String(formData.get("category")),
+    brand: (formData.get("brand") as string) || null,
     description: (formData.get("description") as string) || null,
     product_url: (formData.get("product_url") as string) || null,
-    validation_status: (formData.get("validation_status") as ProductValidationStatus) || "pending_test",
-    quality_notes: (formData.get("quality_notes") as string) || null,
+    reference_purchase_price: parsePrice(formData.get("reference_purchase_price")),
+    estimated_resale_price: parsePrice(formData.get("estimated_resale_price")),
   });
 
   revalidatePath("/products");
   revalidatePath(`/products/${id}`);
+}
+
+export async function deleteProductAction(id: string) {
+  const { supabase } = await requireUser();
+  await productsService.deleteProduct(supabase, id);
+  revalidatePath("/products");
+  redirect("/products");
 }
 
 export async function addProductImageAction(productId: string, storagePath: string) {

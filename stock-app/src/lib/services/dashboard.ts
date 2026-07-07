@@ -8,28 +8,34 @@ export interface DateRange {
   to?: string;
 }
 
-interface ItemForReporting {
+interface ReportingItem {
   id: string;
   purchase_price: number;
   shipping_cost_in: number;
-  shipping_cost_out: number;
-  resale_price: number | null;
+  vinted_fee: number;
+  asking_price: number | null;
+  sold_price: number | null;
   margin: number | null;
-  qc_status: string;
   stock_status: string;
   sale_date: string | null;
+  listed_at: string | null;
   product_id: string;
-  products: { name: string; supplier_id: string; suppliers: { name: string } } | null;
+  products: {
+    name: string;
+    brand: string | null;
+    category: string;
+    estimated_resale_price: number | null;
+  } | null;
 }
 
-async function fetchAllItemsForReporting(supabase: Client): Promise<ItemForReporting[]> {
+async function fetchItems(supabase: Client): Promise<ReportingItem[]> {
   const { data, error } = await supabase
     .from("items")
     .select(
-      "id, purchase_price, shipping_cost_in, shipping_cost_out, resale_price, margin, qc_status, stock_status, sale_date, product_id, products(name, supplier_id, suppliers(name))"
+      "id, purchase_price, shipping_cost_in, vinted_fee, asking_price, sold_price, margin, stock_status, sale_date, listed_at, product_id, products(name, brand, category, estimated_resale_price)"
     );
   if (error) throw error;
-  return (data ?? []) as unknown as ItemForReporting[];
+  return (data ?? []) as unknown as ReportingItem[];
 }
 
 function inRange(dateStr: string | null, range: DateRange) {
@@ -39,77 +45,87 @@ function inRange(dateStr: string | null, range: DateRange) {
   return true;
 }
 
+// Best estimate of what an unsold item will fetch: its asking price if it's
+// already listed, otherwise the product's estimated resale price.
+function estimatedValue(item: ReportingItem): number {
+  if (item.asking_price !== null) return item.asking_price;
+  return item.products?.estimated_resale_price ?? 0;
+}
+
 export async function getDashboardSummary(supabase: Client, range: DateRange = {}) {
-  const items = await fetchAllItemsForReporting(supabase);
+  const items = await fetchItems(supabase);
 
-  const soldInRange = items.filter((item) => item.sale_date && inRange(item.sale_date, range));
-  const totalMargin = soldInRange.reduce((sum, item) => sum + (item.margin ?? 0), 0);
+  const sold = items.filter((i) => i.stock_status === "sold");
+  const soldInRange = sold.filter((i) => inRange(i.sale_date, range));
+  const unsold = items.filter((i) => i.stock_status !== "sold");
 
-  const stockItems = items.filter((item) => item.stock_status === "in_stock");
-  const stockValue = stockItems.reduce(
-    (sum, item) => sum + item.purchase_price + item.shipping_cost_in,
+  // Realized: only what has actually been sold (final prices).
+  const realCA = soldInRange.reduce((s, i) => s + (i.sold_price ?? 0), 0);
+  const realProfit = soldInRange.reduce((s, i) => s + (i.margin ?? 0), 0);
+
+  // Potential: realized + an estimation of the unsold stock.
+  const stockEstimatedCA = unsold.reduce((s, i) => s + estimatedValue(i), 0);
+  const stockEstimatedProfit = unsold.reduce(
+    (s, i) => s + (estimatedValue(i) - i.purchase_price - i.shipping_cost_in),
     0
   );
+  const potentialCA = realCA + stockEstimatedCA;
+  const potentialProfit = realProfit + stockEstimatedProfit;
 
-  const qcDone = items.filter((item) => item.qc_status !== "pending");
-  const qcDefects = qcDone.filter((item) =>
-    ["minor_defect", "rejected", "to_return"].includes(item.qc_status)
-  );
-  const globalDefectRate = qcDone.length > 0 ? qcDefects.length / qcDone.length : 0;
+  // Cost tied up in unsold stock.
+  const stockCost = unsold.reduce((s, i) => s + i.purchase_price + i.shipping_cost_in, 0);
 
-  const bySupplier = new Map<
-    string,
-    { name: string; margins: number[]; qcDone: number; qcDefects: number }
-  >();
-  for (const item of items) {
-    const supplierId = item.products?.supplier_id;
-    const supplierName = item.products?.suppliers?.name;
-    if (!supplierId || !supplierName) continue;
+  const counts = {
+    received: items.filter((i) => i.stock_status === "received").length,
+    forSale: items.filter((i) => i.stock_status === "for_sale").length,
+    sold: sold.length,
+  };
 
-    if (!bySupplier.has(supplierId)) {
-      bySupplier.set(supplierId, { name: supplierName, margins: [], qcDone: 0, qcDefects: 0 });
-    }
-    const entry = bySupplier.get(supplierId)!;
-    if (item.margin !== null) entry.margins.push(item.margin);
-    if (item.qc_status !== "pending") {
-      entry.qcDone += 1;
-      if (["minor_defect", "rejected", "to_return"].includes(item.qc_status)) entry.qcDefects += 1;
-    }
+  // Average days from listing to sale.
+  const durations = soldInRange
+    .filter((i) => i.listed_at && i.sale_date)
+    .map((i) => (new Date(i.sale_date!).getTime() - new Date(i.listed_at!).getTime()) / 86400000);
+  const avgDaysToSell =
+    durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : null;
+
+  // Top products by realized profit.
+  const byProduct = new Map<string, { name: string; profit: number; unitsSold: number }>();
+  for (const i of soldInRange) {
+    const name = i.products?.name ?? "Produit supprimé";
+    if (!byProduct.has(i.product_id)) byProduct.set(i.product_id, { name, profit: 0, unitsSold: 0 });
+    const e = byProduct.get(i.product_id)!;
+    e.profit += i.margin ?? 0;
+    e.unitsSold += 1;
   }
-
-  const bestSuppliers = Array.from(bySupplier.entries())
-    .map(([supplierId, entry]) => ({
-      supplierId,
-      name: entry.name,
-      averageMargin:
-        entry.margins.length > 0
-          ? entry.margins.reduce((a, b) => a + b, 0) / entry.margins.length
-          : null,
-      defectRate: entry.qcDone > 0 ? entry.qcDefects / entry.qcDone : null,
-    }))
-    .sort((a, b) => (b.averageMargin ?? -Infinity) - (a.averageMargin ?? -Infinity));
-
-  const byProduct = new Map<string, { name: string; totalMargin: number; unitsSold: number }>();
-  for (const item of soldInRange) {
-    const productName = item.products?.name ?? "Produit supprimé";
-    if (!byProduct.has(item.product_id)) {
-      byProduct.set(item.product_id, { name: productName, totalMargin: 0, unitsSold: 0 });
-    }
-    const entry = byProduct.get(item.product_id)!;
-    entry.totalMargin += item.margin ?? 0;
-    entry.unitsSold += 1;
-  }
-
   const topProducts = Array.from(byProduct.entries())
-    .map(([productId, entry]) => ({ productId, ...entry }))
-    .sort((a, b) => b.totalMargin - a.totalMargin);
+    .map(([productId, e]) => ({ productId, ...e }))
+    .sort((a, b) => b.profit - a.profit)
+    .slice(0, 8);
+
+  // Top brands by realized profit.
+  const byBrand = new Map<string, { profit: number; unitsSold: number }>();
+  for (const i of soldInRange) {
+    const brand = i.products?.brand || "Sans marque";
+    if (!byBrand.has(brand)) byBrand.set(brand, { profit: 0, unitsSold: 0 });
+    const e = byBrand.get(brand)!;
+    e.profit += i.margin ?? 0;
+    e.unitsSold += 1;
+  }
+  const topBrands = Array.from(byBrand.entries())
+    .map(([brand, e]) => ({ brand, ...e }))
+    .sort((a, b) => b.profit - a.profit)
+    .slice(0, 8);
 
   return {
-    totalMargin,
-    stockValue,
-    stockCount: stockItems.length,
-    globalDefectRate,
-    bestSuppliers,
+    realCA,
+    realProfit,
+    potentialCA,
+    potentialProfit,
+    stockEstimatedCA,
+    stockCost,
+    counts,
+    avgDaysToSell,
     topProducts,
+    topBrands,
   };
 }

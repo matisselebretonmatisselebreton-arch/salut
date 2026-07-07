@@ -1,69 +1,47 @@
-// Hand-written to match supabase/migrations/0001_init.sql.
-// Once the project is linked, replace with:
+// Hand-written to match supabase/migrations/*.sql.
+// Regenerate once linked with:
 //   npx supabase gen types typescript --linked > src/types/database.ts
 
-export type SupplierStatus = "to_test" | "validated" | "to_avoid";
-export type ProductValidationStatus = "pending_test" | "validated" | "rejected";
-export type OrderStatus = "ordered" | "in_transit" | "received" | "inspected";
-export type QcStatus = "pending" | "conforming" | "minor_defect" | "rejected" | "to_return";
-export type StockStatus = "in_stock" | "reserved" | "sold" | "returned";
+export type OrderStatus = "draft" | "ordered" | "at_warehouse" | "in_transit" | "received";
+export type StockStatus = "received" | "for_sale" | "sold";
+
+// The 8 canonical catalog categories. Stored as free text so it stays
+// extensible, but the UI drives users toward this set.
+export const CATEGORIES = [
+  "Montres",
+  "Sacs",
+  "T-shirts",
+  "Pulls/Vestes",
+  "Pantalons",
+  "Bijoux",
+  "Chaussures",
+  "Technologie",
+] as const;
 
 export interface Database {
   public: {
     Tables: {
-      suppliers: {
-        Row: {
-          id: string;
-          user_id: string;
-          name: string;
-          platform: string | null;
-          contact_wechat: string | null;
-          contact_phone: string | null;
-          contact_link: string | null;
-          reliability_score: number | null;
-          status: SupplierStatus;
-          notes: string | null;
-          first_order_date: string | null;
-          archived_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: Partial<Database["public"]["Tables"]["suppliers"]["Row"]> & {
-          user_id: string;
-          name: string;
-        };
-        Update: Partial<Database["public"]["Tables"]["suppliers"]["Row"]>;
-        Relationships: [];
-      };
       products: {
         Row: {
           id: string;
           user_id: string;
-          supplier_id: string;
           name: string;
-          category: string | null;
+          category: string;
+          brand: string | null;
           description: string | null;
           product_url: string | null;
-          validation_status: ProductValidationStatus;
-          quality_notes: string | null;
+          reference_purchase_price: number | null;
+          estimated_resale_price: number | null;
           created_at: string;
           updated_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["products"]["Row"]> & {
           user_id: string;
-          supplier_id: string;
           name: string;
+          category: string;
         };
         Update: Partial<Database["public"]["Tables"]["products"]["Row"]>;
-        Relationships: [
-          {
-            foreignKeyName: "products_supplier_id_fkey";
-            columns: ["supplier_id"];
-            isOneToOne: false;
-            referencedRelation: "suppliers";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       product_images: {
         Row: {
@@ -94,10 +72,11 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          supplier_id: string;
+          label: string | null;
           order_date: string;
           status: OrderStatus;
-          shipping_cost: number;
+          shipping_france_estimated: number;
+          shipping_france_actual: number | null;
           received_at: string | null;
           notes: string | null;
           created_at: string;
@@ -105,18 +84,9 @@ export interface Database {
         };
         Insert: Partial<Database["public"]["Tables"]["orders"]["Row"]> & {
           user_id: string;
-          supplier_id: string;
         };
         Update: Partial<Database["public"]["Tables"]["orders"]["Row"]>;
-        Relationships: [
-          {
-            foreignKeyName: "orders_supplier_id_fkey";
-            columns: ["supplier_id"];
-            isOneToOne: false;
-            referencedRelation: "suppliers";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       order_lines: {
         Row: {
@@ -126,7 +96,7 @@ export interface Database {
           product_id: string;
           quantity: number;
           unit_purchase_price: number;
-          shipping_cost_allocated: number;
+          comment: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["order_lines"]["Row"]> & {
@@ -163,12 +133,14 @@ export interface Database {
           unit_number: number;
           purchase_price: number;
           shipping_cost_in: number;
-          qc_status: QcStatus;
-          qc_notes: string | null;
+          rating: number | null;
+          rating_comment: string | null;
           stock_status: StockStatus;
-          resale_price: number | null;
-          shipping_cost_out: number;
+          asking_price: number | null;
+          sold_price: number | null;
+          vinted_fee: number;
           sale_channel: string | null;
+          listed_at: string | null;
           sale_date: string | null;
           margin: number | null;
           created_at: string;
@@ -232,7 +204,6 @@ export interface Database {
   };
 }
 
-export type Supplier = Database["public"]["Tables"]["suppliers"]["Row"];
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 export type ProductImage = Database["public"]["Tables"]["product_images"]["Row"];
 export type Order = Database["public"]["Tables"]["orders"]["Row"];

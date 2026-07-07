@@ -1,0 +1,16 @@
+# Netlify configuration for the Next.js "stock-app".
+# On Netlify, create a NEW site pointing at this repo with:
+#   Base directory = stock-app
+# Netlify then reads this file (relative to that base) and runs the build here.
+# The Next.js runtime plugin handles SSR, server actions, and the proxy.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # Next.js 16 requires Node 20.9+.
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

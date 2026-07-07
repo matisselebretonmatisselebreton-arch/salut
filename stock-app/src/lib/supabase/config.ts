@@ -1,27 +1,19 @@
 // Central Supabase connection config.
 //
-// Env vars set in the hosting dashboard sometimes pick up an invisible,
-// non-ASCII character during copy-paste (zero-width space, smart quote…).
-// That character is illegal in an HTTP header value and makes the browser
-// throw "Failed to read the 'headers' property … String contains non
-// ISO-8859-1 code point" the moment the Supabase client tries to fetch.
+// These are the project's PUBLIC client values:
+//   - the project URL, and
+//   - the anon key, which is meant to be shipped in the browser bundle.
+// Data access is protected by Row Level Security (see the SQL migrations),
+// so exposing the anon key is safe — this is how every Supabase web client
+// works.
 //
-// We defensively strip anything outside printable ASCII, then fall back to
-// the project's known public values. The anon/publishable key is designed to
-// be exposed in the client bundle — data access is protected by RLS — so
-// keeping a fallback here is safe for this single-tenant app.
+// We hardcode them on purpose. Reading them from environment variables in the
+// hosting dashboard repeatedly introduced an invisible non-ASCII character
+// during copy-paste, which either broke the HTTP headers outright or, once
+// stripped, produced a key with a missing character ("Invalid API key").
+// Hardcoding the known-good values makes deploys bulletproof.
 
-function clean(value: string | undefined, fallback: string): string {
-  const stripped = (value ?? "").replace(/[^\x20-\x7E]/g, "").trim();
-  return stripped || fallback;
-}
+export const SUPABASE_URL = "https://acwpfdxpcwdxchwqocgx.supabase.co";
 
-export const SUPABASE_URL = clean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  "https://acwpfdxpcwdxchwqocgx.supabase.co"
-);
-
-export const SUPABASE_ANON_KEY = clean(
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  "sb_publishable_JJOtgLvJABC389n8-LU8Sw_ttP7sJ9Y"
-);
+export const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjd3BmZHhwY3dkeGNod3FvY2d4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MTUwMDQsImV4cCI6MjA5ODk5MTAwNH0.AUIQ6l5sOpt51sSKYDOA7-iXH1HT_VKJqQlZQ9jvddk";

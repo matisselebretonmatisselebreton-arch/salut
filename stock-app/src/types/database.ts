@@ -43,6 +43,7 @@ export interface Database {
           name: string;
           category: string | null;
           description: string | null;
+          product_url: string | null;
           validation_status: ProductValidationStatus;
           quality_notes: string | null;
           created_at: string;

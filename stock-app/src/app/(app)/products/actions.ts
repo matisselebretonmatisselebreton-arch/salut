@@ -24,6 +24,7 @@ export async function createProductAction(formData: FormData) {
     supplier_id: String(formData.get("supplier_id")),
     category: (formData.get("category") as string) || null,
     description: (formData.get("description") as string) || null,
+    product_url: (formData.get("product_url") as string) || null,
     validation_status: (formData.get("validation_status") as ProductValidationStatus) || "pending_test",
     quality_notes: (formData.get("quality_notes") as string) || null,
   });
@@ -40,6 +41,7 @@ export async function updateProductAction(id: string, formData: FormData) {
     supplier_id: String(formData.get("supplier_id")),
     category: (formData.get("category") as string) || null,
     description: (formData.get("description") as string) || null,
+    product_url: (formData.get("product_url") as string) || null,
     validation_status: (formData.get("validation_status") as ProductValidationStatus) || "pending_test",
     quality_notes: (formData.get("quality_notes") as string) || null,
   });

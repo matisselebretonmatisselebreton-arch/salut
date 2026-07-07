@@ -3,6 +3,16 @@ import type { Database, Product, ProductValidationStatus } from "@/types/databas
 
 type Client = SupabaseClient<Database>;
 
+// Seed categories always offered in the product form. The list stays
+// extensible: any category typed on the site is picked up as a suggestion
+// afterwards (see listCategories), no migration needed.
+export const DEFAULT_CATEGORIES = [
+  "Chaussures",
+  "Vêtements",
+  "Accessoire",
+  "Produit électronique",
+];
+
 export interface ProductFilters {
   category?: string;
   supplierId?: string;

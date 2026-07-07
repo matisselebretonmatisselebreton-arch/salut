@@ -12,10 +12,14 @@ réception, stock et ventes, avec calcul automatique des marges.
 ## 1. Configurer Supabase
 
 1. Crée un projet sur [supabase.com](https://supabase.com).
-2. Dans **SQL Editor**, exécute le contenu de `supabase/migrations/0001_init.sql`.
-   Il crée toutes les tables (`suppliers`, `products`, `orders`, `order_lines`,
-   `items`, …), les policies RLS (scopées par `user_id`) et les deux buckets de
-   Storage privés `product-photos` et `qc-photos`.
+2. Dans **SQL Editor**, exécute les migrations du dossier
+   `supabase/migrations/` **dans l'ordre** :
+   - `0001_init.sql` — crée toutes les tables (`suppliers`, `products`,
+     `orders`, `order_lines`, `items`, …), les policies RLS (scopées par
+     `user_id`) et les deux buckets de Storage privés `product-photos` et
+     `qc-photos`.
+   - `0002_product_url.sql` — ajoute le champ lien (`product_url`) sur les
+     produits.
 3. Dans **Authentication > Providers**, laisse Email activé, puis dans
    **Authentication > Users**, crée ton propre utilisateur (email + mot de
    passe) — c'est le seul compte dont l'app a besoin.

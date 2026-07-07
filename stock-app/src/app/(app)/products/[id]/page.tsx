@@ -43,7 +43,19 @@ export default async function ProductDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{product.name}</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{product.name}</h1>
+        {product.product_url && (
+          <a
+            href={product.product_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-block break-all text-sm text-blue-600 hover:underline dark:text-blue-400"
+          >
+            {product.product_url} ↗
+          </a>
+        )}
+      </div>
 
       <Card>
         <h2 className="mb-4 font-medium text-zinc-900 dark:text-zinc-50">Photos</h2>

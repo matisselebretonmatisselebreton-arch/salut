@@ -19,13 +19,18 @@ export interface NewOrderInput {
   lines: NewOrderLine[];
 }
 
-export async function listOrders(supabase: Client, filters: { status?: OrderStatus } = {}) {
+export async function listOrders(
+  supabase: Client,
+  filters: { status?: OrderStatus; excludeDraft?: boolean } = {}
+) {
   let query = supabase
     .from("orders")
     .select("*, order_lines(id, quantity, unit_purchase_price)")
     .order("order_date", { ascending: false });
 
   if (filters.status) query = query.eq("status", filters.status);
+  // Drafts are the live cart, shown on /cart — never in the orders history.
+  if (filters.excludeDraft) query = query.neq("status", "draft");
 
   const { data, error } = await query;
   if (error) throw error;

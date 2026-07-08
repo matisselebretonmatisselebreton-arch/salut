@@ -36,17 +36,34 @@ export async function getProduct(supabase: Client, id: string) {
   return data;
 }
 
-// The received items of a product carry the reception ratings/comments that we
-// surface back on the catalog page — a feedback loop on that model's quality.
-export async function getProductRatings(supabase: Client, productId: string) {
+// The received exemplaires of a product carry its reception ratings, comments
+// and photos — surfaced on the product's showcase page.
+export async function getProductItems(supabase: Client, productId: string) {
   const { data, error } = await supabase
     .from("items")
-    .select("id, rating, rating_comment, unit_number, created_at")
+    .select(
+      "id, rating, rating_comment, unit_number, stock_status, created_at, item_images(id, storage_path, position)"
+    )
     .eq("product_id", productId)
-    .not("rating", "is", null)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
+}
+
+// How many times a product has been ordered (validated orders only, i.e. not
+// the live cart), in distinct orders and total units.
+export async function getProductOrderStats(supabase: Client, productId: string) {
+  const { data, error } = await supabase
+    .from("order_lines")
+    .select("quantity, orders!inner(id, status)")
+    .eq("product_id", productId)
+    .neq("orders.status", "draft");
+  if (error) throw error;
+
+  const rows = (data ?? []) as unknown as { quantity: number; orders: { id: string } }[];
+  const units = rows.reduce((sum, r) => sum + r.quantity, 0);
+  const orderCount = new Set(rows.map((r) => r.orders.id)).size;
+  return { units, orderCount };
 }
 
 export async function listBrands(supabase: Client, userId: string) {

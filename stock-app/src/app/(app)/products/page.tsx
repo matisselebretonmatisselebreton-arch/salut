@@ -143,7 +143,7 @@ export default async function CatalogPage({
                               <div className="mt-4 flex gap-2">
                                 <AddToCartButton productId={product.id} />
                                 <Link
-                                  href={`/products/${product.id}`}
+                                  href={`/products/${product.id}/edit`}
                                   className="inline-flex items-center justify-center rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                                 >
                                   Modifier

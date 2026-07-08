@@ -4,7 +4,7 @@ import { useState } from "react";
 import { NavLinks } from "@/components/layout/NavLinks";
 import { SignOutButton } from "@/components/layout/SignOutButton";
 
-export function MobileNav() {
+export function MobileNav({ cartCount = 0 }: { cartCount?: number }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +21,7 @@ export function MobileNav() {
       </div>
       {open && (
         <div className="space-y-3 px-4 pb-4">
-          <NavLinks onNavigate={() => setOpen(false)} />
+          <NavLinks onNavigate={() => setOpen(false)} cartCount={cartCount} />
           <SignOutButton />
         </div>
       )}

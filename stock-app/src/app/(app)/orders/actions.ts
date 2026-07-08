@@ -16,34 +16,6 @@ async function requireUser() {
   return { supabase, userId: user.id };
 }
 
-export async function createOrderAction(formData: FormData) {
-  const { supabase, userId } = await requireUser();
-
-  const rawLines = JSON.parse(String(formData.get("lines_json"))) as {
-    productId: string;
-    quantity: number;
-    unitPurchasePrice: number;
-    comment: string;
-  }[];
-
-  const order = await ordersService.createOrder(supabase, userId, {
-    label: (formData.get("label") as string) || null,
-    orderDate: String(formData.get("order_date")),
-    shippingFranceEstimated: Number(formData.get("shipping_france_estimated") || 0),
-    notes: (formData.get("notes") as string) || null,
-    status: (formData.get("status") as OrderStatus) || "draft",
-    lines: rawLines.map((l) => ({
-      productId: l.productId,
-      quantity: l.quantity,
-      unitPurchasePrice: l.unitPurchasePrice,
-      comment: l.comment || null,
-    })),
-  });
-
-  revalidatePath("/orders");
-  redirect(`/orders/${order.id}`);
-}
-
 export async function updateOrderStatusAction(orderId: string, status: OrderStatus) {
   const { supabase } = await requireUser();
   await ordersService.updateOrderStatus(supabase, orderId, status);

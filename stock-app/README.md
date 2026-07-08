@@ -72,8 +72,9 @@ src/
 │   ├── login/                # Connexion (Supabase Auth)
 │   └── (app)/                 # Routes protégées (redirigent vers /login sinon)
 │       ├── dashboard/         # CA réel/potentiel, bénéfice net, top produits/marques
-│       ├── products/          # Catalogue par catégorie → marque, photos, notes des exemplaires
-│       ├── orders/            # Panier, livraison estimée→réelle, réception + note
+│       ├── products/          # Catalogue (annonces par catégorie → marque) + Ajouter au panier
+│       ├── cart/               # Panier unique modifiable → validation en commande
+│       ├── orders/            # Commandes validées : livraison estimée→réelle, réception + note
 │       └── stock/              # Reçu → en vente → vendu, marge nette
 ├── components/                 # UI réutilisable + composants métier par domaine
 ├── lib/

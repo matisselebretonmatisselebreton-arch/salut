@@ -8,13 +8,15 @@ import { formatEuros } from "@/lib/utils/currency";
 
 export default async function OrdersPage() {
   const supabase = await createClient();
-  const orders = await listOrders(supabase);
+  const orders = await listOrders(supabase, { excludeDraft: true });
 
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">Commandes</h1>
-        <LinkButton href="/orders/new">Nouvelle commande</LinkButton>
+        <LinkButton href="/cart" variant="secondary">
+          Voir le panier
+        </LinkButton>
       </div>
 
       <div className="space-y-3">
@@ -43,7 +45,9 @@ export default async function OrdersPage() {
           );
         })}
         {orders.length === 0 && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">Aucune commande.</p>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Aucune commande validée. Constitue un panier puis valide-le pour créer une commande.
+          </p>
         )}
       </div>
     </div>

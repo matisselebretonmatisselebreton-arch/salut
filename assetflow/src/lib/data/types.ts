@@ -6,8 +6,11 @@
 
 import type {
   AssetType,
+  BudgetCategory,
   ChargePeriodicity,
   DeadlineType,
+  ExpenseNature,
+  ExpenseStatus,
   IndexType,
   InvoiceType,
   LeaseStatus,
@@ -180,4 +183,51 @@ export interface InvoicingSummary {
   overdueCount: number;
   paidCount: number;
   pendingCount: number;
+}
+
+// ---------------------------------------------------------------------------
+// Module 4 — Budget de charges & exploitation
+// ---------------------------------------------------------------------------
+
+/** Poste budgétaire avec son écart Budget vs Réalisé (calculé). */
+export interface BudgetLineDTO {
+  id: string;
+  category: BudgetCategory;
+  label: string;
+  budgeted: number;
+  actual: number;
+  thresholdPct: number;
+  variance: number;
+  variancePct: number | null;
+  isOverrun: boolean;
+}
+
+export interface BudgetSummaryDTO {
+  id: string;
+  assetId: string;
+  assetName: string;
+  fiscalYear: number;
+  label: string | null;
+  totalBudgeted: number;
+  totalActual: number;
+  variance: number;
+  variancePct: number | null;
+  overrunCount: number;
+}
+
+export interface ExpenseDTO {
+  id: string;
+  supplier: string | null;
+  label: string;
+  amount: number;
+  nature: ExpenseNature;
+  status: ExpenseStatus;
+  incurredOn: string;
+  /** Poste budgétaire d'imputation (libellé), si rattaché. */
+  budgetLineLabel: string | null;
+}
+
+export interface BudgetDetailDTO extends BudgetSummaryDTO {
+  lines: BudgetLineDTO[];
+  expenses: ExpenseDTO[];
 }

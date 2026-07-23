@@ -9,3 +9,4 @@ export * from "./lease";
 export * from "./indexation";
 export * from "./deadlines";
 export * from "./invoicing";
+export * from "./budget";

@@ -1,0 +1,49 @@
+{
+  "list": {
+    "title": "Budgets",
+    "empty": "Aucun budget pour le moment."
+  },
+  "category": {
+    "maintenance": "Entretien",
+    "property_tax": "Taxes foncières",
+    "insurance": "Assurances",
+    "management_fees": "Honoraires / syndic",
+    "security": "Gardiennage",
+    "energy": "Énergie",
+    "utilities": "Fluides & charges",
+    "other": "Autre"
+  },
+  "nature": {
+    "capex": "CAPEX",
+    "opex": "OPEX"
+  },
+  "status": {
+    "submitted": "Soumis",
+    "approved": "Validé",
+    "paid": "Payé",
+    "rejected": "Rejeté"
+  },
+  "fields": {
+    "fiscalYear": "Exercice",
+    "asset": "Actif",
+    "budgeted": "Budget",
+    "actual": "Réalisé",
+    "variance": "Écart",
+    "variancePct": "Écart %",
+    "overruns": "Dépassements"
+  },
+  "detail": {
+    "bva": "Budget vs Réalisé",
+    "poste": "Poste",
+    "expenses": "Dépenses & factures fournisseurs",
+    "total": "Total",
+    "supplier": "Fournisseur",
+    "label": "Libellé",
+    "amount": "Montant",
+    "nature": "Nature",
+    "status": "Statut",
+    "date": "Date",
+    "line": "Poste",
+    "overrunAlert": "Dépassement du seuil d'alerte"
+  }
+}

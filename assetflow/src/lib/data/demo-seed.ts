@@ -443,3 +443,81 @@ export const demoLeases: RawLease[] = [
     ],
   },
 ];
+
+// ============================================================================
+// Module 4 — Budget de charges & exploitation (données de démonstration)
+// Le "réalisé" d'un poste = somme des dépenses approuvées/payées imputées.
+// ============================================================================
+
+export interface RawBudget {
+  id: string;
+  assetId: string;
+  fiscalYear: number;
+  label: string;
+}
+
+export interface RawBudgetLine {
+  id: string;
+  budgetId: string;
+  category:
+    | "maintenance"
+    | "property_tax"
+    | "insurance"
+    | "management_fees"
+    | "security"
+    | "energy"
+    | "utilities"
+    | "other";
+  label: string;
+  budgetedAmount: number;
+  alertThresholdPct: number;
+}
+
+export interface RawExpense {
+  id: string;
+  assetId: string;
+  budgetLineId: string;
+  supplier: string;
+  label: string;
+  amount: number;
+  nature: "capex" | "opex";
+  status: "submitted" | "approved" | "paid" | "rejected";
+  incurredOn: string;
+}
+
+export const demoBudgets: RawBudget[] = [
+  { id: "60000000-0000-0000-0000-000000000001", assetId: "20000000-0000-0000-0000-000000000001", fiscalYear: 2026, label: "Budget 2026" },
+  { id: "60000000-0000-0000-0000-000000000002", assetId: "20000000-0000-0000-0000-000000000002", fiscalYear: 2026, label: "Budget 2026" },
+];
+
+export const demoBudgetLines: RawBudgetLine[] = [
+  // Le Hausmann
+  { id: "61000000-0000-0000-0000-000000000001", budgetId: demoBudgets[0].id, category: "maintenance", label: "Entretien courant", budgetedAmount: 40000, alertThresholdPct: 10 },
+  { id: "61000000-0000-0000-0000-000000000002", budgetId: demoBudgets[0].id, category: "property_tax", label: "Taxe foncière", budgetedAmount: 85000, alertThresholdPct: 5 },
+  { id: "61000000-0000-0000-0000-000000000003", budgetId: demoBudgets[0].id, category: "insurance", label: "Assurance multirisque", budgetedAmount: 18000, alertThresholdPct: 10 },
+  { id: "61000000-0000-0000-0000-000000000004", budgetId: demoBudgets[0].id, category: "energy", label: "Énergie parties communes", budgetedAmount: 55000, alertThresholdPct: 10 },
+  { id: "61000000-0000-0000-0000-000000000005", budgetId: demoBudgets[0].id, category: "security", label: "Gardiennage", budgetedAmount: 24000, alertThresholdPct: 10 },
+  // Silex Défense
+  { id: "61000000-0000-0000-0000-000000000011", budgetId: demoBudgets[1].id, category: "maintenance", label: "Entretien courant", budgetedAmount: 120000, alertThresholdPct: 10 },
+  { id: "61000000-0000-0000-0000-000000000012", budgetId: demoBudgets[1].id, category: "property_tax", label: "Taxe foncière", budgetedAmount: 240000, alertThresholdPct: 5 },
+  { id: "61000000-0000-0000-0000-000000000013", budgetId: demoBudgets[1].id, category: "energy", label: "Énergie", budgetedAmount: 180000, alertThresholdPct: 10 },
+  { id: "61000000-0000-0000-0000-000000000014", budgetId: demoBudgets[1].id, category: "management_fees", label: "Honoraires syndic", budgetedAmount: 90000, alertThresholdPct: 10 },
+];
+
+export const demoExpenses: RawExpense[] = [
+  // Le Hausmann — entretien en dépassement (+17,5 %)
+  { id: "62000000-0000-0000-0000-000000000001", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000001", supplier: "SMAC Bâtiment", label: "Réfection toiture terrasse", amount: 32000, nature: "capex", status: "paid", incurredOn: "2026-03-12" },
+  { id: "62000000-0000-0000-0000-000000000002", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000001", supplier: "Otis", label: "Maintenance ascenseurs", amount: 15000, nature: "opex", status: "approved", incurredOn: "2026-04-02" },
+  { id: "62000000-0000-0000-0000-000000000003", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000002", supplier: "DGFiP", label: "Taxe foncière 2026", amount: 85000, nature: "opex", status: "paid", incurredOn: "2026-02-15" },
+  { id: "62000000-0000-0000-0000-000000000004", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000003", supplier: "AXA", label: "Prime annuelle", amount: 17500, nature: "opex", status: "paid", incurredOn: "2026-01-10" },
+  { id: "62000000-0000-0000-0000-000000000005", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000004", supplier: "EDF Entreprises", label: "Électricité T1-T2", amount: 62000, nature: "opex", status: "paid", incurredOn: "2026-06-30" },
+  { id: "62000000-0000-0000-0000-000000000006", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000005", supplier: "Securitas", label: "Gardiennage S1", amount: 11500, nature: "opex", status: "paid", incurredOn: "2026-06-01" },
+  // Dépense soumise mais non approuvée → NON comptée dans le réalisé
+  { id: "62000000-0000-0000-0000-000000000007", assetId: demoBudgets[0].assetId, budgetLineId: "61000000-0000-0000-0000-000000000001", supplier: "Peinture Pro", label: "Rafraîchissement hall (devis)", amount: 8000, nature: "opex", status: "submitted", incurredOn: "2026-07-05" },
+
+  // Silex Défense — énergie en dépassement (+13,9 %)
+  { id: "62000000-0000-0000-0000-000000000011", assetId: demoBudgets[1].assetId, budgetLineId: "61000000-0000-0000-0000-000000000011", supplier: "Eiffage", label: "Entretien CVC", amount: 110000, nature: "opex", status: "paid", incurredOn: "2026-05-20" },
+  { id: "62000000-0000-0000-0000-000000000012", assetId: demoBudgets[1].assetId, budgetLineId: "61000000-0000-0000-0000-000000000012", supplier: "DGFiP", label: "Taxe foncière 2026", amount: 240000, nature: "opex", status: "paid", incurredOn: "2026-02-15" },
+  { id: "62000000-0000-0000-0000-000000000013", assetId: demoBudgets[1].assetId, budgetLineId: "61000000-0000-0000-0000-000000000013", supplier: "Engie", label: "Énergie T1-T2", amount: 205000, nature: "opex", status: "paid", incurredOn: "2026-06-30" },
+  { id: "62000000-0000-0000-0000-000000000014", assetId: demoBudgets[1].assetId, budgetLineId: "61000000-0000-0000-0000-000000000014", supplier: "Foncia Syndic", label: "Honoraires S1", amount: 45000, nature: "opex", status: "paid", incurredOn: "2026-06-10" },
+];

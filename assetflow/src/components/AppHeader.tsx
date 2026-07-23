@@ -27,6 +27,9 @@ export async function AppHeader() {
             <Link href="/invoices" className="hover:text-foreground">
               {t("nav.invoices")}
             </Link>
+            <Link href="/budgets" className="hover:text-foreground">
+              {t("nav.budgets")}
+            </Link>
             <Link href="/deadlines" className="hover:text-foreground">
               {t("nav.deadlines")}
             </Link>

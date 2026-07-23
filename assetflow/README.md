@@ -16,8 +16,9 @@ offices). Bilingue FR/EN, multi-tenant, web (puis mobile).
 | **Module 2** | Baux & locataires — Session A (fondations) | ✅ Fait |
 | **Module 2** | Session B : moteur d'indexation + calendrier des échéances | ✅ Fait |
 | **Module 3** | Facturation & encaissement — Session A (quittances, suivi) | ✅ Fait |
+| **Module 4** | Budget de charges & exploitation (BvA + dépenses) | ✅ Fait |
+| — | **MVP Phase 1 complet** (Modules 1→4) | ✅ |
 | Module 3 | Session B : reddition de charges + relances automatisées | ⏳ |
-| Module 4 | Budget de charges | ⏳ |
 
 ## Stack
 
@@ -70,6 +71,11 @@ n'est jamais stocké : il est dérivé à la lecture via `core/invoicing`
 (`paymentStatus`) à partir du TTC, des encaissements et de l'échéance. En mode
 démo, les quittances des 4 derniers mois sont générées à la volée depuis les
 baux actifs (`src/lib/data/demo-invoices.ts`).
+
+Module 4 ajoute (migration `0004_budgets.sql`) : `Budget`, `budget_lines`,
+`Expense`. Le **réalisé** d'un poste = somme des dépenses approuvées/payées
+imputées ; l'**écart Budget vs Réalisé** et les **alertes de dépassement** (seuil
+par poste) sont calculés à la lecture via `core/budget` (`computeBudgetVsActual`).
 
 Points d'attention documentés :
 - **Soft-delete** : colonne `archived_at` partout, jamais de `DELETE` physique

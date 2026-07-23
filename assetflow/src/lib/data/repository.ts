@@ -11,6 +11,8 @@
 
 import type {
   AssetDTO,
+  BudgetDetailDTO,
+  BudgetSummaryDTO,
   DeadlineDTO,
   InvoiceDetailDTO,
   InvoiceSummaryDTO,
@@ -43,6 +45,10 @@ export interface AssetRepository {
   listInvoices(): Promise<InvoiceSummaryDTO[]>;
   getInvoice(id: string): Promise<InvoiceDetailDTO | null>;
   invoicingSummary(): Promise<InvoicingSummary>;
+
+  // Module 4 — Budget de charges
+  listBudgets(): Promise<BudgetSummaryDTO[]>;
+  getBudget(id: string): Promise<BudgetDetailDTO | null>;
 }
 
 export type DataSource = "demo" | "supabase";

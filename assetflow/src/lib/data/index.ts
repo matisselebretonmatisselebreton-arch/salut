@@ -25,6 +25,10 @@ export type {
   InvoiceLineDTO,
   PaymentDTO,
   InvoicingSummary,
+  BudgetSummaryDTO,
+  BudgetDetailDTO,
+  BudgetLineDTO,
+  ExpenseDTO,
 } from "./types";
 
 let cached: AssetRepository | null = null;

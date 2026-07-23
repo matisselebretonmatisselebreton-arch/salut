@@ -1,0 +1,49 @@
+{
+  "list": {
+    "title": "Budgets",
+    "empty": "No budget yet."
+  },
+  "category": {
+    "maintenance": "Maintenance",
+    "property_tax": "Property tax",
+    "insurance": "Insurance",
+    "management_fees": "Management fees",
+    "security": "Security",
+    "energy": "Energy",
+    "utilities": "Utilities",
+    "other": "Other"
+  },
+  "nature": {
+    "capex": "CAPEX",
+    "opex": "OPEX"
+  },
+  "status": {
+    "submitted": "Submitted",
+    "approved": "Approved",
+    "paid": "Paid",
+    "rejected": "Rejected"
+  },
+  "fields": {
+    "fiscalYear": "Fiscal year",
+    "asset": "Asset",
+    "budgeted": "Budget",
+    "actual": "Actual",
+    "variance": "Variance",
+    "variancePct": "Variance %",
+    "overruns": "Overruns"
+  },
+  "detail": {
+    "bva": "Budget vs Actual",
+    "poste": "Item",
+    "expenses": "Expenses & supplier invoices",
+    "total": "Total",
+    "supplier": "Supplier",
+    "label": "Description",
+    "amount": "Amount",
+    "nature": "Nature",
+    "status": "Status",
+    "date": "Date",
+    "line": "Item",
+    "overrunAlert": "Alert threshold exceeded"
+  }
+}

@@ -7,6 +7,7 @@
  */
 
 import {
+  computeBudgetVsActual,
   computeLeaseDeadlines,
   computeOccupancy,
   invoiceTotals,
@@ -19,7 +20,10 @@ import {
 import type { AssetRepository } from "./repository";
 import type {
   AssetDTO,
+  BudgetDetailDTO,
+  BudgetSummaryDTO,
   DeadlineDTO,
+  ExpenseDTO,
   InvoiceDetailDTO,
   InvoiceSummaryDTO,
   InvoicingSummary,
@@ -32,11 +36,15 @@ import type {
 } from "./types";
 import {
   demoAssets,
+  demoBudgets,
+  demoBudgetLines,
+  demoExpenses,
   demoLeases,
   demoPortfolios,
   demoTenants,
   demoUnits,
   type RawAsset,
+  type RawBudget,
   type RawLease,
 } from "./demo-seed";
 import { buildDemoInvoices, type DemoInvoice } from "./demo-invoices";
@@ -223,6 +231,75 @@ function toInvoiceDetail(inv: DemoInvoice): InvoiceDetailDTO {
   };
 }
 
+// --- Module 4 : Budget vs Réalisé --------------------------------------------
+
+// Le réalisé ne compte que les dépenses engagées (approuvées ou payées).
+const COUNTED_STATUSES = new Set(["approved", "paid"]);
+
+function actualForLine(lineId: string): number {
+  return demoExpenses
+    .filter((e) => e.budgetLineId === lineId && COUNTED_STATUSES.has(e.status))
+    .reduce((s, e) => s + e.amount, 0);
+}
+
+function budgetLineLabel(lineId: string): string {
+  return demoBudgetLines.find((l) => l.id === lineId)?.label ?? "—";
+}
+
+function buildBudgetDetail(budget: RawBudget): BudgetDetailDTO {
+  const rawLines = demoBudgetLines.filter((l) => l.budgetId === budget.id);
+  const bva = computeBudgetVsActual(
+    rawLines.map((l) => ({
+      category: l.category,
+      label: l.label,
+      budgeted: l.budgetedAmount,
+      actual: actualForLine(l.id),
+      thresholdPct: l.alertThresholdPct,
+    })),
+  );
+
+  const lines = bva.lines.map((r, i) => ({
+    id: rawLines[i].id,
+    category: r.category,
+    label: r.label,
+    budgeted: r.budgeted,
+    actual: r.actual,
+    thresholdPct: r.thresholdPct ?? 10,
+    variance: r.variance,
+    variancePct: r.variancePct,
+    isOverrun: r.isOverrun,
+  }));
+
+  const expenses: ExpenseDTO[] = demoExpenses
+    .filter((e) => e.assetId === budget.assetId)
+    .map((e) => ({
+      id: e.id,
+      supplier: e.supplier,
+      label: e.label,
+      amount: e.amount,
+      nature: e.nature,
+      status: e.status,
+      incurredOn: e.incurredOn,
+      budgetLineLabel: e.budgetLineId ? budgetLineLabel(e.budgetLineId) : null,
+    }))
+    .sort((a, b) => b.incurredOn.localeCompare(a.incurredOn));
+
+  return {
+    id: budget.id,
+    assetId: budget.assetId,
+    assetName: assetName(budget.assetId),
+    fiscalYear: budget.fiscalYear,
+    label: budget.label,
+    totalBudgeted: bva.totals.budgeted,
+    totalActual: bva.totals.actual,
+    variance: bva.totals.variance,
+    variancePct: bva.totals.variancePct,
+    overrunCount: bva.totals.overrunCount,
+    lines,
+    expenses,
+  };
+}
+
 export class DemoRepository implements AssetRepository {
   async listPortfolios(): Promise<PortfolioDTO[]> {
     return demoPortfolios.map((p) => toPortfolioDTO(p.id));
@@ -317,5 +394,21 @@ export class DemoRepository implements AssetRepository {
         (i) => i.paymentStatus === "pending" || i.paymentStatus === "partial",
       ).length,
     };
+  }
+
+  async listBudgets(): Promise<BudgetSummaryDTO[]> {
+    return demoBudgets.map((b) => {
+      const detail = buildBudgetDetail(b);
+      // Résumé sans les collections détaillées.
+      const { lines, expenses, ...summary } = detail;
+      void lines;
+      void expenses;
+      return summary;
+    });
+  }
+
+  async getBudget(id: string): Promise<BudgetDetailDTO | null> {
+    const budget = demoBudgets.find((b) => b.id === id);
+    return budget ? buildBudgetDetail(budget) : null;
   }
 }

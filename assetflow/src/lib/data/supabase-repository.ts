@@ -9,6 +9,7 @@
 
 import "server-only";
 import {
+  computeBudgetVsActual,
   computeLeaseDeadlines,
   computeOccupancy,
   monthlyEquivalent,
@@ -23,7 +24,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AssetRepository } from "./repository";
 import type {
   AssetDTO,
+  BudgetDetailDTO,
+  BudgetSummaryDTO,
   DeadlineDTO,
+  ExpenseDTO,
   InvoiceDetailDTO,
   InvoiceSummaryDTO,
   InvoicingSummary,
@@ -432,4 +436,119 @@ export class SupabaseRepository implements AssetRepository {
       ).length,
     };
   }
+
+  async listBudgets(): Promise<BudgetSummaryDTO[]> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("budgets")
+      .select(
+        `id, fiscal_year, label, asset_id, asset:assets ( name ),
+         budget_lines ( id, category, label, budgeted_amount, alert_threshold_pct )`,
+      )
+      .is("archived_at", null)
+      .order("fiscal_year", { ascending: false });
+    if (error) throw error;
+
+    const result: BudgetSummaryDTO[] = [];
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    for (const b of (data ?? []) as any[]) {
+      const detail = await this.assembleBudget(supabase, b);
+      const { lines, expenses, ...summary } = detail;
+      void lines;
+      void expenses;
+      result.push(summary);
+    }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    return result;
+  }
+
+  async getBudget(id: string): Promise<BudgetDetailDTO | null> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("budgets")
+      .select(
+        `id, fiscal_year, label, asset_id, asset:assets ( name ),
+         budget_lines ( id, category, label, budgeted_amount, alert_threshold_pct )`,
+      )
+      .eq("id", id)
+      .is("archived_at", null)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.assembleBudget(supabase, data) : null;
+  }
+
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  private async assembleBudget(
+    supabase: SupabaseClient,
+    b: any,
+  ): Promise<BudgetDetailDTO> {
+    // Dépenses de l'actif (le réalisé ne compte que approuvé/payé).
+    const { data: expensesData, error } = await supabase
+      .from("expenses")
+      .select("id, supplier, label, amount, nature, status, incurred_on, budget_line_id")
+      .eq("asset_id", b.asset_id)
+      .is("archived_at", null)
+      .order("incurred_on", { ascending: false });
+    if (error) throw error;
+
+    const expenses = (expensesData ?? []) as any[];
+    const rawLines = (b.budget_lines ?? []) as any[];
+    const lineLabel = new Map<string, string>(
+      rawLines.map((l) => [l.id, l.label]),
+    );
+
+    const actualForLine = (lineId: string): number =>
+      expenses
+        .filter((e) => e.budget_line_id === lineId && (e.status === "approved" || e.status === "paid"))
+        .reduce((s, e) => s + Number(e.amount), 0);
+
+    const bva = computeBudgetVsActual(
+      rawLines.map((l) => ({
+        category: l.category,
+        label: l.label,
+        budgeted: Number(l.budgeted_amount),
+        actual: actualForLine(l.id),
+        thresholdPct: Number(l.alert_threshold_pct),
+      })),
+    );
+
+    const lines = bva.lines.map((r, i) => ({
+      id: rawLines[i].id,
+      category: r.category,
+      label: r.label,
+      budgeted: r.budgeted,
+      actual: r.actual,
+      thresholdPct: r.thresholdPct ?? 10,
+      variance: r.variance,
+      variancePct: r.variancePct,
+      isOverrun: r.isOverrun,
+    }));
+
+    const expenseDTOs: ExpenseDTO[] = expenses.map((e) => ({
+      id: e.id,
+      supplier: e.supplier,
+      label: e.label,
+      amount: Number(e.amount),
+      nature: e.nature,
+      status: e.status,
+      incurredOn: e.incurred_on,
+      budgetLineLabel: e.budget_line_id ? lineLabel.get(e.budget_line_id) ?? null : null,
+    }));
+
+    return {
+      id: b.id,
+      assetId: b.asset_id,
+      assetName: b.asset?.name ?? "—",
+      fiscalYear: b.fiscal_year,
+      label: b.label,
+      totalBudgeted: bva.totals.budgeted,
+      totalActual: bva.totals.actual,
+      variance: bva.totals.variance,
+      variancePct: bva.totals.variancePct,
+      overrunCount: bva.totals.overrunCount,
+      lines,
+      expenses: expenseDTOs,
+    };
+  }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 }

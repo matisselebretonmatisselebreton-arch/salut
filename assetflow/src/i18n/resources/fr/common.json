@@ -32,6 +32,7 @@
     "loading": "Chargement…",
     "empty": "Aucune donnée",
     "value": "Valeur",
-    "notProvided": "Non renseigné"
+    "notProvided": "Non renseigné",
+    "comingSoon": "Disponible dans un prochain module."
   }
 }

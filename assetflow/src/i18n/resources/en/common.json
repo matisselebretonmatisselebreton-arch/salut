@@ -32,6 +32,7 @@
     "loading": "Loading…",
     "empty": "No data",
     "value": "Value",
-    "notProvided": "Not provided"
+    "notProvided": "Not provided",
+    "comingSoon": "Available in an upcoming module."
   }
 }

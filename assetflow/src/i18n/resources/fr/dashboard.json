@@ -1,0 +1,19 @@
+{
+  "title": "Tableau de bord",
+  "tiles": {
+    "patrimonyValue": "Valeur du patrimoine",
+    "assets": "Actifs",
+    "occupancy": "Taux d'occupation",
+    "annualRent": "Revenu locatif annualisé",
+    "outstanding": "Reste à encaisser",
+    "overdue": "Quittances en retard",
+    "upcomingDeadlines": "Échéances < 90 j",
+    "budgetOverruns": "Postes en dépassement"
+  },
+  "sections": {
+    "nextDeadlines": "Prochaines échéances",
+    "overdueInvoices": "Impayés à traiter",
+    "portfolios": "Portefeuilles",
+    "none": "Rien à signaler."
+  }
+}

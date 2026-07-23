@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Point d'entrée : on ouvre directement sur le référentiel patrimoine (Module 1).
-// Le dashboard (Module 7) prendra cette place ultérieurement.
+// Point d'entrée : le tableau de bord de pilotage (Module 7).
 export default function Home() {
-  redirect("/portfolios");
+  redirect("/dashboard");
 }

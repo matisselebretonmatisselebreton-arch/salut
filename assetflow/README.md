@@ -18,6 +18,7 @@ offices). Bilingue FR/EN, multi-tenant, web (puis mobile).
 | **Module 3** | Facturation & encaissement — Session A (quittances, suivi) | ✅ Fait |
 | **Module 4** | Budget de charges & exploitation (BvA + dépenses) | ✅ Fait |
 | — | **MVP Phase 1 complet** (Modules 1→4) | ✅ |
+| **Module 7** | Dashboard de pilotage (accueil, KPI consolidés) — simplifié | ✅ Fait |
 | Module 3 | Session B : reddition de charges + relances automatisées | ⏳ |
 
 ## Stack

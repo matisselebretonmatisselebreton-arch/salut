@@ -15,6 +15,9 @@ export async function AppHeader() {
             {t("app.name")}
           </Link>
           <nav className="flex gap-4 text-sm text-muted">
+            <Link href="/dashboard" className="hover:text-foreground">
+              {t("nav.dashboard")}
+            </Link>
             <Link href="/portfolios" className="hover:text-foreground">
               {t("nav.portfolios")}
             </Link>

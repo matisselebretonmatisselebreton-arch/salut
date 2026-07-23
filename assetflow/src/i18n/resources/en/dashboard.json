@@ -1,0 +1,19 @@
+{
+  "title": "Dashboard",
+  "tiles": {
+    "patrimonyValue": "Portfolio value",
+    "assets": "Assets",
+    "occupancy": "Occupancy rate",
+    "annualRent": "Annualized rental income",
+    "outstanding": "Outstanding",
+    "overdue": "Overdue receipts",
+    "upcomingDeadlines": "Deadlines < 90 d",
+    "budgetOverruns": "Budget overruns"
+  },
+  "sections": {
+    "nextDeadlines": "Upcoming deadlines",
+    "overdueInvoices": "Unpaid to handle",
+    "portfolios": "Portfolios",
+    "none": "Nothing to report."
+  }
+}

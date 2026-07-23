@@ -65,9 +65,15 @@ function nextRevisionDate(revisionMonth: number, from: Date): string {
 }
 
 function addMonths(dateISO: string, months: number): string {
+  // Calcul manuel (pas de setUTCMonth) pour éviter le débordement de fin de
+  // mois : 31 mai − 3 mois doit donner 28 février, pas le 3 mars.
   const d = new Date(`${dateISO}T00:00:00Z`);
-  d.setUTCMonth(d.getUTCMonth() + months); // months peut être négatif (préavis)
-  return toISO(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+  const totalMonths = d.getUTCFullYear() * 12 + d.getUTCMonth() + months;
+  const year = Math.floor(totalMonths / 12);
+  const month0 = ((totalMonths % 12) + 12) % 12;
+  const lastDay = new Date(Date.UTC(year, month0 + 1, 0)).getUTCDate();
+  const day = Math.min(d.getUTCDate(), lastDay);
+  return toISO(year, month0 + 1, day);
 }
 
 /**

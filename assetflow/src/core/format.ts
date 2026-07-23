@@ -13,17 +13,23 @@ const LOCALE_TAG: Record<Locale, string> = {
   en: "en-GB",
 };
 
-/** Formate un montant monétaire. `null`/`undefined` → tiret cadratin. */
+/**
+ * Formate un montant monétaire. `null`/`undefined` → tiret cadratin.
+ * Montant rond → sans décimales (lisibilité des grandes valeurs patrimoniales) ;
+ * montant avec centimes → 2 décimales (précision financière, ex. loyer révisé).
+ */
 export function formatMoney(
   amount: number | null | undefined,
   locale: Locale,
   currency = "EUR",
 ): string {
   if (amount == null || !Number.isFinite(amount)) return "—";
+  const hasCents = Math.abs(amount - Math.round(amount)) > 1e-9;
   return new Intl.NumberFormat(LOCALE_TAG[locale], {
     style: "currency",
     currency,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: hasCents ? 2 : 0,
+    maximumFractionDigits: hasCents ? 2 : 0,
   }).format(amount);
 }
 

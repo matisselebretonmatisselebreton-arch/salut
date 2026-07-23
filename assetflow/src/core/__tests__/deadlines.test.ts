@@ -67,6 +67,16 @@ describe("computeLeaseDeadlines", () => {
     expect(d).toEqual([]);
   });
 
+  it("borne le préavis au dernier jour du mois (31 mai − 3 mois = 28 février)", () => {
+    const d = computeLeaseDeadlines(
+      { status: "active", startDate: "2024-06-01", endDate: "2027-05-31", noticePeriodMonths: 3, revisionMonth: null },
+      FROM,
+      12,
+    );
+    const notice = d.find((x) => x.type === "notice");
+    expect(notice?.date).toBe("2027-02-28"); // pas 2027-03-03 (débordement)
+  });
+
   it("trie les échéances par date croissante", () => {
     const d = computeLeaseDeadlines(
       { status: "active", startDate: "2022-01-01", endDate: "2027-02-28", noticePeriodMonths: 3, revisionMonth: 1 },

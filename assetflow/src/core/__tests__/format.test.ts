@@ -15,6 +15,10 @@ describe("formatMoney", () => {
     expect(formatMoney(null, "fr")).toBe("—");
     expect(formatMoney(Number.NaN, "en")).toBe("—");
   });
+  it("affiche les centimes quand le montant en a (précision financière)", () => {
+    expect(norm(formatMoney(7253.41, "fr"))).toBe("7 253,41 €");
+    expect(norm(formatMoney(7253.41, "en"))).toBe("€7,253.41");
+  });
 });
 
 describe("formatArea", () => {

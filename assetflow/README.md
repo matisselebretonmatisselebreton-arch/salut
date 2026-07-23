@@ -125,11 +125,33 @@ npm run lint       # ESLint
 
 Par défaut (`ASSETFLOW_DATA_SOURCE` non défini et pas d'URL Supabase réelle),
 l'app tourne en **mode démo** : données en mémoire (`src/lib/data/demo-seed.ts`),
-aucune infra requise. `npm run dev` → http://localhost:3000 affiche directement
-le Module 1 peuplé.
+aucune infra requise, **aucune authentification** (badge « Mode démo » dans le
+header). `npm run dev` → http://localhost:3000.
 
-Pour brancher une vraie base :
-1. Copier `.env.example` → `.env.local`, renseigner l'URL + la clé anon Supabase.
-2. Appliquer `supabase/migrations/0001_init.sql` puis `supabase/seed.sql`.
-3. S'ajouter comme membre de l'organisation de démo (voir en-tête de `seed.sql`).
-4. `ASSETFLOW_DATA_SOURCE=supabase` → les écrans passent en requêtes réelles (RLS).
+## Brancher la vraie base (projet Supabase « assetflow »)
+
+Le projet est créé (gratuit) : ref `qbjzlvimnzuhajtzcbnr`, région `eu-west-3`.
+Dashboard : https://supabase.com/dashboard/project/qbjzlvimnzuhajtzcbnr
+
+1. **Migrations** — Dashboard > *SQL Editor* > coller et exécuter, dans l'ordre :
+   `supabase/migrations/0001_init.sql` → `0002_leases.sql` → `0003_invoicing.sql`
+   → `0004_budgets.sql`, puis `supabase/seed.sql` (données de démo).
+2. **Config locale** — copier `.env.example` → `.env.local` (les valeurs du
+   projet y sont déjà renseignées).
+3. **Compte** — `npm run dev` → http://localhost:3000 redirige vers `/login` ;
+   créer un compte (email + mot de passe).
+4. **Rattachement à l'organisation** — la RLS bloque tout tant que le compte
+   n'est membre d'aucune organisation. Dans le *SQL Editor* :
+   ```sql
+   insert into organization_members (organization_id, user_id, role)
+   select '00000000-0000-0000-0000-0000000000a1', id, 'org_admin'
+   from auth.users where email = 'TON_EMAIL';
+   ```
+5. Recharger l'app : données réelles, isolées par RLS, session authentifiée.
+
+## Authentification
+
+- **Middleware** (`src/middleware.ts`) : rafraîchit la session Supabase et
+  protège toutes les routes en mode Supabase ; passage direct en mode démo.
+- **/login** : connexion / création de compte (email + mot de passe).
+- **Header** : email de l'utilisateur + déconnexion (ou badge « Mode démo »).

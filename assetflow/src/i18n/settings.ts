@@ -18,6 +18,8 @@ import frBudget from "./resources/fr/budget.json";
 import enBudget from "./resources/en/budget.json";
 import frDashboard from "./resources/fr/dashboard.json";
 import enDashboard from "./resources/en/dashboard.json";
+import frAuth from "./resources/fr/auth.json";
+import enAuth from "./resources/en/auth.json";
 
 export const LOCALES: readonly Locale[] = ["fr", "en"] as const;
 export const DEFAULT_LOCALE: Locale = "fr";
@@ -33,6 +35,7 @@ export const NAMESPACES = [
   "invoice",
   "budget",
   "dashboard",
+  "auth",
 ] as const;
 export const DEFAULT_NAMESPACE = "common";
 
@@ -51,6 +54,7 @@ export const resources = {
     invoice: frInvoice,
     budget: frBudget,
     dashboard: frDashboard,
+    auth: frAuth,
   },
   en: {
     common: enCommon,
@@ -62,6 +66,7 @@ export const resources = {
     invoice: enInvoice,
     budget: enBudget,
     dashboard: enDashboard,
+    auth: enAuth,
   },
 } as const;
 

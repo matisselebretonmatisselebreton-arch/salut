@@ -1,0 +1,16 @@
+{
+  "list": {
+    "title": "Portfolios",
+    "new": "+ New portfolio",
+    "empty": "No portfolio yet.",
+    "kpi": {
+      "assets": "assets",
+      "totalValue": "Total value",
+      "occupancy": "Occupancy rate"
+    }
+  },
+  "detail": {
+    "assets": "Portfolio assets",
+    "newAsset": "+ New asset"
+  }
+}

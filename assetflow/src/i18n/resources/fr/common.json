@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "AssetFlow",
+    "tagline": "Du bail au cash-flow"
+  },
+  "nav": {
+    "portfolios": "Portefeuilles",
+    "assets": "Actifs",
+    "leases": "Baux",
+    "dashboard": "Tableau de bord"
+  },
+  "actions": {
+    "new": "Nouveau",
+    "edit": "Modifier",
+    "archive": "Archiver",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "back": "Retour",
+    "search": "Rechercher"
+  },
+  "status": {
+    "upToDate": "À jour",
+    "attention": "Attention",
+    "urgent": "Urgent"
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "empty": "Aucune donnée",
+    "value": "Valeur",
+    "notProvided": "Non renseigné"
+  }
+}

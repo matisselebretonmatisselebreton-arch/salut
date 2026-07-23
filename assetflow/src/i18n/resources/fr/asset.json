@@ -1,0 +1,38 @@
+{
+  "type": {
+    "office": "Bureau",
+    "retail": "Commerce",
+    "residential": "Résidentiel",
+    "logistics": "Logistique",
+    "mixed": "Mixte"
+  },
+  "tabs": {
+    "general": "Informations générales",
+    "units": "Lots",
+    "leases": "Baux",
+    "finances": "Finances",
+    "documents": "Documents",
+    "history": "Historique"
+  },
+  "fields": {
+    "address": "Adresse",
+    "surfaceUseful": "Surface utile",
+    "surfaceGla": "Surface GLA",
+    "acquisitionDate": "Date d'acquisition",
+    "acquisitionValue": "Valeur d'acquisition",
+    "netBookValue": "Valeur nette comptable",
+    "constructionYear": "Année de construction",
+    "epc": "DPE",
+    "certifications": "Certifications",
+    "occupancy": "Taux d'occupation"
+  },
+  "units": {
+    "reference": "Référence",
+    "floor": "Étage",
+    "surface": "Surface",
+    "occupied": "Occupé",
+    "vacant": "Vacant",
+    "count": "{{count}} lot",
+    "count_other": "{{count}} lots"
+  }
+}

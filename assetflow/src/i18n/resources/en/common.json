@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "AssetFlow",
+    "tagline": "From lease to cash-flow"
+  },
+  "nav": {
+    "portfolios": "Portfolios",
+    "assets": "Assets",
+    "leases": "Leases",
+    "dashboard": "Dashboard"
+  },
+  "actions": {
+    "new": "New",
+    "edit": "Edit",
+    "archive": "Archive",
+    "cancel": "Cancel",
+    "save": "Save",
+    "back": "Back",
+    "search": "Search"
+  },
+  "status": {
+    "upToDate": "Up to date",
+    "attention": "Attention",
+    "urgent": "Urgent"
+  },
+  "language": {
+    "label": "Language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "common": {
+    "loading": "Loading…",
+    "empty": "No data",
+    "value": "Value",
+    "notProvided": "Not provided"
+  }
+}

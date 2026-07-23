@@ -1,0 +1,33 @@
+import type { Locale } from "@/core";
+
+import frCommon from "./resources/fr/common.json";
+import enCommon from "./resources/en/common.json";
+import frPortfolio from "./resources/fr/portfolio.json";
+import enPortfolio from "./resources/en/portfolio.json";
+import frAsset from "./resources/fr/asset.json";
+import enAsset from "./resources/en/asset.json";
+
+export const LOCALES: readonly Locale[] = ["fr", "en"] as const;
+export const DEFAULT_LOCALE: Locale = "fr";
+export const LOCALE_COOKIE = "assetflow.locale";
+
+export const NAMESPACES = ["common", "portfolio", "asset"] as const;
+export const DEFAULT_NAMESPACE = "common";
+
+/**
+ * Toutes les ressources de traduction, regroupées.
+ * Ajouter un module = ajouter un namespace ici (jamais de texte en dur ailleurs).
+ */
+export const resources = {
+  fr: { common: frCommon, portfolio: frPortfolio, asset: frAsset },
+  en: { common: enCommon, portfolio: enPortfolio, asset: enAsset },
+} as const;
+
+/** Normalise une valeur arbitraire en locale supportée. */
+export function resolveLocale(value: string | undefined | null): Locale {
+  if (!value) return DEFAULT_LOCALE;
+  const short = value.slice(0, 2).toLowerCase();
+  return (LOCALES as readonly string[]).includes(short)
+    ? (short as Locale)
+    : DEFAULT_LOCALE;
+}

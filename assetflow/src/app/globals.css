@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens AssetFlow.
+ * Couleurs de statut cohérentes web + mobile (§5) :
+ *   vert = à jour · orange = attention · rouge = urgent/impayé.
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --primary: #1e40af;
+
+  --status-ok: #16a34a;
+  --status-warn: #f59e0b;
+  --status-urgent: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1120;
+    --foreground: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #1e293b;
+    --card: #111a2e;
+    --primary: #3b82f6;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-status-ok: var(--status-ok);
+  --color-status-warn: var(--status-warn);
+  --color-status-urgent: var(--status-urgent);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}

@@ -1,0 +1,16 @@
+{
+  "list": {
+    "title": "Portefeuilles",
+    "new": "+ Nouveau portefeuille",
+    "empty": "Aucun portefeuille pour le moment.",
+    "kpi": {
+      "assets": "actifs",
+      "totalValue": "Valeur totale",
+      "occupancy": "Taux d'occupation"
+    }
+  },
+  "detail": {
+    "assets": "Actifs du portefeuille",
+    "newAsset": "+ Nouvel actif"
+  }
+}

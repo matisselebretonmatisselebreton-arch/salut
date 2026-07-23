@@ -1,0 +1,38 @@
+{
+  "type": {
+    "office": "Office",
+    "retail": "Retail",
+    "residential": "Residential",
+    "logistics": "Logistics",
+    "mixed": "Mixed"
+  },
+  "tabs": {
+    "general": "General information",
+    "units": "Units",
+    "leases": "Leases",
+    "finances": "Finances",
+    "documents": "Documents",
+    "history": "History"
+  },
+  "fields": {
+    "address": "Address",
+    "surfaceUseful": "Usable area",
+    "surfaceGla": "GLA",
+    "acquisitionDate": "Acquisition date",
+    "acquisitionValue": "Acquisition value",
+    "netBookValue": "Net book value",
+    "constructionYear": "Construction year",
+    "epc": "EPC",
+    "certifications": "Certifications",
+    "occupancy": "Occupancy rate"
+  },
+  "units": {
+    "reference": "Reference",
+    "floor": "Floor",
+    "surface": "Area",
+    "occupied": "Occupied",
+    "vacant": "Vacant",
+    "count": "{{count}} unit",
+    "count_other": "{{count}} units"
+  }
+}

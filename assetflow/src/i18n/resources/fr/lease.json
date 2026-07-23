@@ -1,0 +1,82 @@
+{
+  "type": {
+    "residential_bare": "Habitation nue",
+    "residential_furnished": "Habitation meublée",
+    "commercial_369": "Commercial 3/6/9",
+    "professional": "Professionnel",
+    "derogatory": "Dérogatoire",
+    "civil": "Civil"
+  },
+  "status": {
+    "draft": "Brouillon",
+    "active": "Actif",
+    "terminated": "Résilié",
+    "expired": "Expiré"
+  },
+  "index": {
+    "irl": "IRL",
+    "ilc": "ILC",
+    "ilat": "ILAT",
+    "none": "Aucune"
+  },
+  "charge": {
+    "base_rent": "Loyer de base",
+    "charges_provision": "Provisions de charges",
+    "other": "Autre"
+  },
+  "periodicity": {
+    "monthly": "mensuel",
+    "quarterly": "trimestriel",
+    "yearly": "annuel"
+  },
+  "list": {
+    "title": "Baux",
+    "new": "+ Nouveau bail",
+    "empty": "Aucun bail pour le moment."
+  },
+  "fields": {
+    "reference": "Référence",
+    "tenant": "Locataire",
+    "asset": "Actif",
+    "type": "Type de bail",
+    "status": "Statut",
+    "period": "Période",
+    "monthlyTotal": "Total mensuel",
+    "units": "Lots",
+    "deposit": "Dépôt de garantie",
+    "notice": "Préavis (mois)",
+    "indexation": "Indexation",
+    "revisionMonth": "Mois de révision",
+    "baseIndex": "Indice de référence"
+  },
+  "detail": {
+    "general": "Conditions générales",
+    "charges": "Loyer & charges",
+    "units": "Lots couverts",
+    "indexation": "Indexation"
+  },
+  "wizard": {
+    "title": "Nouveau bail",
+    "step": "Étape {{current}} / {{total}}",
+    "steps": {
+      "type": "Type de bail",
+      "parties": "Parties",
+      "units": "Lot(s)",
+      "financial": "Conditions financières",
+      "clauses": "Clauses",
+      "documents": "Documents"
+    },
+    "chooseType": "Choisissez le type de bail",
+    "chooseTenant": "Sélectionnez le locataire",
+    "chooseAsset": "Sélectionnez l'actif",
+    "chooseUnits": "Sélectionnez le(s) lot(s) couvert(s)",
+    "clausesPlaceholder": "Clauses particulières (facultatif)",
+    "documentsHint": "Le dépôt et la signature des documents seront disponibles une fois le bail créé.",
+    "next": "Suivant",
+    "prev": "Précédent",
+    "submit": "Créer le bail",
+    "summary": "Récapitulatif",
+    "created": "Bail créé (mode démo : non persistant).",
+    "demoNotice": "En mode démo, la création n'est pas enregistrée durablement."
+  }
+}

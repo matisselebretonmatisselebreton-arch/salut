@@ -1,0 +1,21 @@
+{
+  "list": {
+    "title": "Tenants",
+    "new": "+ New tenant",
+    "empty": "No tenant yet."
+  },
+  "kind": {
+    "individual": "Individual",
+    "company": "Company"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "kind": "Type",
+    "activeLeases": "Active leases"
+  },
+  "detail": {
+    "leases": "Lease history",
+    "noLeases": "No lease attached."
+  }
+}

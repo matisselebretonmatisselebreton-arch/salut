@@ -1,25 +1,72 @@
 /**
  * Implémentation en mémoire du dépôt (mode `demo`).
- * Assemble les DTOs à partir du seed et calcule les KPI via la couche `core`
- * (jamais de calcul inline — cohérent avec le futur mode Supabase).
+ * Assemble les DTOs à partir du seed et calcule les KPI via la couche `core`.
+ *
+ * Module 2 : l'occupation des lots est DÉRIVÉE des baux actifs
+ * (occupiedUnitIds) — plus aucun booléen d'occupation saisi à la main.
  */
 
-import { computeOccupancy } from "@/core";
+import {
+  computeOccupancy,
+  monthlyEquivalent,
+  occupiedUnitIds,
+  type LeaseWithUnits,
+} from "@/core";
 import type { AssetRepository } from "./repository";
-import type { AssetDTO, PortfolioDTO, UnitDTO } from "./types";
-import { demoAssets, demoPortfolios, demoUnits, type RawAsset } from "./demo-seed";
+import type {
+  AssetDTO,
+  LeaseDetailDTO,
+  LeaseSummaryDTO,
+  PortfolioDTO,
+  TenantDetailDTO,
+  TenantDTO,
+  UnitDTO,
+} from "./types";
+import {
+  demoAssets,
+  demoLeases,
+  demoPortfolios,
+  demoTenants,
+  demoUnits,
+  type RawAsset,
+  type RawLease,
+} from "./demo-seed";
+
+// Ensemble des lots occupés aujourd'hui, dérivé une fois des baux actifs.
+const leaseCoverage: LeaseWithUnits[] = demoLeases.map((l) => ({
+  status: l.status,
+  startDate: l.startDate,
+  endDate: l.endDate,
+  unitIds: l.unitIds,
+}));
+const occupiedIds = occupiedUnitIds(leaseCoverage);
 
 function unitsOf(assetId: string): UnitDTO[] {
   return demoUnits
     .filter((u) => u.assetId === assetId)
-    .map(({ id, reference, floor, surface, isRentable, isOccupied }) => ({
+    .map(({ id, reference, floor, surface, isRentable }) => ({
       id,
       reference,
       floor,
       surface,
       isRentable,
-      isOccupied,
+      isOccupied: occupiedIds.has(id), // dérivé des baux
     }));
+}
+
+function assetName(assetId: string): string {
+  return demoAssets.find((a) => a.id === assetId)?.name ?? "—";
+}
+
+function tenantName(tenantId: string): string {
+  return demoTenants.find((t) => t.id === tenantId)?.displayName ?? "—";
+}
+
+function monthlyTotal(lease: RawLease): number {
+  return lease.charges.reduce(
+    (sum, c) => sum + monthlyEquivalent(c.amount, c.periodicity),
+    0,
+  );
 }
 
 function toAssetDTO(raw: RawAsset): AssetDTO {
@@ -50,18 +97,67 @@ function toAssetDTO(raw: RawAsset): AssetDTO {
 function toPortfolioDTO(id: string): PortfolioDTO {
   const p = demoPortfolios.find((x) => x.id === id)!;
   const assets = demoAssets.filter((a) => a.portfolioId === id).map(toAssetDTO);
-
-  // Occupation moyenne pondérée par surface = occupation de l'union des lots.
   const allUnits = assets.flatMap((a) => a.units);
-  const occ = computeOccupancy(allUnits);
-
   return {
     id: p.id,
     name: p.name,
     description: p.description,
     assetCount: assets.length,
     totalValue: assets.reduce((sum, a) => sum + (a.netBookValue ?? 0), 0),
-    occupancyByArea: occ.byArea,
+    occupancyByArea: computeOccupancy(allUnits).byArea,
+  };
+}
+
+function toLeaseSummary(lease: RawLease): LeaseSummaryDTO {
+  return {
+    id: lease.id,
+    reference: lease.reference,
+    leaseType: lease.leaseType,
+    status: lease.status,
+    assetId: lease.assetId,
+    assetName: assetName(lease.assetId),
+    tenantId: lease.tenantId,
+    tenantName: tenantName(lease.tenantId),
+    startDate: lease.startDate,
+    endDate: lease.endDate,
+    monthlyTotal: monthlyTotal(lease),
+    unitCount: lease.unitIds.length,
+  };
+}
+
+function toLeaseDetail(lease: RawLease): LeaseDetailDTO {
+  return {
+    ...toLeaseSummary(lease),
+    noticePeriodMonths: lease.noticePeriodMonths,
+    depositAmount: lease.depositAmount,
+    indexType: lease.indexType,
+    baseIndexValue: lease.baseIndexValue,
+    baseIndexPeriod: lease.baseIndexPeriod,
+    revisionMonth: lease.revisionMonth,
+    units: lease.unitIds.map((uid) => {
+      const u = demoUnits.find((x) => x.id === uid);
+      return { id: uid, reference: u?.reference ?? "—" };
+    }),
+    charges: lease.charges.map((c) => ({
+      chargeType: c.chargeType,
+      label: c.label,
+      amount: c.amount,
+      periodicity: c.periodicity,
+    })),
+  };
+}
+
+function toTenantDTO(id: string): TenantDTO {
+  const t = demoTenants.find((x) => x.id === id)!;
+  const activeLeaseCount = demoLeases.filter(
+    (l) => l.tenantId === id && l.status === "active",
+  ).length;
+  return {
+    id: t.id,
+    kind: t.kind,
+    displayName: t.displayName,
+    email: t.email,
+    activeLeaseCount,
   };
 }
 
@@ -83,5 +179,30 @@ export class DemoRepository implements AssetRepository {
   async getAsset(id: string): Promise<AssetDTO | null> {
     const raw = demoAssets.find((a) => a.id === id);
     return raw ? toAssetDTO(raw) : null;
+  }
+
+  async listTenants(): Promise<TenantDTO[]> {
+    return demoTenants.map((t) => toTenantDTO(t.id));
+  }
+
+  async getTenant(id: string): Promise<TenantDetailDTO | null> {
+    if (!demoTenants.some((t) => t.id === id)) return null;
+    const leases = demoLeases
+      .filter((l) => l.tenantId === id)
+      .map(toLeaseSummary);
+    return { ...toTenantDTO(id), leases };
+  }
+
+  async listLeases(): Promise<LeaseSummaryDTO[]> {
+    return demoLeases.map(toLeaseSummary);
+  }
+
+  async getLease(id: string): Promise<LeaseDetailDTO | null> {
+    const raw = demoLeases.find((l) => l.id === id);
+    return raw ? toLeaseDetail(raw) : null;
+  }
+
+  async listLeasesByAsset(assetId: string): Promise<LeaseSummaryDTO[]> {
+    return demoLeases.filter((l) => l.assetId === assetId).map(toLeaseSummary);
   }
 }

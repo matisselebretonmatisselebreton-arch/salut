@@ -18,6 +18,12 @@ export async function AppHeader() {
             <Link href="/portfolios" className="hover:text-foreground">
               {t("nav.portfolios")}
             </Link>
+            <Link href="/leases" className="hover:text-foreground">
+              {t("nav.leases")}
+            </Link>
+            <Link href="/tenants" className="hover:text-foreground">
+              {t("nav.tenants")}
+            </Link>
           </nav>
         </div>
         <LanguageSwitcher locale={locale} />

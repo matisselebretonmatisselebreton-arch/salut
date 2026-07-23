@@ -9,7 +9,17 @@ import { DemoRepository } from "./demo-repository";
 import { SupabaseRepository } from "./supabase-repository";
 
 export type { AssetRepository } from "./repository";
-export type { AssetDTO, PortfolioDTO, UnitDTO } from "./types";
+export type {
+  AssetDTO,
+  PortfolioDTO,
+  UnitDTO,
+  TenantDTO,
+  TenantDetailDTO,
+  LeaseSummaryDTO,
+  LeaseDetailDTO,
+  LeaseChargeDTO,
+  LeaseUnitRef,
+} from "./types";
 
 let cached: AssetRepository | null = null;
 

@@ -9,13 +9,29 @@
  * qu'aucune URL Supabase n'est fournie.
  */
 
-import type { AssetDTO, PortfolioDTO } from "./types";
+import type {
+  AssetDTO,
+  LeaseDetailDTO,
+  LeaseSummaryDTO,
+  PortfolioDTO,
+  TenantDetailDTO,
+  TenantDTO,
+} from "./types";
 
 export interface AssetRepository {
+  // Module 1 — Référentiel patrimoine
   listPortfolios(): Promise<PortfolioDTO[]>;
   getPortfolio(id: string): Promise<PortfolioDTO | null>;
   listAssetsByPortfolio(portfolioId: string): Promise<AssetDTO[]>;
   getAsset(id: string): Promise<AssetDTO | null>;
+
+  // Module 2 — Baux & locataires
+  listTenants(): Promise<TenantDTO[]>;
+  getTenant(id: string): Promise<TenantDetailDTO | null>;
+  listLeases(): Promise<LeaseSummaryDTO[]>;
+  getLease(id: string): Promise<LeaseDetailDTO | null>;
+  /** Baux couvrant un actif (onglet Baux de la fiche actif). */
+  listLeasesByAsset(assetId: string): Promise<LeaseSummaryDTO[]>;
 }
 
 export type DataSource = "demo" | "supabase";

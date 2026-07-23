@@ -1,0 +1,21 @@
+{
+  "list": {
+    "title": "Locataires",
+    "new": "+ Nouveau locataire",
+    "empty": "Aucun locataire pour le moment."
+  },
+  "kind": {
+    "individual": "Personne physique",
+    "company": "Personne morale"
+  },
+  "fields": {
+    "name": "Nom",
+    "email": "Email",
+    "kind": "Type",
+    "activeLeases": "Baux actifs"
+  },
+  "detail": {
+    "leases": "Historique des baux",
+    "noLeases": "Aucun bail rattaché."
+  }
+}

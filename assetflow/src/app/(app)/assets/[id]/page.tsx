@@ -5,6 +5,7 @@ import { getRepository } from "@/lib/data";
 import { getRequestLocale, getT } from "@/i18n/server";
 import { OccupancyBadge } from "@/components/OccupancyBadge";
 import { Tabs, type TabItem } from "@/components/Tabs";
+import { LeaseTable } from "@/components/LeaseTable";
 import type { AssetDTO } from "@/lib/data";
 import type { Locale } from "@/core";
 
@@ -19,17 +20,27 @@ export default async function AssetDetailPage({
   const locale = await getRequestLocale();
   const t = await getT(locale);
 
-  const asset = await getRepository().getAsset(id);
+  const repo = getRepository();
+  const asset = await repo.getAsset(id);
   if (!asset) notFound();
+
+  const leases = await repo.listLeasesByAsset(id);
 
   const comingSoon = (
     <p className="text-muted">{t("common.comingSoon")}</p>
   );
 
+  const leasesTab =
+    leases.length === 0 ? (
+      <p className="text-muted">{t("lease:list.empty")}</p>
+    ) : (
+      <LeaseTable leases={leases} locale={locale} hide={["asset"]} />
+    );
+
   const items: TabItem[] = [
     { key: "general", label: t("asset:tabs.general"), content: <GeneralTab asset={asset} locale={locale} t={t} /> },
     { key: "units", label: t("asset:tabs.units"), content: <UnitsTab asset={asset} locale={locale} t={t} /> },
-    { key: "leases", label: t("asset:tabs.leases"), content: comingSoon, disabled: true },
+    { key: "leases", label: t("asset:tabs.leases"), content: leasesTab },
     { key: "finances", label: t("asset:tabs.finances"), content: comingSoon, disabled: true },
     { key: "documents", label: t("asset:tabs.documents"), content: comingSoon, disabled: true },
     { key: "history", label: t("asset:tabs.history"), content: comingSoon, disabled: true },

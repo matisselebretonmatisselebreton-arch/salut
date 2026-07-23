@@ -1,0 +1,82 @@
+{
+  "type": {
+    "residential_bare": "Unfurnished residential",
+    "residential_furnished": "Furnished residential",
+    "commercial_369": "Commercial 3/6/9",
+    "professional": "Professional",
+    "derogatory": "Short-term",
+    "civil": "Civil"
+  },
+  "status": {
+    "draft": "Draft",
+    "active": "Active",
+    "terminated": "Terminated",
+    "expired": "Expired"
+  },
+  "index": {
+    "irl": "IRL",
+    "ilc": "ILC",
+    "ilat": "ILAT",
+    "none": "None"
+  },
+  "charge": {
+    "base_rent": "Base rent",
+    "charges_provision": "Charges provision",
+    "other": "Other"
+  },
+  "periodicity": {
+    "monthly": "monthly",
+    "quarterly": "quarterly",
+    "yearly": "yearly"
+  },
+  "list": {
+    "title": "Leases",
+    "new": "+ New lease",
+    "empty": "No lease yet."
+  },
+  "fields": {
+    "reference": "Reference",
+    "tenant": "Tenant",
+    "asset": "Asset",
+    "type": "Lease type",
+    "status": "Status",
+    "period": "Period",
+    "monthlyTotal": "Monthly total",
+    "units": "Units",
+    "deposit": "Security deposit",
+    "notice": "Notice (months)",
+    "indexation": "Indexation",
+    "revisionMonth": "Revision month",
+    "baseIndex": "Base index"
+  },
+  "detail": {
+    "general": "General terms",
+    "charges": "Rent & charges",
+    "units": "Covered units",
+    "indexation": "Indexation"
+  },
+  "wizard": {
+    "title": "New lease",
+    "step": "Step {{current}} / {{total}}",
+    "steps": {
+      "type": "Lease type",
+      "parties": "Parties",
+      "units": "Unit(s)",
+      "financial": "Financial terms",
+      "clauses": "Clauses",
+      "documents": "Documents"
+    },
+    "chooseType": "Choose the lease type",
+    "chooseTenant": "Select the tenant",
+    "chooseAsset": "Select the asset",
+    "chooseUnits": "Select the covered unit(s)",
+    "clausesPlaceholder": "Specific clauses (optional)",
+    "documentsHint": "Document upload and signing will be available once the lease is created.",
+    "next": "Next",
+    "prev": "Back",
+    "submit": "Create lease",
+    "summary": "Summary",
+    "created": "Lease created (demo mode: not persisted).",
+    "demoNotice": "In demo mode, creation is not durably saved."
+  }
+}

@@ -5,3 +5,4 @@
 export * from "./types";
 export * from "./occupancy";
 export * from "./format";
+export * from "./lease";

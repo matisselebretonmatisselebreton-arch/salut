@@ -6,12 +6,22 @@ import frPortfolio from "./resources/fr/portfolio.json";
 import enPortfolio from "./resources/en/portfolio.json";
 import frAsset from "./resources/fr/asset.json";
 import enAsset from "./resources/en/asset.json";
+import frTenant from "./resources/fr/tenant.json";
+import enTenant from "./resources/en/tenant.json";
+import frLease from "./resources/fr/lease.json";
+import enLease from "./resources/en/lease.json";
 
 export const LOCALES: readonly Locale[] = ["fr", "en"] as const;
 export const DEFAULT_LOCALE: Locale = "fr";
 export const LOCALE_COOKIE = "assetflow.locale";
 
-export const NAMESPACES = ["common", "portfolio", "asset"] as const;
+export const NAMESPACES = [
+  "common",
+  "portfolio",
+  "asset",
+  "tenant",
+  "lease",
+] as const;
 export const DEFAULT_NAMESPACE = "common";
 
 /**
@@ -19,8 +29,20 @@ export const DEFAULT_NAMESPACE = "common";
  * Ajouter un module = ajouter un namespace ici (jamais de texte en dur ailleurs).
  */
 export const resources = {
-  fr: { common: frCommon, portfolio: frPortfolio, asset: frAsset },
-  en: { common: enCommon, portfolio: enPortfolio, asset: enAsset },
+  fr: {
+    common: frCommon,
+    portfolio: frPortfolio,
+    asset: frAsset,
+    tenant: frTenant,
+    lease: frLease,
+  },
+  en: {
+    common: enCommon,
+    portfolio: enPortfolio,
+    asset: enAsset,
+    tenant: enTenant,
+    lease: enLease,
+  },
 } as const;
 
 /** Normalise une valeur arbitraire en locale supportée. */

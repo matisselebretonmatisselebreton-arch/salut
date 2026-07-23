@@ -1,42 +1,87 @@
 /**
  * Implémentation Supabase du dépôt (mode `supabase`).
  * Utilise le client serveur (JWT utilisateur) → les policies RLS filtrent
- * automatiquement par organisation. Aucun filtrage tenant côté code : c'est
- * la base qui garantit l'isolation (§6).
+ * automatiquement par organisation (§6).
+ *
+ * Module 2 : l'occupation des lots est dérivée des baux actifs via la couche
+ * core (isLeaseActiveOn / occupiedUnitIds) — même logique qu'en mode démo.
  */
 
 import "server-only";
-import { computeOccupancy } from "@/core";
+import {
+  computeOccupancy,
+  monthlyEquivalent,
+  occupiedUnitIds,
+  type ChargePeriodicity,
+  type LeaseWithUnits,
+} from "@/core";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AssetRepository } from "./repository";
-import type { AssetDTO, PortfolioDTO, UnitDTO } from "./types";
+import type {
+  AssetDTO,
+  LeaseChargeDTO,
+  LeaseDetailDTO,
+  LeaseSummaryDTO,
+  PortfolioDTO,
+  TenantDetailDTO,
+  TenantDTO,
+  UnitDTO,
+} from "./types";
 
-/** Colonnes d'un actif + ses lots imbriqués (jointure Supabase). */
 const ASSET_SELECT = `
   id, portfolio_id, name, asset_type,
   address_line1, postal_code, city, country,
   surface_useful, surface_gla,
   acquisition_date, acquisition_value, net_book_value,
   construction_year, epc_rating, certifications, cover_image_url,
-  units:units!units_asset_idx ( id, reference, floor, surface, is_rentable, is_occupied )
+  units:units ( id, reference, floor, surface, is_rentable, archived_at )
+`;
+
+const LEASE_SELECT = `
+  id, reference, lease_type, status, asset_id, tenant_id,
+  start_date, end_date, notice_period_months, deposit_amount,
+  index_type, base_index_value, base_index_period, revision_month,
+  asset:assets ( name ),
+  tenant:tenants ( display_name ),
+  lease_units ( unit_id, unit:units ( reference ) ),
+  lease_charges ( charge_type, label, amount, periodicity )
 `;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function mapUnit(row: any): UnitDTO {
-  return {
-    id: row.id,
-    reference: row.reference,
-    floor: row.floor,
-    surface: row.surface,
-    isRentable: row.is_rentable,
-    isOccupied: row.is_occupied,
-  };
+
+/** Récupère l'ensemble des lots occupés d'un actif à partir de ses baux actifs. */
+async function occupiedIdsForAsset(
+  supabase: SupabaseClient,
+  assetId: string,
+): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("leases")
+    .select("status, start_date, end_date, lease_units ( unit_id )")
+    .eq("asset_id", assetId)
+    .is("archived_at", null);
+  if (error) throw error;
+
+  const coverage: LeaseWithUnits[] = (data ?? []).map((l: any) => ({
+    status: l.status,
+    startDate: l.start_date,
+    endDate: l.end_date,
+    unitIds: (l.lease_units ?? []).map((lu: any) => lu.unit_id),
+  }));
+  return occupiedUnitIds(coverage);
 }
 
-function mapAsset(row: any): AssetDTO {
+function mapAsset(row: any, occupied: Set<string>): AssetDTO {
   const units: UnitDTO[] = (row.units ?? [])
     .filter((u: any) => u.archived_at == null)
-    .map(mapUnit);
+    .map((u: any) => ({
+      id: u.id,
+      reference: u.reference,
+      floor: u.floor,
+      surface: u.surface,
+      isRentable: u.is_rentable,
+      isOccupied: occupied.has(u.id),
+    }));
   return {
     id: row.id,
     portfolioId: row.portfolio_id,
@@ -59,6 +104,51 @@ function mapAsset(row: any): AssetDTO {
     occupancy: computeOccupancy(units),
   };
 }
+
+function mapLeaseSummary(row: any): LeaseSummaryDTO {
+  const charges = (row.lease_charges ?? []) as any[];
+  const monthlyTotal = charges.reduce(
+    (s, c) => s + monthlyEquivalent(Number(c.amount), c.periodicity as ChargePeriodicity),
+    0,
+  );
+  return {
+    id: row.id,
+    reference: row.reference,
+    leaseType: row.lease_type,
+    status: row.status,
+    assetId: row.asset_id,
+    assetName: row.asset?.name ?? "—",
+    tenantId: row.tenant_id,
+    tenantName: row.tenant?.display_name ?? "—",
+    startDate: row.start_date,
+    endDate: row.end_date,
+    monthlyTotal,
+    unitCount: (row.lease_units ?? []).length,
+  };
+}
+
+function mapLeaseDetail(row: any): LeaseDetailDTO {
+  const charges: LeaseChargeDTO[] = (row.lease_charges ?? []).map((c: any) => ({
+    chargeType: c.charge_type,
+    label: c.label,
+    amount: Number(c.amount),
+    periodicity: c.periodicity,
+  }));
+  return {
+    ...mapLeaseSummary(row),
+    noticePeriodMonths: row.notice_period_months,
+    depositAmount: row.deposit_amount,
+    indexType: row.index_type,
+    baseIndexValue: row.base_index_value,
+    baseIndexPeriod: row.base_index_period,
+    revisionMonth: row.revision_month,
+    units: (row.lease_units ?? []).map((lu: any) => ({
+      id: lu.unit_id,
+      reference: lu.unit?.reference ?? "—",
+    })),
+    charges,
+  };
+}
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export class SupabaseRepository implements AssetRepository {
@@ -71,9 +161,6 @@ export class SupabaseRepository implements AssetRepository {
       .order("name");
     if (error) throw error;
 
-    // Un actif + lots par portefeuille pour les KPI. Une requête par portefeuille
-    // reste acceptable au MVP ; à remplacer par une vue agrégée (Redis/materialized)
-    // quand la volumétrie l'exigera (§7 : dashboards pré-calculés).
     const result: PortfolioDTO[] = [];
     for (const p of portfolios ?? []) {
       const assets = await this.listAssetsByPortfolio(p.id);
@@ -104,7 +191,13 @@ export class SupabaseRepository implements AssetRepository {
       .is("archived_at", null)
       .order("name");
     if (error) throw error;
-    return (data ?? []).map(mapAsset);
+
+    const result: AssetDTO[] = [];
+    for (const row of data ?? []) {
+      const occupied = await occupiedIdsForAsset(supabase, row.id);
+      result.push(mapAsset(row, occupied));
+    }
+    return result;
   }
 
   async getAsset(id: string): Promise<AssetDTO | null> {
@@ -116,6 +209,94 @@ export class SupabaseRepository implements AssetRepository {
       .is("archived_at", null)
       .maybeSingle();
     if (error) throw error;
-    return data ? mapAsset(data) : null;
+    if (!data) return null;
+    const occupied = await occupiedIdsForAsset(supabase, data.id);
+    return mapAsset(data, occupied);
+  }
+
+  async listTenants(): Promise<TenantDTO[]> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("tenants")
+      .select("id, kind, display_name, email, leases:leases(status)")
+      .is("archived_at", null)
+      .order("display_name");
+    if (error) throw error;
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    return (data ?? []).map((t: any) => ({
+      id: t.id,
+      kind: t.kind,
+      displayName: t.display_name,
+      email: t.email,
+      activeLeaseCount: (t.leases ?? []).filter(
+        (l: any) => l.status === "active",
+      ).length,
+    }));
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  }
+
+  async getTenant(id: string): Promise<TenantDetailDTO | null> {
+    const supabase = await createSupabaseServerClient();
+    const { data: t, error } = await supabase
+      .from("tenants")
+      .select("id, kind, display_name, email")
+      .eq("id", id)
+      .is("archived_at", null)
+      .maybeSingle();
+    if (error) throw error;
+    if (!t) return null;
+
+    const { data: leases, error: le } = await supabase
+      .from("leases")
+      .select(LEASE_SELECT)
+      .eq("tenant_id", id)
+      .is("archived_at", null)
+      .order("start_date", { ascending: false });
+    if (le) throw le;
+
+    const summaries = (leases ?? []).map(mapLeaseSummary);
+    return {
+      id: t.id,
+      kind: t.kind,
+      displayName: t.display_name,
+      email: t.email,
+      activeLeaseCount: summaries.filter((l) => l.status === "active").length,
+      leases: summaries,
+    };
+  }
+
+  async listLeases(): Promise<LeaseSummaryDTO[]> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("leases")
+      .select(LEASE_SELECT)
+      .is("archived_at", null)
+      .order("start_date", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapLeaseSummary);
+  }
+
+  async getLease(id: string): Promise<LeaseDetailDTO | null> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("leases")
+      .select(LEASE_SELECT)
+      .eq("id", id)
+      .is("archived_at", null)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? mapLeaseDetail(data) : null;
+  }
+
+  async listLeasesByAsset(assetId: string): Promise<LeaseSummaryDTO[]> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("leases")
+      .select(LEASE_SELECT)
+      .eq("asset_id", assetId)
+      .is("archived_at", null)
+      .order("start_date", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapLeaseSummary);
   }
 }

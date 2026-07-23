@@ -13,8 +13,9 @@ offices). Bilingue FR/EN, multi-tenant, web (puis mobile).
 |---|---|---|
 | **Socle** | Monorepo-ready, DB multi-tenant + RLS, i18n FR/EN, couche `core` testée, clients Supabase | ✅ Fait |
 | **Module 1** | Référentiel patrimoine (portefeuilles / actifs / lots) — 3 écrans connectés | ✅ Fait |
-| Module 2 | Baux & locataires | ⏳ |
-| Module 3 | Facturation & encaissement | ⏳ |
+| **Module 2** | Baux & locataires — Session A (fondations) | ✅ Fait |
+| Module 2 | Session B : moteur d'indexation + calendrier des échéances | ⏳ |
+| Module 3 | Facturation & encaissement (dont impayés/relances) | ⏳ |
 | Module 4 | Budget de charges | ⏳ |
 
 ## Stack
@@ -59,14 +60,21 @@ Organization (tenant)
            └── Unit (lot ; is_rentable / is_occupied)
 ```
 
-Points d'attention documentés pour la suite :
+Module 2 ajoute (migration `0002_leases.sql`) : `Tenant`, `Lease`,
+`lease_units` (liaison multi-lots), `lease_charges`, `lease_index_applications`.
+
+Points d'attention documentés :
 - **Soft-delete** : colonne `archived_at` partout, jamais de `DELETE` physique
   sur les entités patrimoniales/financières (prompt §3, §9).
-- `units.is_occupied` sera piloté par les baux actifs au **Module 2** ; pour
-  l'instant c'est un booléen posé à la main. Le taux d'occupation
-  (`src/core/occupancy.ts`) le consomme déjà.
-- Un `Lease` pourra couvrir plusieurs `Unit` (baux commerciaux multi-lots) —
-  table de liaison à ajouter au Module 2.
+- **Occupation dérivée** : `units.is_occupied` (migration 0001) n'est plus la
+  source de vérité. L'occupation d'un lot se calcule à la lecture à partir des
+  baux actifs le couvrant (`src/core/lease.ts` → `isLeaseActiveOn` /
+  `occupiedUnitIds`). Même logique en mode démo et Supabase.
+- Un `Lease` peut couvrir plusieurs `Unit` (baux commerciaux multi-lots) via
+  `lease_units`.
+- L'indexation (IRL/ILC/ILAT) est stockée sur le bail avec `base_index_value` /
+  `base_index_period` ; le **moteur de calcul de révision** et le calendrier des
+  échéances arrivent en Session B.
 
 ## Structure
 

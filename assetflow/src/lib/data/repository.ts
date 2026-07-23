@@ -11,6 +11,7 @@
 
 import type {
   AssetDTO,
+  DeadlineDTO,
   LeaseDetailDTO,
   LeaseSummaryDTO,
   PortfolioDTO,
@@ -32,6 +33,8 @@ export interface AssetRepository {
   getLease(id: string): Promise<LeaseDetailDTO | null>;
   /** Baux couvrant un actif (onglet Baux de la fiche actif). */
   listLeasesByAsset(assetId: string): Promise<LeaseSummaryDTO[]>;
+  /** Échéances à venir tous baux confondus (calendrier §4.2). */
+  listUpcomingDeadlines(horizonMonths?: number): Promise<DeadlineDTO[]>;
 }
 
 export type DataSource = "demo" | "supabase";

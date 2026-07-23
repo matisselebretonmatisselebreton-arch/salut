@@ -7,6 +7,7 @@
  */
 
 import {
+  computeLeaseDeadlines,
   computeOccupancy,
   monthlyEquivalent,
   occupiedUnitIds,
@@ -15,6 +16,7 @@ import {
 import type { AssetRepository } from "./repository";
 import type {
   AssetDTO,
+  DeadlineDTO,
   LeaseDetailDTO,
   LeaseSummaryDTO,
   PortfolioDTO,
@@ -204,5 +206,33 @@ export class DemoRepository implements AssetRepository {
 
   async listLeasesByAsset(assetId: string): Promise<LeaseSummaryDTO[]> {
     return demoLeases.filter((l) => l.assetId === assetId).map(toLeaseSummary);
+  }
+
+  async listUpcomingDeadlines(horizonMonths = 18): Promise<DeadlineDTO[]> {
+    const out: DeadlineDTO[] = [];
+    for (const lease of demoLeases) {
+      const deadlines = computeLeaseDeadlines(
+        {
+          status: lease.status,
+          startDate: lease.startDate,
+          endDate: lease.endDate,
+          noticePeriodMonths: lease.noticePeriodMonths,
+          revisionMonth: lease.revisionMonth,
+        },
+        new Date(),
+        horizonMonths,
+      );
+      for (const d of deadlines) {
+        out.push({
+          leaseId: lease.id,
+          leaseReference: lease.reference,
+          tenantName: tenantName(lease.tenantId),
+          assetName: assetName(lease.assetId),
+          type: d.type,
+          date: d.date,
+        });
+      }
+    }
+    return out.sort((a, b) => a.date.localeCompare(b.date));
   }
 }

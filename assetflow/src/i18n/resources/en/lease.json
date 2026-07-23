@@ -55,6 +55,17 @@
     "units": "Covered units",
     "indexation": "Indexation"
   },
+  "revision": {
+    "title": "Simulate a revision",
+    "newIndex": "New index",
+    "compute": "Compute",
+    "currentRent": "Current rent",
+    "newRent": "Revised rent",
+    "variation": "Change",
+    "record": "Record revision",
+    "noBaseIndex": "No base index set on this lease.",
+    "recorded": "Revision recorded (demo mode: not persisted)."
+  },
   "wizard": {
     "title": "New lease",
     "step": "Step {{current}} / {{total}}",

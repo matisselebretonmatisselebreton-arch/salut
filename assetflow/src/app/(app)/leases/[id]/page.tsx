@@ -4,6 +4,7 @@ import { formatDate, formatMoney, monthlyEquivalent, type Locale } from "@/core"
 import { getRepository, type LeaseDetailDTO } from "@/lib/data";
 import { getRequestLocale, getT } from "@/i18n/server";
 import { LeaseStatusBadge } from "@/components/LeaseStatusBadge";
+import { RentRevisionSimulator } from "@/components/RentRevisionSimulator";
 
 type TFn = Awaited<ReturnType<typeof getT>>;
 
@@ -51,6 +52,7 @@ export default async function LeaseDetailPage({
         <ChargesCard lease={lease} locale={locale} t={t} />
         <UnitsCard lease={lease} t={t} />
         <IndexationCard lease={lease} locale={locale} t={t} />
+        <RevisionCard lease={lease} locale={locale} t={t} />
       </div>
     </div>
   );
@@ -140,6 +142,24 @@ function UnitsCard({ lease, t }: { lease: LeaseDetailDTO; t: TFn }) {
           </li>
         ))}
       </ul>
+    </Card>
+  );
+}
+
+function RevisionCard({ lease, locale, t }: { lease: LeaseDetailDTO; locale: Locale; t: TFn }) {
+  const baseRent = lease.charges.find((c) => c.chargeType === "base_rent")?.amount;
+  return (
+    <Card title={t("lease:revision.title")}>
+      {lease.baseIndexValue != null && baseRent ? (
+        <RentRevisionSimulator
+          leaseId={lease.id}
+          baseRent={baseRent}
+          baseIndex={lease.baseIndexValue}
+          locale={locale}
+        />
+      ) : (
+        <p className="text-muted">{t("lease:revision.noBaseIndex")}</p>
+      )}
     </Card>
   );
 }

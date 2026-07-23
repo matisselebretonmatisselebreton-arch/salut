@@ -14,7 +14,7 @@ offices). Bilingue FR/EN, multi-tenant, web (puis mobile).
 | **Socle** | Monorepo-ready, DB multi-tenant + RLS, i18n FR/EN, couche `core` testée, clients Supabase | ✅ Fait |
 | **Module 1** | Référentiel patrimoine (portefeuilles / actifs / lots) — 3 écrans connectés | ✅ Fait |
 | **Module 2** | Baux & locataires — Session A (fondations) | ✅ Fait |
-| Module 2 | Session B : moteur d'indexation + calendrier des échéances | ⏳ |
+| **Module 2** | Session B : moteur d'indexation + calendrier des échéances | ✅ Fait |
 | Module 3 | Facturation & encaissement (dont impayés/relances) | ⏳ |
 | Module 4 | Budget de charges | ⏳ |
 

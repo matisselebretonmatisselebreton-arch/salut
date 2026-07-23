@@ -1,0 +1,27 @@
+{
+  "title": "Deadlines",
+  "empty": "No deadline in the next 18 months.",
+  "view": {
+    "list": "List",
+    "calendar": "Calendar"
+  },
+  "type": {
+    "revision": "Rent revision",
+    "notice": "Notice deadline",
+    "renewal": "Renewal / lease end"
+  },
+  "alert": {
+    "urgent": "Urgent",
+    "warn": "Watch",
+    "info": "Upcoming",
+    "none": "Scheduled"
+  },
+  "inDays": "D-{{days}}",
+  "columns": {
+    "date": "Date",
+    "type": "Deadline",
+    "lease": "Lease",
+    "tenant": "Tenant",
+    "asset": "Asset"
+  }
+}

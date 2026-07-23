@@ -10,6 +10,8 @@ import frTenant from "./resources/fr/tenant.json";
 import enTenant from "./resources/en/tenant.json";
 import frLease from "./resources/fr/lease.json";
 import enLease from "./resources/en/lease.json";
+import frDeadline from "./resources/fr/deadline.json";
+import enDeadline from "./resources/en/deadline.json";
 
 export const LOCALES: readonly Locale[] = ["fr", "en"] as const;
 export const DEFAULT_LOCALE: Locale = "fr";
@@ -21,6 +23,7 @@ export const NAMESPACES = [
   "asset",
   "tenant",
   "lease",
+  "deadline",
 ] as const;
 export const DEFAULT_NAMESPACE = "common";
 
@@ -35,6 +38,7 @@ export const resources = {
     asset: frAsset,
     tenant: frTenant,
     lease: frLease,
+    deadline: frDeadline,
   },
   en: {
     common: enCommon,
@@ -42,6 +46,7 @@ export const resources = {
     asset: enAsset,
     tenant: enTenant,
     lease: enLease,
+    deadline: enDeadline,
   },
 } as const;
 

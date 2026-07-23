@@ -9,6 +9,7 @@
 
 import "server-only";
 import {
+  computeLeaseDeadlines,
   computeOccupancy,
   monthlyEquivalent,
   occupiedUnitIds,
@@ -20,6 +21,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AssetRepository } from "./repository";
 import type {
   AssetDTO,
+  DeadlineDTO,
   LeaseChargeDTO,
   LeaseDetailDTO,
   LeaseSummaryDTO,
@@ -298,5 +300,46 @@ export class SupabaseRepository implements AssetRepository {
       .order("start_date", { ascending: false });
     if (error) throw error;
     return (data ?? []).map(mapLeaseSummary);
+  }
+
+  async listUpcomingDeadlines(horizonMonths = 18): Promise<DeadlineDTO[]> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("leases")
+      .select(
+        `id, reference, status, start_date, end_date, notice_period_months,
+         revision_month, asset:assets ( name ), tenant:tenants ( display_name )`,
+      )
+      .is("archived_at", null);
+    if (error) throw error;
+
+    const now = new Date();
+    const out: DeadlineDTO[] = [];
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    for (const l of (data ?? []) as any[]) {
+      const deadlines = computeLeaseDeadlines(
+        {
+          status: l.status,
+          startDate: l.start_date,
+          endDate: l.end_date,
+          noticePeriodMonths: l.notice_period_months,
+          revisionMonth: l.revision_month,
+        },
+        now,
+        horizonMonths,
+      );
+      for (const d of deadlines) {
+        out.push({
+          leaseId: l.id,
+          leaseReference: l.reference,
+          tenantName: l.tenant?.display_name ?? "—",
+          assetName: l.asset?.name ?? "—",
+          type: d.type,
+          date: d.date,
+        });
+      }
+    }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    return out.sort((a, b) => a.date.localeCompare(b.date));
   }
 }

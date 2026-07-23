@@ -55,6 +55,17 @@
     "units": "Lots couverts",
     "indexation": "Indexation"
   },
+  "revision": {
+    "title": "Simuler une révision",
+    "newIndex": "Nouvel indice",
+    "compute": "Calculer",
+    "currentRent": "Loyer actuel",
+    "newRent": "Loyer révisé",
+    "variation": "Variation",
+    "record": "Enregistrer la révision",
+    "noBaseIndex": "Indice de référence non renseigné sur ce bail.",
+    "recorded": "Révision enregistrée (mode démo : non persistée)."
+  },
   "wizard": {
     "title": "Nouveau bail",
     "step": "Étape {{current}} / {{total}}",

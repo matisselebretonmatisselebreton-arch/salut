@@ -1,0 +1,27 @@
+{
+  "title": "Échéances",
+  "empty": "Aucune échéance dans les 18 prochains mois.",
+  "view": {
+    "list": "Liste",
+    "calendar": "Calendrier"
+  },
+  "type": {
+    "revision": "Révision de loyer",
+    "notice": "Fin de préavis",
+    "renewal": "Renouvellement / fin de bail"
+  },
+  "alert": {
+    "urgent": "Urgent",
+    "warn": "À surveiller",
+    "info": "À venir",
+    "none": "Planifié"
+  },
+  "inDays": "J-{{days}}",
+  "columns": {
+    "date": "Date",
+    "type": "Échéance",
+    "lease": "Bail",
+    "tenant": "Locataire",
+    "asset": "Actif"
+  }
+}

@@ -7,6 +7,7 @@
 import type {
   AssetType,
   ChargePeriodicity,
+  DeadlineType,
   IndexType,
   LeaseStatus,
   LeaseType,
@@ -112,4 +113,14 @@ export interface LeaseDetailDTO extends LeaseSummaryDTO {
 
 export interface TenantDetailDTO extends TenantDTO {
   leases: LeaseSummaryDTO[];
+}
+
+/** Échéance de bail à venir (calendrier §4.2). */
+export interface DeadlineDTO {
+  leaseId: string;
+  leaseReference: string | null;
+  tenantName: string;
+  assetName: string;
+  type: DeadlineType;
+  date: string;
 }

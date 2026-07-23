@@ -1,0 +1,60 @@
+{
+  "list": {
+    "title": "Invoicing",
+    "empty": "No receipt yet.",
+    "generate": "Generate this month's receipts"
+  },
+  "type": {
+    "rent_receipt": "Receipt",
+    "invoice": "Invoice"
+  },
+  "status": {
+    "paid": "Paid",
+    "partial": "Partial",
+    "overdue": "Overdue",
+    "pending": "Pending"
+  },
+  "summary": {
+    "outstanding": "Outstanding",
+    "overdue": "Overdue",
+    "paid": "Settled",
+    "pending": "Pending"
+  },
+  "fields": {
+    "number": "No.",
+    "period": "Period",
+    "issueDate": "Issued",
+    "dueDate": "Due",
+    "tenant": "Tenant",
+    "asset": "Asset",
+    "ttc": "Amount incl. VAT",
+    "paid": "Collected",
+    "outstanding": "Outstanding",
+    "status": "Status"
+  },
+  "detail": {
+    "lines": "Breakdown",
+    "payments": "Payments",
+    "totals": "Totals",
+    "ht": "Total excl. VAT",
+    "vat": "VAT",
+    "ttc": "Total incl. VAT",
+    "method": "Method",
+    "paidOn": "Date",
+    "reference": "Reference",
+    "noPayments": "No payment recorded.",
+    "recordPayment": "Record a payment"
+  },
+  "method": {
+    "transfer": "Transfer",
+    "check": "Check",
+    "card": "Card",
+    "cash": "Cash",
+    "other": "Other"
+  },
+  "generate": {
+    "title": "Generate receipts",
+    "hint": "In demo mode, receipts are already present and generation is not persisted.",
+    "done": "Generation simulated (demo mode)."
+  }
+}

@@ -9,9 +9,12 @@ import type {
   ChargePeriodicity,
   DeadlineType,
   IndexType,
+  InvoiceType,
   LeaseStatus,
   LeaseType,
   OccupancyResult,
+  PaymentMethod,
+  PaymentStatus,
 } from "@/core";
 
 export interface UnitDTO {
@@ -123,4 +126,58 @@ export interface DeadlineDTO {
   assetName: string;
   type: DeadlineType;
   date: string;
+}
+
+// ---------------------------------------------------------------------------
+// Module 3 — Facturation & encaissement
+// ---------------------------------------------------------------------------
+
+export interface InvoiceLineDTO {
+  label: string;
+  amount: number;
+}
+
+export interface PaymentDTO {
+  id: string;
+  amount: number;
+  paidOn: string;
+  method: PaymentMethod;
+  reference: string | null;
+}
+
+export interface InvoiceSummaryDTO {
+  id: string;
+  number: string | null;
+  type: InvoiceType;
+  leaseId: string;
+  leaseReference: string | null;
+  tenantName: string;
+  assetName: string;
+  periodStart: string;
+  periodEnd: string;
+  issueDate: string;
+  dueDate: string | null;
+  totalTtc: number;
+  /** Somme des encaissements. */
+  paidAmount: number;
+  /** Reste dû (calculé). */
+  outstanding: number;
+  /** Statut de règlement dérivé (core/invoicing). */
+  paymentStatus: PaymentStatus;
+}
+
+export interface InvoiceDetailDTO extends InvoiceSummaryDTO {
+  totalHt: number;
+  totalVat: number;
+  vatRate: number;
+  lines: InvoiceLineDTO[];
+  payments: PaymentDTO[];
+}
+
+/** Indicateurs agrégés pour l'en-tête du suivi des encaissements. */
+export interface InvoicingSummary {
+  totalOutstanding: number;
+  overdueCount: number;
+  paidCount: number;
+  pendingCount: number;
 }

@@ -20,6 +20,11 @@ export type {
   LeaseChargeDTO,
   LeaseUnitRef,
   DeadlineDTO,
+  InvoiceSummaryDTO,
+  InvoiceDetailDTO,
+  InvoiceLineDTO,
+  PaymentDTO,
+  InvoicingSummary,
 } from "./types";
 
 let cached: AssetRepository | null = null;

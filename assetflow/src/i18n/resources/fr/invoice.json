@@ -1,0 +1,60 @@
+{
+  "list": {
+    "title": "Facturation",
+    "empty": "Aucune quittance pour le moment.",
+    "generate": "Générer les quittances du mois"
+  },
+  "type": {
+    "rent_receipt": "Quittance",
+    "invoice": "Facture"
+  },
+  "status": {
+    "paid": "Payé",
+    "partial": "Partiel",
+    "overdue": "En retard",
+    "pending": "En attente"
+  },
+  "summary": {
+    "outstanding": "Reste à encaisser",
+    "overdue": "En retard",
+    "paid": "Soldées",
+    "pending": "En attente"
+  },
+  "fields": {
+    "number": "N°",
+    "period": "Période",
+    "issueDate": "Émission",
+    "dueDate": "Échéance",
+    "tenant": "Locataire",
+    "asset": "Actif",
+    "ttc": "Montant TTC",
+    "paid": "Encaissé",
+    "outstanding": "Reste dû",
+    "status": "Statut"
+  },
+  "detail": {
+    "lines": "Détail",
+    "payments": "Encaissements",
+    "totals": "Totaux",
+    "ht": "Total HT",
+    "vat": "TVA",
+    "ttc": "Total TTC",
+    "method": "Moyen",
+    "paidOn": "Date",
+    "reference": "Référence",
+    "noPayments": "Aucun encaissement enregistré.",
+    "recordPayment": "Enregistrer un encaissement"
+  },
+  "method": {
+    "transfer": "Virement",
+    "check": "Chèque",
+    "card": "Carte",
+    "cash": "Espèces",
+    "other": "Autre"
+  },
+  "generate": {
+    "title": "Générer les quittances",
+    "hint": "En mode démo, les quittances sont déjà présentes et la génération n'est pas persistée.",
+    "done": "Génération simulée (mode démo)."
+  }
+}

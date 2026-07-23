@@ -13,6 +13,8 @@ import {
   computeOccupancy,
   monthlyEquivalent,
   occupiedUnitIds,
+  outstandingAmount,
+  paymentStatus,
   type ChargePeriodicity,
   type LeaseWithUnits,
 } from "@/core";
@@ -22,6 +24,9 @@ import type { AssetRepository } from "./repository";
 import type {
   AssetDTO,
   DeadlineDTO,
+  InvoiceDetailDTO,
+  InvoiceSummaryDTO,
+  InvoicingSummary,
   LeaseChargeDTO,
   LeaseDetailDTO,
   LeaseSummaryDTO,
@@ -50,7 +55,57 @@ const LEASE_SELECT = `
   lease_charges ( charge_type, label, amount, periodicity )
 `;
 
+const INVOICE_SELECT = `
+  id, number, type, status, period_start, period_end, issue_date, due_date,
+  vat_rate, total_ht, total_vat, total_ttc,
+  lease:leases ( id, reference, asset:assets ( name ), tenant:tenants ( display_name ) ),
+  invoice_lines ( label, amount ),
+  payments ( id, amount, paid_on, method, reference )
+`;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+function mapInvoiceSummary(row: any): InvoiceSummaryDTO {
+  const ttc = Number(row.total_ttc);
+  const paid = (row.payments ?? []).reduce((s: number, p: any) => s + Number(p.amount), 0);
+  return {
+    id: row.id,
+    number: row.number,
+    type: row.type,
+    leaseId: row.lease?.id ?? row.lease_id,
+    leaseReference: row.lease?.reference ?? null,
+    tenantName: row.lease?.tenant?.display_name ?? "—",
+    assetName: row.lease?.asset?.name ?? "—",
+    periodStart: row.period_start,
+    periodEnd: row.period_end,
+    issueDate: row.issue_date,
+    dueDate: row.due_date,
+    totalTtc: ttc,
+    paidAmount: paid,
+    outstanding: outstandingAmount(ttc, paid),
+    paymentStatus: paymentStatus(ttc, paid, row.due_date),
+  };
+}
+
+function mapInvoiceDetail(row: any): InvoiceDetailDTO {
+  return {
+    ...mapInvoiceSummary(row),
+    totalHt: Number(row.total_ht),
+    totalVat: Number(row.total_vat),
+    vatRate: Number(row.vat_rate),
+    lines: (row.invoice_lines ?? []).map((l: any) => ({
+      label: l.label,
+      amount: Number(l.amount),
+    })),
+    payments: (row.payments ?? []).map((p: any) => ({
+      id: p.id,
+      amount: Number(p.amount),
+      paidOn: p.paid_on,
+      method: p.method,
+      reference: p.reference,
+    })),
+  };
+}
 
 /** Récupère l'ensemble des lots occupés d'un actif à partir de ses baux actifs. */
 async function occupiedIdsForAsset(
@@ -341,5 +396,40 @@ export class SupabaseRepository implements AssetRepository {
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
     return out.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async listInvoices(): Promise<InvoiceSummaryDTO[]> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("invoices")
+      .select(INVOICE_SELECT)
+      .is("archived_at", null)
+      .order("period_start", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(mapInvoiceSummary);
+  }
+
+  async getInvoice(id: string): Promise<InvoiceDetailDTO | null> {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("invoices")
+      .select(INVOICE_SELECT)
+      .eq("id", id)
+      .is("archived_at", null)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? mapInvoiceDetail(data) : null;
+  }
+
+  async invoicingSummary(): Promise<InvoicingSummary> {
+    const invoices = await this.listInvoices();
+    return {
+      totalOutstanding: invoices.reduce((s, i) => s + i.outstanding, 0),
+      overdueCount: invoices.filter((i) => i.paymentStatus === "overdue").length,
+      paidCount: invoices.filter((i) => i.paymentStatus === "paid").length,
+      pendingCount: invoices.filter(
+        (i) => i.paymentStatus === "pending" || i.paymentStatus === "partial",
+      ).length,
+    };
   }
 }

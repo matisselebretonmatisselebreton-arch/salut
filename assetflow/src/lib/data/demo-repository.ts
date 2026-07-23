@@ -9,14 +9,20 @@
 import {
   computeLeaseDeadlines,
   computeOccupancy,
+  invoiceTotals,
   monthlyEquivalent,
   occupiedUnitIds,
+  outstandingAmount,
+  paymentStatus,
   type LeaseWithUnits,
 } from "@/core";
 import type { AssetRepository } from "./repository";
 import type {
   AssetDTO,
   DeadlineDTO,
+  InvoiceDetailDTO,
+  InvoiceSummaryDTO,
+  InvoicingSummary,
   LeaseDetailDTO,
   LeaseSummaryDTO,
   PortfolioDTO,
@@ -33,6 +39,7 @@ import {
   type RawAsset,
   type RawLease,
 } from "./demo-seed";
+import { buildDemoInvoices, type DemoInvoice } from "./demo-invoices";
 
 // Ensemble des lots occupés aujourd'hui, dérivé une fois des baux actifs.
 const leaseCoverage: LeaseWithUnits[] = demoLeases.map((l) => ({
@@ -163,6 +170,59 @@ function toTenantDTO(id: string): TenantDTO {
   };
 }
 
+// Quittances de démo, construites une fois à partir des baux actifs.
+const demoInvoices: DemoInvoice[] = buildDemoInvoices();
+
+function leaseRef(leaseId: string): string | null {
+  return demoLeases.find((l) => l.id === leaseId)?.reference ?? null;
+}
+function leaseAssetId(leaseId: string): string {
+  return demoLeases.find((l) => l.id === leaseId)?.assetId ?? "";
+}
+function leaseTenantId(leaseId: string): string {
+  return demoLeases.find((l) => l.id === leaseId)?.tenantId ?? "";
+}
+
+function toInvoiceSummary(inv: DemoInvoice): InvoiceSummaryDTO {
+  const totals = invoiceTotals(inv.lines, inv.vatRate);
+  const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
+  return {
+    id: inv.id,
+    number: inv.number,
+    type: inv.type,
+    leaseId: inv.leaseId,
+    leaseReference: leaseRef(inv.leaseId),
+    tenantName: tenantName(leaseTenantId(inv.leaseId)),
+    assetName: assetName(leaseAssetId(inv.leaseId)),
+    periodStart: inv.periodStart,
+    periodEnd: inv.periodEnd,
+    issueDate: inv.issueDate,
+    dueDate: inv.dueDate,
+    totalTtc: totals.ttc,
+    paidAmount: paid,
+    outstanding: outstandingAmount(totals.ttc, paid),
+    paymentStatus: paymentStatus(totals.ttc, paid, inv.dueDate),
+  };
+}
+
+function toInvoiceDetail(inv: DemoInvoice): InvoiceDetailDTO {
+  const totals = invoiceTotals(inv.lines, inv.vatRate);
+  return {
+    ...toInvoiceSummary(inv),
+    totalHt: totals.ht,
+    totalVat: totals.vat,
+    vatRate: inv.vatRate,
+    lines: inv.lines,
+    payments: inv.payments.map((p) => ({
+      id: p.id,
+      amount: p.amount,
+      paidOn: p.paidOn,
+      method: p.method,
+      reference: p.reference,
+    })),
+  };
+}
+
 export class DemoRepository implements AssetRepository {
   async listPortfolios(): Promise<PortfolioDTO[]> {
     return demoPortfolios.map((p) => toPortfolioDTO(p.id));
@@ -234,5 +294,28 @@ export class DemoRepository implements AssetRepository {
       }
     }
     return out.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async listInvoices(): Promise<InvoiceSummaryDTO[]> {
+    return demoInvoices
+      .map(toInvoiceSummary)
+      .sort((a, b) => b.periodStart.localeCompare(a.periodStart));
+  }
+
+  async getInvoice(id: string): Promise<InvoiceDetailDTO | null> {
+    const inv = demoInvoices.find((i) => i.id === id);
+    return inv ? toInvoiceDetail(inv) : null;
+  }
+
+  async invoicingSummary(): Promise<InvoicingSummary> {
+    const summaries = demoInvoices.map(toInvoiceSummary);
+    return {
+      totalOutstanding: summaries.reduce((s, i) => s + i.outstanding, 0),
+      overdueCount: summaries.filter((i) => i.paymentStatus === "overdue").length,
+      paidCount: summaries.filter((i) => i.paymentStatus === "paid").length,
+      pendingCount: summaries.filter(
+        (i) => i.paymentStatus === "pending" || i.paymentStatus === "partial",
+      ).length,
+    };
   }
 }

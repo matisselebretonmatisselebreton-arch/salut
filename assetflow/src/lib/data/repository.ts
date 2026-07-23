@@ -12,6 +12,9 @@
 import type {
   AssetDTO,
   DeadlineDTO,
+  InvoiceDetailDTO,
+  InvoiceSummaryDTO,
+  InvoicingSummary,
   LeaseDetailDTO,
   LeaseSummaryDTO,
   PortfolioDTO,
@@ -35,6 +38,11 @@ export interface AssetRepository {
   listLeasesByAsset(assetId: string): Promise<LeaseSummaryDTO[]>;
   /** Échéances à venir tous baux confondus (calendrier §4.2). */
   listUpcomingDeadlines(horizonMonths?: number): Promise<DeadlineDTO[]>;
+
+  // Module 3 — Facturation & encaissement
+  listInvoices(): Promise<InvoiceSummaryDTO[]>;
+  getInvoice(id: string): Promise<InvoiceDetailDTO | null>;
+  invoicingSummary(): Promise<InvoicingSummary>;
 }
 
 export type DataSource = "demo" | "supabase";

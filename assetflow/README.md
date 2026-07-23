@@ -15,7 +15,8 @@ offices). Bilingue FR/EN, multi-tenant, web (puis mobile).
 | **Module 1** | Référentiel patrimoine (portefeuilles / actifs / lots) — 3 écrans connectés | ✅ Fait |
 | **Module 2** | Baux & locataires — Session A (fondations) | ✅ Fait |
 | **Module 2** | Session B : moteur d'indexation + calendrier des échéances | ✅ Fait |
-| Module 3 | Facturation & encaissement (dont impayés/relances) | ⏳ |
+| **Module 3** | Facturation & encaissement — Session A (quittances, suivi) | ✅ Fait |
+| Module 3 | Session B : reddition de charges + relances automatisées | ⏳ |
 | Module 4 | Budget de charges | ⏳ |
 
 ## Stack
@@ -62,6 +63,13 @@ Organization (tenant)
 
 Module 2 ajoute (migration `0002_leases.sql`) : `Tenant`, `Lease`,
 `lease_units` (liaison multi-lots), `lease_charges`, `lease_index_applications`.
+
+Module 3 ajoute (migration `0003_invoicing.sql`) : `Invoice`, `invoice_lines`,
+`Payment`. Le **statut de règlement** (payé / partiel / en retard / en attente)
+n'est jamais stocké : il est dérivé à la lecture via `core/invoicing`
+(`paymentStatus`) à partir du TTC, des encaissements et de l'échéance. En mode
+démo, les quittances des 4 derniers mois sont générées à la volée depuis les
+baux actifs (`src/lib/data/demo-invoices.ts`).
 
 Points d'attention documentés :
 - **Soft-delete** : colonne `archived_at` partout, jamais de `DELETE` physique

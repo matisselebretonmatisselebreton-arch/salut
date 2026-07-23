@@ -12,7 +12,7 @@ offices). Bilingue FR/EN, multi-tenant, web (puis mobile).
 | Phase | Périmètre | Statut |
 |---|---|---|
 | **Socle** | Monorepo-ready, DB multi-tenant + RLS, i18n FR/EN, couche `core` testée, clients Supabase | ✅ Fait |
-| **Module 1** | Référentiel patrimoine (portefeuilles / actifs / lots) — écrans | 🚧 En cours |
+| **Module 1** | Référentiel patrimoine (portefeuilles / actifs / lots) — 3 écrans connectés | ✅ Fait |
 | Module 2 | Baux & locataires | ⏳ |
 | Module 3 | Facturation & encaissement | ⏳ |
 | Module 4 | Budget de charges | ⏳ |
@@ -98,8 +98,15 @@ npm run typecheck  # vérification TypeScript
 npm run lint       # ESLint
 ```
 
-## Configuration
+## Mode démo vs Supabase
 
-Copier `.env.example` → `.env.local` et renseigner les clés d'un projet
-Supabase (URL + clé anon). La migration `supabase/migrations/0001_init.sql`
-s'applique via le CLI Supabase ou l'éditeur SQL du dashboard.
+Par défaut (`ASSETFLOW_DATA_SOURCE` non défini et pas d'URL Supabase réelle),
+l'app tourne en **mode démo** : données en mémoire (`src/lib/data/demo-seed.ts`),
+aucune infra requise. `npm run dev` → http://localhost:3000 affiche directement
+le Module 1 peuplé.
+
+Pour brancher une vraie base :
+1. Copier `.env.example` → `.env.local`, renseigner l'URL + la clé anon Supabase.
+2. Appliquer `supabase/migrations/0001_init.sql` puis `supabase/seed.sql`.
+3. S'ajouter comme membre de l'organisation de démo (voir en-tête de `seed.sql`).
+4. `ASSETFLOW_DATA_SOURCE=supabase` → les écrans passent en requêtes réelles (RLS).

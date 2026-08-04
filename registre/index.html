@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registre — Achat / Revente</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Spectral:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+
+:root{
+  --paper: #f1e8d3;
+  --paper-deep: #e7dabd;
+  --paper-sub: #ece0c6;
+  --rule: #cdbd94;
+  --rule-soft: #ddd0ac;
+  --ink: #2b2216;
+  --ink-soft: #6b5c42;
+  --ink-faint: #9c8c6b;
+  --gain: #2f5d3a;
+  --gain-bg: #dfe9dd;
+  --loss: #8c342a;
+  --loss-bg: #ecdcd6;
+  --gold: #a8792e;
+  --gold-deep: #8a6423;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  padding:24px 20px 60px;
+  background:
+    radial-gradient(ellipse at top left, #f6efdc 0%, transparent 55%),
+    var(--paper);
+  font-family:'Spectral', serif;
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.topbar{
+  width:100%;
+  max-width:960px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+.topbar a{
+  font-family:'Inter',sans-serif;
+  font-size:12px;
+  color:var(--gold-deep);
+  text-decoration:none;
+  font-weight:600;
+  letter-spacing:.02em;
+}
+.topbar a:hover{ text-decoration:underline; }
+.topbar .data-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.ghost-btn{
+  font-family:'Inter',sans-serif;
+  font-size:11.5px;
+  font-weight:600;
+  color:var(--ink-soft);
+  background:var(--paper-deep);
+  border:1px solid var(--rule);
+  padding:6px 11px;
+  border-radius:2px;
+  cursor:pointer;
+  transition:background .12s ease, color .12s ease;
+}
+.ghost-btn:hover{ background:var(--gold-deep); color:var(--paper); border-color:var(--gold-deep); }
+
+.book{
+  width:100%;
+  max-width:960px;
+  position:relative;
+}
+
+.book::before{
+  content:"";
+  position:absolute;
+  top:-18px; left:0; right:0; height:18px;
+  background:
+    linear-gradient(135deg, var(--paper) 25%, transparent 25%) 0 0/16px 16px,
+    linear-gradient(225deg, var(--paper) 25%, transparent 25%) 0 0/16px 16px;
+  background-color: transparent;
+  opacity:.9;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  padding-bottom:18px;
+  border-bottom:2px solid var(--ink);
+  margin-bottom:6px;
+}
+
+.title-block .eyebrow{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--gold-deep);
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+h1{
+  font-family:'Fraunces', serif;
+  font-optical-sizing:auto;
+  font-weight:600;
+  font-size:38px;
+  margin:0;
+  letter-spacing:-.01em;
+  color:var(--ink);
+}
+
+.subtitle{
+  font-family:'Inter',sans-serif;
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-top:6px;
+}
+
+.seal{
+  width:104px;
+  height:104px;
+  border-radius:50%;
+  border:2.5px solid currentColor;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  transform:rotate(-6deg);
+  flex-shrink:0;
+  position:relative;
+  font-family:'Fraunces',serif;
+}
+.seal::before{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border:1px dashed currentColor;
+  border-radius:50%;
+  opacity:.55;
+}
+.seal .seal-label{
+  font-family:'Inter',sans-serif;
+  font-size:9px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  opacity:.75;
+  margin-bottom:2px;
+}
+.seal .seal-value{
+  font-size:20px;
+  font-weight:700;
+}
+.seal.gain{ color:var(--gain); }
+.seal.loss{ color:var(--loss); }
+
+.summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin:24px 0 28px;
+}
+.card{
+  background:var(--paper-deep);
+  border:1px solid var(--rule);
+  border-radius:3px;
+  padding:14px 16px;
+}
+.card .label{
+  font-family:'Inter',sans-serif;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--ink-faint);
+  margin-bottom:6px;
+}
+.card .value{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:21px;
+  font-weight:600;
+}
+.card.gain .value{ color:var(--gain); }
+.card.loss .value{ color:var(--loss); }
+.card .sub{
+  font-family:'Inter',sans-serif;
+  font-size:10.5px;
+  color:var(--ink-faint);
+  margin-top:4px;
+  font-weight:500;
+}
+
+.trend{
+  background:var(--paper-deep);
+  border:1px solid var(--rule);
+  border-radius:3px;
+  padding:14px 16px 10px;
+  margin-bottom:28px;
+}
+.trend .label{
+  font-family:'Inter',sans-serif;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--ink-faint);
+  margin-bottom:8px;
+}
+.trend svg{ display:block; width:100%; height:70px; }
+
+.ledger-wrap{
+  border-top:2px solid var(--ink);
+  border-bottom:2px solid var(--ink);
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+thead th{
+  font-family:'Inter',sans-serif;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  color:var(--ink-soft);
+  text-align:right;
+  padding:8px 10px;
+  font-weight:600;
+  border-bottom:1px solid var(--rule);
+}
+thead th:first-child, thead th:nth-child(2){ text-align:left; }
+thead th.actions{ width:60px; }
+
+tbody.order-block{ border-bottom:1px solid var(--rule-soft); }
+
+tr.order-row td{
+  padding:9px 10px;
+  height:40px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13.5px;
+  text-align:right;
+  vertical-align:middle;
+  white-space:nowrap;
+  background:var(--paper);
+}
+tr.order-row td:first-child, tr.order-row td:nth-child(2){
+  text-align:left;
+  font-family:'Spectral', serif;
+  font-size:14.5px;
+  font-weight:600;
+  white-space:normal;
+}
+
+tr.order-row input{
+  width:100%;
+  border:none;
+  background:transparent;
+  font:inherit;
+  color:var(--ink);
+  text-align:inherit;
+  padding:2px 0;
+}
+tr.order-row input:focus{
+  outline:none;
+  border-bottom:1px solid var(--gold);
+}
+tr.order-row input::placeholder{ color:var(--ink-faint); }
+
+td.computed{ color:var(--ink-soft); }
+td.result.gain{ color:var(--gain); font-weight:600; }
+td.result.loss{ color:var(--loss); font-weight:600; }
+td.cumule.gain{ color:var(--gain); }
+td.cumule.loss{ color:var(--loss); }
+
+.badge{
+  font-family:'Inter',sans-serif;
+  font-size:10px;
+  letter-spacing:.02em;
+  color:var(--ink-faint);
+  display:block;
+  margin-top:2px;
+  font-weight:500;
+}
+
+.icon-btn{
+  background:none;
+  border:none;
+  color:var(--ink-faint);
+  cursor:pointer;
+  font-size:14px;
+  line-height:1;
+  padding:4px 5px;
+  font-family:'Inter',sans-serif;
+}
+.icon-btn:hover{ color:var(--gold-deep); }
+.icon-btn.del:hover{ color:var(--loss); }
+
+.expand-btn{
+  background:none;
+  border:1px solid var(--rule);
+  color:var(--ink-soft);
+  cursor:pointer;
+  font-size:12px;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  font-family:'Inter',sans-serif;
+  transition:transform .15s ease;
+}
+.expand-btn.open{ transform:rotate(45deg); }
+
+/* items sub-panel */
+.items-panel-row td{
+  padding:0;
+  background:var(--paper-sub);
+}
+.items-panel{
+  padding:10px 10px 14px 34px;
+  border-top:1px dashed var(--rule);
+}
+.items-panel .items-title{
+  font-family:'Inter',sans-serif;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--ink-faint);
+  margin-bottom:8px;
+}
+table.items-table{ width:100%; border-collapse:collapse; }
+table.items-table th{
+  font-family:'Inter',sans-serif;
+  font-size:9.5px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--ink-faint);
+  text-align:right;
+  font-weight:600;
+  padding:4px 8px;
+}
+table.items-table th:first-child{ text-align:left; }
+table.items-table td{
+  padding:3px 8px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  text-align:right;
+  vertical-align:middle;
+}
+table.items-table td:first-child{
+  text-align:left;
+  font-family:'Spectral', serif;
+  font-size:13px;
+}
+table.items-table input{
+  width:100%;
+  border:none;
+  background:transparent;
+  font:inherit;
+  color:var(--ink);
+  text-align:inherit;
+  padding:2px 0;
+  border-bottom:1px solid transparent;
+}
+table.items-table input:focus{
+  outline:none;
+  border-bottom:1px solid var(--gold);
+}
+table.items-table input::placeholder{ color:var(--ink-faint); }
+
+.status-pill{
+  font-family:'Inter',sans-serif;
+  font-size:9.5px;
+  padding:2px 7px;
+  border-radius:10px;
+  font-weight:600;
+  letter-spacing:.02em;
+}
+.status-pill.sold{ background:var(--gain-bg); color:var(--gain); }
+.status-pill.pending{ background:var(--rule-soft); color:var(--ink-soft); }
+
+.add-item-btn{
+  font-family:'Inter',sans-serif;
+  font-size:11.5px;
+  color:var(--gold-deep);
+  background:none;
+  border:none;
+  cursor:pointer;
+  margin-top:6px;
+  padding:2px 0;
+  font-weight:600;
+}
+.add-item-btn:hover{ text-decoration:underline; }
+
+tfoot td{
+  font-family:'IBM Plex Mono', monospace;
+  font-weight:700;
+  font-size:14px;
+  padding:10px;
+  text-align:right;
+  border-top:2px solid var(--ink);
+  background:var(--paper);
+}
+tfoot td:first-child{
+  text-align:left;
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:13.5px;
+  letter-spacing:.02em;
+}
+
+.toolbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:18px;
+  gap:12px;
+}
+
+.add-btn{
+  font-family:'Inter',sans-serif;
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.02em;
+  background:var(--ink);
+  color:var(--paper);
+  border:none;
+  padding:9px 16px;
+  border-radius:2px;
+  cursor:pointer;
+  transition:transform .12s ease, background .12s ease;
+}
+.add-btn:hover{ background:var(--gold-deep); }
+.add-btn:active{ transform:scale(.97); }
+
+.status{
+  font-family:'Inter',sans-serif;
+  font-size:11px;
+  color:var(--ink-faint);
+  font-style:italic;
+}
+
+@media (max-width:640px){
+  h1{ font-size:26px; }
+  .summary{ grid-template-columns:1fr 1fr; }
+  .seal{ width:82px; height:82px; }
+  .seal .seal-value{ font-size:16px; }
+  thead th{ font-size:9px; padding:6px 4px;}
+  tr.order-row td{ font-size:11.5px; padding:6px 4px; }
+  tr.order-row td:first-child, tr.order-row td:nth-child(2){ font-size:12px; }
+  .items-panel{ padding-left:14px; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .add-btn, .expand-btn, .ghost-btn{ transition:none; }
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="../index.html">&larr; Retour à l'accueil</a>
+  <div class="data-actions">
+    <button class="ghost-btn" id="export-json" title="Sauvegarder toutes les données dans un fichier">Exporter (JSON)</button>
+    <button class="ghost-btn" id="import-json" title="Restaurer depuis une sauvegarde">Importer</button>
+    <button class="ghost-btn" id="export-csv" title="Exporter les articles au format tableur">Exporter (CSV)</button>
+    <input type="file" id="import-file" accept="application/json,.json" hidden>
+  </div>
+</div>
+
+<div class="book">
+  <header>
+    <div class="title-block">
+      <div class="eyebrow">Livre de comptes</div>
+      <h1>Registre Achat &amp; Revente</h1>
+      <div class="subtitle">Commandes, articles, reventes et résultat cumulé</div>
+    </div>
+    <div class="seal" id="seal">
+      <div class="seal-label">Solde</div>
+      <div class="seal-value" id="seal-value">—</div>
+    </div>
+  </header>
+
+  <div class="summary">
+    <div class="card">
+      <div class="label">Total investi</div>
+      <div class="value" id="sum-invest">0,00 €</div>
+    </div>
+    <div class="card">
+      <div class="label">Total revente</div>
+      <div class="value" id="sum-revente">0,00 €</div>
+    </div>
+    <div class="card" id="sum-result-card">
+      <div class="label">Résultat net</div>
+      <div class="value" id="sum-result">0,00 €</div>
+    </div>
+    <div class="card" id="sum-roi-card">
+      <div class="label">Rentabilité</div>
+      <div class="value" id="sum-roi">—</div>
+      <div class="sub" id="sum-roi-sub">marge sur investissement</div>
+    </div>
+  </div>
+
+  <div class="trend">
+    <div class="label">Évolution du cumulé</div>
+    <svg id="sparkline" viewBox="0 0 800 70" preserveAspectRatio="none"></svg>
+  </div>
+
+  <div class="ledger-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="actions"></th>
+          <th>Commande</th>
+          <th>Livraison</th>
+          <th>Total</th>
+          <th>Revente</th>
+          <th>Résultat</th>
+          <th>Cumulé</th>
+          <th class="actions"></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Totaux</td>
+          <td class="computed" id="foot-total">0,00 €</td>
+          <td id="foot-revente">0,00 €</td>
+          <td id="foot-result">0,00 €</td>
+          <td id="foot-cumule">0,00 €</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="toolbar">
+    <button class="add-btn" id="add-row">+ Nouvelle commande</button>
+    <span class="status" id="status">Chargement…</span>
+  </div>
+</div>
+
+<script>
+let rows = [];
+let expanded = new Set();
+const STORAGE_KEY = 'achat-revente-orders-v2';
+const OLD_KEY = 'achat-revente-rows';
+
+const fmt = (n) => (Number(n)||0).toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
+const num = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n; };
+
+function computeOrder(order){
+  const items = order.items && order.items.length ? order.items : [{nom:'', cout:'', revente:''}];
+  const itemsCout = items.reduce((s,it) => s + num(it.cout), 0);
+  const itemsRevente = items.reduce((s,it) => s + num(it.revente), 0);
+  const frais = num(order.frais);
+  const total = itemsCout + frais;
+  const resultat = itemsRevente - total;
+  const vendus = items.filter(it => it.revente !== '' && it.revente !== null && it.revente !== undefined && String(it.revente).trim() !== '').length;
+  return {itemsCout, itemsRevente, total, resultat, vendus, count: items.length};
+}
+
+function render(){
+  const tbody = document.getElementById('rows');
+  tbody.innerHTML = '';
+  let cumul = 0;
+  let sumInvest = 0, sumRevente = 0, sumResult = 0;
+
+  rows.forEach((order, i) => {
+    const c = computeOrder(order);
+    cumul += c.resultat;
+    sumInvest += c.total;
+    sumRevente += c.itemsRevente;
+    sumResult += c.resultat;
+
+    const block = document.createElement('tbody');
+    block.className = 'order-block';
+
+    const isOpen = expanded.has(i);
+    const tr = document.createElement('tr');
+    tr.className = 'order-row';
+    tr.innerHTML = `
+      <td><button class="expand-btn ${isOpen ? 'open' : ''}" data-toggle="${i}" title="Voir les articles">+</button></td>
+      <td>
+        <input type="text" data-i="${i}" data-f="commande" value="${(order.commande || '').replace(/"/g,'&quot;')}" placeholder="Ex. 3ᵉ commande">
+        <span class="badge">${c.vendus}/${c.count} article${c.count>1?'s':''} vendu${c.vendus>1?'s':''}</span>
+      </td>
+      <td><input type="number" step="0.01" data-i="${i}" data-f="frais" value="${order.frais ?? ''}" placeholder="0,00"></td>
+      <td class="computed">${fmt(c.total)}</td>
+      <td class="computed">${fmt(c.itemsRevente)}</td>
+      <td class="result ${c.resultat >= 0 ? 'gain' : 'loss'}">${c.resultat >= 0 ? '+' : ''}${fmt(c.resultat)}</td>
+      <td class="cumule ${cumul >= 0 ? 'gain' : 'loss'}">${fmt(cumul)}</td>
+      <td><button class="icon-btn del" data-del-order="${i}" title="Supprimer la commande">✕</button></td>
+    `;
+    block.appendChild(tr);
+
+    if (isOpen){
+      const panelRow = document.createElement('tr');
+      panelRow.className = 'items-panel-row';
+      const td = document.createElement('td');
+      td.colSpan = 8;
+      td.innerHTML = buildItemsPanel(order, i);
+      panelRow.appendChild(td);
+      block.appendChild(panelRow);
+    }
+
+    tbody.appendChild(block);
+  });
+
+  document.getElementById('sum-invest').textContent = fmt(sumInvest);
+  document.getElementById('sum-revente').textContent = fmt(sumRevente);
+  const resultEl = document.getElementById('sum-result');
+  resultEl.textContent = (sumResult >= 0 ? '+' : '') + fmt(sumResult);
+  document.getElementById('sum-result-card').className = 'card ' + (sumResult >= 0 ? 'gain' : 'loss');
+
+  // Rentabilité (ROI) = résultat / investissement
+  const roiEl = document.getElementById('sum-roi');
+  const roiCard = document.getElementById('sum-roi-card');
+  if (sumInvest > 0){
+    const roi = (sumResult / sumInvest) * 100;
+    roiEl.textContent = (roi >= 0 ? '+' : '') + roi.toLocaleString('fr-FR', {minimumFractionDigits:1, maximumFractionDigits:1}) + ' %';
+    roiCard.className = 'card ' + (roi >= 0 ? 'gain' : 'loss');
+  } else {
+    roiEl.textContent = '—';
+    roiCard.className = 'card';
+  }
+
+  document.getElementById('foot-total').textContent = fmt(sumInvest);
+  document.getElementById('foot-revente').textContent = fmt(sumRevente);
+  document.getElementById('foot-result').textContent = (sumResult >= 0 ? '+' : '') + fmt(sumResult);
+  document.getElementById('foot-cumule').textContent = fmt(cumul);
+
+  const seal = document.getElementById('seal');
+  seal.className = 'seal ' + (cumul >= 0 ? 'gain' : 'loss');
+  document.getElementById('seal-value').textContent = fmt(cumul);
+
+  drawSparkline();
+  attachListeners();
+}
+
+function buildItemsPanel(order, orderIndex){
+  const items = order.items && order.items.length ? order.items : [{nom:'', cout:'', revente:''}];
+  const rowsHtml = items.map((it, j) => {
+    const sold = it.revente !== '' && it.revente !== null && it.revente !== undefined && String(it.revente).trim() !== '';
+    return `
+      <tr>
+        <td><input type="text" data-oi="${orderIndex}" data-ii="${j}" data-if="nom" value="${(it.nom||'').replace(/"/g,'&quot;')}" placeholder="Nom de l'article"></td>
+        <td><input type="number" step="0.01" data-oi="${orderIndex}" data-ii="${j}" data-if="cout" value="${it.cout ?? ''}" placeholder="0,00"></td>
+        <td><input type="number" step="0.01" data-oi="${orderIndex}" data-ii="${j}" data-if="revente" value="${it.revente ?? ''}" placeholder="0,00"></td>
+        <td><span class="status-pill ${sold ? 'sold' : 'pending'}">${sold ? 'vendu' : 'en stock'}</span></td>
+        <td><button class="icon-btn del" data-del-item="${orderIndex}:${j}" title="Supprimer l'article">✕</button></td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div class="items-panel">
+      <div class="items-title">Articles de la commande</div>
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Article</th>
+            <th>Coût</th>
+            <th>Revente</th>
+            <th>Statut</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <button class="add-item-btn" data-add-item="${orderIndex}">+ Ajouter un article</button>
+    </div>
+  `;
+}
+
+function drawSparkline(){
+  const svg = document.getElementById('sparkline');
+  let cumul = 0;
+  const points = [0];
+  rows.forEach(order => {
+    const c = computeOrder(order);
+    cumul += c.resultat;
+    points.push(cumul);
+  });
+
+  const w = 800, h = 70, pad = 6;
+  const min = Math.min(...points, 0);
+  const max = Math.max(...points, 0);
+  const range = (max - min) || 1;
+  const stepX = points.length > 1 ? (w - pad*2) / (points.length - 1) : 0;
+
+  const coords = points.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - ((v - min) / range) * (h - pad*2);
+    return [x, y];
+  });
+
+  const zeroY = h - pad - ((0 - min) / range) * (h - pad*2);
+  let path = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+  const last = coords[coords.length - 1];
+  const lineColor = (points[points.length-1] >= 0) ? '#2f5d3a' : '#8c342a';
+
+  svg.innerHTML = `
+    <line x1="${pad}" y1="${zeroY.toFixed(1)}" x2="${w-pad}" y2="${zeroY.toFixed(1)}" stroke="#cdbd94" stroke-width="1" stroke-dasharray="3,3"/>
+    <path d="${path}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3.5" fill="${lineColor}"/>
+  `;
+}
+
+function attachListeners(){
+  document.querySelectorAll('[data-toggle]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const i = parseInt(e.currentTarget.dataset.toggle);
+      if (expanded.has(i)) expanded.delete(i); else expanded.add(i);
+      render();
+    });
+  });
+
+  document.querySelectorAll('tr.order-row input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const i = e.target.dataset.i;
+      const f = e.target.dataset.f;
+      rows[i][f] = e.target.value;
+      saveRows();
+      renderQuiet();
+    });
+  });
+
+  document.querySelectorAll('[data-del-order]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const i = parseInt(e.currentTarget.dataset.delOrder);
+      if (!confirm('Supprimer cette commande et tous ses articles ?')) return;
+      rows.splice(i, 1);
+      expanded = new Set(Array.from(expanded).filter(x => x !== i).map(x => x > i ? x - 1 : x));
+      saveRows();
+      render();
+    });
+  });
+
+  document.querySelectorAll('.items-table input').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const oi = e.target.dataset.oi;
+      const ii = e.target.dataset.ii;
+      const f = e.target.dataset.if;
+      if (!rows[oi].items) rows[oi].items = [];
+      rows[oi].items[ii][f] = e.target.value;
+      saveRows();
+      renderQuiet();
+    });
+  });
+
+  document.querySelectorAll('[data-add-item]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const oi = parseInt(e.currentTarget.dataset.addItem);
+      if (!rows[oi].items) rows[oi].items = [];
+      rows[oi].items.push({nom:'', cout:'', revente:''});
+      saveRows();
+      render();
+    });
+  });
+
+  document.querySelectorAll('[data-del-item]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const [oi, ii] = e.currentTarget.dataset.delItem.split(':').map(Number);
+      rows[oi].items.splice(ii, 1);
+      if (rows[oi].items.length === 0) rows[oi].items.push({nom:'', cout:'', revente:''});
+      saveRows();
+      render();
+    });
+  });
+}
+
+function renderQuiet(){
+  const active = document.activeElement;
+  const d = active && active.dataset ? active.dataset : {};
+  const selStart = active && typeof active.selectionStart === 'number' ? active.selectionStart : null;
+  const isItemInput = d.oi !== undefined;
+  render();
+  let el = null;
+  if (isItemInput){
+    el = document.querySelector(`input[data-oi="${d.oi}"][data-ii="${d.ii}"][data-if="${d.if}"]`);
+  } else if (d.i !== undefined){
+    el = document.querySelector(`input[data-i="${d.i}"][data-f="${d.f}"]`);
+  }
+  if (el){
+    el.focus();
+    if (selStart !== null && el.type === 'text'){
+      try { el.setSelectionRange(selStart, selStart); } catch(e){}
+    }
+  }
+}
+
+/* ---------- Persistence (localStorage) ---------- */
+function saveRows(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+    setStatus('Enregistré');
+  }catch(err){
+    setStatus('Non enregistré (stockage indisponible)');
+  }
+}
+
+let statusTimer = null;
+function setStatus(msg){
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  if (statusTimer) clearTimeout(statusTimer);
+  statusTimer = setTimeout(() => { el.textContent = 'Enregistré localement dans ce navigateur'; }, 2200);
+}
+
+function loadRows(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw){
+      rows = JSON.parse(raw);
+      setStatus('Données chargées');
+    } else {
+      // migration from the previous flat version, if present
+      let migrated = null;
+      try{
+        const old = localStorage.getItem(OLD_KEY);
+        if (old){
+          const oldRows = JSON.parse(old);
+          migrated = oldRows.map(r => ({
+            commande: r.commande || '',
+            frais: r.frais || '',
+            items: [{ nom: 'Article 1', cout: r.cout || '', revente: r.revente || '' }]
+          }));
+        }
+      }catch(e){}
+      rows = migrated && migrated.length ? migrated : defaultRows();
+      setStatus(migrated ? 'Registre migré' : 'Nouveau registre');
+      saveRows();
+    }
+  }catch(err){
+    rows = defaultRows();
+    setStatus('Stockage indisponible — non sauvegardé');
+  }
+  render();
+}
+
+function defaultRows(){
+  return [
+    { commande: '1ère commande', frais: 83.62, items: [{ nom: 'Article 1', cout: 271.86, revente: '' }] }
+  ];
+}
+
+/* ---------- Export / Import ---------- */
+function download(filename, content, type){
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function stamp(){
+  const d = new Date();
+  const p = (n) => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+}
+
+function exportJSON(){
+  const payload = { version: 2, exportedAt: new Date().toISOString(), rows };
+  download(`registre-achat-revente-${stamp()}.json`, JSON.stringify(payload, null, 2), 'application/json');
+}
+
+function csvCell(v){
+  const s = String(v ?? '');
+  return /[",;\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+function exportCSV(){
+  const header = ['Commande','Livraison (frais)','Article','Coût','Revente','Résultat article','Statut'];
+  const lines = [header.map(csvCell).join(';')];
+  rows.forEach(order => {
+    const items = order.items && order.items.length ? order.items : [{nom:'', cout:'', revente:''}];
+    items.forEach(it => {
+      const sold = String(it.revente ?? '').trim() !== '';
+      const res = sold ? (num(it.revente) - num(it.cout)) : '';
+      lines.push([
+        order.commande || '',
+        order.frais ?? '',
+        it.nom || '',
+        it.cout ?? '',
+        it.revente ?? '',
+        res === '' ? '' : res.toFixed(2),
+        sold ? 'vendu' : 'en stock'
+      ].map(csvCell).join(';'));
+    });
+  });
+  // BOM so Excel reads accents/UTF-8 correctly
+  download(`registre-achat-revente-${stamp()}.csv`, '﻿' + lines.join('\r\n'), 'text/csv;charset=utf-8');
+}
+
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      const imported = Array.isArray(data) ? data : data.rows;
+      if (!Array.isArray(imported)) throw new Error('format');
+      if (!confirm('Remplacer le registre actuel par le contenu du fichier importé ?')) return;
+      rows = imported;
+      expanded = new Set();
+      saveRows();
+      render();
+      setStatus('Import réussi');
+    }catch(err){
+      alert("Fichier invalide : impossible d'importer ce registre.");
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- Wiring ---------- */
+document.getElementById('add-row').addEventListener('click', () => {
+  rows.push({ commande: '', frais: '', items: [{ nom: '', cout: '', revente: '' }] });
+  expanded.add(rows.length - 1);
+  saveRows();
+  render();
+  const inputs = document.querySelectorAll('tbody.order-block:last-child tr.order-row input');
+  if (inputs[0]) inputs[0].focus();
+});
+
+document.getElementById('export-json').addEventListener('click', exportJSON);
+document.getElementById('export-csv').addEventListener('click', exportCSV);
+document.getElementById('import-json').addEventListener('click', () => document.getElementById('import-file').click());
+document.getElementById('import-file').addEventListener('change', (e) => {
+  if (e.target.files && e.target.files[0]) importJSON(e.target.files[0]);
+  e.target.value = '';
+});
+
+loadRows();
+</script>
+</body>
+</html>

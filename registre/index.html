@@ -512,7 +512,7 @@ tfoot td:first-child{
   </div>
 
   <div class="ledger-wrap">
-    <table>
+    <table id="ledger">
       <thead>
         <tr>
           <th class="actions"></th>
@@ -525,7 +525,6 @@ tfoot td:first-child{
           <th class="actions"></th>
         </tr>
       </thead>
-      <tbody id="rows"></tbody>
       <tfoot>
         <tr>
           <td colspan="3">Totaux</td>
@@ -566,8 +565,10 @@ function computeOrder(order){
 }
 
 function render(){
-  const tbody = document.getElementById('rows');
-  tbody.innerHTML = '';
+  const table = document.getElementById('ledger');
+  const tfoot = table.querySelector('tfoot');
+  // remove previously rendered order blocks (keep thead/tfoot intact)
+  table.querySelectorAll('tbody.order-block').forEach(b => b.remove());
   let cumul = 0;
   let sumInvest = 0, sumRevente = 0, sumResult = 0;
 
@@ -609,7 +610,7 @@ function render(){
       block.appendChild(panelRow);
     }
 
-    tbody.appendChild(block);
+    table.insertBefore(block, tfoot);
   });
 
   document.getElementById('sum-invest').textContent = fmt(sumInvest);
